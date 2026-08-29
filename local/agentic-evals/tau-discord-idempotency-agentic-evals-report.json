@@ -1,0 +1,125 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_discord_idempotency_agentic_eval.json",
+  "run_id": "f31f96e6d2ec",
+  "fixture_sha256": "sha256:98715de93017afaf4c1ba478de9eddea8136e170efc5dcb08e1996b4d470f5ec",
+  "repo": {
+    "sha": "267c3d513053c49445270ec4cf3c331ae99e05a8",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau ops-discord notification idempotency for repair categories",
+  "claims": {
+    "proves": "Tau detects an already-notified repair category before external notification execution, writes a DEDUPED notification receipt, preserves the source receipt, and emits a fail-closed adjudication routing manifest.",
+    "does_not_prove": "Discord network delivery or human adjudication."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.discord.notification_idempotency",
+        "description": "Repeated human-adjudication routing for the same repair category does not create duplicate external notifications.",
+        "criticality": "critical",
+        "required_evidence": [
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "duplicate-category-routes-to-deduped-receipt"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "duplicate-category-routes-to-deduped-receipt"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T14:48:35.529289+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "duplicate-category-routes-to-deduped-receipt",
+      "type": "adversarial",
+      "case_id": "f31f96e6d2ec-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-discord-idempotency.py --out local/agentic-evals/tau-discord-idempotency-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.discord.notification_idempotency"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 850.447,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"deduped_notification_receipt\": \"/tmp/tau-discord-idempotency-zvt0vdsi/run/pipeline-self-repair/coder-attempt-002-ops-discord-notification.json\",\n  \"errors\": [],\n  \"live\": true,\n  \"mocked\": false,\n  \"notification\": {\n    \"attempt\": 2,\n    \"category_key\": \"tau/coder/missing-required-evidence/idempotency/v1\",\n    \"dedupe_reason\": \"same_question_or_repair_category_already_notified\",\n    \"deduplicated\": true,\n    \"discord_channel_id\": \"existing-channel-1\",\n    \"discord_message_id\": \"existing-message-1\",\n    \"external_effects\": false,\n    \"failure_category_id\": \"tau:missing-required-evidence\",\n    \"goal_hash\": \"sha256:tau-discord-idempotency-agentic-eval\",\n    \"human_adjudication_required\": true,\n    \"message_url\": \"https://discord.com/channels/example/existing-channel-1/existing-message-1\",\n    \"node_id\": \"coder\",\n    \"ok\": true,\n    \"proof_boundary\": \"$ops-discord notifies or records notification failure only; a typed matching answer receipt is required before human adjudication can unblock.\",\n    \"question_id\": \"tau-idempotency-question\",\n    \"run_id\": \"tau-discord-idempotency-agentic-eval\",\n    \"schema\": \"ops_discord.notification_receipt.v1\",\n    \"source_notification_receipt\": \"/tmp/tau-discord-idempotency-zvt0vdsi/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n    \"status\": \"DEDUPED\",\n    \"transport\": \"discord_bot\",\n    \"unblocks_decision\": false\n  },\n  \"notification_receipt_count\": 2,\n  \"ok\": true,\n  \"proof_boundary\": \"Direct Tau repair notification path with /bin/false as a no-send sentinel; proves duplicate category detection before external notification execution.\",\n  \"provider_live\": false,\n  \"routing_manifest\": {\n    \"attempt\": 2,\n    \"category_key\": \"tau/coder/missing-required-evidence/idempotency/v1\",\n    \"failure_category_id\": \"tau:missing-required-evidence\",\n    \"known_human_adjudication_states\": [\n      \"NEEDS_HUMAN\",\n      \"HUMAN_REQUIRED\",\n      \"WAITING_FOR_HUMAN\",\n      \"AWAITING_HUMAN\",\n      \"AWAITING_ADJUDICATION\",\n      \"HUMAN_ADJUDICATION_REQUIRED\"\n    ],\n    \"node_id\": \"coder\",\n    \"proof_boundary\": \"This manifest proves Tau selected an ops-discord route for human adjudication; it does not prove Discord delivery or repair completion.\",\n    \"routes\": [\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"repair_policy.discord.require_human_adjudication == true\"\n      },\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"repair_state in known_human_adjudication_states\"\n      },\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"verdict/stop_reason/errors contains HUMAN or ADJUDICATION\"\n      },\n      {\n        \"command\": null,\n        \"route\": \"fail_closed\",\n        \"when\": \"unknown adjudication category\"\n      }\n    ],\n    \"run_id\": \"tau-discord-idempotency-agentic-eval\",\n    \"schema\": \"tau.repair_adjudication_routing_manifest.v1\",\n    \"status\": \"PASS\",\n    \"timestamp\": \"2026-08-29T14:48:34Z\",\n    \"unknown_category_policy\": \"FAIL_CLOSED\"\n  },\n  \"run_root\": \"/tmp/tau-discord-idempotency-zvt0vdsi\",\n  \"schema\": \"tau.discord_notification_idempotency_agentic_eval_proof.v1\",\n  \"seed_notification_receipt\": \"/tmp/tau-discord-idempotency-zvt0vdsi/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 820.019,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "f31f96e6d2ec-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-discord-idempotency-proof.json": "sha256:93e75b2e73282accaf75bdeaeebeeb93f8da89f84979aee297fd26e0aaabe319"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"deduped_notification_receipt\": \"/tmp/tau-discord-idempotency-fus3pcxw/run/pipeline-self-repair/coder-attempt-002-ops-discord-notification.json\",\n  \"errors\": [],\n  \"live\": true,\n  \"mocked\": false,\n  \"notification\": {\n    \"attempt\": 2,\n    \"category_key\": \"tau/coder/missing-required-evidence/idempotency/v1\",\n    \"dedupe_reason\": \"same_question_or_repair_category_already_notified\",\n    \"deduplicated\": true,\n    \"discord_channel_id\": \"existing-channel-1\",\n    \"discord_message_id\": \"existing-message-1\",\n    \"external_effects\": false,\n    \"failure_category_id\": \"tau:missing-required-evidence\",\n    \"goal_hash\": \"sha256:tau-discord-idempotency-agentic-eval\",\n    \"human_adjudication_required\": true,\n    \"message_url\": \"https://discord.com/channels/example/existing-channel-1/existing-message-1\",\n    \"node_id\": \"coder\",\n    \"ok\": true,\n    \"proof_boundary\": \"$ops-discord notifies or records notification failure only; a typed matching answer receipt is required before human adjudication can unblock.\",\n    \"question_id\": \"tau-idempotency-question\",\n    \"run_id\": \"tau-discord-idempotency-agentic-eval\",\n    \"schema\": \"ops_discord.notification_receipt.v1\",\n    \"source_notification_receipt\": \"/tmp/tau-discord-idempotency-fus3pcxw/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n    \"status\": \"DEDUPED\",\n    \"transport\": \"discord_bot\",\n    \"unblocks_decision\": false\n  },\n  \"notification_receipt_count\": 2,\n  \"ok\": true,\n  \"proof_boundary\": \"Direct Tau repair notification path with /bin/false as a no-send sentinel; proves duplicate category detection before external notification execution.\",\n  \"provider_live\": false,\n  \"routing_manifest\": {\n    \"attempt\": 2,\n    \"category_key\": \"tau/coder/missing-required-evidence/idempotency/v1\",\n    \"failure_category_id\": \"tau:missing-required-evidence\",\n    \"known_human_adjudication_states\": [\n      \"NEEDS_HUMAN\",\n      \"HUMAN_REQUIRED\",\n      \"WAITING_FOR_HUMAN\",\n      \"AWAITING_HUMAN\",\n      \"AWAITING_ADJUDICATION\",\n      \"HUMAN_ADJUDICATION_REQUIRED\"\n    ],\n    \"node_id\": \"coder\",\n    \"proof_boundary\": \"This manifest proves Tau selected an ops-discord route for human adjudication; it does not prove Discord delivery or repair completion.\",\n    \"routes\": [\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"repair_policy.discord.require_human_adjudication == true\"\n      },\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"repair_state in known_human_adjudication_states\"\n      },\n      {\n        \"command\": [\n          \"/bin/false\",\n          \"notify\",\n          \"--discord-bot\",\n          \"--channel-name\",\n          \"horus\",\n          \"--title\",\n          \"Tau repair needs human adjudication: coder\",\n          \"--content\",\n          \"Tau DAG tau-discord-idempotency-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-idempotency-agentic-eval\\nnode_id: coder\\nattempt: 2\\nquestion_id: tau-idempotency-question\\ngoal_hash: sha256:tau-discord-idempotency-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/missing-required-evidence/idempotency/v1\\nfailure_category_id: tau:missing-required-evidence\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n          \"--json\"\n        ],\n        \"route\": \"$ops-discord notify\",\n        \"when\": \"verdict/stop_reason/errors contains HUMAN or ADJUDICATION\"\n      },\n      {\n        \"command\": null,\n        \"route\": \"fail_closed\",\n        \"when\": \"unknown adjudication category\"\n      }\n    ],\n    \"run_id\": \"tau-discord-idempotency-agentic-eval\",\n    \"schema\": \"tau.repair_adjudication_routing_manifest.v1\",\n    \"status\": \"PASS\",\n    \"timestamp\": \"2026-08-29T14:48:35Z\",\n    \"unknown_category_policy\": \"FAIL_CLOSED\"\n  },\n  \"run_root\": \"/tmp/tau-discord-idempotency-fus3pcxw\",\n  \"schema\": \"tau.discord_notification_idempotency_agentic_eval_proof.v1\",\n  \"seed_notification_receipt\": \"/tmp/tau-discord-idempotency-fus3pcxw/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 880.874,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "f31f96e6d2ec-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-discord-idempotency-proof.json": "sha256:c5a495c1752ae846b15ea60f768e9ff22ddaf4fe654869d278b0a1f8d8ec99d5"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

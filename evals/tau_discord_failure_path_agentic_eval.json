@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "skill": "tau-discord-failure-path",
+  "trials": 2,
+  "proof_scope": "Tau ops-discord notification failure visibility",
+  "claims": {
+    "proves": "A live Discord bot notification failure for a missing channel remains visible in Tau repair receipts and projection state instead of being swallowed.",
+    "does_not_prove": "Successful Discord delivery or repair completion."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.discord.failure_path_visible",
+      "description": "ops-discord failures preserve machine-readable status and visible repair overlay state.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "missing-discord-channel-is-visible-failure",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.discord.failure_path_visible"],
+      "timeout_seconds": 180,
+      "command": ["bash", "-lc", "cd .. && uv run python scripts/agentic-eval-tau-discord-failure-path.py --out local/agentic-evals/tau-discord-failure-path-proof.json"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "CHANNEL_NOT_FOUND", "OPS_DISCORD_NOTIFICATION_FAILED"],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-discord-failure-path-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-discord-failure-path-proof.json", "json_pointer": "/notification_status", "equals": "CHANNEL_NOT_FOUND"},
+          {"path": "../local/agentic-evals/tau-discord-failure-path-proof.json", "json_pointer": "/discord_question_state/state", "equals": "OPS_DISCORD_NOTIFICATION_FAILED"},
+          {"path": "../local/agentic-evals/tau-discord-failure-path-proof.json", "json_pointer": "/discord_question_state/ops_discord_notification_ok", "equals": false}
+        ]
+      }
+    }
+  ]
+}

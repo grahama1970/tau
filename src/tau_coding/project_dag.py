@@ -3614,6 +3614,35 @@ def _run_shared_project_dag_plan(
             # The SQLite journal is authoritative during recovery. A derived
             # receipt may be truncated if the prior process died while writing it.
             prior_receipt = {}
+    run_store_path = receipt_dir / "dag-run.sqlite3"
+    repair_rerun_authorization = _pipeline_self_repair_rerun_authorization(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        prior_receipt=prior_receipt,
+    )
+    if repair_rerun_authorization.get("authorized") is True and run_store_path.is_file():
+        archive_path = receipt_dir / (
+            "dag-run.pre-repair-rerun-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + ".sqlite3"
+        )
+        run_store_path.replace(archive_path)
+        repair_rerun_authorization["archived_run_store_path"] = str(archive_path)
+        pipeline_self_repair_records.extend(
+            item
+            for item in repair_rerun_authorization.get("closed_repair_records", [])
+            if isinstance(item, dict)
+        )
+        for item in repair_rerun_authorization.get("repair_artifacts", []):
+            if isinstance(item, str):
+                pipeline_self_repair_artifacts.append(item)
+        events.append(
+            {
+                "event": "pipeline_self_repair_rerun_authorized",
+                "run_id": contract.dag_id,
+                "closed_category_count": repair_rerun_authorization.get("closed_category_count"),
+                "archived_run_store_path": str(archive_path),
+                "ts": _utc_stamp(),
+            }
+        )
 
     def attach_pipeline_self_repair(
         blocked: dict[str, Any],
@@ -3664,6 +3693,7 @@ def _run_shared_project_dag_plan(
                 "ledger",
                 "discord_question_receipt",
                 "ops_discord_notification_receipt",
+                "adjudication_routing_manifest",
             ):
                 value = projection.get(key)
                 if isinstance(value, str):
@@ -4085,7 +4115,6 @@ def _run_shared_project_dag_plan(
                 status="RUNNING",
             )
 
-    run_store_path = receipt_dir / "dag-run.sqlite3"
     with SqliteDagRunStore(run_store_path) as run_store:
         result = run_dag_plan(
             plan,
@@ -4134,6 +4163,7 @@ def _run_shared_project_dag_plan(
                 "ledger",
                 "discord_question_receipt",
                 "ops_discord_notification_receipt",
+                "adjudication_routing_manifest",
             ):
                 value = repair_projection.get(key)
                 if isinstance(value, str):
@@ -4248,6 +4278,15 @@ def _run_shared_project_dag_plan(
             for index, item in enumerate(pipeline_self_repair_records)
         }.values()
     )
+    attempt_offsets = repair_rerun_authorization.get("node_attempt_offsets")
+    if repair_rerun_authorization.get("authorized") is True and isinstance(attempt_offsets, dict):
+        for node_id, offset in attempt_offsets.items():
+            if (
+                isinstance(node_id, str)
+                and isinstance(offset, int)
+                and node_attempts.get(node_id, 0) > 0
+            ):
+                node_attempts[node_id] = int(node_attempts[node_id]) + offset
     receipt = _ready_queue_receipt(
         contract=contract,
         contract_path=contract_path,
@@ -4302,6 +4341,8 @@ def _run_shared_project_dag_plan(
         if isinstance(item.get("node_id"), str)
         and isinstance(item.get("knowledge_provenance"), dict)
     }
+    if repair_rerun_authorization.get("attempted") is True:
+        receipt["pipeline_self_repair_rerun"] = repair_rerun_authorization
     receipt["execution"] = "project_agent_dag_plan_ready_queue"
     receipt["durable"] = result.durable
     receipt["run_store_path"] = str(run_store_path)
@@ -4321,6 +4362,186 @@ def _run_shared_project_dag_plan(
     _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
     _attach_run_ledger(receipt, receipt_dir)
     return receipt
+
+
+def _pipeline_self_repair_rerun_authorization(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    prior_receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Authorize a fresh same-node run only after the repair ledger is closed."""
+
+    repairs = prior_receipt.get("pipeline_self_repair")
+    repair_items = (
+        [item for item in repairs if isinstance(item, dict)] if isinstance(repairs, list) else []
+    )
+    if prior_receipt.get("status") != "BLOCKED" or not repair_items:
+        return {"attempted": False, "authorized": False, "reason": "no_prior_blocking_repair"}
+    ledgers = sorted(
+        {
+            str(item.get("ledger"))
+            for item in repair_items
+            if isinstance(item.get("ledger"), str) and str(item.get("ledger"))
+        }
+    )
+    if not ledgers:
+        return {
+            "attempted": True,
+            "authorized": False,
+            "reason": "pipeline_self_repair_ledger_missing",
+        }
+    validations: list[dict[str, Any]] = []
+    for ledger in ledgers:
+        validation = _validate_pipeline_self_repair_ledger_for_rerun(contract, Path(ledger))
+        validations.append(validation)
+    if not validations or any(item.get("status") != "PASS" for item in validations):
+        return {
+            "attempted": True,
+            "authorized": False,
+            "reason": "pipeline_self_repair_ledger_not_closed",
+            "validations": validations,
+        }
+    closed_records = _closed_pipeline_self_repair_records(repair_items, ledgers)
+    prior_attempts = prior_receipt.get("node_attempts")
+    offsets = {
+        str(node_id): int(count)
+        for node_id, count in (prior_attempts.items() if isinstance(prior_attempts, dict) else [])
+        if isinstance(node_id, str) and isinstance(count, int) and count > 0
+    }
+    artifacts = [
+        str(path)
+        for repair in closed_records
+        for path in (
+            repair.get("failed_step_receipt"),
+            repair.get("record_failure_receipt"),
+            repair.get("projection_path"),
+            repair.get("ledger"),
+            repair.get("discord_question_receipt"),
+            repair.get("ops_discord_notification_receipt"),
+        )
+        if isinstance(path, str) and path
+    ]
+    return {
+        "schema": "tau.pipeline_self_repair_rerun_authorization.v1",
+        "attempted": True,
+        "authorized": True,
+        "reason": "all_pipeline_self_repair_ledgers_closed",
+        "same_semantic_node_ids": sorted({str(item.get("node_id")) for item in repair_items}),
+        "closed_category_count": len(closed_records),
+        "validations": validations,
+        "closed_repair_records": closed_records,
+        "repair_artifacts": artifacts,
+        "node_attempt_offsets": offsets,
+        "proof_boundary": (
+            "A prior BLOCKED project-DAG run may be rerun in the same receipt directory only "
+            "after pipeline-self-repair validate-ledger --require-agentic-eval returns PASS."
+        ),
+    }
+
+
+def _validate_pipeline_self_repair_ledger_for_rerun(
+    contract: ProjectDagContract,
+    ledger: Path,
+) -> dict[str, Any]:
+    script = str(
+        _pipeline_repair_policy_value(contract, "run_sh")
+        or Path.home() / ".pi" / "agent" / "skills" / "pipeline-self-repair" / "run.sh"
+    )
+    command = [
+        script,
+        "validate-ledger",
+        "--ledger",
+        str(ledger),
+        "--require-agentic-eval",
+        "--json",
+    ]
+    if not ledger.is_file():
+        return {
+            "status": "FAIL",
+            "ledger": str(ledger),
+            "errors": ["ledger_missing"],
+            "command": command,
+        }
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(ledger.parent),
+            capture_output=True,
+            text=True,
+            timeout=float(_pipeline_repair_policy_value(contract, "timeout_seconds", "60") or 60),
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        return {"status": "FAIL", "ledger": str(ledger), "errors": [str(exc)], "command": command}
+    parsed = _parse_json_object(completed.stdout)
+    if parsed is None:
+        parsed = {"status": "FAIL", "errors": ["validate_ledger_output_invalid"]}
+    parsed = dict(parsed)
+    parsed.update(
+        {
+            "ledger": str(ledger),
+            "returncode": completed.returncode,
+            "command": command,
+        }
+    )
+    if completed.stderr.strip():
+        parsed["stderr_excerpt"] = completed.stderr[-2000:]
+    return parsed
+
+
+def _closed_pipeline_self_repair_records(
+    repair_items: list[dict[str, Any]],
+    ledgers: list[str],
+) -> list[dict[str, Any]]:
+    latest_by_category: dict[str, dict[str, Any]] = {}
+    for ledger in ledgers:
+        for event in _read_pipeline_self_repair_events(Path(ledger)):
+            category = event.get("category_key")
+            if isinstance(category, str) and category:
+                latest_by_category[category] = event
+    closed: list[dict[str, Any]] = []
+    for repair in repair_items:
+        category = repair.get("category_key")
+        latest = latest_by_category.get(str(category)) if isinstance(category, str) else None
+        item = dict(repair)
+        if latest is not None:
+            item.update(
+                {
+                    "status": "CATEGORY_GREEN",
+                    "repair_state": str(latest.get("repair_state") or "CATEGORY_GREEN"),
+                    "agentic_eval": latest.get("agentic_eval") or repair.get("agentic_eval"),
+                    "ticket": latest.get("ticket") or repair.get("ticket"),
+                    "watchdog": latest.get("watchdog") or repair.get("watchdog"),
+                    "goal_alignment": latest.get("goal_alignment") or repair.get("goal_alignment"),
+                    "blocking": False,
+                }
+            )
+        closed.append(item)
+    return closed
+
+
+def _read_pipeline_self_repair_events(ledger: Path) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    try:
+        lines = ledger.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return events
+    for line in lines:
+        if not line.strip():
+            continue
+        parsed = _parse_json_object(line)
+        if isinstance(parsed, dict):
+            events.append(parsed)
+    return events
+
+
+def _parse_json_object(text: str) -> dict[str, Any] | None:
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
 
 
 def _pipeline_self_repair_enabled(contract: ProjectDagContract) -> bool:
@@ -4467,6 +4688,7 @@ def _record_pipeline_self_repair_failure(
     if parsed is not None:
         _write_json(output_path, parsed)
         event = parsed.get("event") if isinstance(parsed.get("event"), dict) else {}
+        tau_triage = _tau_specific_triage(result=result, raw_signal=raw_signal)
         projection.update(
             {
                 "status": str(parsed.get("status") or "RECORDED"),
@@ -4475,6 +4697,7 @@ def _record_pipeline_self_repair_failure(
                 "failure_category_id": event.get("failure_category_id"),
                 "repair_state": event.get("repair_state") or parsed.get("status"),
                 "triage": event.get("triage"),
+                "tau_triage": tau_triage,
                 "ticket": event.get("ticket"),
                 "watchdog": event.get("watchdog"),
                 "agentic_eval": event.get("agentic_eval"),
@@ -4509,6 +4732,9 @@ def _record_pipeline_self_repair_failure(
         notification_receipt = discord_state.get("ops_discord_notification_receipt")
         if isinstance(notification_receipt, str):
             projection["ops_discord_notification_receipt"] = notification_receipt
+        routing_manifest = discord_state.get("adjudication_routing_manifest")
+        if isinstance(routing_manifest, str):
+            projection["adjudication_routing_manifest"] = routing_manifest
 
     projection_path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-projection.json"
     projection["projection_path"] = str(projection_path)
@@ -4589,60 +4815,77 @@ def _notify_ops_discord_for_human_adjudication(
         allowed_answers=allowed_answers,
         projection=projection,
     )
+    routing_manifest_path = _write_adjudication_routing_manifest(
+        repair_root=repair_root,
+        contract=contract,
+        node=node,
+        attempt=attempt,
+        projection=projection,
+        command=command,
+    )
     notification_payload: dict[str, Any]
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=str(receipt_dir),
-            capture_output=True,
-            text=True,
-            timeout=float(policy.get("timeout_seconds") or 30),
-            check=False,
-        )
-    except (OSError, subprocess.SubprocessError, ValueError) as exc:
-        notification_payload = {
-            "schema": OPS_DISCORD_NOTIFICATION_SCHEMA,
-            "status": "NOTIFICATION_FAILED",
-            "ok": False,
-            "webhook": str(policy.get("webhook") or "alerts"),
-            "dry_run": policy.get("dry_run") is True,
-            "external_effects": policy.get("dry_run") is not True,
-            "errors": [str(exc)],
-            "command": command,
-        }
+    existing = _existing_ops_discord_notification_for_category(
+        repair_root=repair_root,
+        notification_path=notification_path,
+        question_id=question_id,
+        projection=projection,
+    )
+    if existing is not None:
+        notification_payload = existing
     else:
-        notification_payload = _parse_ops_discord_notification_output(completed.stdout)
-        if not notification_payload:
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=str(receipt_dir),
+                capture_output=True,
+                text=True,
+                timeout=float(policy.get("timeout_seconds") or 30),
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
             notification_payload = {
                 "schema": OPS_DISCORD_NOTIFICATION_SCHEMA,
-                "status": "NOTIFICATION_OUTPUT_INVALID",
+                "status": "NOTIFICATION_FAILED",
                 "ok": False,
                 "webhook": str(policy.get("webhook") or "alerts"),
                 "dry_run": policy.get("dry_run") is True,
                 "external_effects": policy.get("dry_run") is not True,
-                "returncode": completed.returncode,
-                "stdout_excerpt": completed.stdout[-2000:],
-                "stderr_excerpt": completed.stderr[-2000:],
+                "errors": [str(exc)],
                 "command": command,
             }
         else:
-            notification_payload = dict(notification_payload)
-            notification_payload["ok"] = completed.returncode == 0 and notification_payload.get(
-                "status"
-            ) in {"SENT", "DRY_RUN"}
-            notification_payload["returncode"] = completed.returncode
-            notification_payload["exit_code"] = completed.returncode
-            if completed.stderr.strip():
-                notification_payload["stderr_excerpt"] = completed.stderr[-2000:]
-            if completed.stdout.strip() and notification_payload.get("ok") is not True:
-                notification_payload["stdout_excerpt"] = completed.stdout[-2000:]
-            status_codes = _ops_discord_status_codes_from_text(
-                f"{completed.stderr}\n{completed.stdout}"
-            )
-            if status_codes:
-                notification_payload["http_status_codes"] = status_codes
-                notification_payload["last_http_status"] = status_codes[-1]
-            notification_payload["command"] = command
+            notification_payload = _parse_ops_discord_notification_output(completed.stdout)
+            if not notification_payload:
+                notification_payload = {
+                    "schema": OPS_DISCORD_NOTIFICATION_SCHEMA,
+                    "status": "NOTIFICATION_OUTPUT_INVALID",
+                    "ok": False,
+                    "webhook": str(policy.get("webhook") or "alerts"),
+                    "dry_run": policy.get("dry_run") is True,
+                    "external_effects": policy.get("dry_run") is not True,
+                    "returncode": completed.returncode,
+                    "stdout_excerpt": completed.stdout[-2000:],
+                    "stderr_excerpt": completed.stderr[-2000:],
+                    "command": command,
+                }
+            else:
+                notification_payload = dict(notification_payload)
+                notification_payload["ok"] = completed.returncode == 0 and notification_payload.get(
+                    "status"
+                ) in {"SENT", "DRY_RUN"}
+                notification_payload["returncode"] = completed.returncode
+                notification_payload["exit_code"] = completed.returncode
+                if completed.stderr.strip():
+                    notification_payload["stderr_excerpt"] = completed.stderr[-2000:]
+                if completed.stdout.strip() and notification_payload.get("ok") is not True:
+                    notification_payload["stdout_excerpt"] = completed.stdout[-2000:]
+                status_codes = _ops_discord_status_codes_from_text(
+                    f"{completed.stderr}\n{completed.stdout}"
+                )
+                if status_codes:
+                    notification_payload["http_status_codes"] = status_codes
+                    notification_payload["last_http_status"] = status_codes[-1]
+                notification_payload["command"] = command
     notification_payload.update(
         {
             "question_id": question_id,
@@ -4662,7 +4905,7 @@ def _notify_ops_discord_for_human_adjudication(
     )
     _write_json(notification_path, notification_payload)
     status = str(notification_payload.get("status") or "UNKNOWN")
-    delivered = status in {"SENT", "DRY_RUN"} and notification_payload.get("ok") is True
+    delivered = status in {"SENT", "DRY_RUN", "DEDUPED"} and notification_payload.get("ok") is True
     state = "QUESTION_SENT" if delivered else "OPS_DISCORD_NOTIFICATION_FAILED"
     updated = dict(discord_state)
     updated.update(
@@ -4673,7 +4916,8 @@ def _notify_ops_discord_for_human_adjudication(
             "ops_discord_notification_receipt": str(notification_path),
             "ops_discord_notification_status": status,
             "ops_discord_notification_ok": delivered,
-            "ops_discord_last_http_status": notification_payload.get("last_http_status"),
+            "ops_discord_last_http_status": notification_payload.get("last_http_status")
+            or notification_payload.get("http_status"),
             "ops_discord_http_status_codes": notification_payload.get("http_status_codes"),
             "ops_discord_transport": notification_payload.get("transport")
             or _ops_discord_transport(policy),
@@ -4685,9 +4929,176 @@ def _notify_ops_discord_for_human_adjudication(
             "channel_name": notification_payload.get("channel_name") or policy.get("channel_name"),
             "dry_run": policy.get("dry_run") is True,
             "allowed_answers": allowed_answers,
+            "adjudication_routing_manifest": str(routing_manifest_path),
+            "deduplicated": notification_payload.get("deduplicated") is True,
+            "source_notification_receipt": notification_payload.get("source_notification_receipt"),
         }
     )
     return updated
+
+
+def _write_adjudication_routing_manifest(
+    *,
+    repair_root: Path,
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    attempt: int,
+    projection: Mapping[str, Any],
+    command: list[str],
+) -> Path:
+    path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-adjudication-routing.json"
+    payload = {
+        "schema": "tau.repair_adjudication_routing_manifest.v1",
+        "status": "PASS",
+        "run_id": contract.dag_id,
+        "node_id": node.node_id,
+        "attempt": attempt,
+        "category_key": projection.get("category_key"),
+        "failure_category_id": projection.get("failure_category_id"),
+        "known_human_adjudication_states": [
+            "NEEDS_HUMAN",
+            "HUMAN_REQUIRED",
+            "WAITING_FOR_HUMAN",
+            "AWAITING_HUMAN",
+            "AWAITING_ADJUDICATION",
+            "HUMAN_ADJUDICATION_REQUIRED",
+        ],
+        "routes": [
+            {
+                "when": "repair_policy.discord.require_human_adjudication == true",
+                "route": "$ops-discord notify",
+                "command": command,
+            },
+            {
+                "when": "repair_state in known_human_adjudication_states",
+                "route": "$ops-discord notify",
+                "command": command,
+            },
+            {
+                "when": "verdict/stop_reason/errors contains HUMAN or ADJUDICATION",
+                "route": "$ops-discord notify",
+                "command": command,
+            },
+            {
+                "when": "unknown adjudication category",
+                "route": "fail_closed",
+                "command": None,
+            },
+        ],
+        "unknown_category_policy": "FAIL_CLOSED",
+        "proof_boundary": (
+            "This manifest proves Tau selected an ops-discord route for human adjudication; "
+            "it does not prove Discord delivery or repair completion."
+        ),
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(path, payload)
+    return path
+
+
+def _existing_ops_discord_notification_for_category(
+    *,
+    repair_root: Path,
+    notification_path: Path,
+    question_id: str,
+    projection: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    category_key = projection.get("category_key")
+    failure_category_id = projection.get("failure_category_id")
+    for candidate in sorted(repair_root.glob("*-ops-discord-notification.json")):
+        if candidate.resolve() == notification_path.resolve():
+            continue
+        payload = _read_json_object_optional(candidate)
+        if not payload or payload.get("schema") != OPS_DISCORD_NOTIFICATION_SCHEMA:
+            continue
+        if str(payload.get("status") or "") not in {"SENT", "DRY_RUN", "DEDUPED"}:
+            continue
+        same_question = payload.get("question_id") == question_id
+        same_category = bool(category_key) and payload.get("category_key") == category_key
+        same_failure = (
+            bool(failure_category_id) and payload.get("failure_category_id") == failure_category_id
+        )
+        if same_question or same_category or same_failure:
+            deduped = dict(payload)
+            deduped.update(
+                {
+                    "status": "DEDUPED",
+                    "ok": True,
+                    "deduplicated": True,
+                    "external_effects": False,
+                    "source_notification_receipt": str(candidate),
+                    "dedupe_reason": "same_question_or_repair_category_already_notified",
+                }
+            )
+            return deduped
+    return None
+
+
+def _read_json_object_optional(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except OSError, UnicodeError, json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _tau_specific_triage(*, result: Mapping[str, Any], raw_signal: str) -> dict[str, Any] | None:
+    normalized = f"{raw_signal}\n{json.dumps(result, sort_keys=True, default=str)}".lower()
+    if (
+        "missing_required_evidence" in normalized
+        or "did not include required evidence" in normalized
+    ):
+        return {
+            "schema": "tau.triage_code.v1",
+            "code": "tau_project_dag_missing_required_evidence",
+            "layer": "tau.project_dag",
+            "cause": (
+                "A required Tau DAG node response did not include one or more evidence kinds "
+                "declared by node.required_evidence."
+            ),
+            "next_command": (
+                "Open the failed-step receipt listed in pipeline_self_repair.failed_step_receipt, "
+                "fix the same node's handler output so result.evidence contains every missing kind "
+                "with the active goal_hash, then rerun tau dag-run against the same receipt "
+                "directory after the repair ledger is CATEGORY_GREEN."
+            ),
+            "recoverable": True,
+            "ambiguous": False,
+        }
+    if "provider_auth" in normalized or ("auth" in normalized and "provider" in normalized):
+        return {
+            "schema": "tau.triage_code.v1",
+            "code": "tau_project_dag_provider_auth_failure",
+            "layer": "tau.project_dag",
+            "cause": (
+                "A Tau DAG node failed because its downstream provider path reported an "
+                "authentication or authorization blocker."
+            ),
+            "next_command": (
+                "Do not retry the provider blindly; route to the owning provider skill for auth "
+                "repair, attach its receipt to the repair ledger, then rerun the same semantic "
+                "node."
+            ),
+            "recoverable": False,
+            "ambiguous": False,
+        }
+    if "max_attempts" in normalized or "max attempts" in normalized:
+        return {
+            "schema": "tau.triage_code.v1",
+            "code": "tau_project_dag_max_attempts_exceeded",
+            "layer": "tau.project_dag",
+            "cause": (
+                "A Tau DAG node exhausted its bounded retry budget before producing an accepted "
+                "handoff."
+            ),
+            "next_command": (
+                "Inspect the node attempt receipts and repair the deterministic cause through "
+                "pipeline-self-repair before granting any new attempt budget."
+            ),
+            "recoverable": True,
+            "ambiguous": False,
+        }
+    return None
 
 
 def _pipeline_repair_discord_policy(contract: ProjectDagContract) -> Mapping[str, Any]:
@@ -4741,13 +5152,9 @@ def _ops_discord_notify_command(
 ) -> list[str]:
     policy = _pipeline_repair_discord_policy(contract)
     script = str(
-        policy.get("run_sh")
-        or Path.home() / ".pi" / "agent" / "skills" / "ops-discord" / "run.sh"
+        policy.get("run_sh") or Path.home() / ".pi" / "agent" / "skills" / "ops-discord" / "run.sh"
     )
-    title = str(
-        policy.get("title")
-        or f"Tau repair needs human adjudication: {node.node_id}"
-    )
+    title = str(policy.get("title") or f"Tau repair needs human adjudication: {node.node_id}")
     content = "\n".join(
         [
             question,

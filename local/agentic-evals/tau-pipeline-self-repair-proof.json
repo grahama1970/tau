@@ -1,0 +1,43 @@
+{
+  "category_key": "tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1",
+  "dag_status": "BLOCKED",
+  "dag_verdict": "MISSING_REQUIRED_EVIDENCE",
+  "errors": [],
+  "failure_category_id": "agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": "Live local Tau CLI plus pipeline-self-repair safe mode; no ticket publication or watchdog dispatch.",
+  "provider_live": false,
+  "repair_ledger": "/tmp/tau-pipeline-self-repair-eval-7kauhgvq/run/pipeline-self-repair/replay_ledger.jsonl",
+  "repair_ledger_inspect": {
+    "categories": {
+      "tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1": {
+        "events": 1,
+        "latest_state": "NEEDS_TRIAGE",
+        "ticket": null,
+        "triage_code": "unknown_unclassified_624c5ded"
+      }
+    },
+    "event_count": 1,
+    "ledger": "/tmp/tau-pipeline-self-repair-eval-7kauhgvq/run/pipeline-self-repair/replay_ledger.jsonl",
+    "open_failure_count": 1,
+    "schema": "pipeline_self_repair.summary.v1"
+  },
+  "repair_state": "NEEDS_TRIAGE",
+  "run_root": "/tmp/tau-pipeline-self-repair-eval-7kauhgvq",
+  "schema": "tau.pipeline_self_repair_agentic_eval_proof.v1",
+  "status": "PASS",
+  "viewer_repair_summary": {
+    "available": true,
+    "category_count": 1,
+    "incident_ids": [
+      "agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded"
+    ],
+    "open_category_count": 1,
+    "schema": "tau.pipeline_self_repair_summary.v1",
+    "states": [
+      "NEEDS_TRIAGE"
+    ]
+  }
+}

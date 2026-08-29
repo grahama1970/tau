@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "skill": "tau-repair-overlay-browser",
+  "trials": 2,
+  "proof_scope": "Browser-visible Tau repair overlay with Discord adjudication routing",
+  "claims": {
+    "proves": "A live Tau viewer renders the repair overlay, blocking category, ops-discord delivery status, human-question state, and Discord message URL from the actual project-DAG receipt using read-only browser requests.",
+    "does_not_prove": "Repair completion, provider semantic quality, or that the human approved the repair."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.viewer.repair_overlay_discord_visible",
+      "description": "Repair collaboration state is visible in the browser viewer rather than hidden in local JSON only.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "live-browser-sees-discord-repair-overlay",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.viewer.repair_overlay_discord_visible"],
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-repair-overlay-browser.py --out local/agentic-evals/tau-repair-overlay-browser-proof.json --live-notify --channel-name horus"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "Repair overlay", "ops-discord", "https://discord.com/channels/"],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/browser_proof/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/browser_proof/checks/repair_overlay_visible", "equals": true},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/browser_proof/checks/ops_discord_sent_or_dry_run_visible", "equals": true},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/browser_proof/checks/message_url_visible", "equals": true},
+          {"path": "../local/agentic-evals/tau-repair-overlay-browser-proof.json", "json_pointer": "/browser_proof/checks/read_only_requests", "equals": true}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_discord_unblock_agentic_eval.json",
+  "run_id": "4a5d95984cf7",
+  "fixture_sha256": "sha256:4535b148400f0052a6343d2ed49a8457e952e844eb34947c9982b490da064492",
+  "repo": {
+    "sha": "db5b19cf395a99c728175eaee95e549e97ff4568",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau Discord human-decision receipts for repair overlays",
+  "claims": {
+    "proves": "Tau can attach Discord human-question state to a repair overlay, keep read-only status receipts from unblocking decisions, and validate a typed answer receipt against question_id, run_id, node_id, goal_hash, and allowed answers.",
+    "does_not_prove": "Discord network delivery, repair completion, provider semantic quality, or human acceptance of the repaired output."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.discord.typed_human_unblock_receipts",
+        "description": "Discord collaboration state is typed and can unblock only through a matching answer receipt, not through status text.",
+        "criticality": "critical",
+        "required_evidence": [
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-discord-question-status-answer-validation"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-discord-question-status-answer-validation"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-28T20:09:13.305361+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-discord-question-status-answer-validation",
+      "type": "adversarial",
+      "case_id": "4a5d95984cf7-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-discord-unblock.py --out local/agentic-evals/tau-discord-unblock-proof.json --discord-bot --channel-name horus"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.discord.typed_human_unblock_receipts"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 6166.615,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"answer_unblocks_decision\": true,\n  \"dag_status\": \"BLOCKED\",\n  \"discord_question_state\": {\n    \"allowed_answers\": [\n      \"approve_rerun\",\n      \"keep_blocked\",\n      \"needs_context\"\n    ],\n    \"answer_receipt_schema\": \"tau.discord_human_answer.v1\",\n    \"attempt\": 1,\n    \"channel_id\": \"1450503946643968185\",\n    \"channel_name\": \"horus\",\n    \"discord_channel_id\": null,\n    \"discord_message_id\": null,\n    \"dry_run\": true,\n    \"goal_hash\": \"sha256:tau-discord-unblock-agentic-eval\",\n    \"human_adjudication_required\": true,\n    \"message_url\": null,\n    \"node_id\": \"coder\",\n    \"ops_discord_http_status_codes\": null,\n    \"ops_discord_last_http_status\": null,\n    \"ops_discord_notification_ok\": true,\n    \"ops_discord_notification_receipt\": \"/tmp/tau-discord-unblock-eval-zy34e6c8/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n    \"ops_discord_notification_status\": \"DRY_RUN\",\n    \"ops_discord_transport\": \"discord_bot\",\n    \"proof_boundary\": \"Discord may unblock a typed human decision; it is not repair proof.\",\n    \"question_id\": \"tau-discord-unblock-eval-question\",\n    \"question_receipt\": \"/tmp/tau-discord-unblock-eval-zy34e6c8/run/pipeline-self-repair/coder-attempt-001-discord-question.json\",\n    \"run_id\": \"tau-discord-unblock-agentic-eval\",\n    \"schema\": \"tau.discord_human_question.v1\",\n    \"state\": \"QUESTION_SENT\",\n    \"status_receipt_schema\": \"tau.discord_status_response_receipt.v1\",\n    \"webhook\": \"tau-repair-eval\"\n  },\n  \"errors\": [],\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"ops_discord_notification_receipt\": {\n    \"attempt\": 1,\n    \"category_key\": \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1\",\n    \"channel_id\": \"1450503946643968185\",\n    \"channel_name\": \"horus\",\n    \"command\": [\n      \"/home/graham/.pi/agent/skills/ops-discord/run.sh\",\n      \"notify\",\n      \"--discord-bot\",\n      \"--channel-name\",\n      \"horus\",\n      \"--title\",\n      \"Tau repair needs human adjudication: coder\",\n      \"--content\",\n      \"Tau DAG tau-discord-unblock-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-unblock-agentic-eval\\nnode_id: coder\\nattempt: 1\\nquestion_id: tau-discord-unblock-eval-question\\ngoal_hash: sha256:tau-discord-unblock-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1\\nfailure_category_id: agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n      \"--json\",\n      \"--dry-run\"\n    ],\n    \"dry_run\": true,\n    \"exit_code\": 0,\n    \"external_effects\": false,\n    \"failure_category_id\": \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\",\n    \"goal_hash\": \"sha256:tau-discord-unblock-agentic-eval\",\n    \"guild_id\": \"1294710677658927134\",\n    \"human_adjudication_required\": true,\n    \"node_id\": \"coder\",\n    \"ok\": true,\n    \"proof_boundary\": \"$ops-discord notifies or records notification failure only; a typed matching answer receipt is required before human adjudication can unblock.\",\n    \"question_id\": \"tau-discord-unblock-eval-question\",\n    \"returncode\": 0,\n    \"run_id\": \"tau-discord-unblock-agentic-eval\",\n    \"schema\": \"ops_discord.notification_receipt.v1\",\n    \"status\": \"DRY_RUN\",\n    \"transport\": \"discord_bot\",\n    \"unblocks_decision\": false\n  },\n  \"proof_boundary\": \"Live Tau CLI plus ops-discord notification receipt validation; live_notify=false; no repair completion proof.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-discord-unblock-eval-zy34e6c8\",\n  \"schema\": \"tau.discord_unblock_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"status_unblocks_decision\": false\n}\n",
+          "stderr": "",
+          "duration_ms": 6099.068,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4a5d95984cf7-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-discord-unblock-proof.json": "sha256:a313cba55c39d5e08148994ae31745d7cdef587f5a4c30712fa154a1c85b1cef"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"answer_unblocks_decision\": true,\n  \"dag_status\": \"BLOCKED\",\n  \"discord_question_state\": {\n    \"allowed_answers\": [\n      \"approve_rerun\",\n      \"keep_blocked\",\n      \"needs_context\"\n    ],\n    \"answer_receipt_schema\": \"tau.discord_human_answer.v1\",\n    \"attempt\": 1,\n    \"channel_id\": \"1450503946643968185\",\n    \"channel_name\": \"horus\",\n    \"discord_channel_id\": null,\n    \"discord_message_id\": null,\n    \"dry_run\": true,\n    \"goal_hash\": \"sha256:tau-discord-unblock-agentic-eval\",\n    \"human_adjudication_required\": true,\n    \"message_url\": null,\n    \"node_id\": \"coder\",\n    \"ops_discord_http_status_codes\": null,\n    \"ops_discord_last_http_status\": null,\n    \"ops_discord_notification_ok\": true,\n    \"ops_discord_notification_receipt\": \"/tmp/tau-discord-unblock-eval-zqlqfqtf/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json\",\n    \"ops_discord_notification_status\": \"DRY_RUN\",\n    \"ops_discord_transport\": \"discord_bot\",\n    \"proof_boundary\": \"Discord may unblock a typed human decision; it is not repair proof.\",\n    \"question_id\": \"tau-discord-unblock-eval-question\",\n    \"question_receipt\": \"/tmp/tau-discord-unblock-eval-zqlqfqtf/run/pipeline-self-repair/coder-attempt-001-discord-question.json\",\n    \"run_id\": \"tau-discord-unblock-agentic-eval\",\n    \"schema\": \"tau.discord_human_question.v1\",\n    \"state\": \"QUESTION_SENT\",\n    \"status_receipt_schema\": \"tau.discord_status_response_receipt.v1\",\n    \"webhook\": \"tau-repair-eval\"\n  },\n  \"errors\": [],\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"ops_discord_notification_receipt\": {\n    \"attempt\": 1,\n    \"category_key\": \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1\",\n    \"channel_id\": \"1450503946643968185\",\n    \"channel_name\": \"horus\",\n    \"command\": [\n      \"/home/graham/.pi/agent/skills/ops-discord/run.sh\",\n      \"notify\",\n      \"--discord-bot\",\n      \"--channel-name\",\n      \"horus\",\n      \"--title\",\n      \"Tau repair needs human adjudication: coder\",\n      \"--content\",\n      \"Tau DAG tau-discord-unblock-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\\n\\nrun_id: tau-discord-unblock-agentic-eval\\nnode_id: coder\\nattempt: 1\\nquestion_id: tau-discord-unblock-eval-question\\ngoal_hash: sha256:tau-discord-unblock-agentic-eval\\nrepair_state: NEEDS_TRIAGE\\ncategory_key: tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1\\nfailure_category_id: agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\\nallowed_answers: approve_rerun, keep_blocked, needs_context\\n\\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.\",\n      \"--json\",\n      \"--dry-run\"\n    ],\n    \"dry_run\": true,\n    \"exit_code\": 0,\n    \"external_effects\": false,\n    \"failure_category_id\": \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\",\n    \"goal_hash\": \"sha256:tau-discord-unblock-agentic-eval\",\n    \"guild_id\": \"1294710677658927134\",\n    \"human_adjudication_required\": true,\n    \"node_id\": \"coder\",\n    \"ok\": true,\n    \"proof_boundary\": \"$ops-discord notifies or records notification failure only; a typed matching answer receipt is required before human adjudication can unblock.\",\n    \"question_id\": \"tau-discord-unblock-eval-question\",\n    \"returncode\": 0,\n    \"run_id\": \"tau-discord-unblock-agentic-eval\",\n    \"schema\": \"ops_discord.notification_receipt.v1\",\n    \"status\": \"DRY_RUN\",\n    \"transport\": \"discord_bot\",\n    \"unblocks_decision\": false\n  },\n  \"proof_boundary\": \"Live Tau CLI plus ops-discord notification receipt validation; live_notify=false; no repair completion proof.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-discord-unblock-eval-zqlqfqtf\",\n  \"schema\": \"tau.discord_unblock_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"status_unblocks_decision\": false\n}\n",
+          "stderr": "",
+          "duration_ms": 6234.163,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4a5d95984cf7-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-discord-unblock-proof.json": "sha256:9cbaa3800297bd8eb2915fc0764b20ae77658441a05e423ceed1953dd95a270c"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

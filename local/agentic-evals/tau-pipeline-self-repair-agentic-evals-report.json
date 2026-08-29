@@ -1,0 +1,125 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_pipeline_self_repair_agentic_eval.json",
+  "run_id": "498f8b4f0bf9",
+  "fixture_sha256": "sha256:023a2ec0593dc9608be4813cfb028edd0bb428f40fb464d7c84c5360b899c46e",
+  "repo": {
+    "sha": "f0fe54d825f8600afd3197fa9318620681399dee",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau required-node failure to pipeline-self-repair repair overlay",
+  "claims": {
+    "proves": "Tau records a failed required node through pipeline-self-repair, blocks downstream advancement, writes a repair ledger, and projects the repair category into the viewer.",
+    "does_not_prove": "ticket publication, watchdog repair success, provider semantic quality, or repair-category closure."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.repair.required_node_failure_overlay",
+        "description": "A required-node failure becomes a blocking pipeline-self-repair category instead of a blind retry or skipped downstream edge.",
+        "criticality": "critical",
+        "required_evidence": [
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-required-node-failure-records-repair-overlay"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-required-node-failure-records-repair-overlay"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-28T18:22:34.043420+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-required-node-failure-records-repair-overlay",
+      "type": "adversarial",
+      "case_id": "498f8b4f0bf9-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-pipeline-self-repair.py --out local/agentic-evals/tau-pipeline-self-repair-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.repair.required_node_failure_overlay"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2180.244,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"category_key\": \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1\",\n  \"dag_status\": \"BLOCKED\",\n  \"dag_verdict\": \"MISSING_REQUIRED_EVIDENCE\",\n  \"errors\": [],\n  \"failure_category_id\": \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local Tau CLI plus pipeline-self-repair safe mode; no ticket publication or watchdog dispatch.\",\n  \"provider_live\": false,\n  \"repair_ledger\": \"/tmp/tau-pipeline-self-repair-eval-0hm9qrm8/run/pipeline-self-repair/replay_ledger.jsonl\",\n  \"repair_ledger_inspect\": {\n    \"categories\": {\n      \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1\": {\n        \"events\": 1,\n        \"latest_state\": \"NEEDS_TRIAGE\",\n        \"ticket\": null,\n        \"triage_code\": \"unknown_unclassified_624c5ded\"\n      }\n    },\n    \"event_count\": 1,\n    \"ledger\": \"/tmp/tau-pipeline-self-repair-eval-0hm9qrm8/run/pipeline-self-repair/replay_ledger.jsonl\",\n    \"open_failure_count\": 1,\n    \"schema\": \"pipeline_self_repair.summary.v1\"\n  },\n  \"repair_state\": \"NEEDS_TRIAGE\",\n  \"run_root\": \"/tmp/tau-pipeline-self-repair-eval-0hm9qrm8\",\n  \"schema\": \"tau.pipeline_self_repair_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"viewer_repair_summary\": {\n    \"available\": true,\n    \"category_count\": 1,\n    \"incident_ids\": [\n      \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\"\n    ],\n    \"open_category_count\": 1,\n    \"schema\": \"tau.pipeline_self_repair_summary.v1\",\n    \"states\": [\n      \"NEEDS_TRIAGE\"\n    ]\n  }\n}\n",
+          "stderr": "",
+          "duration_ms": 2194.03,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "498f8b4f0bf9-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-pipeline-self-repair-proof.json": "sha256:c33b9065b10cb8a5a2bb5c473ff7609a3c372e32b05a5f4c2a468bc1550a07e6"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"category_key\": \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1\",\n  \"dag_status\": \"BLOCKED\",\n  \"dag_verdict\": \"MISSING_REQUIRED_EVIDENCE\",\n  \"errors\": [],\n  \"failure_category_id\": \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local Tau CLI plus pipeline-self-repair safe mode; no ticket publication or watchdog dispatch.\",\n  \"provider_live\": false,\n  \"repair_ledger\": \"/tmp/tau-pipeline-self-repair-eval-7kauhgvq/run/pipeline-self-repair/replay_ledger.jsonl\",\n  \"repair_ledger_inspect\": {\n    \"categories\": {\n      \"tau/coder/unknown-unclassified-624c5ded/agentic-eval-pipeline-self-repair/v1\": {\n        \"events\": 1,\n        \"latest_state\": \"NEEDS_TRIAGE\",\n        \"ticket\": null,\n        \"triage_code\": \"unknown_unclassified_624c5ded\"\n      }\n    },\n    \"event_count\": 1,\n    \"ledger\": \"/tmp/tau-pipeline-self-repair-eval-7kauhgvq/run/pipeline-self-repair/replay_ledger.jsonl\",\n    \"open_failure_count\": 1,\n    \"schema\": \"pipeline_self_repair.summary.v1\"\n  },\n  \"repair_state\": \"NEEDS_TRIAGE\",\n  \"run_root\": \"/tmp/tau-pipeline-self-repair-eval-7kauhgvq\",\n  \"schema\": \"tau.pipeline_self_repair_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"viewer_repair_summary\": {\n    \"available\": true,\n    \"category_count\": 1,\n    \"incident_ids\": [\n      \"agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\"\n    ],\n    \"open_category_count\": 1,\n    \"schema\": \"tau.pipeline_self_repair_summary.v1\",\n    \"states\": [\n      \"NEEDS_TRIAGE\"\n    ]\n  }\n}\n",
+          "stderr": "",
+          "duration_ms": 2166.459,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "498f8b4f0bf9-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-pipeline-self-repair-proof.json": "sha256:8a02e5da1c5b303ffb3a6494d88d53dfc5f1eceffe2fb45148bf9a22a00b0feb"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

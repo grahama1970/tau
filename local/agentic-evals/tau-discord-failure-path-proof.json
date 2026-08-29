@@ -1,0 +1,149 @@
+{
+  "discord_question_state": {
+    "adjudication_routing_manifest": "/tmp/tau-discord-failure-path-j1g8o7co/discord-run/run/pipeline-self-repair/coder-attempt-001-adjudication-routing.json",
+    "allowed_answers": [
+      "approve_rerun",
+      "keep_blocked",
+      "needs_context"
+    ],
+    "answer_receipt_schema": "tau.discord_human_answer.v1",
+    "attempt": 1,
+    "channel_id": null,
+    "channel_name": "tau-missing-channel-for-failure-proof",
+    "deduplicated": false,
+    "discord_channel_id": null,
+    "discord_message_id": null,
+    "dry_run": false,
+    "goal_hash": "sha256:tau-discord-unblock-agentic-eval",
+    "human_adjudication_required": true,
+    "message_url": null,
+    "node_id": "coder",
+    "ops_discord_http_status_codes": null,
+    "ops_discord_last_http_status": null,
+    "ops_discord_notification_ok": false,
+    "ops_discord_notification_receipt": "/tmp/tau-discord-failure-path-j1g8o7co/discord-run/run/pipeline-self-repair/coder-attempt-001-ops-discord-notification.json",
+    "ops_discord_notification_status": "CHANNEL_NOT_FOUND",
+    "ops_discord_transport": "discord_bot",
+    "proof_boundary": "Discord may unblock a typed human decision; it is not repair proof.",
+    "question_id": "tau-discord-unblock-eval-question",
+    "question_receipt": "/tmp/tau-discord-failure-path-j1g8o7co/discord-run/run/pipeline-self-repair/coder-attempt-001-discord-question.json",
+    "run_id": "tau-discord-unblock-agentic-eval",
+    "schema": "tau.discord_human_question.v1",
+    "source_notification_receipt": null,
+    "state": "OPS_DISCORD_NOTIFICATION_FAILED",
+    "status_receipt_schema": "tau.discord_status_response_receipt.v1",
+    "webhook": "tau-repair-eval"
+  },
+  "errors": [],
+  "live": true,
+  "missing_channel": "tau-missing-channel-for-failure-proof",
+  "mocked": false,
+  "notification_error_code": null,
+  "notification_http_status": null,
+  "notification_receipt": {
+    "attempt": 1,
+    "available_channels": [
+      {
+        "id": "1294710677658927137",
+        "name": "general"
+      },
+      {
+        "id": "1294725704566444153",
+        "name": "\ud83d\ude24-crazy-pills"
+      },
+      {
+        "id": "1294726101536608268",
+        "name": "\ud83d\udc79-code-hell"
+      },
+      {
+        "id": "1294726291664273450",
+        "name": "\ud83e\udd13-interesting-papers"
+      },
+      {
+        "id": "1294726378754805841",
+        "name": "\ud83d\udca1-fake-solutions"
+      },
+      {
+        "id": "1294761562430505071",
+        "name": "\ud83d\udc07-speed-hacks"
+      },
+      {
+        "id": "1294765397844824135",
+        "name": "\ud83e\udd2f-2-prompt-mastery"
+      },
+      {
+        "id": "1294970809168957440",
+        "name": "\ud83d\ude80-beyond-llms"
+      },
+      {
+        "id": "1295027372025839738",
+        "name": "\ud83d\udc1d-swarms"
+      },
+      {
+        "id": "1295341411834658867",
+        "name": "\ud83d\udcd0-design_patterns"
+      },
+      {
+        "id": "1295354563372650558",
+        "name": "\u2702-code-snippets"
+      },
+      {
+        "id": "1295513919057690664",
+        "name": "rules"
+      },
+      {
+        "id": "1295513919057690667",
+        "name": "moderator-only"
+      },
+      {
+        "id": "1295514244896395286",
+        "name": "\ud83e\udd1d-collab-projects"
+      },
+      {
+        "id": "1450503946643968185",
+        "name": "horus"
+      }
+    ],
+    "category_key": "tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1",
+    "channel_id": null,
+    "channel_name": "tau-missing-channel-for-failure-proof",
+    "command": [
+      "/home/graham/.pi/agent/skills/ops-discord/run.sh",
+      "notify",
+      "--discord-bot",
+      "--channel-name",
+      "tau-missing-channel-for-failure-proof",
+      "--title",
+      "Tau repair needs human adjudication: coder",
+      "--content",
+      "Tau DAG tau-discord-unblock-agentic-eval repair category for node coder needs human adjudication before downstream work can continue.\n\nrun_id: tau-discord-unblock-agentic-eval\nnode_id: coder\nattempt: 1\nquestion_id: tau-discord-unblock-eval-question\ngoal_hash: sha256:tau-discord-unblock-agentic-eval\nrepair_state: NEEDS_TRIAGE\ncategory_key: tau/coder/unknown-unclassified-624c5ded/agentic-eval-discord-unblock/v1\nfailure_category_id: agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded\nallowed_answers: approve_rerun, keep_blocked, needs_context\n\nStatus replies are read-only. Only a typed tau.discord_human_answer.v1 receipt matching question_id/run_id/node_id/goal_hash can unblock.",
+      "--json"
+    ],
+    "dry_run": false,
+    "exit_code": 1,
+    "external_effects": true,
+    "failure_category_id": "agentic-evals:tau:tau-coder-unknown-unclassified-624c5ded",
+    "goal_hash": "sha256:tau-discord-unblock-agentic-eval",
+    "human_adjudication_required": true,
+    "match_count": 0,
+    "node_id": "coder",
+    "ok": false,
+    "proof_boundary": "$ops-discord notifies or records notification failure only; a typed matching answer receipt is required before human adjudication can unblock.",
+    "question_id": "tau-discord-unblock-eval-question",
+    "returncode": 1,
+    "run_id": "tau-discord-unblock-agentic-eval",
+    "schema": "ops_discord.notification_receipt.v1",
+    "status": "CHANNEL_NOT_FOUND",
+    "stdout_excerpt": "{\n  \"available_channels\": [\n    {\n      \"id\": \"1294710677658927137\",\n      \"name\": \"general\"\n    },\n    {\n      \"id\": \"1294725704566444153\",\n      \"name\": \"\\ud83d\\ude24-crazy-pills\"\n    },\n    {\n      \"id\": \"1294726101536608268\",\n      \"name\": \"\\ud83d\\udc79-code-hell\"\n    },\n    {\n      \"id\": \"1294726291664273450\",\n      \"name\": \"\\ud83e\\udd13-interesting-papers\"\n    },\n    {\n      \"id\": \"1294726378754805841\",\n      \"name\": \"\\ud83d\\udca1-fake-solutions\"\n    },\n    {\n      \"id\": \"1294761562430505071\",\n      \"name\": \"\\ud83d\\udc07-speed-hacks\"\n    },\n    {\n      \"id\": \"1294765397844824135\",\n      \"name\": \"\\ud83e\\udd2f-2-prompt-mastery\"\n    },\n    {\n      \"id\": \"1294970809168957440\",\n      \"name\": \"\\ud83d\\ude80-beyond-llms\"\n    },\n    {\n      \"id\": \"1295027372025839738\",\n      \"name\": \"\\ud83d\\udc1d-swarms\"\n    },\n    {\n      \"id\": \"1295341411834658867\",\n      \"name\": \"\\ud83d\\udcd0-design_patterns\"\n    },\n    {\n      \"id\": \"1295354563372650558\",\n      \"name\": \"\\u2702-code-snippets\"\n    },\n    {\n      \"id\": \"1295513919057690664\",\n      \"name\": \"rules\"\n    },\n    {\n      \"id\": \"1295513919057690667\",\n      \"name\": \"moderator-only\"\n    },\n    {\n      \"id\": \"1295514244896395286\",\n      \"name\": \"\\ud83e\\udd1d-collab-projects\"\n    },\n    {\n      \"id\": \"1450503946643968185\",\n      \"name\": \"horus\"\n    }\n  ],\n  \"channel_id\": null,\n  \"channel_name\": \"tau-missing-channel-for-failure-proof\",\n  \"dry_run\": false,\n  \"external_effects\": true,\n  \"match_count\": 0,\n  \"ok\": false,\n  \"schema\": \"ops_discord.notification_receipt.v1\",\n  \"status\": \"CHANNEL_NOT_FOUND\",\n  \"transport\": \"discord_bot\"\n}\n",
+    "transport": "discord_bot",
+    "unblocks_decision": false
+  },
+  "notification_status": "CHANNEL_NOT_FOUND",
+  "ok": true,
+  "proof_boundary": "Live Discord bot failure path with an intentionally missing channel; proves failure details are preserved, not that delivery succeeded.",
+  "provider_live": false,
+  "run_root": "/tmp/tau-discord-failure-path-j1g8o7co",
+  "schema": "tau.discord_failure_path_agentic_eval_proof.v1",
+  "source_exit_code": 1,
+  "status": "PASS"
+}
