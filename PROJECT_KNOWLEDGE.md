@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-08-28 13:47 by agent
+**Last updated:** 2026-08-29 13:10 by agent
 **Status:** Active development
 
 <!-- BEGIN AUTHORITATIVE STATUS LINK (#224) -->
@@ -6602,6 +6602,7 @@
 
 - 2026-08-13 Tau timeline agentic-evals first execution: `agentic-evals/run.sh run evals/tau_timeline_viewer_agentic_eval.json --output docs/review-bundles/tau-timeline-proof-bundle-20260813/agentic-evals-report.json --timeout-seconds 180` initially reported `USABLE_WITH_GAPS` because the live browser case invoked `python3` without Tau's `src` on `PYTHONPATH`; a focused repair probe then showed the live proof itself passes at the browser runner's default smoke cadence. The manifest now uses a fresh `/tmp/tau-agentic-evals-dag-viewer-$RANDOM-...` directory, `PYTHONPATH=src`, and default cadence. Rerun result: readiness `READY`, 4 cases, 8 trials, 8 passed. Live browser case passed 2/2 with 40/40 browser checks each; Vitest cases passed 2/2. Report sha256: `1fdc532806149438ffb85594bf3f9aff91be53a6fdb5a6bdcf929b1336c23391`. Boundary: this proves declared fixture command readiness only, not full Tau immutable-goal completion, provider/model quality, all viewport sizes, all ledger shapes, or release readiness.
 - 2026-08-28 alignment update: Tau's active product direction is visually collaborative, repairable-by-default DAG execution. A normal run starts with `$ask tau-dag`, which compiles the human prompt into `tau.dag_contract.v1` and Tau command specs. Tau executes the intended DAG topology, while every required node attempt writes receipts and is included in the default run ledger. If any required node fails, Tau should classify the failure through `$triage-error`, invoke `$pipeline-self-repair record-failure`, bind the stable repair category to `$ticket`, let `$project-watchdog` dispatch bounded repair, require retained `$agentic-evals` proof, validate the repair ledger, rerun the same semantic node as a new attempt, and only then unblock downstream nodes. True human blockers should surface as Discord question/status/answer receipts; Discord collaboration can unblock a decision but cannot mark repair complete. The React Flow viewer must show the live DAG, repair overlay/category state, ledger trace, ticket/watchdog/eval links, and human decision state so a compliance/security engineer can replay why Tau advanced, blocked, retried, or completed.
+- 2026-08-29 proof-boundary milestone: Tau now has claim-based `-evals` posture for every committed feature eval manifest in `evals/*agentic_eval.json`. `docs/evals/agentic-evals-feature-coverage.md` maps 13 manifests to 13 capability claims and retained READY reports. Fresh retained reports show `tau.feature_agentic_eval_coverage` and `tau.ledger_trace.default` are READY with `live=true` and `mocked=false`. This is not GOAL.md completion: five canonical real DAGs, dynamic React Flow transition proof, clean-checkout launch/replay, provider-live provenance, human acceptance, and exhaustive feature inventory remain open.
 
 ## Recent Decisions
 

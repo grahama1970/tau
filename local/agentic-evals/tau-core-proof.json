@@ -1,0 +1,79 @@
+{
+  "dag_run": {
+    "command": [
+      "/home/graham/.local/bin/uv",
+      "run",
+      "--project",
+      "/home/graham/workspace/experiments/tau",
+      "tau",
+      "dag-run",
+      "/tmp/tau-core-agentic-eval-88kn04r3/tau-core-agentic-eval-dag.json",
+      "--receipt-dir",
+      "/tmp/tau-core-agentic-eval-88kn04r3/run",
+      "--agents-root",
+      "/tmp/tau-core-agentic-eval-88kn04r3/agents",
+      "--scheduler",
+      "bounded-ready-queue"
+    ],
+    "exit_code": 0,
+    "stderr_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/dag-run.stderr.txt",
+    "stdout_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/dag-run.stdout.json"
+  },
+  "dag_status": "PASS",
+  "errors": [],
+  "ledger_ok": true,
+  "ledger_verify": {
+    "command": [
+      "/home/graham/.local/bin/uv",
+      "run",
+      "--project",
+      "/home/graham/workspace/experiments/tau",
+      "tau",
+      "ledger",
+      "verify",
+      "--ledger",
+      "/tmp/tau-core-agentic-eval-88kn04r3/run/run-ledger.json"
+    ],
+    "exit_code": 0,
+    "stderr_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/ledger-verify.stderr.txt",
+    "stdout_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/ledger-verify.stdout.json"
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": [
+      "provider semantic quality",
+      "browser rendering quality",
+      "GitHub mutation behavior"
+    ],
+    "proves": [
+      "Tau can execute a local creator/reviewer DAG through the CLI.",
+      "Tau writes a non-empty run-ledger.json for that run.",
+      "tau ledger verify accepts the intact ledger and rejects a tampered ledger."
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_root": "/tmp/tau-core-agentic-eval-88kn04r3",
+  "schema": "tau.core_agentic_eval_proof.v1",
+  "status": "PASS",
+  "tamper_ok": false,
+  "tamper_reason": "entry_hash_mismatch",
+  "tamper_verify": {
+    "command": [
+      "/home/graham/.local/bin/uv",
+      "run",
+      "--project",
+      "/home/graham/workspace/experiments/tau",
+      "tau",
+      "ledger",
+      "verify",
+      "--ledger",
+      "/tmp/tau-core-agentic-eval-88kn04r3/run/run-ledger-tampered.json"
+    ],
+    "exit_code": 1,
+    "stderr_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/ledger-tamper-verify.stderr.txt",
+    "stdout_path": "/tmp/tau-core-agentic-eval-88kn04r3/logs/ledger-tamper-verify.stdout.json"
+  }
+}
