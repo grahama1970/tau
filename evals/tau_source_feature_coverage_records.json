@@ -1,0 +1,1657 @@
+{
+  "merge_records": [],
+  "owner": "tau-maintainers",
+  "records": [
+    {
+      "claim_id": "tau.codebase_ingest.scan_projection_receipts",
+      "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.python_workspace_kernel.lifecycle_receipts",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.python_host_bridge.capability_boundaries",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel_host_bridge.py",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:acceptance-bundle",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:actor-manifest",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:adaptive-revision-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:agent-events",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:airgap-no-egress",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:approval-gate-check",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:browser-cdp-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:canonical-dag-launch",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:canonical-dags",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:canonical-scheduler-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:code-patch",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:code-runner-skill-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:commit-plan",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:compliance-package",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:compliance-package-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:course-correction",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-branch-locks-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-clear-lease",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-expansion-apply",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-expansion-policy",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-expansion-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-fail-closed-registry",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-motif-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-plan",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-reconcile",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-resume",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-retention-expire",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-route-memory-candidates",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-route-memory-sync",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
+      "feature_id": "cli-command:dag-run",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-signals",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-stress-campaign",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-stress-campaign-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-stress-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-stress-poc",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-catalog",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-compile",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-describe",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-list",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-preview",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-select",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-template-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-view",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-view-capabilities",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-view-events",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-view-serve",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-view-snapshot",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:dag-viewer-link",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:debug-session-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:debugger-skill-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:demo",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:discord-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:docker-sandbox-check",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:docker-sandbox-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:doctor",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:environment-manifest",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:evidence-case-create",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:evidence-case-skill-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:evidence-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:export",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:external-research-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.feature_agentic_eval_coverage",
+      "feature_id": "cli-command:feature-inventory",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:gap-expansion-bridge",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:gap-expansion-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:generated-ticket-github-create",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:generic-provider-dag-node",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:github-apply-policy-check",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:github-read",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:github-redact-projection",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:goal",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:goal-guardian-reconciliation-github-transport",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:goal-guardian-ticket-source-github-fetch",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:gs001-closure-publish",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-agent-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-chain-dry-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-command-loop",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-command-loop-github-transport",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-command-loop-reconciliation-github-transport",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-dispatch-agent-command",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-dispatch-command",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-dispatch-once",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-github-transport",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-goal-guardian-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-loop-dry-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-project",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:handoff-research-auditor-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:herdr-cleanup",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:herdr-observation-gate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:human-goal-change-bridge",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:init",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:installed-wheel-viewer-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:issue-180-final-conformance-bundle",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:itar-access-preflight",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:itar-contract-review",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "cli-command:ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:local-provider-readiness",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-backfill-artifacts",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-check-monitor",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-check-scillm-doctor",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-emit-peer",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-sanity",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-serve",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-validate-contract",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:loop2-validate-native",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:lsp-diagnostics",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:lsp-rename-plan",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:lsp-symbols",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:media-explainer-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:media-explainer-smoke",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:memory-intent",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:memory-provenance-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:omp-worker-doctor",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:omp-worker-launch",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:omp-worker-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:orchestration-evidence",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:orchestration-redteam",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:orchestration-reliability",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:pdf-lab-second-pass-review",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:permission-reply",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:permission-request",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:persona-dream-panel-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:project",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:project-profile-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:project-profile-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:project-status",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:proof-index",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-dag-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-dag-orchestrate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-dag-plan",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-dag-poc",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-pane-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-pane-poc",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-readiness-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:provider-readiness-poc",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:providers",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:replacement-harness-sanity",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:report",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:research-query-gate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:research-skill-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:research-source-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:resource-lease-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:review-code-skill-adapter",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:review-findings",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:run-status",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:runs",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:runtime-handshake",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:sandbox-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:scillm-chat-review",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:scillm-subagent-gate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:scillm-worker-launch",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:scillm-worker-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:secure-execution-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:security-audit-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:self-fix",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:serve",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:sessions",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:setup",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:setup-chutes",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:sign-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:skill-capability-registry-default",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:skill-capability-registry-validate",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:skill-chain-recall",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:skill-composition-redteam",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:skill-invocation",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:sparta-posture-export",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:sprite-sheet-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:status",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:subagent-receipt-from-handoff",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:targeted-repair-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:test-run",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:ticket-subagent-closure-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:tool-chain-recall",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:traycer",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:tui-proof",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:update",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:verify-signed-receipt",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:visible-dag-inspect",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:visible-dag-poc",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:worker-controlled-data-conformance",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:workflows",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:workflows/approve",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:workflows/describe",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+      "feature_id": "cli-command:workflows/list",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:workflows/repair",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:workflows/resume",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+      "feature_id": "cli-command:workflows/run",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:zero-trust-doctor",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "cli-command:zero-trust-redteam",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
+      "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+      "feature_id": "evaluator-script:agentic-eval-tau-dag-ladder-rung1",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.discord.failure_path_visible",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-failure-path",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.discord.notification_idempotency",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-idempotency",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.discord.typed_human_unblock_receipts",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-unblock",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.feature_agentic_eval_coverage",
+      "feature_id": "evaluator-script:agentic-eval-tau-feature-coverage",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "evaluator-script:agentic-eval-tau-ledger-trace",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.repair.required_node_failure_overlay",
+      "feature_id": "evaluator-script:agentic-eval-tau-pipeline-self-repair",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.repair_overlay_discord_visible",
+      "feature_id": "evaluator-script:agentic-eval-tau-repair-overlay-browser",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.repair.same_semantic_node_rerun",
+      "feature_id": "evaluator-script:agentic-eval-tau-same-node-rerun",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.terminal_dag_progress_watch",
+      "feature_id": "evaluator-script:agentic-eval-tau-terminal-dag-watch",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_run_ledger_from_run_dir",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:read_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger_file",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:architecture_render",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:architecture_review",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:bounded_code_fix",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:code_review",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:competitive_bakeoff",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:debug_runtime_state",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:deep_research",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:evidence_case",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:model_worker",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "skill-capability:roundtable_deliberation",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:event_schema:tau.dag_live_event.v1",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:manifest_schema:tau.dag_view_manifest.v1",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:snapshot_schema:tau.dag_view_snapshot.v2",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_accepted_evidence",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_artifact_workspace",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_attention_items",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_bounded_query",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_causal_explanations",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_cross_template_conformance",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_diagnostic_activity",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_exactly_two_comparison",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_historical_sequences",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_live",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_memory_provenance",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_receipt_inspection",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_replay",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_retry_revision_overlays",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_route_join_projection",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.viewer.timeline_proof_clips",
+      "feature_id": "viewer-surface:supports_source_json",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "workflow-definition:approved-release-bundle",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "workflow-definition:durable-repository-qualification",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "workflow-definition:repository-evidence-map",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    },
+    {
+      "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+      "feature_id": "workflow-definition:repository-readiness",
+      "status": "CLAIMED"
+    },
+    {
+      "expires": "2026-12-31",
+      "feature_id": "workflow-definition:tau-operator-reference",
+      "owner": "tau-maintainers",
+      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+      "status": "OUT_OF_SCOPE"
+    }
+  ],
+  "schema": "tau.source_feature_coverage_records.v1",
+  "version": 1
+}

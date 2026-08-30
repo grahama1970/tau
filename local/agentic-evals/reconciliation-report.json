@@ -1,0 +1,5245 @@
+{
+  "claim_count": 14,
+  "coverage_records_sha256": "sha256:0decfdc476008fdc204e524cfeced5b5f721e12fe1eb15b760674fa4c19e92d1",
+  "covered_claim_count": 14,
+  "features": [
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.codebase_ingest.scan_projection_receipts",
+          "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:97bda4ab02ef99ef7b3497c5be17864ab584a5fd39f67de305158b486231453e"
+      },
+      "name": "codebase_ingest",
+      "source_line": null,
+      "source_path": "src/tau_coding/codebase_ingest.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.python_workspace_kernel.lifecycle_receipts",
+          "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:958cfba4a6a40f2c41de666d977ca700be105e8e8b1e6cf5f3aadd2c4430e8ea"
+      },
+      "name": "kernel",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/kernel.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.python_host_bridge.capability_boundaries",
+          "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel_host_bridge.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel_host_bridge.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:27e0c736246a6bfc24bdcca330fce56af9560f66347e2a38dc0566e591220cb5"
+      },
+      "name": "kernel_host_bridge",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/kernel_host_bridge.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:acceptance-bundle",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:acceptance-bundle",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau acceptance-bundle",
+      "source_line": 399,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:actor-manifest",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:actor-manifest",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau actor-manifest",
+      "source_line": 3876,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:adaptive-revision-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:adaptive-revision-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau adaptive-revision-conformance",
+      "source_line": 5169,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:agent-events",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:agent-events",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau agent-events",
+      "source_line": 3835,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:airgap-no-egress",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:airgap-no-egress",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau airgap-no-egress",
+      "source_line": 3159,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:approval-gate-check",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:approval-gate-check",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau approval-gate-check",
+      "source_line": 3791,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:browser-cdp-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:browser-cdp-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau browser-cdp-proof",
+      "source_line": 3067,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:canonical-dag-launch",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:canonical-dag-launch",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau canonical-dag-launch",
+      "source_line": 3255,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:canonical-dags",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:canonical-dags",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau canonical-dags",
+      "source_line": 3245,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:canonical-scheduler-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:canonical-scheduler-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau canonical-scheduler-conformance",
+      "source_line": 5136,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:code-patch",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:code-patch",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau code-patch",
+      "source_line": 4104,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:code-runner-skill-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:code-runner-skill-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau code-runner-skill-adapter",
+      "source_line": 4549,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:commit-plan",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:commit-plan",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau commit-plan",
+      "source_line": 4222,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:compliance-package",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:compliance-package",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau compliance-package",
+      "source_line": 3861,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:compliance-package-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:compliance-package-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau compliance-package-validate",
+      "source_line": 4774,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:course-correction",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:course-correction",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau course-correction",
+      "source_line": 4070,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-branch-locks-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-branch-locks-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-branch-locks-validate",
+      "source_line": 3455,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-clear-lease",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-clear-lease",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-clear-lease",
+      "source_line": 3676,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-expansion-apply",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-expansion-apply",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-expansion-apply",
+      "source_line": 3420,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-expansion-policy",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-expansion-policy",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-expansion-policy",
+      "source_line": 3404,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-expansion-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-expansion-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-expansion-validate",
+      "source_line": 3388,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-fail-closed-registry",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-fail-closed-registry",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-fail-closed-registry",
+      "source_line": 4059,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-inspect",
+      "source_line": 3608,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-motif-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-motif-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-motif-validate",
+      "source_line": 3470,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-plan",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-plan",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-plan",
+      "source_line": 3276,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-reconcile",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-reconcile",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-reconcile",
+      "source_line": 3656,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-resume",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-resume",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-resume",
+      "source_line": 3619,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-retention-expire",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-retention-expire",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-retention-expire",
+      "source_line": 3630,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-route-memory-candidates",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-route-memory-candidates",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-route-memory-candidates",
+      "source_line": 3485,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-route-memory-sync",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-route-memory-sync",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-route-memory-sync",
+      "source_line": 3500,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
+          "feature_id": "cli-command:dag-run",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "cli-command:dag-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-run",
+      "source_line": 3235,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-signals",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-signals",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-signals",
+      "source_line": 3360,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-stress-campaign",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-stress-campaign",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-stress-campaign",
+      "source_line": 3728,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-stress-campaign-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-stress-campaign-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-stress-campaign-inspect",
+      "source_line": 3739,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-stress-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-stress-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-stress-inspect",
+      "source_line": 3717,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-stress-poc",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-stress-poc",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-stress-poc",
+      "source_line": 3706,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-catalog",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-catalog",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-catalog",
+      "source_line": 3289,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-compile",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-compile",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-compile",
+      "source_line": 3341,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-describe",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-describe",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-describe",
+      "source_line": 3293,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-list",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-list",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-list",
+      "source_line": 3285,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-preview",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-preview",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-preview",
+      "source_line": 3317,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-select",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-select",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-select",
+      "source_line": 3332,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-template-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-template-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-template-validate",
+      "source_line": 3302,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-view",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-view",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-view",
+      "source_line": 2774,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-view-capabilities",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-view-capabilities",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-view-capabilities",
+      "source_line": 2721,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-view-events",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-view-events",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-view-events",
+      "source_line": 2747,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-view-serve",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-view-serve",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-view-serve",
+      "source_line": 2774,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-view-snapshot",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-view-snapshot",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-view-snapshot",
+      "source_line": 2747,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:dag-viewer-link",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:dag-viewer-link",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau dag-viewer-link",
+      "source_line": 3850,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:debug-session-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:debug-session-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau debug-session-receipt",
+      "source_line": 4396,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:debugger-skill-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:debugger-skill-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau debugger-skill-adapter",
+      "source_line": 4527,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:demo",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:demo",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau demo",
+      "source_line": 2825,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:discord-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:discord-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau discord-receipt",
+      "source_line": 3225,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:docker-sandbox-check",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:docker-sandbox-check",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau docker-sandbox-check",
+      "source_line": 4818,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:docker-sandbox-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:docker-sandbox-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau docker-sandbox-run",
+      "source_line": 4818,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:doctor",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:doctor",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau doctor",
+      "source_line": 2710,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:environment-manifest",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:environment-manifest",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau environment-manifest",
+      "source_line": 3891,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:evidence-case-create",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:evidence-case-create",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau evidence-case-create",
+      "source_line": 3544,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:evidence-case-skill-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:evidence-case-skill-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau evidence-case-skill-adapter",
+      "source_line": 4577,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:evidence-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:evidence-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau evidence-validate",
+      "source_line": 3374,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:export",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:export",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau export",
+      "source_line": 2688,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:external-research-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:external-research-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau external-research-receipt",
+      "source_line": 5293,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.feature_agentic_eval_coverage",
+          "feature_id": "cli-command:feature-inventory",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "cli-command:feature-inventory",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau feature-inventory",
+      "source_line": 2737,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:gap-expansion-bridge",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:gap-expansion-bridge",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau gap-expansion-bridge",
+      "source_line": 3436,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:gap-expansion-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:gap-expansion-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau gap-expansion-conformance",
+      "source_line": 5180,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:generated-ticket-github-create",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:generated-ticket-github-create",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau generated-ticket-github-create",
+      "source_line": 4831,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:generic-provider-dag-node",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:generic-provider-dag-node",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau generic-provider-dag-node",
+      "source_line": 3695,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:github-apply-policy-check",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:github-apply-policy-check",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau github-apply-policy-check",
+      "source_line": 4705,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:github-read",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:github-read",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau github-read",
+      "source_line": 4413,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:github-redact-projection",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:github-redact-projection",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau github-redact-projection",
+      "source_line": 383,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:goal",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:goal",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau goal",
+      "source_line": 5042,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:goal-guardian-reconciliation-github-transport",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:goal-guardian-reconciliation-github-transport",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau goal-guardian-reconciliation-github-transport",
+      "source_line": 4871,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:goal-guardian-ticket-source-github-fetch",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:goal-guardian-ticket-source-github-fetch",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau goal-guardian-ticket-source-github-fetch",
+      "source_line": 4905,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:gs001-closure-publish",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:gs001-closure-publish",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau gs001-closure-publish",
+      "source_line": 3265,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-agent-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-agent-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-agent-adapter",
+      "source_line": 5267,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-chain-dry-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-chain-dry-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-chain-dry-run",
+      "source_line": 4924,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-command-loop",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-command-loop",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-command-loop",
+      "source_line": 5014,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-command-loop-github-transport",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-command-loop-github-transport",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-command-loop-github-transport",
+      "source_line": 4855,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-command-loop-reconciliation-github-transport",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-command-loop-reconciliation-github-transport",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-command-loop-reconciliation-github-transport",
+      "source_line": 4887,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-dispatch-agent-command",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-dispatch-agent-command",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-dispatch-agent-command",
+      "source_line": 4996,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-dispatch-command",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-dispatch-command",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-dispatch-command",
+      "source_line": 4978,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-dispatch-once",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-dispatch-once",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-dispatch-once",
+      "source_line": 4960,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-github-transport",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-github-transport",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-github-transport",
+      "source_line": 4664,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-goal-guardian-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-goal-guardian-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-goal-guardian-adapter",
+      "source_line": 5276,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-loop-dry-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-loop-dry-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-loop-dry-run",
+      "source_line": 4941,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-project",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-project",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-project",
+      "source_line": 4647,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:handoff-research-auditor-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:handoff-research-auditor-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau handoff-research-auditor-adapter",
+      "source_line": 5285,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:herdr-cleanup",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:herdr-cleanup",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau herdr-cleanup",
+      "source_line": 3772,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:herdr-observation-gate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:herdr-observation-gate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau herdr-observation-gate",
+      "source_line": 4432,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:human-goal-change-bridge",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:human-goal-change-bridge",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau human-goal-change-bridge",
+      "source_line": 4622,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:init",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:init",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau init",
+      "source_line": 2793,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:installed-wheel-viewer-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:installed-wheel-viewer-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau installed-wheel-viewer-proof",
+      "source_line": 5093,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:issue-180-final-conformance-bundle",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:issue-180-final-conformance-bundle",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau issue-180-final-conformance-bundle",
+      "source_line": 5125,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:itar-access-preflight",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:itar-access-preflight",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau itar-access-preflight",
+      "source_line": 4741,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:itar-contract-review",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:itar-contract-review",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau itar-contract-review",
+      "source_line": 4752,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "cli-command:ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "cli-command:ledger",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau ledger",
+      "source_line": 2727,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:local-provider-readiness",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:local-provider-readiness",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau local-provider-readiness",
+      "source_line": 3148,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-backfill-artifacts",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-backfill-artifacts",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-backfill-artifacts",
+      "source_line": 3017,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-check-monitor",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-check-monitor",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-check-monitor",
+      "source_line": 2976,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-check-scillm-doctor",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-check-scillm-doctor",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-check-scillm-doctor",
+      "source_line": 3007,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-emit-peer",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-emit-peer",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-emit-peer",
+      "source_line": 2989,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-inspect",
+      "source_line": 2962,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-run",
+      "source_line": 2944,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-sanity",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-sanity",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-sanity",
+      "source_line": 3030,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-serve",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-serve",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-serve",
+      "source_line": 4610,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-validate",
+      "source_line": 2911,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-validate-contract",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-validate-contract",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-validate-contract",
+      "source_line": 2921,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:loop2-validate-native",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:loop2-validate-native",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau loop2-validate-native",
+      "source_line": 2931,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:lsp-diagnostics",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:lsp-diagnostics",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau lsp-diagnostics",
+      "source_line": 4146,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:lsp-rename-plan",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:lsp-rename-plan",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau lsp-rename-plan",
+      "source_line": 4185,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:lsp-symbols",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:lsp-symbols",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau lsp-symbols",
+      "source_line": 4168,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:media-explainer-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:media-explainer-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau media-explainer-inspect",
+      "source_line": 3761,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:media-explainer-smoke",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:media-explainer-smoke",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau media-explainer-smoke",
+      "source_line": 3750,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:memory-intent",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:memory-intent",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau memory-intent",
+      "source_line": 3523,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:memory-provenance-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:memory-provenance-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau memory-provenance-proof",
+      "source_line": 5114,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:omp-worker-doctor",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:omp-worker-doctor",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau omp-worker-doctor",
+      "source_line": 4318,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:omp-worker-launch",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:omp-worker-launch",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau omp-worker-launch",
+      "source_line": 4302,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:omp-worker-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:omp-worker-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau omp-worker-validate",
+      "source_line": 4265,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:orchestration-evidence",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:orchestration-evidence",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau orchestration-evidence",
+      "source_line": 3214,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:orchestration-redteam",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:orchestration-redteam",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau orchestration-redteam",
+      "source_line": 4796,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:orchestration-reliability",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:orchestration-reliability",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau orchestration-reliability",
+      "source_line": 4245,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:pdf-lab-second-pass-review",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:pdf-lab-second-pass-review",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau pdf-lab-second-pass-review",
+      "source_line": 4372,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:permission-reply",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:permission-reply",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau permission-reply",
+      "source_line": 3813,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:permission-request",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:permission-request",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau permission-request",
+      "source_line": 3802,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:persona-dream-panel-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:persona-dream-panel-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau persona-dream-panel-proof",
+      "source_line": 5257,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:project",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:project",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau project",
+      "source_line": 2808,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:project-profile-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:project-profile-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau project-profile-conformance",
+      "source_line": 5213,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:project-profile-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:project-profile-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau project-profile-validate",
+      "source_line": 4467,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:project-status",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:project-status",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau project-status",
+      "source_line": 5104,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:proof-index",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:proof-index",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau proof-index",
+      "source_line": 3945,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-dag-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-dag-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-dag-inspect",
+      "source_line": 3203,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-dag-orchestrate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-dag-orchestrate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-dag-orchestrate",
+      "source_line": 3192,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-dag-plan",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-dag-plan",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-dag-plan",
+      "source_line": 3181,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-dag-poc",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-dag-poc",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-dag-poc",
+      "source_line": 3170,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-pane-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-pane-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-pane-inspect",
+      "source_line": 3115,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-pane-poc",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-pane-poc",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-pane-poc",
+      "source_line": 3104,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-readiness-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-readiness-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-readiness-inspect",
+      "source_line": 3137,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:provider-readiness-poc",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:provider-readiness-poc",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau provider-readiness-poc",
+      "source_line": 3126,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:providers",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:providers",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau providers",
+      "source_line": 2706,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:replacement-harness-sanity",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:replacement-harness-sanity",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau replacement-harness-sanity",
+      "source_line": 2673,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:report",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:report",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau report",
+      "source_line": 4008,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:research-query-gate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:research-query-gate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau research-query-gate",
+      "source_line": 4730,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:research-skill-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:research-skill-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau research-skill-adapter",
+      "source_line": 4593,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:research-source-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:research-source-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau research-source-receipt",
+      "source_line": 4716,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:resource-lease-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:resource-lease-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau resource-lease-conformance",
+      "source_line": 5158,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:review-code-skill-adapter",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:review-code-skill-adapter",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau review-code-skill-adapter",
+      "source_line": 4563,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:review-findings",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:review-findings",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau review-findings",
+      "source_line": 4127,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau run",
+      "source_line": 3235,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:run-status",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:run-status",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau run-status",
+      "source_line": 3824,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:runs",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:runs",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau runs",
+      "source_line": 2639,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:runtime-handshake",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:runtime-handshake",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau runtime-handshake",
+      "source_line": 5246,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:sandbox-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:sandbox-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau sandbox-run",
+      "source_line": 3979,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:scillm-chat-review",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:scillm-chat-review",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau scillm-chat-review",
+      "source_line": 4348,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:scillm-subagent-gate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:scillm-subagent-gate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau scillm-subagent-gate",
+      "source_line": 5072,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:scillm-worker-launch",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:scillm-worker-launch",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau scillm-worker-launch",
+      "source_line": 4331,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:scillm-worker-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:scillm-worker-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau scillm-worker-validate",
+      "source_line": 4281,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:secure-execution-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:secure-execution-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau secure-execution-conformance",
+      "source_line": 5147,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:security-audit-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:security-audit-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau security-audit-conformance",
+      "source_line": 5235,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:self-fix",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:self-fix",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau self-fix",
+      "source_line": 5053,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:serve",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:serve",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau serve",
+      "source_line": 4023,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:sessions",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:sessions",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau sessions",
+      "source_line": 2650,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:setup",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:setup",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau setup",
+      "source_line": 2868,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:setup-chutes",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:setup-chutes",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau setup-chutes",
+      "source_line": 2881,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:sign-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:sign-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau sign-receipt",
+      "source_line": 3920,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:skill-capability-registry-default",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:skill-capability-registry-default",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau skill-capability-registry-default",
+      "source_line": 4499,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:skill-capability-registry-validate",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:skill-capability-registry-validate",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau skill-capability-registry-validate",
+      "source_line": 4482,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:skill-chain-recall",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:skill-chain-recall",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau skill-chain-recall",
+      "source_line": 3565,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:skill-composition-redteam",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:skill-composition-redteam",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau skill-composition-redteam",
+      "source_line": 4807,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:skill-invocation",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:skill-invocation",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau skill-invocation",
+      "source_line": 4510,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:sparta-posture-export",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:sparta-posture-export",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau sparta-posture-export",
+      "source_line": 4763,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:sprite-sheet-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:sprite-sheet-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau sprite-sheet-conformance",
+      "source_line": 5191,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:status",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:status",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau status",
+      "source_line": 2654,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:subagent-receipt-from-handoff",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:subagent-receipt-from-handoff",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau subagent-receipt-from-handoff",
+      "source_line": 5302,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:targeted-repair-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:targeted-repair-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau targeted-repair-conformance",
+      "source_line": 5202,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:test-run",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:test-run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau test-run",
+      "source_line": 4203,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:ticket-subagent-closure-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:ticket-subagent-closure-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau ticket-subagent-closure-proof",
+      "source_line": 459,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:tool-chain-recall",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:tool-chain-recall",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau tool-chain-recall",
+      "source_line": 3589,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:traycer",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:traycer",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau traycer",
+      "source_line": 2891,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:tui-proof",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:tui-proof",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau tui-proof",
+      "source_line": 430,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:update",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:update",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau update",
+      "source_line": 2603,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:verify-signed-receipt",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:verify-signed-receipt",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau verify-signed-receipt",
+      "source_line": 3964,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:visible-dag-inspect",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:visible-dag-inspect",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau visible-dag-inspect",
+      "source_line": 3093,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:visible-dag-poc",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:visible-dag-poc",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau visible-dag-poc",
+      "source_line": 3082,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:worker-controlled-data-conformance",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:worker-controlled-data-conformance",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau worker-controlled-data-conformance",
+      "source_line": 5224,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:workflows",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:workflows",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau workflows",
+      "source_line": 2609,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:workflows/approve",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:workflows/approve",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows approve",
+      "source_line": 830,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:workflows/describe",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:workflows/describe",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows describe",
+      "source_line": 688,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+          "feature_id": "cli-command:workflows/list",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "cli-command:workflows/list",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows list",
+      "source_line": 478,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:workflows/repair",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:workflows/repair",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows repair",
+      "source_line": 868,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:workflows/resume",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:workflows/resume",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows resume",
+      "source_line": 854,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+          "feature_id": "cli-command:workflows/run",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "cli-command:workflows/run",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "typer"
+      },
+      "name": "tau workflows run",
+      "source_line": 706,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:zero-trust-doctor",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:zero-trust-doctor",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau zero-trust-doctor",
+      "source_line": 2842,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "cli-command:zero-trust-redteam",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "cli-command:zero-trust-redteam",
+      "kind": "cli-command",
+      "metadata": {
+        "detector": "manual-branch"
+      },
+      "name": "tau zero-trust-redteam",
+      "source_line": 4785,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
+          "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-core-proof",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-core-proof.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+          "feature_id": "evaluator-script:agentic-eval-tau-dag-ladder-rung1",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-dag-ladder-rung1",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-dag-ladder-rung1",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-dag-ladder-rung1.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.discord.failure_path_visible",
+          "feature_id": "evaluator-script:agentic-eval-tau-discord-failure-path",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-failure-path",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-discord-failure-path",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-discord-failure-path.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.discord.notification_idempotency",
+          "feature_id": "evaluator-script:agentic-eval-tau-discord-idempotency",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-idempotency",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-discord-idempotency",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-discord-idempotency.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.discord.typed_human_unblock_receipts",
+          "feature_id": "evaluator-script:agentic-eval-tau-discord-unblock",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-discord-unblock",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-discord-unblock",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-discord-unblock.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.feature_agentic_eval_coverage",
+          "feature_id": "evaluator-script:agentic-eval-tau-feature-coverage",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-feature-coverage",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-feature-coverage",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-feature-coverage.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "evaluator-script:agentic-eval-tau-ledger-trace",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-ledger-trace",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-ledger-trace",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-ledger-trace.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.repair.required_node_failure_overlay",
+          "feature_id": "evaluator-script:agentic-eval-tau-pipeline-self-repair",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-pipeline-self-repair",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-pipeline-self-repair",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-pipeline-self-repair.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.repair_overlay_discord_visible",
+          "feature_id": "evaluator-script:agentic-eval-tau-repair-overlay-browser",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-repair-overlay-browser",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-repair-overlay-browser",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-repair-overlay-browser.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.repair.same_semantic_node_rerun",
+          "feature_id": "evaluator-script:agentic-eval-tau-same-node-rerun",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-same-node-rerun",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-same-node-rerun",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-same-node-rerun.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.terminal_dag_progress_watch",
+          "feature_id": "evaluator-script:agentic-eval-tau-terminal-dag-watch",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-terminal-dag-watch",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-terminal-dag-watch",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-terminal-dag-watch.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "_run_ledger_cli",
+      "source_line": 8840,
+      "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_ledger",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "build_ledger",
+      "source_line": 95,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_run_ledger_from_run_dir",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_run_ledger_from_run_dir",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "build_run_ledger_from_run_dir",
+      "source_line": 132,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:read_ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:read_ledger",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "read_ledger",
+      "source_line": 915,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "verify_ledger",
+      "source_line": 932,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger_file",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_ledger_file",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "verify_ledger_file",
+      "source_line": 919,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.ledger_trace.default",
+          "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "write_ledger",
+      "source_line": 909,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:architecture_render",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:architecture_render",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "create-architecture",
+        "tau_receipt_schema": "tau.architecture_artifact_receipt.v1"
+      },
+      "name": "architecture_render",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:architecture_review",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:architecture_review",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "webgpt",
+        "tau_receipt_schema": "tau.skill_round_receipt.v1"
+      },
+      "name": "architecture_review",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:bounded_code_fix",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:bounded_code_fix",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "code-runner",
+        "tau_receipt_schema": "tau.code_patch_receipt.v1"
+      },
+      "name": "bounded_code_fix",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:code_review",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:code_review",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "review-code",
+        "tau_receipt_schema": "tau.review_findings.v1"
+      },
+      "name": "code_review",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:competitive_bakeoff",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:competitive_bakeoff",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "battle",
+        "tau_receipt_schema": "tau.competition_advisory_receipt.v1"
+      },
+      "name": "competitive_bakeoff",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:debug_runtime_state",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:debug_runtime_state",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "debugger",
+        "tau_receipt_schema": "tau.debug_session_receipt.v1"
+      },
+      "name": "debug_runtime_state",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:deep_research",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:deep_research",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "dogpile",
+        "tau_receipt_schema": "tau.research_source_receipt.v1"
+      },
+      "name": "deep_research",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:evidence_case",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:evidence_case",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "create-evidence-case",
+        "tau_receipt_schema": "tau.evidence_case_gate_receipt.v1"
+      },
+      "name": "evidence_case",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:model_worker",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:model_worker",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "scillm",
+        "tau_receipt_schema": "tau.scillm_worker_receipt.v1"
+      },
+      "name": "model_worker",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "skill-capability:roundtable_deliberation",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "skill-capability:roundtable_deliberation",
+      "kind": "skill-capability",
+      "metadata": {
+        "skill": "ask",
+        "tau_receipt_schema": "tau.roundtable_advisory_receipt.v1"
+      },
+      "name": "roundtable_deliberation",
+      "source_line": null,
+      "source_path": "src/tau_coding/skill_capability_registry.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:event_schema:tau.dag_live_event.v1",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:event_schema:tau.dag_live_event.v1",
+      "kind": "viewer-surface",
+      "metadata": {
+        "field": "event_schema"
+      },
+      "name": "tau.dag_live_event.v1",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:manifest_schema:tau.dag_view_manifest.v1",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:manifest_schema:tau.dag_view_manifest.v1",
+      "kind": "viewer-surface",
+      "metadata": {
+        "field": "manifest_schema"
+      },
+      "name": "tau.dag_view_manifest.v1",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:snapshot_schema:tau.dag_view_snapshot.v2",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:snapshot_schema:tau.dag_view_snapshot.v2",
+      "kind": "viewer-surface",
+      "metadata": {
+        "field": "snapshot_schema"
+      },
+      "name": "tau.dag_view_snapshot.v2",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_accepted_evidence",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_accepted_evidence",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_accepted_evidence",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_artifact_workspace",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_artifact_workspace",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_artifact_workspace",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_attention_items",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_attention_items",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_attention_items",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_bounded_query",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_bounded_query",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_bounded_query",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_causal_explanations",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_causal_explanations",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_causal_explanations",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_cross_template_conformance",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_cross_template_conformance",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_cross_template_conformance",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_diagnostic_activity",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_diagnostic_activity",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_diagnostic_activity",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_exactly_two_comparison",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_exactly_two_comparison",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_exactly_two_comparison",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_historical_sequences",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_historical_sequences",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_historical_sequences",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_ledger",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_ledger",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_ledger",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_live",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_live",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_live",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_memory_provenance",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_memory_provenance",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": "DEGRADED_WHEN_MEMORY_CHAIN_UNAVAILABLE"
+      },
+      "name": "supports_memory_provenance",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_receipt_inspection",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_receipt_inspection",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_receipt_inspection",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_replay",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_replay",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_replay",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_retry_revision_overlays",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_retry_revision_overlays",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_retry_revision_overlays",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_route_join_projection",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_route_join_projection",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_route_join_projection",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.viewer.timeline_proof_clips",
+          "feature_id": "viewer-surface:supports_source_json",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "viewer-surface:supports_source_json",
+      "kind": "viewer-surface",
+      "metadata": {
+        "value": true
+      },
+      "name": "supports_source_json",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_viewer/contracts.py"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "workflow-definition:approved-release-bundle",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "workflow-definition:approved-release-bundle",
+      "kind": "workflow-definition",
+      "metadata": {
+        "rung": 4,
+        "schema": "tau.workflow_definition.v1",
+        "topology": "MIXED_RETRY_APPROVAL"
+      },
+      "name": "approved-release-bundle",
+      "source_line": null,
+      "source_path": "src/tau_coding/workflows/definitions/approved-release-bundle.json"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "workflow-definition:durable-repository-qualification",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "workflow-definition:durable-repository-qualification",
+      "kind": "workflow-definition",
+      "metadata": {
+        "rung": 5,
+        "schema": "tau.workflow_definition.v1",
+        "topology": "DURABLE_MIXED_REPAIR_APPROVAL"
+      },
+      "name": "durable-repository-qualification",
+      "source_line": null,
+      "source_path": "src/tau_coding/workflows/definitions/durable-repository-qualification.json"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "workflow-definition:repository-evidence-map",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "workflow-definition:repository-evidence-map",
+      "kind": "workflow-definition",
+      "metadata": {
+        "rung": 3,
+        "schema": "tau.workflow_definition.v1",
+        "topology": "FAN_OUT_FAN_IN"
+      },
+      "name": "repository-evidence-map",
+      "source_line": null,
+      "source_path": "src/tau_coding/workflows/definitions/repository-evidence-map.json"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.dag_ladder.rung1_clean_checkout",
+          "feature_id": "workflow-definition:repository-readiness",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "workflow-definition:repository-readiness",
+      "kind": "workflow-definition",
+      "metadata": {
+        "rung": 1,
+        "schema": "tau.workflow_definition.v1",
+        "topology": "LINEAR"
+      },
+      "name": "repository-readiness",
+      "source_line": null,
+      "source_path": "src/tau_coding/workflows/definitions/repository-readiness.json"
+    },
+    {
+      "coverage": [
+        {
+          "expires": "2026-12-31",
+          "feature_id": "workflow-definition:tau-operator-reference",
+          "owner": "tau-maintainers",
+          "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
+          "status": "OUT_OF_SCOPE"
+        }
+      ],
+      "coverage_status": "OUT_OF_SCOPE",
+      "feature_id": "workflow-definition:tau-operator-reference",
+      "kind": "workflow-definition",
+      "metadata": {
+        "rung": 2,
+        "schema": "tau.workflow_definition.v1",
+        "topology": "MULTI_STEP_SEQUENTIAL"
+      },
+      "name": "tau-operator-reference",
+      "source_line": null,
+      "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
+    }
+  ],
+  "findings": [],
+  "generated_at": "2026-08-30T17:04:35Z",
+  "inventory_feature_count": 249,
+  "live": true,
+  "manifest_count": 14,
+  "manifests": [
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.codebase_ingest.scan_projection_receipts"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau codebase-ingest records scan/projection lifecycle receipts and blocks/adapts across cancellation, restart, dead-worker, liveness, mutation, and receipt-mismatch boundaries.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.codebase_ingest.scan_projection_receipts"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/codebase_ingest_agentic_eval.json",
+      "skill": "tau-codebase-ingest"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.python_host_bridge.capability_boundaries"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau Python host-call bridge executes through the real kernel profile while enforcing generation, binding, path, graph-query, evidence-emission, undeclared-call, and late-request authority boundaries.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.python_host_bridge.capability_boundaries"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/python_host_bridge_agentic_eval.json",
+      "skill": "tau-python-host-bridge"
+    },
+    {
+      "case_count": 3,
+      "claim_ids": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau Python workspace kernel runs the worker and backend lifecycle through the real optional Jupyter profile while enforcing capability, binding, import failure, interrupt, and PID reuse boundaries.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.python_workspace_kernel.lifecycle_receipts"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/python_workspace_kernel_agentic_eval.json",
+      "skill": "tau-python-workspace-kernel"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.core.local_dag_with_tamper_evident_ledger"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau executes a local goal-bound DAG through the CLI, writes a ledger, verifies it intact, and rejects tampering.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.core.local_dag_with_tamper_evident_ledger"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_core_agentic_eval.json",
+      "skill": "tau-core"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.dag_ladder.rung1_clean_checkout"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with independent artifact readback and negative controls.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.dag_ladder.rung1_clean_checkout"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_dag_ladder_rung1_agentic_eval.json",
+      "skill": "tau-dag-ladder-rung1"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.discord.failure_path_visible"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "ops-discord failures preserve machine-readable status and visible repair overlay state.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.discord.failure_path_visible"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_discord_failure_path_agentic_eval.json",
+      "skill": "tau-discord-failure-path"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.discord.notification_idempotency"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Repeated human-adjudication routing for the same repair category does not create duplicate external notifications.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.discord.notification_idempotency"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_discord_idempotency_agentic_eval.json",
+      "skill": "tau-discord-idempotency"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.discord.typed_human_unblock_receipts"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Discord collaboration state is typed and can unblock only through a matching answer receipt, not through status text.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.discord.typed_human_unblock_receipts"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_discord_unblock_agentic_eval.json",
+      "skill": "tau-discord-unblock"
+    },
+    {
+      "case_count": 7,
+      "claim_ids": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau keeps a machine-checkable source feature inventory reconciled against capability claims, retained reports, duplicate ownership, orphan manifests, and expiring non-coverage records.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.feature_agentic_eval_coverage"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_feature_coverage_agentic_eval.json",
+      "skill": "tau-feature-agentic-eval-coverage"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.ledger_trace.default"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Default Tau DAG runs emit a verifiable traceable run ledger.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.ledger_trace.default"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_ledger_trace_agentic_eval.json",
+      "skill": "tau-ledger-trace"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.repair.required_node_failure_overlay"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "A required-node failure becomes a blocking pipeline-self-repair category instead of a blind retry or skipped downstream edge.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.repair.required_node_failure_overlay"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_pipeline_self_repair_agentic_eval.json",
+      "skill": "tau-pipeline-self-repair"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.viewer.repair_overlay_discord_visible"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Repair collaboration state is visible in the browser viewer rather than hidden in local JSON only.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.viewer.repair_overlay_discord_visible"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_repair_overlay_browser_agentic_eval.json",
+      "skill": "tau-repair-overlay-browser"
+    },
+    {
+      "case_count": 1,
+      "claim_ids": [
+        "tau.repair.same_semantic_node_rerun"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Repair closure authorizes a rerun of the same semantic node instead of skipping to downstream work.",
+          "evidence_required": {
+            "live_e2e": true
+          },
+          "id": "tau.repair.same_semantic_node_rerun"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_same_node_rerun_agentic_eval.json",
+      "skill": "tau-same-node-rerun"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.terminal_dag_progress_watch"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "A terminal operator can watch Tau DAG progress from authoritative Tau dag-progress.json using the PHART DAG chart skill without mutating run state.",
+          "evidence_required": {
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.terminal_dag_progress_watch"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_terminal_dag_watch_agentic_eval.json",
+      "skill": "tau-terminal-dag-watch"
+    },
+    {
+      "case_count": 4,
+      "claim_ids": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau DAG viewer timeline renders a live browser proof path and preserves admission/execution separation plus selector uniqueness under adversarial cases.",
+          "evidence_required": {
+            "deterministic": true,
+            "fault_injected_deterministic": true,
+            "live_e2e": true
+          },
+          "id": "tau.viewer.timeline_proof_clips"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_timeline_viewer_agentic_eval.json",
+      "skill": "tau-timeline-viewer"
+    }
+  ],
+  "mocked": false,
+  "ok": true,
+  "reports": {
+    "evals/codebase_ingest_agentic_eval.json": {
+      "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
+    },
+    "evals/python_host_bridge_agentic_eval.json": {
+      "path": "local/agentic-evals/python-host-bridge-agentic-evals-report.json"
+    },
+    "evals/python_workspace_kernel_agentic_eval.json": {
+      "path": "local/agentic-evals/python-workspace-kernel-agentic-evals-report.json"
+    },
+    "evals/tau_core_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-core-agentic-evals-report.json"
+    },
+    "evals/tau_dag_ladder_rung1_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json"
+    },
+    "evals/tau_discord_failure_path_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json"
+    },
+    "evals/tau_discord_idempotency_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json"
+    },
+    "evals/tau_discord_unblock_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json"
+    },
+    "evals/tau_feature_coverage_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json"
+    },
+    "evals/tau_ledger_trace_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json"
+    },
+    "evals/tau_pipeline_self_repair_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json"
+    },
+    "evals/tau_repair_overlay_browser_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-repair-overlay-browser-agentic-evals-report.json"
+    },
+    "evals/tau_same_node_rerun_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json"
+    },
+    "evals/tau_terminal_dag_watch_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json"
+    },
+    "evals/tau_timeline_viewer_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-timeline-viewer-agentic-evals-report.json"
+    }
+  },
+  "schema": "tau.source_feature_reconciliation.v1",
+  "self_covered_claim_count": 1,
+  "source_inventory_sha256": "sha256:0bbbab0adae1dc90a8f633a942c510b329dcec3544be40309a134480c68038cc",
+  "status": "PASS"
+}

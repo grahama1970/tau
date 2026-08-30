@@ -1,257 +1,248 @@
-"""Agentic eval coverage guard for Tau feature claims.
-
-The guard is intentionally repository-local: Tau feature proof is represented by
-version-2 agentic-eval manifests under evals/, with one or more
-capability_claims and retained READY reports under local/agentic-evals/.
-"""
+"""Agentic eval coverage guard for Tau source-visible feature claims."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-SELF_MANIFEST = "evals/tau_feature_coverage_agentic_eval.json"
-REPORT_GLOBS = (
-    "local/agentic-evals/*agentic-evals-report.json",
-    "local/issue-327-ledger-proof/evals/agentic-evals-report.json",
+from tau_coding.source_feature_inventory import (
+    SELF_MANIFEST,
+    build_source_inventory,
+    load_source_coverage_records,
+    reconcile_source_inventory,
+    write_json,
 )
-
-
-@dataclass
-class Finding:
-    severity: str
-    manifest: str
-    message: str
-
-
-@dataclass
-class CoverageResult:
-    manifests: list[dict[str, Any]] = field(default_factory=list)
-    reports: dict[str, dict[str, Any]] = field(default_factory=dict)
-    findings: list[Finding] = field(default_factory=list)
-
-    @property
-    def ok(self) -> bool:
-        return not any(finding.severity == "ERROR" for finding in self.findings)
 
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _manifest_paths(root: Path) -> list[Path]:
-    return [
-        path
-        for path in sorted((root / "evals").glob("*agentic_eval.json"))
-        if path.relative_to(root).as_posix() != SELF_MANIFEST
-    ]
-
-
-def _report_map(root: Path) -> dict[str, dict[str, Any]]:
-    reports: dict[str, dict[str, Any]] = {}
-    for pattern in REPORT_GLOBS:
-        for path in sorted(root.glob(pattern)):
-            data = _load_json(path)
-            source = data.get("source")
-            if isinstance(source, str) and source.startswith("evals/"):
-                reports[source] = {"path": path.relative_to(root).as_posix(), "data": data}
-    return reports
-
-
-def inspect_coverage(root: Path, *, require_reports: bool = True) -> CoverageResult:
-    result = CoverageResult(reports=_report_map(root))
-    for path in _manifest_paths(root):
-        rel = path.relative_to(root).as_posix()
-        manifest = _load_json(path)
-        claims = manifest.get("capability_claims")
-        cases = manifest.get("cases") if isinstance(manifest.get("cases"), list) else []
-        manifest_record = {
-            "path": rel,
-            "skill": manifest.get("skill"),
-            "claim_ids": [],
-            "case_count": len(cases),
-            "report": result.reports.get(rel, {}).get("path"),
-        }
-        if not isinstance(claims, list) or not claims:
-            result.findings.append(Finding("ERROR", rel, "missing capability_claims"))
-            result.manifests.append(manifest_record)
-            continue
-        if not any(case.get("type") in {"negative", "adversarial"} for case in cases):
-            result.findings.append(Finding("ERROR", rel, "missing negative/adversarial case"))
-        if not any(case.get("real_world") is True for case in cases):
-            result.findings.append(Finding("ERROR", rel, "missing real_world case"))
-        for claim in claims:
-            if not isinstance(claim, dict):
-                result.findings.append(
-                    Finding("ERROR", rel, "capability_claim entry is not an object")
-                )
-                continue
-            claim_id = claim.get("id")
-            manifest_record["claim_ids"].append(claim_id)
-            evidence_required = claim.get("evidence_required")
-            if not isinstance(claim_id, str) or not claim_id:
-                result.findings.append(Finding("ERROR", rel, "capability_claim missing id"))
-                continue
-            if not isinstance(evidence_required, dict) or not evidence_required:
-                result.findings.append(
-                    Finding("ERROR", rel, f"claim {claim_id} missing evidence_required")
-                )
-                continue
-            for evidence_class, required in sorted(evidence_required.items()):
-                if required is not True:
-                    continue
-                supporting = [
-                    case
-                    for case in cases
-                    if claim_id in case.get("supports_claims", [])
-                    and case.get("evidence_class") == evidence_class
-                ]
-                if not supporting:
-                    result.findings.append(
-                        Finding(
-                            "ERROR",
-                            rel,
-                            f"claim {claim_id} missing supporting case for {evidence_class}",
-                        )
-                    )
-                for case in supporting:
-                    if evidence_class == "live_e2e" and not _has_readback(case):
-                        result.findings.append(
-                            Finding(
-                                "ERROR",
-                                rel,
-                                (
-                                    f"live claim {claim_id} case {case.get('name')} "
-                                    "lacks readback oracle"
-                                ),
-                            )
-                        )
-        if require_reports:
-            report = result.reports.get(rel, {}).get("data")
-            if not isinstance(report, dict):
-                result.findings.append(
-                    Finding("ERROR", rel, "missing retained agentic-evals report")
-                )
-            elif report.get("readiness") != "READY":
-                result.findings.append(
-                    Finding("ERROR", rel, f"retained report not READY: {report.get('readiness')}")
-                )
-            elif report.get("mocked") is not False or report.get("live") is not True:
-                result.findings.append(
-                    Finding(
-                        "ERROR",
-                        rel,
-                        (
-                            "retained report proof boundary invalid: "
-                            f"mocked={report.get('mocked')} live={report.get('live')}"
-                        ),
-                    )
-                )
-        result.manifests.append(manifest_record)
-    return result
-
-
-def _has_readback(case: dict[str, Any]) -> bool:
-    expected = case.get("expected") if isinstance(case.get("expected"), dict) else {}
-    artifacts = expected.get("artifacts") if isinstance(expected.get("artifacts"), list) else []
-    return case.get("readback") is True or bool(artifacts)
-
-
-def _write_receipt(path: Path, result: CoverageResult, *, mode: str) -> dict[str, Any]:
-    payload = {
-        "schema": "tau.feature_agentic_eval_coverage_receipt.v1",
-        "mode": mode,
-        "ok": result.ok,
-        "mocked": False,
-        "live": True,
-        "manifest_count": len(result.manifests),
-        "claim_count": sum(len(item.get("claim_ids", [])) for item in result.manifests),
-        "manifests": result.manifests,
-        "findings": [finding.__dict__ for finding in result.findings],
-    }
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return payload
-
-
 def _positive(out: Path) -> int:
-    result = inspect_coverage(_repo_root(), require_reports=True)
-    payload = _write_receipt(out, result, mode="positive")
-    print(
-        json.dumps(
-            {"status": "PASS" if result.ok else "FAIL", "proof": str(out)},
-            sort_keys=True,
-        )
+    root = _repo_root()
+    artifact_dir = out.parent
+    inventory = build_source_inventory(root)
+    records = load_source_coverage_records(root)
+    reconciliation = reconcile_source_inventory(root, inventory, records)
+    inventory_path = artifact_dir / "source-inventory.json"
+    reconciliation_path = artifact_dir / "reconciliation-report.json"
+    write_json(inventory_path, inventory)
+    write_json(reconciliation_path, reconciliation)
+    payload = _receipt(
+        mode="positive",
+        ok=reconciliation["ok"] is True,
+        inventory_path=inventory_path,
+        reconciliation_path=reconciliation_path,
+        reconciliation=reconciliation,
     )
+    write_json(out, payload)
+    print(json.dumps({"status": payload["status"], "proof": str(out)}, sort_keys=True))
     return 0 if payload["ok"] else 1
 
 
-def _adversarial(out: Path) -> int:
+def _adversarial(out: Path, mode: str) -> int:
     root = _repo_root()
-    with tempfile_copy(root / "evals") as temp_root:
-        target = temp_root / "evals" / "tau_terminal_dag_watch_agentic_eval.json"
-        manifest = _load_json(target)
-        manifest.pop("capability_claims", None)
-        target.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        result = inspect_coverage(temp_root, require_reports=False)
-    detected = any(
-        finding.manifest == "evals/tau_terminal_dag_watch_agentic_eval.json"
-        and "missing capability_claims" in finding.message
-        for finding in result.findings
-    )
-    if not detected:
-        result.findings.append(
-            Finding(
-                "ERROR",
-                "evals/tau_terminal_dag_watch_agentic_eval.json",
-                "adversarial deletion was not detected",
-            )
+    inventory = build_source_inventory(root)
+    records = load_source_coverage_records(root)
+    reports = None
+    manifests = None
+    if mode == "missing-capability-claim":
+        manifests = _manifest_records_without_claim(root)
+    elif mode == "unmanifested-cli-command":
+        cli_path = root / "src/tau_coding/cli.py"
+        cli_source = cli_path.read_text(encoding="utf-8")
+        marker = '    if not print_requested and command == "feature-inventory":\n'
+        injection = (
+            "    if not print_requested and command == "
+            '"unmanifested-negative-control":\n'
+            "        raise typer.Exit()\n\n"
+            f"{marker}"
         )
-    result.findings = [] if detected else result.findings
-    payload = _write_receipt(out, result, mode="adversarial-missing-claim")
-    payload["adversarial_detection"] = detected
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        if marker not in cli_source:
+            raise RuntimeError("feature-inventory command marker not found for negative control")
+        cli_source = cli_source.replace(marker, injection, 1)
+        inventory = build_source_inventory(root, cli_source_text=cli_source)
+    elif mode == "orphan-eval-manifest":
+        manifests = _manifest_records_with_orphan(root)
+    elif mode == "duplicate-feature-owner":
+        records = _records_with_duplicate_owner(records)
+    elif mode == "missing-retained-report":
+        reports = _report_map_without_one(root)
+    elif mode == "stale-waiver":
+        records = _records_with_stale_waiver(records)
+    else:
+        raise ValueError(f"unknown adversarial mode: {mode}")
+    reconciliation = reconcile_source_inventory(
+        root,
+        inventory,
+        records,
+        reports=reports,
+        manifests=manifests,
+    )
+    expected_code = _expected_code(mode)
+    detected = any(
+        isinstance(finding, dict) and finding.get("code") == expected_code
+        for finding in reconciliation.get("findings", [])
+    )
+    receipt_path = out
+    payload = _receipt(
+        mode=mode,
+        ok=detected,
+        inventory_path=None,
+        reconciliation_path=None,
+        reconciliation=reconciliation,
+        extra={
+            "adversarial_detection": detected,
+            "expected_failure_code": expected_code,
+            "negative_case_receipt": True,
+        },
+    )
+    write_json(receipt_path, payload)
     print(
         json.dumps(
-            {"status": "PASS" if detected else "FAIL", "proof": str(out), "detected": detected},
+            {
+                "status": "PASS" if detected else "FAIL",
+                "proof": str(receipt_path),
+                "detected": detected,
+                "expected_failure_code": expected_code,
+            },
             sort_keys=True,
         )
     )
     return 0 if detected else 1
 
 
-class tempfile_copy:
-    def __init__(self, evals_dir: Path) -> None:
-        import tempfile
+def _receipt(
+    *,
+    mode: str,
+    ok: bool,
+    inventory_path: Path | None,
+    reconciliation_path: Path | None,
+    reconciliation: dict[str, Any],
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema": "tau.feature_agentic_eval_coverage_receipt.v2",
+        "mode": mode,
+        "ok": ok,
+        "status": "PASS" if ok else "FAIL",
+        "mocked": False,
+        "live": True,
+        "inventory_path": str(inventory_path) if inventory_path else None,
+        "reconciliation_path": str(reconciliation_path) if reconciliation_path else None,
+        "manifest_count": reconciliation.get("manifest_count"),
+        "claim_count": reconciliation.get("claim_count"),
+        "covered_claim_count": reconciliation.get("covered_claim_count"),
+        "inventory_feature_count": reconciliation.get("inventory_feature_count"),
+        "finding_count": len(reconciliation.get("findings", []))
+        if isinstance(reconciliation.get("findings"), list)
+        else None,
+        "findings": reconciliation.get("findings", []),
+    }
+    if extra:
+        payload.update(extra)
+    return payload
 
-        self._tmp = tempfile.TemporaryDirectory(prefix="tau-feature-coverage-")
-        self.root = Path(self._tmp.name)
-        self.evals_dir = evals_dir
 
-    def __enter__(self) -> Path:
-        shutil.copytree(self.evals_dir, self.root / "evals")
-        return self.root
+def _manifest_records_without_claim(root: Path) -> list[dict[str, Any]]:
+    manifests = _manifest_records(root)
+    for manifest in manifests:
+        if manifest["path"] == "evals/tau_terminal_dag_watch_agentic_eval.json":
+            manifest["claim_ids"] = []
+            manifest["claims"] = []
+            break
+    return manifests
 
-    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
-        self._tmp.cleanup()
+
+def _manifest_records_with_orphan(root: Path) -> list[dict[str, Any]]:
+    manifests = _manifest_records(root)
+    manifests.append(
+        {
+            "path": "evals/orphan_negative_control_agentic_eval.json",
+            "skill": "orphan-negative-control",
+            "claim_ids": ["tau.orphan_negative_control"],
+            "claims": [
+                {
+                    "id": "tau.orphan_negative_control",
+                    "criticality": "critical",
+                    "evidence_required": {"live_e2e": True},
+                }
+            ],
+            "case_count": 1,
+            "has_negative_or_adversarial": True,
+            "has_real_world_case": True,
+        }
+    )
+    return manifests
+
+
+def _records_with_duplicate_owner(records: dict[str, Any]) -> dict[str, Any]:
+    mutated = json.loads(json.dumps(records))
+    for record in mutated["records"]:
+        if record.get("status") == "CLAIMED":
+            duplicate = dict(record)
+            duplicate["claim_id"] = "tau.feature_agentic_eval_coverage"
+            mutated["records"].append(duplicate)
+            return mutated
+    raise RuntimeError("no claimed record available for duplicate-owner negative case")
+
+
+def _records_with_stale_waiver(records: dict[str, Any]) -> dict[str, Any]:
+    mutated = json.loads(json.dumps(records))
+    for record in mutated["records"]:
+        if record.get("status") in {"BLOCKED", "OUT_OF_SCOPE"}:
+            record["expires"] = "2026-01-01"
+            return mutated
+    raise RuntimeError("no waiver record available for stale-waiver negative case")
+
+
+def _report_map_without_one(root: Path) -> dict[str, dict[str, Any]]:
+    from tau_coding.source_feature_inventory import _report_map
+
+    reports = _report_map(root)
+    reports.pop("evals/tau_terminal_dag_watch_agentic_eval.json", None)
+    return reports
+
+
+def _manifest_records(root: Path) -> list[dict[str, Any]]:
+    from tau_coding.source_feature_inventory import _manifest_records
+
+    return _manifest_records(root)
+
+
+def _expected_code(mode: str) -> str:
+    return {
+        "missing-capability-claim": "missing_capability_claims",
+        "unmanifested-cli-command": "uncovered_source_feature",
+        "orphan-eval-manifest": "orphan_eval_manifest",
+        "duplicate-feature-owner": "duplicate_feature_owner",
+        "missing-retained-report": "missing_retained_report",
+        "stale-waiver": "stale_waiver",
+    }[mode]
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["positive", "adversarial"], required=True)
+    parser.add_argument(
+        "--mode",
+        choices=[
+            "positive",
+            "missing-capability-claim",
+            "unmanifested-cli-command",
+            "orphan-eval-manifest",
+            "duplicate-feature-owner",
+            "missing-retained-report",
+            "stale-waiver",
+        ],
+        required=True,
+    )
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     if args.mode == "positive":
         return _positive(args.out)
-    return _adversarial(args.out)
+    return _adversarial(args.out, args.mode)
 
 
 if __name__ == "__main__":

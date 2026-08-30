@@ -1,138 +1,16 @@
 {
   "claim_count": 14,
+  "covered_claim_count": 14,
+  "finding_count": 0,
   "findings": [],
+  "inventory_feature_count": 249,
+  "inventory_path": "local/agentic-evals/source-inventory.json",
   "live": true,
   "manifest_count": 14,
-  "manifests": [
-    {
-      "case_count": 2,
-      "claim_ids": [
-        "tau.codebase_ingest.scan_projection_receipts"
-      ],
-      "path": "evals/codebase_ingest_agentic_eval.json",
-      "report": "local/agentic-evals/codebase-ingest-agentic-evals-report.json",
-      "skill": "tau-codebase-ingest"
-    },
-    {
-      "case_count": 2,
-      "claim_ids": [
-        "tau.python_host_bridge.capability_boundaries"
-      ],
-      "path": "evals/python_host_bridge_agentic_eval.json",
-      "report": "local/agentic-evals/python-host-bridge-agentic-evals-report.json",
-      "skill": "tau-python-host-bridge"
-    },
-    {
-      "case_count": 3,
-      "claim_ids": [
-        "tau.python_workspace_kernel.lifecycle_receipts"
-      ],
-      "path": "evals/python_workspace_kernel_agentic_eval.json",
-      "report": "local/agentic-evals/python-workspace-kernel-agentic-evals-report.json",
-      "skill": "tau-python-workspace-kernel"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.core.local_dag_with_tamper_evident_ledger"
-      ],
-      "path": "evals/tau_core_agentic_eval.json",
-      "report": "local/agentic-evals/tau-core-agentic-evals-report.json",
-      "skill": "tau-core"
-    },
-    {
-      "case_count": 2,
-      "claim_ids": [
-        "tau.dag_ladder.rung1_clean_checkout"
-      ],
-      "path": "evals/tau_dag_ladder_rung1_agentic_eval.json",
-      "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
-      "skill": "tau-dag-ladder-rung1"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.discord.failure_path_visible"
-      ],
-      "path": "evals/tau_discord_failure_path_agentic_eval.json",
-      "report": "local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json",
-      "skill": "tau-discord-failure-path"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.discord.notification_idempotency"
-      ],
-      "path": "evals/tau_discord_idempotency_agentic_eval.json",
-      "report": "local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json",
-      "skill": "tau-discord-idempotency"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.discord.typed_human_unblock_receipts"
-      ],
-      "path": "evals/tau_discord_unblock_agentic_eval.json",
-      "report": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json",
-      "skill": "tau-discord-unblock"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.ledger_trace.default"
-      ],
-      "path": "evals/tau_ledger_trace_agentic_eval.json",
-      "report": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
-      "skill": "tau-ledger-trace"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.repair.required_node_failure_overlay"
-      ],
-      "path": "evals/tau_pipeline_self_repair_agentic_eval.json",
-      "report": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json",
-      "skill": "tau-pipeline-self-repair"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.viewer.repair_overlay_discord_visible"
-      ],
-      "path": "evals/tau_repair_overlay_browser_agentic_eval.json",
-      "report": "local/agentic-evals/tau-repair-overlay-browser-agentic-evals-report.json",
-      "skill": "tau-repair-overlay-browser"
-    },
-    {
-      "case_count": 1,
-      "claim_ids": [
-        "tau.repair.same_semantic_node_rerun"
-      ],
-      "path": "evals/tau_same_node_rerun_agentic_eval.json",
-      "report": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json",
-      "skill": "tau-same-node-rerun"
-    },
-    {
-      "case_count": 2,
-      "claim_ids": [
-        "tau.terminal_dag_progress_watch"
-      ],
-      "path": "evals/tau_terminal_dag_watch_agentic_eval.json",
-      "report": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
-      "skill": "tau-terminal-dag-watch"
-    },
-    {
-      "case_count": 4,
-      "claim_ids": [
-        "tau.viewer.timeline_proof_clips"
-      ],
-      "path": "evals/tau_timeline_viewer_agentic_eval.json",
-      "report": "local/agentic-evals/tau-timeline-viewer-agentic-evals-report.json",
-      "skill": "tau-timeline-viewer"
-    }
-  ],
   "mocked": false,
   "mode": "positive",
   "ok": true,
-  "schema": "tau.feature_agentic_eval_coverage_receipt.v1"
+  "reconciliation_path": "local/agentic-evals/reconciliation-report.json",
+  "schema": "tau.feature_agentic_eval_coverage_receipt.v2",
+  "status": "PASS"
 }

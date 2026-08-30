@@ -1,0 +1,27 @@
+{
+  "adversarial_detection": true,
+  "claim_count": 14,
+  "covered_claim_count": 14,
+  "expected_failure_code": "uncovered_source_feature",
+  "finding_count": 1,
+  "findings": [
+    {
+      "code": "uncovered_source_feature",
+      "feature_id": "cli-command:unmanifested-negative-control",
+      "message": "source feature has no capability claim or explicit non-coverage record",
+      "severity": "ERROR",
+      "source": "src/tau_coding/cli.py"
+    }
+  ],
+  "inventory_feature_count": 250,
+  "inventory_path": null,
+  "live": true,
+  "manifest_count": 14,
+  "mocked": false,
+  "mode": "unmanifested-cli-command",
+  "negative_case_receipt": true,
+  "ok": true,
+  "reconciliation_path": null,
+  "schema": "tau.feature_agentic_eval_coverage_receipt.v2",
+  "status": "PASS"
+}

@@ -1,0 +1,34 @@
+{
+  "adversarial_detection": true,
+  "claim_count": 13,
+  "covered_claim_count": 13,
+  "expected_failure_code": "missing_capability_claims",
+  "finding_count": 2,
+  "findings": [
+    {
+      "code": "unknown_claim_owner",
+      "feature_id": "evaluator-script:agentic-eval-tau-terminal-dag-watch",
+      "message": "feature references missing capability claim 'tau.terminal_dag_progress_watch'",
+      "severity": "ERROR",
+      "source": null
+    },
+    {
+      "code": "missing_capability_claims",
+      "feature_id": null,
+      "message": "evals/tau_terminal_dag_watch_agentic_eval.json",
+      "severity": "ERROR",
+      "source": "evals/tau_terminal_dag_watch_agentic_eval.json"
+    }
+  ],
+  "inventory_feature_count": 249,
+  "inventory_path": null,
+  "live": true,
+  "manifest_count": 14,
+  "mocked": false,
+  "mode": "missing-capability-claim",
+  "negative_case_receipt": true,
+  "ok": true,
+  "reconciliation_path": null,
+  "schema": "tau.feature_agentic_eval_coverage_receipt.v2",
+  "status": "PASS"
+}

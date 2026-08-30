@@ -318,6 +318,12 @@ from tau_coding.skill_capability_registry import (
 )
 from tau_coding.skill_composition_redteam import run_skill_composition_redteam
 from tau_coding.skill_invocation import write_skill_invocation_receipt
+from tau_coding.source_feature_inventory import (
+    build_source_inventory,
+    load_source_coverage_records,
+    reconcile_source_inventory,
+    write_json,
+)
 from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.sprite_sheet_conformance import write_sprite_sheet_conformance
 from tau_coding.targeted_repair_conformance import write_targeted_repair_conformance
@@ -2725,6 +2731,16 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is False:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "feature-inventory":
+        try:
+            payload = _run_feature_inventory_cli(positional_args[1:])
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -8770,6 +8786,55 @@ def _parse_agent_events_cli_args(args: list[str]) -> dict[str, object]:
     if options["run_dir"] is None:
         raise RuntimeError(usage)
     return options
+
+
+def _run_feature_inventory_cli(args: list[str]) -> dict[str, object]:
+    usage = (
+        "Usage: tau feature-inventory --inventory-out FILE --reconciliation-out FILE "
+        "[--json]"
+    )
+    inventory_out: Path | None = None
+    reconciliation_out: Path | None = None
+    json_output = False
+    index = 0
+    while index < len(args):
+        item = args[index]
+        if item in {"--inventory-out", "--reconciliation-out"}:
+            if index + 1 >= len(args):
+                raise RuntimeError(usage)
+            value = Path(args[index + 1]).expanduser()
+            if item == "--inventory-out":
+                inventory_out = value
+            else:
+                reconciliation_out = value
+            index += 2
+        elif item == "--json":
+            json_output = True
+            index += 1
+        else:
+            raise RuntimeError(usage)
+    if inventory_out is None or reconciliation_out is None:
+        raise RuntimeError(usage)
+    repo_root = Path(__file__).resolve().parents[2]
+    inventory = build_source_inventory(repo_root)
+    records = load_source_coverage_records(repo_root)
+    reconciliation = reconcile_source_inventory(repo_root, inventory, records)
+    write_json(inventory_out, inventory)
+    write_json(reconciliation_out, reconciliation)
+    return {
+        "schema": "tau.feature_inventory_cli_receipt.v1",
+        "ok": reconciliation.get("ok") is True,
+        "status": reconciliation.get("status"),
+        "mocked": False,
+        "live": True,
+        "inventory_path": str(inventory_out.expanduser().resolve()),
+        "reconciliation_path": str(reconciliation_out.expanduser().resolve()),
+        "feature_count": inventory.get("feature_count"),
+        "finding_count": len(reconciliation.get("findings", []))
+        if isinstance(reconciliation.get("findings"), list)
+        else None,
+        "json": json_output,
+    }
 
 
 def _run_ledger_cli(args: list[str]) -> dict[str, object]:
