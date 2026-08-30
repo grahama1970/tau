@@ -1,0 +1,1984 @@
+{
+  "audit_projection": {
+    "audit_write_failure_boundary": {
+      "count": 0,
+      "event_ids": [],
+      "status": "NO_FAILURE_OBSERVED"
+    },
+    "dag_id": "canonical-05-durable-resume-repair",
+    "events": [
+      {
+        "action": "dag_started",
+        "actor": "tau",
+        "affected_object": "canonical-05-durable-resume-repair",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:0",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:532233750c81bbd6d77f5ce7ebca9616f3c1a1420fc3e9c0b5a048ef8802cd85",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:cc8192baec7fe619cc7e03740949c7bfba3a64abadcf92d856bc84284760c05d",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:5b6c04e80b7dd2466c84161e506e0abf6e6a89e4a14d6c835ea51a09eb1d7658",
+        "ledger_seq": 0,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:532233750c81bbd6d77f5ce7ebca9616f3c1a1420fc3e9c0b5a048ef8802cd85",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "GENESIS",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:36Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "discover",
+        "affected_object": "discover",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:1",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:4df8b37d709964b1cc59181a29e2d794e8c36e905e36c1daf7e15081fbc137ba",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:4d36db81f4e44563ad96709f80f02c695e93e6d3fe04e9f6f443bbeb482004df",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:ae928a04e4017c8e30a38d93f75c27deed54f56b7f19bfe50e4cb5ff7fdee2ae",
+        "ledger_seq": 1,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:4df8b37d709964b1cc59181a29e2d794e8c36e905e36c1daf7e15081fbc137ba",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:5b6c04e80b7dd2466c84161e506e0abf6e6a89e4a14d6c835ea51a09eb1d7658",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:36Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "discover",
+        "affected_object": "discover",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:2",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:cba8710e984a79ecc22a3a2984a85596e3e166d4b435d3bcbbd83eff68c8e2da",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:d17c0f4ec9f7d0f8bd003786c5788aff2c579dd4afc347fbe39122ff2b20bd21",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:eaf5f23fce8155a237a801820dc61152afc320a6a7e292b8ff9c847c1a8f8e4b",
+        "ledger_seq": 2,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:cba8710e984a79ecc22a3a2984a85596e3e166d4b435d3bcbbd83eff68c8e2da",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:ae928a04e4017c8e30a38d93f75c27deed54f56b7f19bfe50e4cb5ff7fdee2ae",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:37Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "build",
+        "affected_object": "build",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:3",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:41fd3c9ef2d7879b37e0d898a2f78626d80fae86416933cd1178ca80a4bfc80f",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:3bbf3ab068cb71f83c4c5ffa6a0eb460f400782d3c7c2add0d3297f106ec1955",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:31f29fdd17981823e6d5ed37fdb4f5a93a2e317a59b944bfc73502099b256ae9",
+        "ledger_seq": 3,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:41fd3c9ef2d7879b37e0d898a2f78626d80fae86416933cd1178ca80a4bfc80f",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:eaf5f23fce8155a237a801820dc61152afc320a6a7e292b8ff9c847c1a8f8e4b",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:37Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "document",
+        "affected_object": "document",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:4",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:19063aeea54a4e063c9747894a5da3b4c2cfc5a78ba74a6cfb28ff04586d4c55",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:03d3484e061c1bdc6d27dd72486c469da307a70dce23de062f4526114272d18e",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:7098b9fe796b276454414be7b3372de63558dab98a0e511a80437fd7f6a2cc21",
+        "ledger_seq": 4,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:19063aeea54a4e063c9747894a5da3b4c2cfc5a78ba74a6cfb28ff04586d4c55",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:31f29fdd17981823e6d5ed37fdb4f5a93a2e317a59b944bfc73502099b256ae9",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:37Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "test",
+        "affected_object": "test",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:5",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:15a438ac82bd9c353e8eb0363491073a7c22f52a9addceef3c73ad37d64c01e4",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:2a83d45435a9072e3cad21522a3ef753ebf5fc699b108bf543567a6a23fd390e",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:f1cc088f0fe4fb5b0a0300e0384f8de16010dbd0c2a0a71f2c6da227f0c5481b",
+        "ledger_seq": 5,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:15a438ac82bd9c353e8eb0363491073a7c22f52a9addceef3c73ad37d64c01e4",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:7098b9fe796b276454414be7b3372de63558dab98a0e511a80437fd7f6a2cc21",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:37Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "build",
+        "affected_object": "build",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:6",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:58cc4a4b0d9748bb97a0ce427499e2f5159217b59a5a0e9c22babcce174672db",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:6c58c8d82aab9a6eadaba60cff57f86149bf44a44b21f9f3b3c9f206841fec99",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:4216791397b3c4d88ced583fa4dce34f060813f1742cb69b61cea35f0f165715",
+        "ledger_seq": 6,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:58cc4a4b0d9748bb97a0ce427499e2f5159217b59a5a0e9c22babcce174672db",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:f1cc088f0fe4fb5b0a0300e0384f8de16010dbd0c2a0a71f2c6da227f0c5481b",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "document",
+        "affected_object": "document",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:7",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:c2dfabcff396934e037274030c80937fc348356bcc192b74fefb69f801910144",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:b566e92529c36cb675a4fc455fc3e0ae11133d35f616733ea6c5e977b7d44930",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:8f8da76f337ccb6a2afd98101e17df7eaf395350e82bbae21534c0598bf09d65",
+        "ledger_seq": 7,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:c2dfabcff396934e037274030c80937fc348356bcc192b74fefb69f801910144",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:4216791397b3c4d88ced583fa4dce34f060813f1742cb69b61cea35f0f165715",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "test",
+        "affected_object": "test",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:8",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:cfcd20650f7ee7ed14abe5b3a5da40c3fba289be1e688648c23ca2c17e2be0d3",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:1c42a1a40d208c66e4e67e501bf3f9af9417df437221bfb4c03c25408f144a36",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:4743534a22b9d990f34cafa66de296163463bb26614a45c553426380b0820cec",
+        "ledger_seq": 8,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:cfcd20650f7ee7ed14abe5b3a5da40c3fba289be1e688648c23ca2c17e2be0d3",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:8f8da76f337ccb6a2afd98101e17df7eaf395350e82bbae21534c0598bf09d65",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "reconcile",
+        "affected_object": "reconcile",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:9",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:e51c33e18252afcb7e9b79ea8113cebb75eabbf28105cb89066580c0281f4187",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:4d9d3d0052ed70ab69b390382f1f74a33979ea07608bf7f383afcec794c9e752",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:1c1c1aff85f5ad1bd7d9c1cd520080c9c59b1a3b70d2ef2e9cd172076c3e9d06",
+        "ledger_seq": 9,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:e51c33e18252afcb7e9b79ea8113cebb75eabbf28105cb89066580c0281f4187",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:4743534a22b9d990f34cafa66de296163463bb26614a45c553426380b0820cec",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "reconcile",
+        "affected_object": "reconcile",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:10",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:5f65131ed964f2158b580f56530362fba843fb9cefe8bb5953c645e8240f1b02",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:3215c38097798cc13cf8376dfee7fdd52b15b2cf3bed3b9b1ae2a6cb449dcca7",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+        "ledger_seq": 10,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:5f65131ed964f2158b580f56530362fba843fb9cefe8bb5953c645e8240f1b02",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:1c1c1aff85f5ad1bd7d9c1cd520080c9c59b1a3b70d2ef2e9cd172076c3e9d06",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "dag_finished",
+        "actor": "tau",
+        "affected_object": "canonical-05-durable-resume-repair",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:11",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:a60c1cbd0c8f24303735d2a9835337c81fc908959d8e54fe344c8d35e2d612f1",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:449617ae718402b0e5f83f201f4a6ebb00ceb12f91868f9f600a61e6216839e5",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:1239ac5faa2af07c7739a25933feb7725fcfad9476e967f83dac5df526a5a56c",
+        "ledger_seq": 11,
+        "outcome": "BLOCKED",
+        "payload_sha256": "sha256:a60c1cbd0c8f24303735d2a9835337c81fc908959d8e54fe344c8d35e2d612f1",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "dag_started",
+        "actor": "tau",
+        "affected_object": "canonical-05-durable-resume-repair",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:12",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:073d8355646118ff9e562ad0f1ef838b22f1bb91d5eb6e93e01bd90d6e045397",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:1098c72c71a7d4a171efa2b5a1cee6983eda116019aa0fcbe049833f573f8298",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:b47af0a3228cec5f1034ae5b0d5d265cfde549acf4e90bd8f6b0ab0342f69e0d",
+        "ledger_seq": 12,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:073d8355646118ff9e562ad0f1ef838b22f1bb91d5eb6e93e01bd90d6e045397",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:1239ac5faa2af07c7739a25933feb7725fcfad9476e967f83dac5df526a5a56c",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_resumed",
+        "actor": "discover",
+        "affected_object": "discover",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:13",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:4083237889191a25d2ec5e6e6f1f8b55f0d0619ce4f753f49003afac7aa30d5b",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:bdbb30e67f28d2510f2959867216cc9cac59705238aa1087a34e6d968e07c3e5",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:7b8d73e1221e75b0ee0b28b98ac7b5d9d7b8a4870e68774bea97c947c33ee2ef",
+        "ledger_seq": 13,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:4083237889191a25d2ec5e6e6f1f8b55f0d0619ce4f753f49003afac7aa30d5b",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:b47af0a3228cec5f1034ae5b0d5d265cfde549acf4e90bd8f6b0ab0342f69e0d",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_resumed",
+        "actor": "build",
+        "affected_object": "build",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:14",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:fc645adf2e845f64747e49b099d9e79a7b016d5de86c551ae33e631f119bc7b2",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:dd9e04594d64933796afcc0fee86e2e68334b224c2bff36ef2cb14af72f01951",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:5b7228a63a41be4a064c932764dc67ce228262649ce323a35804ea93ecba5d85",
+        "ledger_seq": 14,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:fc645adf2e845f64747e49b099d9e79a7b016d5de86c551ae33e631f119bc7b2",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:7b8d73e1221e75b0ee0b28b98ac7b5d9d7b8a4870e68774bea97c947c33ee2ef",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_resumed",
+        "actor": "document",
+        "affected_object": "document",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:15",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:4134c5044bf281ce481f2013fe7dca77f59287134397ac35cfe4b305dda2db06",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:9eadae38f2b80a1c1a9510c4f408569ec9afc3b2cd2be46fa7c4f17e93f75119",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:a81edfc17dda49ef2f272454b5ff8110cf7f0636d55cfd907e10a162a13d8cbd",
+        "ledger_seq": 15,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:4134c5044bf281ce481f2013fe7dca77f59287134397ac35cfe4b305dda2db06",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:5b7228a63a41be4a064c932764dc67ce228262649ce323a35804ea93ecba5d85",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_resumed",
+        "actor": "test",
+        "affected_object": "test",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:16",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:c2814092077f46832c413ae575b66c123a246890996a860f81abe05458b05acf",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:72c707158976a734063fc18b545681495ed8e921f08dc7a3f366727f50cb00ca",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:8e3c06e793cea60c2339de2689434d1a12ad0ba3c04797d4daabc6f79a7dc437",
+        "ledger_seq": 16,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:c2814092077f46832c413ae575b66c123a246890996a860f81abe05458b05acf",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:a81edfc17dda49ef2f272454b5ff8110cf7f0636d55cfd907e10a162a13d8cbd",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "reconcile",
+        "affected_object": "reconcile",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:17",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:938060e17261e4f04ac52a11c60c5d829efdf8079e88c3a57e40f605ba8c2050",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:b5fc369f78927a91ace6cbe6532f19e19b1126317626e7839b7649d8def8f1dc",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:7781e36c5cbe2c5f2e594a14de227a8620092582fd71bc73cab7e0d9765706ea",
+        "ledger_seq": 17,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:938060e17261e4f04ac52a11c60c5d829efdf8079e88c3a57e40f605ba8c2050",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:8e3c06e793cea60c2339de2689434d1a12ad0ba3c04797d4daabc6f79a7dc437",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:40Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "reconcile",
+        "affected_object": "reconcile",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:18",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:d13b866780e0078e4d580227827fb92464c8ef0efe0532686f2cc5d4273e1432",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:425bf2dd2bd75af4b6a86bd40dbdc4f35a4ed42bf5988ff45d77fd7f3a73a1d3",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3",
+        "ledger_seq": 18,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:d13b866780e0078e4d580227827fb92464c8ef0efe0532686f2cc5d4273e1432",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:7781e36c5cbe2c5f2e594a14de227a8620092582fd71bc73cab7e0d9765706ea",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:41Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_dispatch",
+        "actor": "release",
+        "affected_object": "release",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:19",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:e1d3177ae2f3494b878466695d2f6205701ae7874fcbd19f3edbf9e83f56a71d",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:e9a239f768f383af23379cdf508eb50828181f9315c7f33c4a6b8e6497cdf94d",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:87aa0936aa90e92d058c44f7cb80bbf4df3af35836c1deeb456599a992b11941",
+        "ledger_seq": 19,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:e1d3177ae2f3494b878466695d2f6205701ae7874fcbd19f3edbf9e83f56a71d",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:41Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt_validated",
+        "actor": "release",
+        "affected_object": "release",
+        "attempt_id": 1,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:20",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:1c09caed2f665a56296718ce2b41ed9ec3d9a738170c4ef953f0634e5ae802c8",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:8bbc894d5ad769313c1cebf1eff2ad2de6261bfb3c977bb724335e9a816ed88a",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:feb1cacbce72c1b66fc98a4e3db79ab9600164a97da939232df245510c26f7a8",
+        "ledger_seq": 20,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:1c09caed2f665a56296718ce2b41ed9ec3d9a738170c4ef953f0634e5ae802c8",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:87aa0936aa90e92d058c44f7cb80bbf4df3af35836c1deeb456599a992b11941",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:43Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "dag_finished",
+        "actor": "tau",
+        "affected_object": "canonical-05-durable-resume-repair",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:21",
+        "event_schema": "tau.generic_dag_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:ab222b8e78e2d140a1fc435a9cbc6fef0f2af44f89989c99aee507ecef6dd7af",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:664ae463ba5ea7559521eb8b2876c1893ba10337e63e65e717c24dba7973e732",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:afa054b35e9a29c59ab4250a6096320100723dca69f20833e4d009f7d8c763cd",
+        "ledger_seq": 21,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:ab222b8e78e2d140a1fc435a9cbc6fef0f2af44f89989c99aee507ecef6dd7af",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:feb1cacbce72c1b66fc98a4e3db79ab9600164a97da939232df245510c26f7a8",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair",
+        "timestamp": "2026-08-30T17:25:43Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "discover",
+        "affected_object": "discover",
+        "attempt_id": "attempt-953b51e13b09e2f6ea0742f16028b95d",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:22",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:88b63f7342c02225a8e6fc65ff45c405cc2f41624415c957d0d694fc42d7067c",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:a36ed610e01eb7699d33a3427ff208654c5e29eb3141d9fbadac9dde8e61ba36",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:b2c2069d46e72ad9f2431e8d3dc94eb73f209f338b2e6a01e55605a626428060",
+        "ledger_seq": 22,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:88b63f7342c02225a8e6fc65ff45c405cc2f41624415c957d0d694fc42d7067c",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:afa054b35e9a29c59ab4250a6096320100723dca69f20833e4d009f7d8c763cd",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "build",
+        "affected_object": "build",
+        "attempt_id": "attempt-3dc43a6aea3d474783e126f595d3d23d",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:23",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:c0b7f628f928f5453f35fa0d89dd2e62b0e955773ff42fa485aca7a75a02b39d",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:a90d2de7df0854eb0c1c5a547b31bb614fab395a5f9dd0d874068ad5723bcf1b",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:b3a27937c950876d25488356d48ae1e14c0e4e18a7bcb2646d1a7714c1199a46",
+        "ledger_seq": 23,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:c0b7f628f928f5453f35fa0d89dd2e62b0e955773ff42fa485aca7a75a02b39d",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:b2c2069d46e72ad9f2431e8d3dc94eb73f209f338b2e6a01e55605a626428060",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "document",
+        "affected_object": "document",
+        "attempt_id": "attempt-f5977726c3b9e9a8189dedf26bb61d85",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:24",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:ec00c4e556fcb5cd5bc005c04764ca25648eacd4f2196c5fa67acfc51bd85145",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:f6bdc749916416bd700f1b77bf7eb917a540462049c1d1033cc1589801de5d55",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:c51efee35512f779635bb5a42d9c8d5e6b22f9c319fec6d6081c30a33fa9fae3",
+        "ledger_seq": 24,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:ec00c4e556fcb5cd5bc005c04764ca25648eacd4f2196c5fa67acfc51bd85145",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:b3a27937c950876d25488356d48ae1e14c0e4e18a7bcb2646d1a7714c1199a46",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "test",
+        "affected_object": "test",
+        "attempt_id": "attempt-8ce9392388e8b9e0918b28557097d1e0",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:25",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:657d39aa1a6283c770267370c4ffcdea5ba81816eda629f68011963f27185cdc",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:4e95ffabd08d6969e5c111baf886c9de89ee7d971ca052ef8c912fa9c683aaf1",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:90df8a536efa6b811e1eb0def613f3c49b9674f93f593f59710f166f163bdcf3",
+        "ledger_seq": 25,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:657d39aa1a6283c770267370c4ffcdea5ba81816eda629f68011963f27185cdc",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:c51efee35512f779635bb5a42d9c8d5e6b22f9c319fec6d6081c30a33fa9fae3",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "reconcile",
+        "affected_object": "reconcile",
+        "attempt_id": "attempt-8821b695df1ca4b5c4c687295b93636b",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:26",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:bcb5bdd0d1d2792282c97b76c3db601cc7923d00106e1b17540762ade5dd0dd1",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:435af09a1d7b547bbed80b43f4bd1493a3934f17175535a55d259587bf5a18e9",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:d672a521a67a862a558b2844bd9ce5d2e4082dc062176d23f354de4eb2f5eb3a",
+        "ledger_seq": 26,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:bcb5bdd0d1d2792282c97b76c3db601cc7923d00106e1b17540762ade5dd0dd1",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:90df8a536efa6b811e1eb0def613f3c49b9674f93f593f59710f166f163bdcf3",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "node_receipt",
+        "actor": "release",
+        "affected_object": "release",
+        "attempt_id": "attempt-123c08cc6ec755ab0993632952f4cdb4",
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:27",
+        "event_schema": "generic_node_receipt",
+        "evidence": [
+          {
+            "digest": "sha256:ad9165575cb5064345a38d07ac2c48cb4e7123bfaa870cbfa69f2df2aa40acf1",
+            "reference": "payload"
+          }
+        ],
+        "evidence_digest": "sha256:8eb4afa9ca943df2e845667725cf9422d910dd3e13e46ff34204c61a570ced1c",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:fc2b9c9be323fb748892e266bb425a44e2ffa8dbf9ed0038ffba8c16c5a7d69a",
+        "ledger_seq": 27,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:ad9165575cb5064345a38d07ac2c48cb4e7123bfaa870cbfa69f2df2aa40acf1",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:d672a521a67a862a558b2844bd9ce5d2e4082dc062176d23f354de4eb2f5eb3a",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "artifact_digest",
+        "actor": "tau",
+        "affected_object": "dag-progress.json",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:28",
+        "event_schema": "tau.run_ledger_artifact_digest.v1",
+        "evidence": [
+          {
+            "digest": "sha256:7bfd282ff1edf6226fc80d42cb6a972040f9537ba058ebaea7386f60a87fdaee",
+            "reference": "sha256"
+          },
+          {
+            "bytes": 1320,
+            "digest": "sha256:7bfd282ff1edf6226fc80d42cb6a972040f9537ba058ebaea7386f60a87fdaee",
+            "reference": "dag-progress.json"
+          }
+        ],
+        "evidence_digest": "sha256:755360471897e58aec77aa40d138ac5b3bcb16adfb8bb03a55a0361241dcf770",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:991cbf4f4affc37f4a20392a5b82b4def33a7c96b06f0cabe073c0d0ab47741c",
+        "ledger_seq": 28,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:0eb7c01350e389fd4c8e608300fffa095f733d1871ce32cd434e06383d249a58",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:fc2b9c9be323fb748892e266bb425a44e2ffa8dbf9ed0038ffba8c16c5a7d69a",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "artifact_digest",
+        "actor": "tau",
+        "affected_object": "events.jsonl",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:29",
+        "event_schema": "tau.run_ledger_artifact_digest.v1",
+        "evidence": [
+          {
+            "digest": "sha256:eeac56cbc68497b658b745da113bb94ad47320058e2759b104875922df5f9f96",
+            "reference": "sha256"
+          },
+          {
+            "bytes": 7363,
+            "digest": "sha256:eeac56cbc68497b658b745da113bb94ad47320058e2759b104875922df5f9f96",
+            "reference": "events.jsonl"
+          }
+        ],
+        "evidence_digest": "sha256:8c1bc601dcc77d41e4c83065d920bdc712871e6d4ee0f1c7acb40e3145185be6",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:ba8059defd3b820441f14ea6bfc8161cdcadaa5b1824b7a0ff3716f12de84715",
+        "ledger_seq": 29,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:d4d2b2d1d44acdbe0ea393bdb1e4a675cb3bec7377667423dbb043626916992e",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:991cbf4f4affc37f4a20392a5b82b4def33a7c96b06f0cabe073c0d0ab47741c",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "artifact_digest",
+        "actor": "tau",
+        "affected_object": "checkpoint.json",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:30",
+        "event_schema": "tau.run_ledger_artifact_digest.v1",
+        "evidence": [
+          {
+            "digest": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563",
+            "reference": "sha256"
+          },
+          {
+            "bytes": 3595,
+            "digest": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563",
+            "reference": "checkpoint.json"
+          }
+        ],
+        "evidence_digest": "sha256:ddccf4fdcce55481d0453a4e97c2c1c08942dbdfee7e945be1560cca99856135",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:ebd8577de8654afd256e7b6026d2d06344281efba3108c4b3cf6a936828374c8",
+        "ledger_seq": 30,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:18c123cd8b6d8c64bb1855e494dd79a458941553929b8878631325974b68d8eb",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:ba8059defd3b820441f14ea6bfc8161cdcadaa5b1824b7a0ff3716f12de84715",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "artifact_digest",
+        "actor": "tau",
+        "affected_object": "current-state.json",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:31",
+        "event_schema": "tau.run_ledger_artifact_digest.v1",
+        "evidence": [
+          {
+            "digest": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563",
+            "reference": "sha256"
+          },
+          {
+            "bytes": 3595,
+            "digest": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563",
+            "reference": "current-state.json"
+          }
+        ],
+        "evidence_digest": "sha256:81ffbbb1c19cc261cf64692b9d156dabc53d438b6d1a7f962bc9b2c358c6f394",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:74392570a80e896bfa4680fa129705810d1eedcdfdfee3adfeca13dcdacc667c",
+        "ledger_seq": 31,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:c2f3a747687a455c73550bfbc0b9c6708fdcfa31ace61be13aa6dc5ef838df06",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:ebd8577de8654afd256e7b6026d2d06344281efba3108c4b3cf6a936828374c8",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "artifact_digest",
+        "actor": "tau",
+        "affected_object": "source-dag.json",
+        "attempt_id": null,
+        "clock_source": "ledger_projection_clock",
+        "correction": null,
+        "event_id": "canonical-05-durable-resume-repair:generation:1:32",
+        "event_schema": "tau.run_ledger_artifact_digest.v1",
+        "evidence": [
+          {
+            "digest": "sha256:2c8d1f39edad7128568d71ffc3c373a9c86c9920e520d0a0eaea8b065963e6a0",
+            "reference": "sha256"
+          },
+          {
+            "bytes": 7814,
+            "digest": "sha256:2c8d1f39edad7128568d71ffc3c373a9c86c9920e520d0a0eaea8b065963e6a0",
+            "reference": "source-dag.json"
+          }
+        ],
+        "evidence_digest": "sha256:9c129bbe4ae4795214218970b429ed6601a1f7b92ce986ec2b57d3cfccd62089",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832",
+        "ledger_seq": 32,
+        "outcome": "RECORDED",
+        "payload_sha256": "sha256:35a40dccc7e5a56cd2848a2bc92abb0ae47b558c072cba495a89566ed287f506",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:74392570a80e896bfa4680fa129705810d1eedcdfdfee3adfeca13dcdacc667c",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "canonical-05-durable-resume-repair:generation:1",
+        "timestamp": "2026-08-30T17:25:44.078228Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      }
+    ],
+    "external_anchor": {
+      "boundary": "External milestone head anchoring was not configured for this run.",
+      "status": "NOT_CONFIGURED"
+    },
+    "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+    "ledger_built_at": "2026-08-30T17:25:44.078228Z",
+    "ledger_entry_count": 33,
+    "ledger_head_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832",
+    "ledger_schema": "tau.run_ledger.v1",
+    "milestone_head_anchor": {
+      "boundary": "External milestone head anchoring was not configured for this run.",
+      "status": "NOT_CONFIGURED"
+    },
+    "policy_version": "tau.run_ledger_audit_policy.v1",
+    "projected_at": "2026-08-30T17:25:44.079029Z",
+    "projection_version": 1,
+    "raw_history_preserved": true,
+    "run_id": "canonical-05-durable-resume-repair:generation:1",
+    "schema": "tau.run_ledger_audit_projection.v1",
+    "summary": {
+      "audit_write_failure_count": 0,
+      "correction_count": 0,
+      "event_count": 33,
+      "human_acceptance_event_count": 0,
+      "redaction_statuses": [
+        "none"
+      ],
+      "retention_classes": [
+        "standard"
+      ]
+    },
+    "verifier_version": "tau.run_ledger_audit_verifier.v1"
+  },
+  "built_at": "2026-08-30T17:25:44.078228Z",
+  "dag_id": "canonical-05-durable-resume-repair",
+  "entries": [
+    {
+      "entry_hash": "sha256:5b6c04e80b7dd2466c84161e506e0abf6e6a89e4a14d6c835ea51a09eb1d7658",
+      "payload": {
+        "event": "dag_started",
+        "kind": "generic_dag_event",
+        "resume": false,
+        "resume_source": null,
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 0,
+        "spec_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/dag.json",
+        "timestamp": "2026-08-30T17:25:36Z"
+      },
+      "prev_hash": "GENESIS",
+      "seq": 0
+    },
+    {
+      "entry_hash": "sha256:ae928a04e4017c8e30a38d93f75c27deed54f56b7f19bfe50e4cb5ff7fdee2ae",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/discover.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 1,
+        "timestamp": "2026-08-30T17:25:36Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:5b6c04e80b7dd2466c84161e506e0abf6e6a89e4a14d6c835ea51a09eb1d7658",
+      "seq": 1
+    },
+    {
+      "entry_hash": "sha256:eaf5f23fce8155a237a801820dc61152afc320a6a7e292b8ff9c847c1a8f8e4b",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/discover.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 2,
+        "timestamp": "2026-08-30T17:25:37Z"
+      },
+      "prev_hash": "sha256:ae928a04e4017c8e30a38d93f75c27deed54f56b7f19bfe50e4cb5ff7fdee2ae",
+      "seq": 2
+    },
+    {
+      "entry_hash": "sha256:31f29fdd17981823e6d5ed37fdb4f5a93a2e317a59b944bfc73502099b256ae9",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/build.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 3,
+        "timestamp": "2026-08-30T17:25:37Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:eaf5f23fce8155a237a801820dc61152afc320a6a7e292b8ff9c847c1a8f8e4b",
+      "seq": 3
+    },
+    {
+      "entry_hash": "sha256:7098b9fe796b276454414be7b3372de63558dab98a0e511a80437fd7f6a2cc21",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/document.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 4,
+        "timestamp": "2026-08-30T17:25:37Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:31f29fdd17981823e6d5ed37fdb4f5a93a2e317a59b944bfc73502099b256ae9",
+      "seq": 4
+    },
+    {
+      "entry_hash": "sha256:f1cc088f0fe4fb5b0a0300e0384f8de16010dbd0c2a0a71f2c6da227f0c5481b",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/test.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 5,
+        "timestamp": "2026-08-30T17:25:37Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:7098b9fe796b276454414be7b3372de63558dab98a0e511a80437fd7f6a2cc21",
+      "seq": 5
+    },
+    {
+      "entry_hash": "sha256:4216791397b3c4d88ced583fa4dce34f060813f1742cb69b61cea35f0f165715",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/build.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 6,
+        "timestamp": "2026-08-30T17:25:39Z"
+      },
+      "prev_hash": "sha256:f1cc088f0fe4fb5b0a0300e0384f8de16010dbd0c2a0a71f2c6da227f0c5481b",
+      "seq": 6
+    },
+    {
+      "entry_hash": "sha256:8f8da76f337ccb6a2afd98101e17df7eaf395350e82bbae21534c0598bf09d65",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/document.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 7,
+        "timestamp": "2026-08-30T17:25:39Z"
+      },
+      "prev_hash": "sha256:4216791397b3c4d88ced583fa4dce34f060813f1742cb69b61cea35f0f165715",
+      "seq": 7
+    },
+    {
+      "entry_hash": "sha256:4743534a22b9d990f34cafa66de296163463bb26614a45c553426380b0820cec",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/test.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 8,
+        "timestamp": "2026-08-30T17:25:39Z"
+      },
+      "prev_hash": "sha256:8f8da76f337ccb6a2afd98101e17df7eaf395350e82bbae21534c0598bf09d65",
+      "seq": 8
+    },
+    {
+      "entry_hash": "sha256:1c1c1aff85f5ad1bd7d9c1cd520080c9c59b1a3b70d2ef2e9cd172076c3e9d06",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/reconcile.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 9,
+        "timestamp": "2026-08-30T17:25:39Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:4743534a22b9d990f34cafa66de296163463bb26614a45c553426380b0820cec",
+      "seq": 9
+    },
+    {
+      "entry_hash": "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/reconcile.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 10,
+        "timestamp": "2026-08-30T17:25:39Z"
+      },
+      "prev_hash": "sha256:1c1c1aff85f5ad1bd7d9c1cd520080c9c59b1a3b70d2ef2e9cd172076c3e9d06",
+      "seq": 10
+    },
+    {
+      "entry_hash": "sha256:1239ac5faa2af07c7739a25933feb7725fcfad9476e967f83dac5df526a5a56c",
+      "payload": {
+        "event": "dag_finished",
+        "kind": "generic_dag_event",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 11,
+        "status": "BLOCKED",
+        "timestamp": "2026-08-30T17:25:39Z",
+        "verdict": "BLOCKED"
+      },
+      "prev_hash": "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+      "seq": 11
+    },
+    {
+      "entry_hash": "sha256:b47af0a3228cec5f1034ae5b0d5d265cfde549acf4e90bd8f6b0ab0342f69e0d",
+      "payload": {
+        "event": "dag_started",
+        "kind": "generic_dag_event",
+        "resume": true,
+        "resume_source": null,
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 12,
+        "spec_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/dag.json",
+        "timestamp": "2026-08-30T17:25:40Z"
+      },
+      "prev_hash": "sha256:1239ac5faa2af07c7739a25933feb7725fcfad9476e967f83dac5df526a5a56c",
+      "seq": 12
+    },
+    {
+      "entry_hash": "sha256:7b8d73e1221e75b0ee0b28b98ac7b5d9d7b8a4870e68774bea97c947c33ee2ef",
+      "payload": {
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/discover.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 13,
+        "timestamp": "2026-08-30T17:25:40Z"
+      },
+      "prev_hash": "sha256:b47af0a3228cec5f1034ae5b0d5d265cfde549acf4e90bd8f6b0ab0342f69e0d",
+      "seq": 13
+    },
+    {
+      "entry_hash": "sha256:5b7228a63a41be4a064c932764dc67ce228262649ce323a35804ea93ecba5d85",
+      "payload": {
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/build.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 14,
+        "timestamp": "2026-08-30T17:25:40Z"
+      },
+      "prev_hash": "sha256:7b8d73e1221e75b0ee0b28b98ac7b5d9d7b8a4870e68774bea97c947c33ee2ef",
+      "seq": 14
+    },
+    {
+      "entry_hash": "sha256:a81edfc17dda49ef2f272454b5ff8110cf7f0636d55cfd907e10a162a13d8cbd",
+      "payload": {
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/document.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 15,
+        "timestamp": "2026-08-30T17:25:40Z"
+      },
+      "prev_hash": "sha256:5b7228a63a41be4a064c932764dc67ce228262649ce323a35804ea93ecba5d85",
+      "seq": 15
+    },
+    {
+      "entry_hash": "sha256:8e3c06e793cea60c2339de2689434d1a12ad0ba3c04797d4daabc6f79a7dc437",
+      "payload": {
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/test.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 16,
+        "timestamp": "2026-08-30T17:25:40Z"
+      },
+      "prev_hash": "sha256:a81edfc17dda49ef2f272454b5ff8110cf7f0636d55cfd907e10a162a13d8cbd",
+      "seq": 16
+    },
+    {
+      "entry_hash": "sha256:7781e36c5cbe2c5f2e594a14de227a8620092582fd71bc73cab7e0d9765706ea",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/reconcile.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 17,
+        "timestamp": "2026-08-30T17:25:40Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:8e3c06e793cea60c2339de2689434d1a12ad0ba3c04797d4daabc6f79a7dc437",
+      "seq": 17
+    },
+    {
+      "entry_hash": "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/reconcile.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 18,
+        "timestamp": "2026-08-30T17:25:41Z"
+      },
+      "prev_hash": "sha256:7781e36c5cbe2c5f2e594a14de227a8620092582fd71bc73cab7e0d9765706ea",
+      "seq": 18
+    },
+    {
+      "entry_hash": "sha256:87aa0936aa90e92d058c44f7cb80bbf4df3af35836c1deeb456599a992b11941",
+      "payload": {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "release",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/release.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 19,
+        "timestamp": "2026-08-30T17:25:41Z",
+        "work_order_path": null
+      },
+      "prev_hash": "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3",
+      "seq": 19
+    },
+    {
+      "entry_hash": "sha256:feb1cacbce72c1b66fc98a4e3db79ab9600164a97da939232df245510c26f7a8",
+      "payload": {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "release",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/release.json",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 20,
+        "timestamp": "2026-08-30T17:25:43Z"
+      },
+      "prev_hash": "sha256:87aa0936aa90e92d058c44f7cb80bbf4df3af35836c1deeb456599a992b11941",
+      "seq": 20
+    },
+    {
+      "entry_hash": "sha256:afa054b35e9a29c59ab4250a6096320100723dca69f20833e4d009f7d8c763cd",
+      "payload": {
+        "event": "dag_finished",
+        "kind": "generic_dag_event",
+        "run_id": "canonical-05-durable-resume-repair",
+        "schema": "tau.generic_dag_event.v1",
+        "source_event_index": 21,
+        "status": "PASS",
+        "timestamp": "2026-08-30T17:25:43Z",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:feb1cacbce72c1b66fc98a4e3db79ab9600164a97da939232df245510c26f7a8",
+      "seq": 21
+    },
+    {
+      "entry_hash": "sha256:b2c2069d46e72ad9f2431e8d3dc94eb73f209f338b2e6a01e55605a626428060",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-953b51e13b09e2f6ea0742f16028b95d",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "discover",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/discover.json",
+        "resumed": true,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:afa054b35e9a29c59ab4250a6096320100723dca69f20833e4d009f7d8c763cd",
+      "seq": 22
+    },
+    {
+      "entry_hash": "sha256:b3a27937c950876d25488356d48ae1e14c0e4e18a7bcb2646d1a7714c1199a46",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-3dc43a6aea3d474783e126f595d3d23d",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "build",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/build.json",
+        "resumed": true,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:b2c2069d46e72ad9f2431e8d3dc94eb73f209f338b2e6a01e55605a626428060",
+      "seq": 23
+    },
+    {
+      "entry_hash": "sha256:c51efee35512f779635bb5a42d9c8d5e6b22f9c319fec6d6081c30a33fa9fae3",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-f5977726c3b9e9a8189dedf26bb61d85",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "document",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/document.json",
+        "resumed": true,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:b3a27937c950876d25488356d48ae1e14c0e4e18a7bcb2646d1a7714c1199a46",
+      "seq": 24
+    },
+    {
+      "entry_hash": "sha256:90df8a536efa6b811e1eb0def613f3c49b9674f93f593f59710f166f163bdcf3",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-8ce9392388e8b9e0918b28557097d1e0",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "test",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/test.json",
+        "resumed": true,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:c51efee35512f779635bb5a42d9c8d5e6b22f9c319fec6d6081c30a33fa9fae3",
+      "seq": 25
+    },
+    {
+      "entry_hash": "sha256:d672a521a67a862a558b2844bd9ce5d2e4082dc062176d23f354de4eb2f5eb3a",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-8821b695df1ca4b5c4c687295b93636b",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "reconcile",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/reconcile.json",
+        "resumed": false,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:90df8a536efa6b811e1eb0def613f3c49b9674f93f593f59710f166f163bdcf3",
+      "seq": 26
+    },
+    {
+      "entry_hash": "sha256:fc2b9c9be323fb748892e266bb425a44e2ffa8dbf9ed0038ffba8c16c5a7d69a",
+      "payload": {
+        "attempt": 1,
+        "attempt_id": "attempt-123c08cc6ec755ab0993632952f4cdb4",
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "live": true,
+        "mocked": false,
+        "node_id": "release",
+        "receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/release.json",
+        "resumed": false,
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "prev_hash": "sha256:d672a521a67a862a558b2844bd9ce5d2e4082dc062176d23f354de4eb2f5eb3a",
+      "seq": 27
+    },
+    {
+      "entry_hash": "sha256:991cbf4f4affc37f4a20392a5b82b4def33a7c96b06f0cabe073c0d0ab47741c",
+      "payload": {
+        "bytes": 1320,
+        "json_schema": "tau.dag_progress.v1",
+        "kind": "artifact_digest",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/dag-progress.json",
+        "relative_path": "dag-progress.json",
+        "schema": "tau.run_ledger_artifact_digest.v1",
+        "sha256": "sha256:7bfd282ff1edf6226fc80d42cb6a972040f9537ba058ebaea7386f60a87fdaee"
+      },
+      "prev_hash": "sha256:fc2b9c9be323fb748892e266bb425a44e2ffa8dbf9ed0038ffba8c16c5a7d69a",
+      "seq": 28
+    },
+    {
+      "entry_hash": "sha256:ba8059defd3b820441f14ea6bfc8161cdcadaa5b1824b7a0ff3716f12de84715",
+      "payload": {
+        "bytes": 7363,
+        "json_schema": null,
+        "kind": "artifact_digest",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/events.jsonl",
+        "relative_path": "events.jsonl",
+        "schema": "tau.run_ledger_artifact_digest.v1",
+        "sha256": "sha256:eeac56cbc68497b658b745da113bb94ad47320058e2759b104875922df5f9f96"
+      },
+      "prev_hash": "sha256:991cbf4f4affc37f4a20392a5b82b4def33a7c96b06f0cabe073c0d0ab47741c",
+      "seq": 29
+    },
+    {
+      "entry_hash": "sha256:ebd8577de8654afd256e7b6026d2d06344281efba3108c4b3cf6a936828374c8",
+      "payload": {
+        "bytes": 3595,
+        "json_schema": "tau.generic_dag_checkpoint.v1",
+        "kind": "artifact_digest",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/checkpoint.json",
+        "relative_path": "checkpoint.json",
+        "schema": "tau.run_ledger_artifact_digest.v1",
+        "sha256": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563"
+      },
+      "prev_hash": "sha256:ba8059defd3b820441f14ea6bfc8161cdcadaa5b1824b7a0ff3716f12de84715",
+      "seq": 30
+    },
+    {
+      "entry_hash": "sha256:74392570a80e896bfa4680fa129705810d1eedcdfdfee3adfeca13dcdacc667c",
+      "payload": {
+        "bytes": 3595,
+        "json_schema": "tau.generic_dag_checkpoint.v1",
+        "kind": "artifact_digest",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/current-state.json",
+        "relative_path": "current-state.json",
+        "schema": "tau.run_ledger_artifact_digest.v1",
+        "sha256": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563"
+      },
+      "prev_hash": "sha256:ebd8577de8654afd256e7b6026d2d06344281efba3108c4b3cf6a936828374c8",
+      "seq": 31
+    },
+    {
+      "entry_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832",
+      "payload": {
+        "bytes": 7814,
+        "json_schema": "tau.generic_dag_spec.v1",
+        "kind": "artifact_digest",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/source-dag.json",
+        "relative_path": "source-dag.json",
+        "schema": "tau.run_ledger_artifact_digest.v1",
+        "sha256": "sha256:2c8d1f39edad7128568d71ffc3c373a9c86c9920e520d0a0eaea8b065963e6a0"
+      },
+      "prev_hash": "sha256:74392570a80e896bfa4680fa129705810d1eedcdfdfee3adfeca13dcdacc667c",
+      "seq": 32
+    }
+  ],
+  "entry_count": 33,
+  "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "head_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832",
+  "run_id": "canonical-05-durable-resume-repair:generation:1",
+  "schema": "tau.run_ledger.v1",
+  "source_receipt_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/run-receipt.json",
+  "source_run_dir": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run",
+  "trace": {
+    "agentic_eval_count": 0,
+    "agentic_evals": [],
+    "artifact_count": 5,
+    "artifact_digests": [
+      {
+        "bytes": 1320,
+        "json_schema": "tau.dag_progress.v1",
+        "kind": "artifact_digest",
+        "path": "dag-progress.json",
+        "seq": 28,
+        "sha256": "sha256:7bfd282ff1edf6226fc80d42cb6a972040f9537ba058ebaea7386f60a87fdaee"
+      },
+      {
+        "bytes": 7363,
+        "json_schema": null,
+        "kind": "artifact_digest",
+        "path": "events.jsonl",
+        "seq": 29,
+        "sha256": "sha256:eeac56cbc68497b658b745da113bb94ad47320058e2759b104875922df5f9f96"
+      },
+      {
+        "bytes": 3595,
+        "json_schema": "tau.generic_dag_checkpoint.v1",
+        "kind": "artifact_digest",
+        "path": "checkpoint.json",
+        "seq": 30,
+        "sha256": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563"
+      },
+      {
+        "bytes": 3595,
+        "json_schema": "tau.generic_dag_checkpoint.v1",
+        "kind": "artifact_digest",
+        "path": "current-state.json",
+        "seq": 31,
+        "sha256": "sha256:e3c81cec15517a27c0e38bc1b6168a5cc3c0a04c97576661e729b711220df563"
+      },
+      {
+        "bytes": 7814,
+        "json_schema": "tau.generic_dag_spec.v1",
+        "kind": "artifact_digest",
+        "path": "source-dag.json",
+        "seq": 32,
+        "sha256": "sha256:2c8d1f39edad7128568d71ffc3c373a9c86c9920e520d0a0eaea8b065963e6a0"
+      }
+    ],
+    "entry_count": 33,
+    "entry_kind_counts": {
+      "artifact_digest": 5,
+      "generic_dag_event": 22,
+      "generic_node_receipt": 6
+    },
+    "node_attempts": [
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "build"
+      },
+      {
+        "attempt": null,
+        "events": [
+          "node_resumed"
+        ],
+        "latest_status": null,
+        "node_id": "build"
+      },
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "discover"
+      },
+      {
+        "attempt": null,
+        "events": [
+          "node_resumed"
+        ],
+        "latest_status": null,
+        "node_id": "discover"
+      },
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "document"
+      },
+      {
+        "attempt": null,
+        "events": [
+          "node_resumed"
+        ],
+        "latest_status": null,
+        "node_id": "document"
+      },
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "reconcile"
+      },
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "release"
+      },
+      {
+        "attempt": 1,
+        "events": [
+          "node_dispatch",
+          "node_receipt_validated",
+          "node_receipt"
+        ],
+        "latest_status": "PASS",
+        "node_id": "test"
+      },
+      {
+        "attempt": null,
+        "events": [
+          "node_resumed"
+        ],
+        "latest_status": null,
+        "node_id": "test"
+      }
+    ],
+    "schema": "tau.run_ledger_trace.v1",
+    "timeline": [
+      {
+        "attempt": null,
+        "event": "dag_started",
+        "kind": "generic_dag_event",
+        "node_id": null,
+        "seq": 0,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "seq": 1,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "seq": 2,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "seq": 3,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "seq": 4,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "seq": 5,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "seq": 6,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "seq": 7,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "seq": 8,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "seq": 9,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "seq": 10,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "dag_finished",
+        "kind": "generic_dag_event",
+        "node_id": null,
+        "seq": 11,
+        "status": "BLOCKED"
+      },
+      {
+        "attempt": null,
+        "event": "dag_started",
+        "kind": "generic_dag_event",
+        "node_id": null,
+        "seq": 12,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "discover",
+        "seq": 13,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "build",
+        "seq": 14,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "document",
+        "seq": 15,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "node_resumed",
+        "kind": "generic_dag_event",
+        "node_id": "test",
+        "seq": 16,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "seq": 17,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "reconcile",
+        "seq": 18,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_dispatch",
+        "kind": "generic_dag_event",
+        "node_id": "release",
+        "seq": 19,
+        "status": null
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt_validated",
+        "kind": "generic_dag_event",
+        "node_id": "release",
+        "seq": 20,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": "dag_finished",
+        "kind": "generic_dag_event",
+        "node_id": null,
+        "seq": 21,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "discover",
+        "seq": 22,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "build",
+        "seq": 23,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "document",
+        "seq": 24,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "test",
+        "seq": 25,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "reconcile",
+        "seq": 26,
+        "status": "PASS"
+      },
+      {
+        "attempt": 1,
+        "event": "node_receipt",
+        "kind": "generic_node_receipt",
+        "node_id": "release",
+        "seq": 27,
+        "status": "PASS"
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "artifact_digest",
+        "node_id": null,
+        "seq": 28,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "artifact_digest",
+        "node_id": null,
+        "seq": 29,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "artifact_digest",
+        "node_id": null,
+        "seq": 30,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "artifact_digest",
+        "node_id": null,
+        "seq": 31,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "artifact_digest",
+        "node_id": null,
+        "seq": 32,
+        "status": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "accepted_input_count": 3,
+  "attempt": 1,
+  "attempt_id": "attempt-94b959b696b2a39a7e7ee546ae640bc7",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:build:reconcile",
+      "control_edge_id": "generic-dependency:build:reconcile",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "default_all_dependencies",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.canonical_dag_result.v1",
+      "selected_sha256": "sha256:0890e5a35c4aadef9b99525cccf6ee5e2c9c790362e23b7bae8f865997bfca9e",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-7a559150bd32c2417e6c0b0d4dee3e6e",
+      "source_node_id": "build",
+      "target_node_id": "reconcile"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:test:reconcile",
+      "control_edge_id": "generic-dependency:test:reconcile",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "default_all_dependencies",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.canonical_dag_result.v1",
+      "selected_sha256": "sha256:5158728dbd1cdd72e79e44b1bb96681f2310f4a94bb2f50a9b47348e5e55f82e",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-62fa07a2d5e70b3e0e4a44ae62ee9439",
+      "source_node_id": "test",
+      "target_node_id": "reconcile"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:document:reconcile",
+      "control_edge_id": "generic-dependency:document:reconcile",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "default_all_dependencies",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.canonical_dag_result.v1",
+      "selected_sha256": "sha256:06269d38e8f529f2200000cf01944c39511906c36edbc7039404c649d02a91d6",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-f551d576e67e4cf371199769e297dc8e",
+      "source_node_id": "document",
+      "target_node_id": "reconcile"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:ecc5708d8a4c177ae630d24374711c2da7272c3d4ef065b16d3d855f2b2fee38",
+  "node_id": "reconcile",
+  "plan_sha256": "sha256:d415ec18da76795dc0e25a7d377f7c44feccefa93ba00223c97838da63f3568f",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.node_input_manifest.v1"
+}

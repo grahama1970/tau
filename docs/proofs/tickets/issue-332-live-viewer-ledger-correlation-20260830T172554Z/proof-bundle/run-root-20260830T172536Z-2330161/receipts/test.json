@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1115,
+        "kind": "independent-test",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/test.json",
+        "sha256": "sha256:25185543bf7a7e1d5de207c46bf9b041cf73a46c805d72d422fbaa0672e528e1"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "test produced its accepted independent-test artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1115,
+      "kind": "independent-test",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/test.json",
+      "sha256": "sha256:25185543bf7a7e1d5de207c46bf9b041cf73a46c805d72d422fbaa0672e528e1"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:test"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:5c0de5ad9d0036fe7606c705e9600039009b13a4bb45e1e7ef902f6f6286e8cd",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "handoff_summary": "test produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "test",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

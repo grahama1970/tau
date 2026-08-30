@@ -1,0 +1,7 @@
+{
+  "prior_sha256": null,
+  "rollback_action": "delete target",
+  "schema": "tau.canonical_dag_rollback.v1",
+  "target": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/release.json",
+  "target_existed_before": false
+}

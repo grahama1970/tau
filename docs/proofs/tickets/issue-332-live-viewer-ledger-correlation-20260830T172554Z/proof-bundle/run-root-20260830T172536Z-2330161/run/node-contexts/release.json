@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 2838,
+          "kind": "branch-reconciliation",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/reconcile.json",
+          "sha256": "sha256:e73257156e64e2909a59132ebd66939c020d689256e74caa92fccd4bab263446"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "reconcile produced its accepted branch-reconciliation artifact."
+    }
+  ],
+  "node_id": "release",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.generic_dag_node_context.v1"
+}

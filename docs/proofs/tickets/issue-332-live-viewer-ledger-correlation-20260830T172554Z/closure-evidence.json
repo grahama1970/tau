@@ -1,0 +1,76 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 332,
+  "title": "Correlate live React Flow DAG transitions with Tau ledger events",
+  "main_commit": "eb548e20ea14f2ebffc4977c540ee15910fe24bc",
+  "proof_boundary": {
+    "proves": [
+      "live React Flow DOM transitions were observed for sequential, concurrent, blocked/approval, resume, and completion states",
+      "every recorded visible transition was bound to Tau event sequences and run-ledger entry hashes",
+      "browser proof used GET-only requests",
+      "negative stale/out-of-order event receipts rejected false transitions",
+      "full Tau pytest regression passed in this turn"
+    ],
+    "does_not_prove": [
+      "provider or model semantic quality",
+      "production deployment readiness",
+      "Tau GOAL.md completion",
+      "human acceptance"
+    ]
+  },
+  "commands": [
+    {
+      "command": "agentic-evals/run.sh run fixtures/agentic_eval.json --case live-dag-viewer-transitions-correlate-to-ledger --output /tmp/tau-issue-332-main-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 1, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=2; repo={'sha': 'eb548e20ea14f2ebffc4977c540ee15910fe24bc', 'ref': 'main'}"
+    },
+    {
+      "command": "uv run pytest tests/test_run_ledger.py -q",
+      "result": "8 passed"
+    },
+    {
+      "command": "timeout 120s uv run pytest -q -x --tb=short",
+      "result": "243 passed, 29 skipped, 3431 deselected in 25.34s"
+    }
+  ],
+  "browser_proof_readback": {
+    "schema": "tau.live_dag_viewer_correlation_browser_proof.v1",
+    "status": "PASS",
+    "live": true,
+    "mocked": false,
+    "provider_live": false,
+    "request_methods": [
+      "GET"
+    ],
+    "transition_count": 8,
+    "correlated_transition_count": 8,
+    "checks": {
+      "blocked_or_approval_state": true,
+      "completion_transition": true,
+      "concurrent_branch_transition": true,
+      "every_visible_transition_bound_to_event_and_ledger": true,
+      "ledger_verified": true,
+      "negative_stale_and_out_of_order_receipts": true,
+      "no_manual_reload": true,
+      "read_only_requests": true,
+      "resume_transition": true,
+      "screenshots_or_frames": true,
+      "sequential_transition": true
+    },
+    "ledger_head_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832"
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 1,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 2,
+    "repo": {
+      "sha": "eb548e20ea14f2ebffc4977c540ee15910fe24bc",
+      "ref": "main"
+    }
+  },
+  "status": "PASS"
+}

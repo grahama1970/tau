@@ -1,0 +1,6 @@
+{
+  "accepted_inputs": [],
+  "node_id": "discover",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.generic_dag_node_context.v1"
+}

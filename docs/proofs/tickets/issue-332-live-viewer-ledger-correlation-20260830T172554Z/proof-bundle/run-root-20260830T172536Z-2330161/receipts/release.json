@@ -1,0 +1,52 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1268,
+        "kind": "human-release",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/release.json",
+        "sha256": "sha256:682ff31e3b31fd68929a3e16acaa4257a62762cee67a1c6c0cbe96bf05b9f253"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "release produced its accepted human-release artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1268,
+      "kind": "human-release",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/release.json",
+      "sha256": "sha256:682ff31e3b31fd68929a3e16acaa4257a62762cee67a1c6c0cbe96bf05b9f253"
+    },
+    {
+      "bytes": 298,
+      "kind": "rollback-manifest",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/rollback/release.json",
+      "sha256": "sha256:17b722ef37a45f90fded0d6950272c3445f77fb81676cee0212dda471736afd0"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:release"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:c6eae6708f307c359df57a44e2babda41a610e2a771f088e18e24b590ae50a84",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "handoff_summary": "release produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "release",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

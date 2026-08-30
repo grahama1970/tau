@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1125,
+        "kind": "operator-documentation",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/document.json",
+        "sha256": "sha256:d53d2aee7ae67707659fcc60f451f2e843a4a37f3fd244beaf9801853be9cac4"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "document produced its accepted operator-documentation artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1125,
+      "kind": "operator-documentation",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/document.json",
+      "sha256": "sha256:d53d2aee7ae67707659fcc60f451f2e843a4a37f3fd244beaf9801853be9cac4"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:document"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:6e41605581d5064a175832c47dee47d0763ab436f0f74efc7efa0df004fa6d02",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "handoff_summary": "document produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "document",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

@@ -1,0 +1,46 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1113,
+          "kind": "bounded-build",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/build.json",
+          "sha256": "sha256:755501c87e975f371c9473b73a0ecc69762df1c1bccb6fd3f7bef888265babe7"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "build produced its accepted bounded-build artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1115,
+          "kind": "independent-test",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/test.json",
+          "sha256": "sha256:25185543bf7a7e1d5de207c46bf9b041cf73a46c805d72d422fbaa0672e528e1"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "test produced its accepted independent-test artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1125,
+          "kind": "operator-documentation",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/document.json",
+          "sha256": "sha256:d53d2aee7ae67707659fcc60f451f2e843a4a37f3fd244beaf9801853be9cac4"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "document produced its accepted operator-documentation artifact."
+    }
+  ],
+  "node_id": "reconcile",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.generic_dag_node_context.v1"
+}

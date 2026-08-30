@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/discover.json",
+      "sha256": "sha256:fc527e8821fbab7967bde246fd3685759c9f8c53cd8f086982589bea66e29080"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 319,
+          "kind": "goal-and-source-lock",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/discover.json",
+          "sha256": "sha256:fc527e8821fbab7967bde246fd3685759c9f8c53cd8f086982589bea66e29080"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "discover produced its accepted goal-and-source-lock artifact."
+    }
+  ],
+  "goal_sha256": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "node_id": "test",
+  "repair_authorization_path": null,
+  "role": "independent-test",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

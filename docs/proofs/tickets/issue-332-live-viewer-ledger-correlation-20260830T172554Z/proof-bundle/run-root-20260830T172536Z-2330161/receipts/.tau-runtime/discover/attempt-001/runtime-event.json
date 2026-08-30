@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:3ee7678f17775c93b05ffc950b4d5dc79d1a0ec6a03e6c703fedfe884eea32c1",
+  "event_id": "local-event:e2d1f41b962ad7ba29d76a39",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-08-30T17:25:37.904970+00:00",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

@@ -1,0 +1,354 @@
+{
+  "schema": "tau.dag_viewer_ui_event_correlation.v1",
+  "status": "PASS",
+  "rows": [
+    {
+      "transition_id": "canonical-05-durable-resume-repair:seq:53:build:running:awaiting_receipt->settled:accepted",
+      "observed_at": "2026-08-30T17:25:39.977Z",
+      "run_id": "canonical-05-durable-resume-repair",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 53,
+      "node_id": "build",
+      "dom_before": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "dom_after": {
+        "state": "settled",
+        "admission": "accepted"
+      },
+      "api_after": {
+        "state": "settled",
+        "admission": "accepted",
+        "accepted": true,
+        "attempt": 1,
+        "updated_sequence": 53
+      },
+      "visible_node_qid": "dag:node:build",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        16,
+        28,
+        29,
+        32
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:6",
+        "canonical-05-durable-resume-repair:generation:1:ledger:23"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:4216791397b3c4d88ced583fa4dce34f060813f1742cb69b61cea35f0f165715",
+        "sha256:b3a27937c950876d25488356d48ae1e14c0e4e18a7bcb2646d1a7714c1199a46"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:seq:53:test:running:awaiting_receipt->settled:accepted",
+      "observed_at": "2026-08-30T17:25:39.977Z",
+      "run_id": "canonical-05-durable-resume-repair",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 53,
+      "node_id": "test",
+      "dom_before": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "dom_after": {
+        "state": "settled",
+        "admission": "accepted"
+      },
+      "api_after": {
+        "state": "settled",
+        "admission": "accepted",
+        "accepted": true,
+        "attempt": 1,
+        "updated_sequence": 53
+      },
+      "visible_node_qid": "dag:node:test",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        24,
+        38,
+        39,
+        42
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:8",
+        "canonical-05-durable-resume-repair:generation:1:ledger:25"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:4743534a22b9d990f34cafa66de296163463bb26614a45c553426380b0820cec",
+        "sha256:90df8a536efa6b811e1eb0def613f3c49b9674f93f593f59710f166f163bdcf3"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:seq:53:document:running:awaiting_receipt->settled:accepted",
+      "observed_at": "2026-08-30T17:25:39.977Z",
+      "run_id": "canonical-05-durable-resume-repair",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 53,
+      "node_id": "document",
+      "dom_before": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "dom_after": {
+        "state": "settled",
+        "admission": "accepted"
+      },
+      "api_after": {
+        "state": "settled",
+        "admission": "accepted",
+        "accepted": true,
+        "attempt": 1,
+        "updated_sequence": 53
+      },
+      "visible_node_qid": "dag:node:document",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        20,
+        33,
+        34,
+        37
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:7",
+        "canonical-05-durable-resume-repair:generation:1:ledger:24"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:8f8da76f337ccb6a2afd98101e17df7eaf395350e82bbae21534c0598bf09d65",
+        "sha256:c51efee35512f779635bb5a42d9c8d5e6b22f9c319fec6d6081c30a33fa9fae3"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:seq:53:reconcile:pending:not_started->blocked:rejected",
+      "observed_at": "2026-08-30T17:25:39.977Z",
+      "run_id": "canonical-05-durable-resume-repair",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 53,
+      "node_id": "reconcile",
+      "dom_before": {
+        "state": "pending",
+        "admission": "not_started"
+      },
+      "dom_after": {
+        "state": "blocked",
+        "admission": "rejected"
+      },
+      "api_after": {
+        "state": "blocked",
+        "admission": "rejected",
+        "accepted": false,
+        "attempt": 1,
+        "updated_sequence": 53
+      },
+      "visible_node_qid": "dag:node:reconcile",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        44,
+        47,
+        48,
+        51
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:10",
+        "canonical-05-durable-resume-repair:generation:1:ledger:18"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+        "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:generation:1:seq:99:reconcile:blocked:rejected->running:awaiting_receipt",
+      "observed_at": "2026-08-30T17:25:41.486Z",
+      "run_id": "canonical-05-durable-resume-repair:generation:1",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 99,
+      "node_id": "reconcile",
+      "dom_before": {
+        "state": "blocked",
+        "admission": "rejected"
+      },
+      "dom_after": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "api_after": {
+        "state": "running",
+        "admission": "awaiting_receipt",
+        "accepted": false,
+        "attempt": 1,
+        "updated_sequence": 99
+      },
+      "visible_node_qid": "dag:node:reconcile",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        97
+      ],
+      "source_event_types": [
+        "attempt_reserved"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:9",
+        "canonical-05-durable-resume-repair:generation:1:ledger:17"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:1c1c1aff85f5ad1bd7d9c1cd520080c9c59b1a3b70d2ef2e9cd172076c3e9d06",
+        "sha256:7781e36c5cbe2c5f2e594a14de227a8620092582fd71bc73cab7e0d9765706ea"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:generation:1:seq:108:reconcile:running:awaiting_receipt->settled:accepted",
+      "observed_at": "2026-08-30T17:25:42.263Z",
+      "run_id": "canonical-05-durable-resume-repair:generation:1",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 108,
+      "node_id": "reconcile",
+      "dom_before": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "dom_after": {
+        "state": "settled",
+        "admission": "accepted"
+      },
+      "api_after": {
+        "state": "settled",
+        "admission": "accepted",
+        "accepted": true,
+        "attempt": 1,
+        "updated_sequence": 108
+      },
+      "visible_node_qid": "dag:node:reconcile",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        97,
+        100,
+        101,
+        104
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:10",
+        "canonical-05-durable-resume-repair:generation:1:ledger:18",
+        "canonical-05-durable-resume-repair:generation:1:ledger:26"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:76cf1ab04c9e3840b2f6c7e8e64e7aee518bab9042571e09bea4c30237978603",
+        "sha256:be6a745718a83169bba9bdca047a7030714af13f3c677f3f4978f554cdeef6b3",
+        "sha256:d672a521a67a862a558b2844bd9ce5d2e4082dc062176d23f354de4eb2f5eb3a"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:generation:1:seq:108:release:pending:not_started->running:awaiting_receipt",
+      "observed_at": "2026-08-30T17:25:42.263Z",
+      "run_id": "canonical-05-durable-resume-repair:generation:1",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 108,
+      "node_id": "release",
+      "dom_before": {
+        "state": "pending",
+        "admission": "not_started"
+      },
+      "dom_after": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "api_after": {
+        "state": "running",
+        "admission": "awaiting_receipt",
+        "accepted": false,
+        "attempt": 1,
+        "updated_sequence": 108
+      },
+      "visible_node_qid": "dag:node:release",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        106
+      ],
+      "source_event_types": [
+        "attempt_reserved"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:19"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:87aa0936aa90e92d058c44f7cb80bbf4df3af35836c1deeb456599a992b11941"
+      ]
+    },
+    {
+      "transition_id": "canonical-05-durable-resume-repair:generation:1:seq:115:release:running:awaiting_receipt->settled:accepted",
+      "observed_at": "2026-08-30T17:25:43.931Z",
+      "run_id": "canonical-05-durable-resume-repair:generation:1",
+      "logical_run_id": "canonical-05-durable-resume-repair",
+      "journal_sequence": 115,
+      "node_id": "release",
+      "dom_before": {
+        "state": "running",
+        "admission": "awaiting_receipt"
+      },
+      "dom_after": {
+        "state": "settled",
+        "admission": "accepted"
+      },
+      "api_after": {
+        "state": "settled",
+        "admission": "accepted",
+        "accepted": true,
+        "attempt": 1,
+        "updated_sequence": 115
+      },
+      "visible_node_qid": "dag:node:release",
+      "visible_timeline_event_ids": [],
+      "source_event_sequences": [
+        106,
+        109,
+        110,
+        113
+      ],
+      "source_event_types": [
+        "attempt_reserved",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "scheduler_transition_committed"
+      ],
+      "ledger_entry_ids": [
+        "canonical-05-durable-resume-repair:generation:1:ledger:20",
+        "canonical-05-durable-resume-repair:generation:1:ledger:27"
+      ],
+      "ledger_entry_hashes": [
+        "sha256:feb1cacbce72c1b66fc98a4e3db79ab9600164a97da939232df245510c26f7a8",
+        "sha256:fc2b9c9be323fb748892e266bb425a44e2ffa8dbf9ed0038ffba8c16c5a7d69a"
+      ]
+    }
+  ]
+}

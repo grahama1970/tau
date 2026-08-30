@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-f551d576e67e4cf371199769e297dc8e",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:discover:document",
+      "control_edge_id": "generic-dependency:discover:document",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "default_all_dependencies",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.canonical_dag_result.v1",
+      "selected_sha256": "sha256:9c95d3e2af08448efd7c386a2f4f53ac239e79088e025134f18b468c905fbad1",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-c1e2de2009274edd8c20886e05624e62",
+      "source_node_id": "discover",
+      "target_node_id": "document"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:db68b838c89ecf767da1073920f025b7fab0ee3dbd54763cbadd5aeb5d5b0f1f",
+  "node_id": "document",
+  "plan_sha256": "sha256:d415ec18da76795dc0e25a7d377f7c44feccefa93ba00223c97838da63f3568f",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.node_input_manifest.v1"
+}

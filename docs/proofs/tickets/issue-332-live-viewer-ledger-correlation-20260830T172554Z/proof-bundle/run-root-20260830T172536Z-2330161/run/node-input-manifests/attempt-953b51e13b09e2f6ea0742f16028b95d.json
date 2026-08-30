@@ -1,0 +1,11 @@
+{
+  "accepted_input_count": 0,
+  "attempt": 1,
+  "attempt_id": "attempt-953b51e13b09e2f6ea0742f16028b95d",
+  "bindings": [],
+  "canonical_manifest_hash": "sha256:acfbae3f16aa2f45772c87300ffe39c286cfa430fb23bbae95bf8dfc639f9f95",
+  "node_id": "discover",
+  "plan_sha256": "sha256:d415ec18da76795dc0e25a7d377f7c44feccefa93ba00223c97838da63f3568f",
+  "run_id": "canonical-05-durable-resume-repair:generation:1",
+  "schema": "tau.node_input_manifest.v1"
+}

@@ -1,0 +1,83 @@
+{
+  "browser_trace_json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/browser-trace.json",
+  "checks": {
+    "blocked_or_approval_state": true,
+    "completion_transition": true,
+    "concurrent_branch_transition": true,
+    "every_visible_transition_bound_to_event_and_ledger": true,
+    "ledger_verified": true,
+    "negative_stale_and_out_of_order_receipts": true,
+    "no_manual_reload": true,
+    "read_only_requests": true,
+    "resume_transition": true,
+    "screenshots_or_frames": true,
+    "sequential_transition": true
+  },
+  "correlated_transition_count": 8,
+  "frame_count": 5,
+  "frames": [
+    {
+      "name": "initial",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/frames/00-initial.png",
+      "sha256": "sha256:114b9d657e094a7f555b36be8ad72dcfefbe84bc24322778093edd16e9c1564c"
+    },
+    {
+      "name": "concurrent-branches-running",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/frames/01-concurrent-branches-running.png",
+      "sha256": "sha256:fb7c718b3acda4c1ec86272b4b98d367bd3ff41aa7e1d8b494432d7d1aee1cf8"
+    },
+    {
+      "name": "reconcile-blocked",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/frames/02-reconcile-blocked.png",
+      "sha256": "sha256:240ae939fcee22d216c50b4b21414ee3cfe601dd8873f9462c32119fc9c49647"
+    },
+    {
+      "name": "resumed-reconcile-accepted",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/frames/03-resumed-reconcile-accepted.png",
+      "sha256": "sha256:5249dffeeabd6514717d6570121e7ff242e5d01f1523fb8ca7928dae77008509"
+    },
+    {
+      "name": "terminal-pass",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/frames/04-terminal-pass.png",
+      "sha256": "sha256:49ee722fe864fccfb12624fb35edadba65b45cc6be6c0f8a327f2446302a4edf"
+    }
+  ],
+  "ledger_head_hash": "sha256:0ca957e4f53bb16af043984b2198293c0260b18631feb72fdfec67f8c3dd7832",
+  "ledger_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run/run-ledger.json",
+  "ledger_projection": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/ledger-projection.json",
+  "live": true,
+  "mocked": false,
+  "negative_event_receipts": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/negative-event-receipts.json",
+  "proof_dir": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161",
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider or model semantic quality.",
+      "Production deployment readiness.",
+      "A human independently accepted the final Tau product goal."
+    ],
+    "proves": [
+      "Live React Flow DOM transitions were observed while canonical DAG 5 ran, blocked, resumed, and completed.",
+      "Every recorded visible transition is correlated to Tau event sequences and run-ledger entry hashes.",
+      "The viewer requests made by the browser proof were GET-only."
+    ]
+  },
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "run_dir": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/run",
+  "run_root": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161",
+  "schema": "tau.live_dag_viewer_correlation_browser_proof.v1",
+  "source_artifacts": {
+    "current-state.json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/current-state.json",
+    "dag-progress.json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/dag-progress.json",
+    "events.jsonl": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/events.jsonl",
+    "run-ledger.json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/run-ledger.json",
+    "run-receipt.json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/run-receipt.json",
+    "source-dag.json": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/source-artifacts/source-dag.json"
+  },
+  "status": "PASS",
+  "transition_count": 8,
+  "ui_to_event_correlation_table": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/ui-event-correlation.json",
+  "url": "http://127.0.0.1:42207/"
+}

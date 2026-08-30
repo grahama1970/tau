@@ -1,0 +1,30 @@
+{
+  "cancelled": false,
+  "command": [
+    "/home/graham/workspace/experiments/tau/.venv/bin/python3",
+    "/home/graham/workspace/experiments/tau/examples/canonical-dags/worker.py",
+    "--node-id",
+    "release",
+    "--role",
+    "human-release",
+    "--output",
+    "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/release.json",
+    "--receipt",
+    "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/receipts/release.json",
+    "--goal",
+    "/home/graham/workspace/experiments/tau/GOAL.md",
+    "--delay",
+    "1.2",
+    "--approval",
+    "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/authorizations/human-release.json",
+    "--input",
+    "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/reconcile.json",
+    "--rollback",
+    "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/rollback/release.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

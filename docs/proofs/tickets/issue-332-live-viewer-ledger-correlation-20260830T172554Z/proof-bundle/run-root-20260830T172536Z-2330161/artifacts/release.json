@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/reconcile.json",
+      "sha256": "sha256:e73257156e64e2909a59132ebd66939c020d689256e74caa92fccd4bab263446"
+    }
+  ],
+  "approval_path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/authorizations/human-release.json",
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 2838,
+          "kind": "branch-reconciliation",
+          "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/reconcile.json",
+          "sha256": "sha256:e73257156e64e2909a59132ebd66939c020d689256e74caa92fccd4bab263446"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "reconcile produced its accepted branch-reconciliation artifact."
+    }
+  ],
+  "goal_sha256": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "node_id": "release",
+  "repair_authorization_path": null,
+  "role": "human-release",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

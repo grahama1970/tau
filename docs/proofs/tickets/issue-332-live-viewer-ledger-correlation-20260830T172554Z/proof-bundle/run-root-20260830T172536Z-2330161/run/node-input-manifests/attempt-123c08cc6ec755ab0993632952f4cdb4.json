@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-123c08cc6ec755ab0993632952f4cdb4",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:reconcile:release",
+      "control_edge_id": "generic-dependency:reconcile:release",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "default_all_dependencies",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.canonical_dag_result.v1",
+      "selected_sha256": "sha256:4d8b02b18dd69baac82c3d700eb9db8c013ca95d049655132de0b589853fdda1",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-8821b695df1ca4b5c4c687295b93636b",
+      "source_node_id": "reconcile",
+      "target_node_id": "release"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:001acf2f727b599712f8063921b8f9d0c6697b93425e42432f4b4b5eb85a84bb",
+  "node_id": "release",
+  "plan_sha256": "sha256:d415ec18da76795dc0e25a7d377f7c44feccefa93ba00223c97838da63f3568f",
+  "run_id": "canonical-05-durable-resume-repair:generation:1",
+  "schema": "tau.node_input_manifest.v1"
+}

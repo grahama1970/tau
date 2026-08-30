@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 319,
+        "kind": "goal-and-source-lock",
+        "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/discover.json",
+        "sha256": "sha256:fc527e8821fbab7967bde246fd3685759c9f8c53cd8f086982589bea66e29080"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "discover produced its accepted goal-and-source-lock artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 319,
+      "kind": "goal-and-source-lock",
+      "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/proof-20260830T172536Z-2330161/run-root-20260830T172536Z-2330161/artifacts/discover.json",
+      "sha256": "sha256:fc527e8821fbab7967bde246fd3685759c9f8c53cd8f086982589bea66e29080"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:discover"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:2d2ae02000b712a57e1fc84ac06a8917532b001baa2fa42210cb71cfdc304985",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
+  "handoff_summary": "discover produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "discover",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}
