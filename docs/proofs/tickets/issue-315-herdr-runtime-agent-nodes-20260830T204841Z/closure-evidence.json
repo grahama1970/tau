@@ -1,0 +1,40 @@
+{
+  "commit": "714b9a68c62d3484e0f70c12e6bd94d584368a64",
+  "evidence_paths": [
+    "local/agentic-evals/tau-herdr-agent-node-backend/proof.json",
+    "local/agentic-evals/tau-herdr-agent-node-backend-agentic-evals-report.json",
+    "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json"
+  ],
+  "issue": 315,
+  "live": true,
+  "mocked": false,
+  "not_done_for_goal_md": [
+    "human acceptance attestation remains separate and absent unless explicitly signed"
+  ],
+  "proof_boundary": {
+    "does_not_prove": "Paid-provider semantic quality, React Flow rendering, GOAL.md completion, or human acceptance attestation.",
+    "proves": "Explicit Herdr runtime requirements compile for tau_native_agent_loop DAG nodes; live Herdr hosts headless Tau worker endpoints in one workspace; SQLite runtime projections are authoritative; endpoint adoption after scheduler lease takeover works without duplicate endpoint; pane text/status does not mutate Tau settlement; #314 operator actions pass through the Tau inbox and Herdr submit path; confirmed-dead endpoints retry with new lineage; local and Herdr settlements match required fields; exact endpoint cleanup is authorization-bound; installed-wheel import works outside the source checkout."
+  },
+  "provider_live": false,
+  "schema": "tau.ticket_closure_evidence.v1",
+  "status": "PASS",
+  "title": "Run Tau-native agent nodes through the adoptable Herdr runtime backend",
+  "validation_commands": [
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest --tau-suite=all tests/test_herdr_runtime_backend.py tests/test_agent_node_scheduler_adapter.py -q",
+      "result": "55 passed in 0.71s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest -q",
+      "result": "253 passed, 29 skipped, 3463 deselected in 26.13s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run --with typer --with rich --with python-dotenv python /home/graham/.pi/agent/skills/agentic-evals/src/runner.py run evals/tau_herdr_agent_node_backend_agentic_eval.json -o local/agentic-evals/tau-herdr-agent-node-backend-agentic-evals-report.json --timeout-seconds 300",
+      "result": "readiness=READY; PASS=2; trial_count=4"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run --with typer --with rich --with python-dotenv python /home/graham/.pi/agent/skills/agentic-evals/src/runner.py run evals/tau_feature_coverage_agentic_eval.json -o local/agentic-evals/tau-feature-coverage-agentic-evals-report.json --timeout-seconds 240",
+      "result": "readiness=READY; PASS=7; trial_count=14"
+    }
+  ]
+}
