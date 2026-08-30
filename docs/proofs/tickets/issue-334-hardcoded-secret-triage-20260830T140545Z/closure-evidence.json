@@ -1,0 +1,29 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 334,
+  "security_triage": {
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/triage-receipt.json",
+    "proof": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/proof.md",
+    "validation_log": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/validation.log",
+    "real_exposures_found": false,
+    "production_token_fixed": true
+  },
+  "unit": {
+    "command": "uv run pytest -q tests/test_security_audit_conformance.py --tb=short --tau-suite=all",
+    "exit_code": 0,
+    "passed": 6
+  },
+  "security_scan": {
+    "commands": [
+      "gitleaks detect --no-git --source src/tau_coding/security_audit_conformance.py --report-format json --report-path /tmp/tau-334-security-audit-conformance-gitleaks.json --redact=90 --log-level error",
+      "gitleaks detect --no-git --source tests/test_security_audit_conformance.py --report-format json --report-path /tmp/tau-334-test-security-audit-conformance-gitleaks.json --redact=90 --log-level error"
+    ],
+    "exit_code": 0,
+    "findings": 0
+  },
+  "regression_gate": {
+    "command": "timeout 120s uv run pytest -q -x --tb=short",
+    "exit_code": 0,
+    "result": "242 passed, 29 skipped, 3431 deselected in 27.10s"
+  }
+}

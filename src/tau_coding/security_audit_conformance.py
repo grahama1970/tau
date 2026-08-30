@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import secrets
 import shutil
 import subprocess
 from datetime import UTC, datetime, timedelta
@@ -22,7 +23,6 @@ RUN_ID = "security-audit-conformance-run"
 TARGET_ID = "workspace://tau/protected-file"
 TARGET_LINEAGE = "sha256:security-audit-lineage"
 ACTION = "working_tree_mutation"
-AUTHORIZED_TOKEN = "tau-local-security-audit-token"
 
 
 def write_security_audit_conformance(
@@ -110,7 +110,8 @@ def write_security_audit_conformance(
     )
 
     rbac_policy_path = api_dir / "rbac-policy.json"
-    _write_json(rbac_policy_path, _rbac_policy())
+    authorized_token = secrets.token_urlsafe(32)
+    _write_json(rbac_policy_path, _rbac_policy(api_token=authorized_token))
     unauthorized_request = _evaluate_api_mutating_request(
         request={
             "actor_id": "agent:unauthorized",
@@ -126,7 +127,7 @@ def write_security_audit_conformance(
     authorized_request = _evaluate_api_mutating_request(
         request={
             "actor_id": "human:graham",
-            "auth_token": AUTHORIZED_TOKEN,
+            "auth_token": authorized_token,
             "action": ACTION,
             "target": {"id": TARGET_ID, "lineage": TARGET_LINEAGE},
             "approval_receipt_path": approval_gate["approval_packet"],
@@ -483,7 +484,7 @@ def _local_signature(payload: dict[str, Any]) -> str:
     return f"local-signature-sha256:{digest}"
 
 
-def _rbac_policy() -> dict[str, Any]:
+def _rbac_policy(*, api_token: str) -> dict[str, Any]:
     return {
         "schema": "tau.rbac_policy.v1",
         "roles_by_actor": {
@@ -494,7 +495,7 @@ def _rbac_policy() -> dict[str, Any]:
             "operator": [ACTION],
             "viewer": [],
         },
-        "api_token_sha256": _token_sha256(AUTHORIZED_TOKEN),
+        "api_token_sha256": _token_sha256(api_token),
         "target": {"id": TARGET_ID, "lineage": TARGET_LINEAGE},
     }
 

@@ -1,0 +1,9 @@
+$ uv run pytest -q tests/test_security_audit_conformance.py --tb=short --tau-suite=all
+......                                                                   [100%]
+6 passed in 0.58s
+$ gitleaks detect --no-git --source src/tau_coding/security_audit_conformance.py --report-format json --report-path /tmp/tau-334-security-audit-conformance-gitleaks.json --redact=90 --log-level error
+src_security_audit_conformance_gitleaks_findings 0
+$ gitleaks detect --no-git --source tests/test_security_audit_conformance.py --report-format json --report-path /tmp/tau-334-test-security-audit-conformance-gitleaks.json --redact=90 --log-level error
+test_security_audit_conformance_gitleaks_findings 0
+$ timeout 120s uv run pytest -q -x --tb=short
+242 passed, 29 skipped, 3431 deselected in 27.10s

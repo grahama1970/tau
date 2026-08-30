@@ -1,0 +1,560 @@
+{
+  "schema": "tau.issue_334_hardcoded_secret_triage.v1",
+  "issue": "grahama1970/tau#334",
+  "status": "PASS",
+  "summary": "Project-state hardcoded_secret hits were triaged. One production-like hardcoded local audit token was replaced with an ephemeral runtime token; remaining target hits are synthetic test fixtures or redaction assertions, not live credentials.",
+  "real_exposures_found": false,
+  "code_fix": [
+    "src/tau_coding/security_audit_conformance.py",
+    "tests/test_security_audit_conformance.py"
+  ],
+  "dispositions": [
+    {
+      "file": "scripts/run-herdr-native-event-smoke.py",
+      "status": "PRESENT",
+      "classification": "synthetic_local_smoke_token",
+      "match_count": 1,
+      "matches": [
+        {
+          "line": 66,
+          "excerpt": "execution_token=\"native-smoke-token\","
+        }
+      ],
+      "required_followup": "No credential rotation needed; optional cleanup can use a generated smoke token."
+    },
+    {
+      "file": "tests/test_storage_redaction_boundaries.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 30,
+      "matches": [
+        {
+          "line": 19,
+          "excerpt": "secret = \"sk-[REDACTED_TEST_TOKEN]\""
+        },
+        {
+          "line": 20,
+          "excerpt": "monkeypatch.setenv(\"TAU_ISSUE_174_SECRET\", secret)"
+        },
+        {
+          "line": 25,
+          "excerpt": "_secret_echo_command(secret),"
+        },
+        {
+          "line": 34,
+          "excerpt": "assert not _tree_contains_text(receipt_dir, secret)"
+        },
+        {
+          "line": 38,
+          "excerpt": "assert \"stdout carried [REDACTED:SECRET_TOKEN]\" in capture[\"stdout\"]"
+        },
+        {
+          "line": 39,
+          "excerpt": "assert \"--token=[REDACTED]\" in \" \".join(capture[\"command\"])"
+        },
+        {
+          "line": 43,
+          "excerpt": "assert secret not in serialized_dispatch"
+        },
+        {
+          "line": 44,
+          "excerpt": "assert \"[REDACTED:SECRET_TOKEN]\" in serialized_dispatch"
+        },
+        {
+          "line": 48,
+          "excerpt": "secret = \"sk-[REDACTED_TEST_TOKEN]\""
+        },
+        {
+          "line": 74,
+          "excerpt": "\"command\": [\"curl\", f\"--token={secret}\"],"
+        },
+        {
+          "line": 75,
+          "excerpt": "\"stdout\": f\"Bearer {secret}\","
+        },
+        {
+          "line": 76,
+          "excerpt": "\"stderr\": f\"password={secret}\","
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_tau_ai.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 47,
+      "matches": [
+        {
+          "line": 7,
+          "excerpt": "from tau_agent import AgentTool, AgentToolResult, SimpleCancellationToken, ToolCall, UserMessage"
+        },
+        {
+          "line": 57,
+          "excerpt": "monkeypatch.setenv(\"OPENAI_API_KEY\", \"test-key\")"
+        },
+        {
+          "line": 65,
+          "excerpt": "assert config.api_key == \"test-key\""
+        },
+        {
+          "line": 75,
+          "excerpt": "monkeypatch.setenv(\"OPENAI_API_KEY\", \"test-key\")"
+        },
+        {
+          "line": 85,
+          "excerpt": "monkeypatch.setenv(\"OPENAI_API_KEY\", \"test-key\")"
+        },
+        {
+          "line": 96,
+          "excerpt": "api_key=\"test-key\","
+        },
+        {
+          "line": 121,
+          "excerpt": "'data: {\"choices\":[],\"usage\":{\"prompt_tokens\":1000,'"
+        },
+        {
+          "line": 122,
+          "excerpt": "'\"completion_tokens\":40,\"prompt_tokens_details\":{\"cached_tokens\":200,'"
+        },
+        {
+          "line": 123,
+          "excerpt": "'\"cache_write_tokens\":50},\"completion_tokens_details\":'"
+        },
+        {
+          "line": 124,
+          "excerpt": "'{\"reasoning_tokens\":11}}}\\n\\n'"
+        },
+        {
+          "line": 133,
+          "excerpt": "api_key=\"test-key\","
+        },
+        {
+          "line": 166,
+          "excerpt": "assert request.headers[\"authorization\"] == \"Bearer [REDACTED_TEST_TOKEN]\""
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_scillm_chat_review.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 17,
+      "matches": [
+        {
+          "line": 46,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 65,
+          "excerpt": "assert requests[0][\"authorization\"] == \"Bearer [REDACTED_TEST_TOKEN]\""
+        },
+        {
+          "line": 68,
+          "excerpt": "assert \"test-token\" not in json.dumps(payload)"
+        },
+        {
+          "line": 72,
+          "excerpt": "def test_scillm_chat_review_apply_blocks_without_auth_token("
+        },
+        {
+          "line": 77,
+          "excerpt": "monkeypatch.delenv(\"SCILLM_API_KEY\", raising=False)"
+        },
+        {
+          "line": 78,
+          "excerpt": "monkeypatch.delenv(\"SCILLM_AUTH_TOKEN\", raising=False)"
+        },
+        {
+          "line": 98,
+          "excerpt": "assert \"missing_scillm_auth_token\" in payload[\"alert_codes\"]"
+        },
+        {
+          "line": 123,
+          "excerpt": "\"--auth-token\","
+        },
+        {
+          "line": 124,
+          "excerpt": "\"test-token\","
+        },
+        {
+          "line": 150,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 170,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 196,
+          "excerpt": "auth_token=\"test-token\","
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_commit_plan.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 12,
+      "matches": [
+        {
+          "line": 84,
+          "excerpt": "(repo / \".env\").write_text(\"TOKEN=secret\\n\", encoding=\"utf-8\")"
+        },
+        {
+          "line": 94,
+          "excerpt": "def test_commit_plan_blocks_untracked_sensitive_file_under_secret_dir("
+        },
+        {
+          "line": 98,
+          "excerpt": "secret = repo / \"secrets\" / \"token.txt\""
+        },
+        {
+          "line": 99,
+          "excerpt": "secret.parent.mkdir()"
+        },
+        {
+          "line": 100,
+          "excerpt": "secret.write_text(\"secret\\n\", encoding=\"utf-8\")"
+        },
+        {
+          "line": 106,
+          "excerpt": "assert payload[\"sensitive_untracked_files\"][0][\"path\"] == \"secrets/token.txt\""
+        },
+        {
+          "line": 738,
+          "excerpt": "secret = repo / \"secrets\" / \"token.py\""
+        },
+        {
+          "line": 739,
+          "excerpt": "secret.parent.mkdir()"
+        },
+        {
+          "line": 740,
+          "excerpt": "secret.write_text(\"token = 'do-not-read'\\n\", encoding=\"utf-8\")"
+        },
+        {
+          "line": 749,
+          "excerpt": "read_denylist=[\"secrets/**\"],"
+        },
+        {
+          "line": 757,
+          "excerpt": "assert changed[\"path\"] == \"secrets/token.py\""
+        },
+        {
+          "line": 818,
+          "excerpt": "policy_profile=_policy_profile(read_denylist=\"secrets/**\", write_allowlist=[]),"
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_battle_scillm_auth_preflight.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 10,
+      "matches": [
+        {
+          "line": 61,
+          "excerpt": "def fake_auth(base_url: str, api_key: str) -> dict[str, object]:"
+        },
+        {
+          "line": 73,
+          "excerpt": "api_key=\"test-key\","
+        },
+        {
+          "line": 85,
+          "excerpt": "def fake_auth(base_url: str, api_key: str) -> dict[str, object]:"
+        },
+        {
+          "line": 106,
+          "excerpt": "api_key=\"test-key\","
+        },
+        {
+          "line": 125,
+          "excerpt": "def fake_auth(base_url: str, api_key: str) -> dict[str, object]:"
+        },
+        {
+          "line": 158,
+          "excerpt": "api_key=\"test-key\","
+        },
+        {
+          "line": 177,
+          "excerpt": "\"_docker_api_key\","
+        },
+        {
+          "line": 181,
+          "excerpt": "def fake_auth(base_url: str, api_key: str) -> dict[str, object]:"
+        },
+        {
+          "line": 182,
+          "excerpt": "used_keys.append(api_key)"
+        },
+        {
+          "line": 198,
+          "excerpt": "assert receipt[\"api_key_source\"] == \"docker:docker-scillm-proxy-1:SCILLM_MASTER_KEY\""
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_dag_route_memory.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 9,
+      "matches": [
+        {
+          "line": 295,
+          "excerpt": "assert any(alert[\"code\"] == \"missing_memory_auth_token\" for alert in receipt[\"alerts\"])"
+        },
+        {
+          "line": 307,
+          "excerpt": "memory_auth_token=\"issue-172-memory-token\","
+        },
+        {
+          "line": 331,
+          "excerpt": "memory_auth_token=\"issue-172-memory-token\","
+        },
+        {
+          "line": 359,
+          "excerpt": "\"token_recorded\": False,"
+        },
+        {
+          "line": 361,
+          "excerpt": "assert \"missing_memory_auth_token\" in {alert[\"code\"] for alert in receipt[\"alerts\"]}"
+        },
+        {
+          "line": 376,
+          "excerpt": "memory_auth_token=\"issue-172-memory-token\","
+        },
+        {
+          "line": 390,
+          "excerpt": "\"token_recorded\": False,"
+        },
+        {
+          "line": 397,
+          "excerpt": "assert requests[0][\"authorization\"] == \"Bearer [REDACTED_TEST_TOKEN]\""
+        },
+        {
+          "line": 446,
+          "excerpt": "assert \"missing_memory_auth_token\" in {alert[\"code\"] for alert in payload[\"alerts\"]}"
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_immutable_goal_audit.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 5,
+      "matches": [
+        {
+          "line": 199,
+          "excerpt": "secret = \"audit-secret-value\""
+        },
+        {
+          "line": 201,
+          "excerpt": "env[\"SECRET_TOKEN\"] = secret"
+        },
+        {
+          "line": 218,
+          "excerpt": "assert secret not in json.dumps(records)"
+        },
+        {
+          "line": 225,
+          "excerpt": "payload = audit._blocked_audit(\"a\" * 40, commands, audit.AuditError(\"wrong ref\\nsecret\"))"
+        },
+        {
+          "line": 232,
+          "excerpt": "assert payload[\"failure\"][\"message\"] == \"wrong ref secret\""
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "tests/test_coding_worker_adapters.py",
+      "status": "PRESENT",
+      "classification": "synthetic_test_fixture_or_redaction_assertion",
+      "match_count": 44,
+      "matches": [
+        {
+          "line": 92,
+          "excerpt": "changed_files=[\"secrets/token.txt\"],"
+        },
+        {
+          "line": 133,
+          "excerpt": "work_order_payload[\"forbidden_paths\"] = \"secrets/**\""
+        },
+        {
+          "line": 1303,
+          "excerpt": "artifact = repo / \"secrets\" / \"debug.log\""
+        },
+        {
+          "line": 1305,
+          "excerpt": "artifact.write_text(\"secret evidence\\n\", encoding=\"utf-8\")"
+        },
+        {
+          "line": 1309,
+          "excerpt": "artifacts=[\"secrets/debug.log\"],"
+        },
+        {
+          "line": 2825,
+          "excerpt": "auth_token=\"token\","
+        },
+        {
+          "line": 2941,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 3000,
+          "excerpt": "assert requests[0][\"authorization\"] == \"Bearer [REDACTED_TEST_TOKEN]\""
+        },
+        {
+          "line": 3004,
+          "excerpt": "assert \"test-token\" not in json.dumps(payload)"
+        },
+        {
+          "line": 3039,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 3099,
+          "excerpt": "auth_token=\"test-token\","
+        },
+        {
+          "line": 3160,
+          "excerpt": "auth_token=\"test-token\","
+        }
+      ],
+      "required_followup": "No credential rotation needed; future cleanup can reduce scanner noise by splitting scanner-shaped literals."
+    },
+    {
+      "file": "src/tau_coding/cli.py",
+      "status": "PRESENT",
+      "classification": "reviewed_no_real_secret_found",
+      "match_count": 97,
+      "matches": [
+        {
+          "line": 244,
+          "excerpt": "ANTHROPIC_AUTH_TOKEN_ENV,"
+        },
+        {
+          "line": 247,
+          "excerpt": "RUNTIME_API_KEY_ENV,"
+        },
+        {
+          "line": 1110,
+          "excerpt": "api_key, api_key_source, api_key_errors = resolve_active_scillm_proxy_key()"
+        },
+        {
+          "line": 1120,
+          "excerpt": "\"api_key_present\": bool(api_key),"
+        },
+        {
+          "line": 1121,
+          "excerpt": "\"api_key_source\": api_key_source,"
+        },
+        {
+          "line": 1122,
+          "excerpt": "\"api_key_resolution_errors\": api_key_errors,"
+        },
+        {
+          "line": 1131,
+          "excerpt": "if not api_key:"
+        },
+        {
+          "line": 1137,
+          "excerpt": "\"Authorization\": f\"Bearer {api_key}\","
+        },
+        {
+          "line": 1156,
+          "excerpt": "payload[\"reason\"] = \"scillm_proxy_auth_invalid_api_key\""
+        },
+        {
+          "line": 1172,
+          "excerpt": "api_key=api_key,"
+        },
+        {
+          "line": 1199,
+          "excerpt": "api_key: str,"
+        },
+        {
+          "line": 1202,
+          "excerpt": "\"\"\"Run one tiny Claude OAuth call so revoked tokens fail closed.\"\"\""
+        }
+      ],
+      "required_followup": "No follow-up."
+    },
+    {
+      "file": "src/tau_coding/security_audit_conformance.py",
+      "status": "PRESENT",
+      "classification": "fixed_ephemeral_runtime_token",
+      "match_count": 13,
+      "matches": [
+        {
+          "line": 8,
+          "excerpt": "import secrets"
+        },
+        {
+          "line": 113,
+          "excerpt": "authorized_token = secrets.token_urlsafe(32)"
+        },
+        {
+          "line": 114,
+          "excerpt": "_write_json(rbac_policy_path, _rbac_policy(api_token=authorized_token))"
+        },
+        {
+          "line": 118,
+          "excerpt": "\"auth_token\": None,"
+        },
+        {
+          "line": 130,
+          "excerpt": "\"auth_token\": authorized_token,"
+        },
+        {
+          "line": 326,
+          "excerpt": "token_hash = _token_sha256(str(request.get(\"auth_token\") or \"\"))"
+        },
+        {
+          "line": 328,
+          "excerpt": "if token_hash != policy.get(\"api_token_sha256\"):"
+        },
+        {
+          "line": 350,
+          "excerpt": "\"auth_token_present\": bool(request.get(\"auth_token\")),"
+        },
+        {
+          "line": 351,
+          "excerpt": "\"auth_token_sha256\": token_hash if request.get(\"auth_token\") else None,"
+        },
+        {
+          "line": 487,
+          "excerpt": "def _rbac_policy(*, api_token: str) -> dict[str, Any]:"
+        },
+        {
+          "line": 498,
+          "excerpt": "\"api_token_sha256\": _token_sha256(api_token),"
+        },
+        {
+          "line": 503,
+          "excerpt": "def _token_sha256(token: str) -> str:"
+        }
+      ],
+      "required_followup": "Keep token generated at runtime; no follow-up ticket needed if tests and gitleaks pass."
+    }
+  ],
+  "commands_to_verify": [
+    "uv run pytest -q tests/test_security_audit_conformance.py --tb=short --tau-suite=all",
+    "gitleaks detect --no-git --source src/tau_coding/security_audit_conformance.py --report-format json --report-path /tmp/tau-334-security-audit-conformance-gitleaks.json --redact=90 --log-level error",
+    "gitleaks detect --no-git --source tests/test_security_audit_conformance.py --report-format json --report-path /tmp/tau-334-test-security-audit-conformance-gitleaks.json --redact=90 --log-level error"
+  ],
+  "validation": {
+    "focused_security_tests": "PASS: 6 passed in 0.58s",
+    "src_security_audit_conformance_gitleaks_findings": 0,
+    "test_security_audit_conformance_gitleaks_findings": 0,
+    "tau_quality_gate": "PASS: 242 passed, 29 skipped, 3431 deselected in 27.10s",
+    "validation_log": "docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/validation.log"
+  }
+}

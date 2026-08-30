@@ -5,7 +5,6 @@ from tau_coding.security_audit_conformance import (
     ACTION,
     API_MUTATING_REQUEST_RECEIPT_SCHEMA,
     AUDIT_LEDGER_VERIFICATION_SCHEMA,
-    AUTHORIZED_TOKEN,
     TARGET_ID,
     TARGET_LINEAGE,
     _evaluate_api_mutating_request,
@@ -17,18 +16,23 @@ from tau_coding.security_audit_conformance import (
 )
 
 
+def _test_auth_token() -> str:
+    return "tau-test-auth-token"
+
+
 def test_api_mutating_request_accepts_authorized_rbac_actor(
     tmp_path: Path,
 ) -> None:
     policy_path = tmp_path / "rbac-policy.json"
     receipt_path = tmp_path / "authorized-mutating-request.json"
     approval_receipt = _approval_gate_receipt(status="PASS")
-    _write_json(policy_path, _rbac_policy())
+    auth_token = _test_auth_token()
+    _write_json(policy_path, _rbac_policy(api_token=auth_token))
 
     receipt = _evaluate_api_mutating_request(
         request={
             "actor_id": "human:graham",
-            "auth_token": AUTHORIZED_TOKEN,
+            "auth_token": auth_token,
             "action": ACTION,
             "target": {"id": TARGET_ID, "lineage": TARGET_LINEAGE},
         },
@@ -42,7 +46,7 @@ def test_api_mutating_request_accepts_authorized_rbac_actor(
     assert receipt["role"] == "operator"
     assert receipt["accepted"] is True
     assert receipt["mutation_applied"] is True
-    assert receipt["auth_token_sha256"] == _token_sha256(AUTHORIZED_TOKEN)
+    assert receipt["auth_token_sha256"] == _token_sha256(auth_token)
     assert receipt["approval_gate_status"] == "PASS"
     assert receipt["errors"] == []
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
@@ -52,7 +56,7 @@ def test_api_mutating_request_blocks_unauthorized_actor_without_token(
     tmp_path: Path,
 ) -> None:
     policy_path = tmp_path / "rbac-policy.json"
-    _write_json(policy_path, _rbac_policy())
+    _write_json(policy_path, _rbac_policy(api_token=_test_auth_token()))
 
     receipt = _evaluate_api_mutating_request(
         request={
@@ -82,12 +86,13 @@ def test_api_mutating_request_requires_passed_approval_receipt(
     tmp_path: Path,
 ) -> None:
     policy_path = tmp_path / "rbac-policy.json"
-    _write_json(policy_path, _rbac_policy())
+    auth_token = _test_auth_token()
+    _write_json(policy_path, _rbac_policy(api_token=auth_token))
 
     receipt = _evaluate_api_mutating_request(
         request={
             "actor_id": "human:graham",
-            "auth_token": AUTHORIZED_TOKEN,
+            "auth_token": auth_token,
             "action": ACTION,
             "target": {"id": TARGET_ID, "lineage": TARGET_LINEAGE},
         },
@@ -106,12 +111,13 @@ def test_api_mutating_request_blocks_wrong_target_lineage(
     tmp_path: Path,
 ) -> None:
     policy_path = tmp_path / "rbac-policy.json"
-    _write_json(policy_path, _rbac_policy())
+    auth_token = _test_auth_token()
+    _write_json(policy_path, _rbac_policy(api_token=auth_token))
 
     receipt = _evaluate_api_mutating_request(
         request={
             "actor_id": "human:graham",
-            "auth_token": AUTHORIZED_TOKEN,
+            "auth_token": auth_token,
             "action": ACTION,
             "target": {"id": TARGET_ID, "lineage": "sha256:wrong-lineage"},
         },
