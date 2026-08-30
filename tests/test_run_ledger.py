@@ -380,7 +380,8 @@ def test_agentic_eval_evidence_index_rejects_dirty_tree(tmp_path):
     _init_agentic_eval_repo(tmp_path)
     index_path = tmp_path.parent / "index.json"
     rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
-    (tmp_path / "untracked.txt").write_text("dirty\n", encoding="utf-8")
+    report = tmp_path / "local" / "agentic-evals" / "demo-agentic-evals-report.json"
+    report.write_text(report.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
     result = rl.verify_agentic_eval_ledger_evidence_index(
         index_path,

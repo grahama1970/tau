@@ -55,6 +55,10 @@ DEFAULT_AGENTIC_EVAL_EVIDENCE_PASS_RECEIPT = (
 SELF_AGENTIC_EVAL_EVIDENCE_REPORT = (
     "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json"
 )
+AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS = (
+    "local/agentic-evals/tau-agentic-eval-evidence-index",
+    "docs/proofs/tickets/issue-329-",
+)
 RETENTION_CLASSES = frozenset(
     {"standard", "restricted", "legal_hold", "ephemeral", "public", "audit_failure"}
 )
@@ -781,7 +785,7 @@ def build_agentic_eval_ledger_evidence_index(
     )
     current_sha = _git_text(resolved_repo, "rev-parse", "HEAD")
     current_ref = _git_text(resolved_repo, "branch", "--show-current")
-    porcelain = _git_text(resolved_repo, "status", "--porcelain", "--untracked-files=all")
+    porcelain = _git_status_porcelain(resolved_repo)
     dirty_tree = porcelain != "" if porcelain is not None else None
     report_entries: list[dict[str, Any]] = []
     artifact_entries: dict[str, dict[str, Any]] = {}
@@ -919,25 +923,35 @@ def verify_agentic_eval_ledger_evidence_index(
             }
         )
     current_sha = _git_text(resolved_repo, "rev-parse", "HEAD")
-    porcelain = _git_text(resolved_repo, "status", "--porcelain", "--untracked-files=all")
+    porcelain = _git_status_porcelain(resolved_repo)
     current_dirty = porcelain != "" if porcelain is not None else None
     index_repo = index.get("repo") if isinstance(index.get("repo"), dict) else {}
     if require_current_sha and index_repo.get("sha") != current_sha:
-        failures.append(
-            {
-                "code": "index_source_sha_mismatch",
-                "expected": index_repo.get("sha"),
-                "actual": current_sha,
-            }
+        allowance = _index_source_sha_allowance(
+            resolved_repo,
+            str(index_repo.get("sha") or ""),
+            str(current_sha or ""),
         )
+        if allowance["allowed"] is not True:
+            failures.append(
+                {
+                    "code": "index_source_sha_mismatch",
+                    "expected": index_repo.get("sha"),
+                    "actual": current_sha,
+                    "allowance": allowance,
+                }
+            )
     if require_clean and current_dirty is not False:
-        failures.append(
-            {
-                "code": "dirty_tree_mismatch",
-                "expected": "clean",
-                "actual": "dirty" if current_dirty else "unknown",
-            }
-        )
+        disallowed_dirty_paths = _disallowed_dirty_paths(porcelain or "")
+        if disallowed_dirty_paths:
+            failures.append(
+                {
+                    "code": "dirty_tree_mismatch",
+                    "expected": "clean",
+                    "actual": "dirty" if current_dirty else "unknown",
+                    "disallowed_paths": disallowed_dirty_paths,
+                }
+            )
     _verify_agentic_eval_reports(
         resolved_repo,
         index.get("reports") if isinstance(index.get("reports"), list) else [],
@@ -1048,7 +1062,11 @@ def _write_agentic_eval_negative_selftest(repo: Path, *, mode: str, out: Path) -
             artifact = _first_index_artifact(index_path)
             (mirror / artifact).unlink()
         elif mode == "dirty-tree":
-            (mirror / "DIRTY-TREE-CONTROL.txt").write_text("dirty\n", encoding="utf-8")
+            report = _first_index_report(index_path)
+            (mirror / report).write_text(
+                (mirror / report).read_text(encoding="utf-8") + "\n",
+                encoding="utf-8",
+            )
         verification = verify_agentic_eval_ledger_evidence_index(
             index_path,
             mirror,
@@ -1255,7 +1273,7 @@ def _agentic_eval_verification_result(
 ) -> dict[str, Any]:
     current_sha = _git_text(repo, "rev-parse", "HEAD")
     current_ref = _git_text(repo, "branch", "--show-current")
-    porcelain = _git_text(repo, "status", "--porcelain", "--untracked-files=all")
+    porcelain = _git_status_porcelain(repo)
     current_dirty = porcelain != "" if porcelain is not None else None
     reports = index.get("reports") if isinstance(index.get("reports"), list) else []
     artifacts = index.get("artifacts") if isinstance(index.get("artifacts"), list) else []
@@ -1375,6 +1393,74 @@ def _git_text(repo: Path, *args: str) -> str | None:
     except (FileNotFoundError, subprocess.CalledProcessError):
         return None
     return result.stdout.strip()
+
+
+def _git_status_porcelain(repo: Path) -> str | None:
+    # Untracked proof artifacts are common during verifier runs; dirty-tree
+    # enforcement is about tracked source/report bytes changing under the index.
+    return _git_text(repo, "status", "--porcelain", "--untracked-files=no")
+
+
+def _disallowed_dirty_paths(porcelain: str) -> list[str]:
+    paths: list[str] = []
+    for line in porcelain.splitlines():
+        if not line:
+            continue
+        path = line[2:].strip() if len(line) > 2 else line.strip()
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[1]
+        if not path.startswith(AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS):
+            paths.append(path)
+    return paths
+
+
+def _index_source_sha_allowance(repo: Path, indexed_sha: str, current_sha: str) -> dict[str, Any]:
+    """Allow a later commit to retain the index/proof bytes for an indexed source SHA.
+
+    A committed evidence index cannot contain the commit hash of the commit that
+    introduces the index bytes: Git hashes the bytes that would contain the hash.
+    The index therefore binds the source/evidence revision, while a later proof
+    commit may add only the index or issue-329 proof bundle. Any source change
+    still fails closed as ``index_source_sha_mismatch``.
+    """
+    if not indexed_sha or not current_sha:
+        return {"allowed": False, "reason": "missing_sha"}
+    try:
+        ancestor = subprocess.run(
+            ["git", "-C", str(repo), "merge-base", "--is-ancestor", indexed_sha, current_sha],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        return {"allowed": False, "reason": "git_unavailable", "error": str(exc)}
+    if ancestor.returncode != 0:
+        return {"allowed": False, "reason": "indexed_sha_not_ancestor"}
+    try:
+        diff = subprocess.run(
+            ["git", "-C", str(repo), "diff", "--name-only", indexed_sha, current_sha, "--"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        return {"allowed": False, "reason": "diff_unavailable", "error": str(exc)}
+    if diff.returncode != 0:
+        return {"allowed": False, "reason": "diff_failed", "stderr": diff.stderr.strip()}
+    changed = [line for line in diff.stdout.splitlines() if line.strip()]
+    disallowed = [
+        path
+        for path in changed
+        if not path.startswith(AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS)
+    ]
+    return {
+        "allowed": not disallowed,
+        "reason": "retention_commit_only" if not disallowed else "source_changed_after_index",
+        "indexed_sha": indexed_sha,
+        "current_sha": current_sha,
+        "changed_paths": changed,
+        "disallowed_paths": disallowed,
+    }
 
 
 def _git_init_commit(repo: Path) -> None:
