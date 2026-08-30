@@ -610,13 +610,18 @@ def _create_fixture_repo(path: Path) -> str:
 
 
 def _source_state(repo: Path) -> dict[str, Any]:
-    status = _git(["status", "--porcelain"], cwd=repo)
+    status_lines = _git(["status", "--porcelain"], cwd=repo).splitlines()
+    tracked_status = [line for line in status_lines if not line.startswith("?? ")]
+    untracked_status = [line for line in status_lines if line.startswith("?? ")]
     return {
         "repo": str(repo),
         "commit": _git(["rev-parse", "HEAD"], cwd=repo),
         "branch": _git(["branch", "--show-current"], cwd=repo),
-        "clean": status == "",
-        "status_porcelain": status.splitlines(),
+        "clean": tracked_status == [],
+        "tracked_clean": tracked_status == [],
+        "status_porcelain": status_lines,
+        "tracked_status_porcelain": tracked_status,
+        "untracked_status_porcelain": untracked_status,
     }
 
 

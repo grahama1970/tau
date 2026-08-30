@@ -1,0 +1,108 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau provider-live packaged workflow acceptance proof and fail-closed verifier",
+  "claims": {
+    "proves": "Tau can build a fresh wheel, run the installed public tau entrypoint through all five packaged workflows, exercise the configured provider boundary, bind the receipt to source commit and wheel digest, and reject tampered provider-live proof.",
+    "does_not_prove": "Provider semantic quality, human acceptance, production deployment readiness, or Tau GOAL.md completion."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.workflow_provider_live_acceptance",
+      "description": "Tau exposes one-command provider-live packaged workflow acceptance proof and verification commands that fail closed on tampered provider evidence.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "provider-live-five-packaged-workflows-installed-entrypoint",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.workflow_provider_live_acceptance"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf .tmp/agentic-evals/provider-live-acceptance && mkdir -p .tmp/agentic-evals/provider-live-acceptance && uv run tau workflows acceptance-proof --repo . --output .tmp/agentic-evals/provider-live-acceptance/receipt.json --work-dir .tmp/agentic-evals/provider-live-acceptance/work --provider-url http://127.0.0.1:4001 --timeout-s 5 && uv run tau workflows verify-acceptance-proof .tmp/agentic-evals/provider-live-acceptance/receipt.json --repo ."
+      ],
+      "timeout_seconds": 600,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.workflow_provider_live_acceptance_receipt.v1\"",
+          "\"status\": \"PASS\"",
+          "\"provider_live\": true",
+          "\"schema\": \"tau.workflow_provider_live_acceptance_verification.v1\""
+        ],
+        "artifacts": [
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/provider_live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/workflow_ids",
+            "equals": [
+              "repository-readiness",
+              "tau-operator-reference",
+              "repository-evidence-map",
+              "approved-release-bundle",
+              "durable-repository-qualification"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "provider-live-verifier-rejects-tampered-provider-claim",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.workflow_provider_live_acceptance"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python - <<'PY'\nimport json, pathlib, subprocess\nbase=pathlib.Path('.tmp/agentic-evals/provider-live-acceptance')\nsource=base/'receipt.json'\nif not source.exists():\n    subprocess.run(['uv','run','tau','workflows','acceptance-proof','--repo','.','--output',str(source),'--work-dir',str(base/'work'),'--timeout-s','5'], check=True)\npayload=json.loads(source.read_text())\npayload['provider_live']=False\npayload['provider']['terminal_evidence']['provider_live']=False\ntampered=base/'tampered-provider-live-false.json'\ntampered.write_text(json.dumps(payload, indent=2)+'\\n')\nresult=subprocess.run(['uv','run','tau','workflows','verify-acceptance-proof',str(tampered),'--repo','.'], check=False, text=True, capture_output=True)\nprint(result.stdout)\nif result.returncode == 0:\n    raise SystemExit('tampered receipt unexpectedly passed')\nverification=json.loads(result.stdout)\nif verification.get('status') != 'BLOCKED' or 'provider_live_invalid' not in verification.get('errors', []):\n    raise SystemExit(f'unexpected verifier response: {verification}')\nprint(json.dumps({'status':'PASS','detected':'provider_live_invalid'}))\nPY"
+      ],
+      "timeout_seconds": 600,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"BLOCKED\"",
+          "provider_live_invalid",
+          "\"detected\": \"provider_live_invalid\""
+        ]
+      }
+    }
+  ]
+}

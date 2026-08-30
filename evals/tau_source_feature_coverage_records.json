@@ -1345,6 +1345,11 @@
       "status": "OUT_OF_SCOPE"
     },
     {
+      "claim_id": "tau.workflow_provider_live_acceptance",
+      "feature_id": "cli-command:workflows/acceptance-proof",
+      "status": "CLAIMED"
+    },
+    {
       "expires": "2026-12-31",
       "feature_id": "cli-command:workflows/approve",
       "owner": "tau-maintainers",
@@ -1380,6 +1385,11 @@
     {
       "claim_id": "tau.dag_ladder.rung1_clean_checkout",
       "feature_id": "cli-command:workflows/run",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.workflow_provider_live_acceptance",
+      "feature_id": "cli-command:workflows/verify-acceptance-proof",
       "status": "CLAIMED"
     },
     {
