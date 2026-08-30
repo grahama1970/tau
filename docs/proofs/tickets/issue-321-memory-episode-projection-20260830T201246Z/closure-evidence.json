@@ -1,0 +1,73 @@
+{
+  "agentic_evals": {
+    "command": "/home/graham/.pi/agent/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output local/agentic-evals/tau-memory-episode-agentic-evals-report.json",
+    "exit_code": 0,
+    "report": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json"
+  },
+  "created_at": "2026-08-30T20:12:46.579677+00:00",
+  "e2e": {
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json",
+    "command": "uv run python scripts/agentic-eval-tau-memory-episode-projection.py --out local/agentic-evals/tau-memory-episode-proof.json --work local/agentic-evals/tau-memory-episode-work",
+    "exit_code": 0,
+    "live": true,
+    "mocked": false
+  },
+  "feature_coverage": {
+    "outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 7
+    },
+    "path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/tau-feature-coverage-agentic-evals-report.json",
+    "readiness": "READY",
+    "trial_count": 14
+  },
+  "issue": 321,
+  "live": true,
+  "mocked": false,
+  "not_proven": [
+    "full graph traversal UX",
+    "multimodal indexing for real image/audio artifacts",
+    "provider semantic quality",
+    "GOAL.md completion",
+    "human acceptance"
+  ],
+  "observed": {
+    "agentic_eval_outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 2
+    },
+    "agentic_eval_readiness": "READY",
+    "agentic_eval_trial_count": 4,
+    "dag_status": "PASS",
+    "forbidden_raw_prompt_rejected": true,
+    "lineage_mutation_rejected": true,
+    "live_relay_states": [
+      "projected",
+      "projected"
+    ],
+    "memory_readback_count": 2,
+    "outage_state": "degraded",
+    "permanent_rejection_state": "permanently_rejected",
+    "projected_episode_count": 2,
+    "replay_result_count": 0,
+    "run_state_after_outage": "PASS",
+    "source_journal_event_count": 25,
+    "source_receipt_admission_count": 4
+  },
+  "proof_boundary": {
+    "does_not_prove": "full graph traversal UI, real multimodal indexing, provider semantic quality, GOAL.md completion, or human acceptance.",
+    "proves": "Tau builds redacted accepted orchestration episodes, enqueues them in the existing memory_projection_outbox, relays them through Memory /store, reads projected records back through Memory endpoints, dedupes replay, and keeps Tau settlement unchanged on outage/rejection."
+  },
+  "provider_live": false,
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "status": "ACCEPTED",
+  "unit": {
+    "command": "uv run pytest --tau-suite=all tests/test_tau_memory_episode_projection.py tests/test_dag_runtime_memory_projection.py -q",
+    "exit_code": 0,
+    "passed": 9
+  }
+}

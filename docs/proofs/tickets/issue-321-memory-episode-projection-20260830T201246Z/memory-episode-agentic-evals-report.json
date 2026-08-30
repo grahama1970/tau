@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_memory_episode_projection_agentic_eval.json",
+  "run_id": "e307a77d9d34",
+  "fixture_sha256": "sha256:b553d608981c71be284b0b77e30fa53009cf553e92b7564560860ee348084abc",
+  "repo": {
+    "sha": "ad34d4f12a04f959048772f86a750019753ce94f",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau accepted turn/tool/join episode projection through the existing Memory outbox and governed Memory /store API",
+  "claims": {
+    "proves": "Tau builds redacted memory.tau_orchestration_episode.v1 payloads from accepted journal facts, enqueues them in the existing outbox, relays them through governed Memory /store, reads them back by key and recall, replay-dedupes projected rows, degrades on Memory outage without changing settlement, permanently records schema rejection without changing settlement, and rejects forbidden raw text plus lineage mutation.",
+    "does_not_prove": "Full graph traversal UX, multimodal indexing of real image/audio artifacts, provider semantic quality, GOAL.md completion, or human acceptance."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+        "description": "Accepted Tau turn/tool/join/settlement facts are normalized into governed Memory orchestration episode payloads, projected via the existing outbox, replay-deduped, redacted, and resilient to Memory outage or schema rejection.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "memory-episode-projection-rejects-raw-text-and-lineage-mutation"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "memory-episode-projection-live-store-and-readback"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "memory-episode-projection-live-store-and-readback",
+          "memory-episode-projection-rejects-raw-text-and-lineage-mutation"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T20:11:23.230212+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "memory-episode-projection-live-store-and-readback",
+      "type": "positive",
+      "case_id": "e307a77d9d34-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && rm -rf local/agentic-evals/tau-memory-episode-work && uv run python scripts/agentic-eval-tau-memory-episode-projection.py --out local/agentic-evals/tau-memory-episode-proof.json --work local/agentic-evals/tau-memory-episode-work"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.memory_episode_projection.governed_accepted_episode_outbox"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2914.574,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"dag_exit_code\": 0,\n  \"dag_status\": \"PASS\",\n  \"errors\": [],\n  \"forbidden_raw_prompt_rejected\": true,\n  \"lineage_mutation_rejected\": true,\n  \"live\": true,\n  \"live_relay_states\": [\n    \"projected\",\n    \"projected\"\n  ],\n  \"marker\": \"issue321_tau_orchestration_episode_1788120675948\",\n  \"memory_readback\": {\n    \"by_keys\": {\n      \"collection\": \"agent_conversations\",\n      \"count\": 2,\n      \"documents\": [\n        {\n          \"_key\": \"tau_episode_7bf80e15ce19340831ef23f5591f5bf0fc9de631\",\n          \"attempt_id\": \"attempt-4f5709e9a938cac133a91ba405a7d2f0\",\n          \"journal_head_hash\": \"sha256:43e13e833330fb7318f8f7e0a0bf745fe55bc16e4e22199f8d139060ac01891b\",\n          \"journal_sequence\": 25,\n          \"node_id\": \"tool-and-join\",\n          \"run_id\": \"issue321-memory-episode\",\n          \"schema\": \"memory.tau_orchestration_episode.v1\",\n          \"source_outbox_row\": \"mp-d6d5534806bf7eeeb6f7595f7dcbea19\",\n          \"source_receipt_hashes\": [\n            \"sha256:d1c5814faa266bdd6b096e110f122f6e9188c50137233e3fafc72ff43103cbde\"\n          ],\n          \"summary\": \"issue321_tau_orchestration_episode_1788120675948 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"_key\": \"tau_episode_4d208fa0a75bca1571d5f824528f99a445a0b105\",\n          \"attempt_id\": \"attempt-dd7feab0b65950ab5a24b1980b401f7a\",\n          \"journal_head_hash\": \"sha256:43e13e833330fb7318f8f7e0a0bf745fe55bc16e4e22199f8d139060ac01891b\",\n          \"journal_sequence\": 25,\n          \"node_id\": \"turn-one\",\n          \"run_id\": \"issue321-memory-episode\",\n          \"schema\": \"memory.tau_orchestration_episode.v1\",\n          \"source_outbox_row\": \"mp-e9844afdefb9b3bfd655f3207b61482c\",\n          \"source_receipt_hashes\": [\n            \"sha256:731b9648747688f9de5c7bc55dd18f46d93c5c49658070650ef72f45dd636a88\"\n          ],\n          \"summary\": \"issue321_tau_orchestration_episode_1788120675948 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        }\n      ]\n    },\n    \"recall\": {\n      \"confidence\": 0.0,\n      \"errors\": [],\n      \"found\": true,\n      \"items\": [\n        {\n          \"problem\": \"\",\n          \"score\": 1.0,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120556341 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.98,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120675948 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.96,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120613993 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.94,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120593219 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.92,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120556341 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.9,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120675948 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.88,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120593219 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.86,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120613993 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.84,\n          \"solution\": \"Accepted orchestration episode improved Sparta Explorer Chat evidence-case reliability\\nAccepted Tau orchestration episode improved Sparta Explorer Chat evidence-case reliability for Memory hardening. It retained governed source receipts, linked tool and skill provenance, and avoided broad collection scans.\\ntau-run-issue102-20260806T132146Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_002\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-he\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.82,\n          \"solution\": \"Accepted orchestration episode improved Sparta Explorer Chat evidence-case reliability\\nAccepted Tau orchestration episode improved Sparta Explorer Chat evidence-case reliability for Memory hardening. It retained governed source receipts, linked tool and skill provenance, and avoided broad collection scans.\\ntau-run-issue102-20260806T131906Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_002\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-he\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.8,\n          \"solution\": \"Accepted orchestration episode improved Sparta Explorer Chat evidence-case reliability\\nAccepted Tau orchestration episode improved Sparta Explorer Chat evidence-case reliability for Memory hardening. It retained governed source receipts, linked tool and skill provenance, and avoided broad collection scans.\\ntau-run-issue102-20260806T131957Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_002\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-he\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.78,\n          \"solution\": \"Accepted orchestration episode improved Sparta Explorer Chat evidence-case reliability\\nAccepted Tau orchestration episode improved Sparta Explorer Chat evidence-case reliability for Memory hardening. It retained governed source receipts, linked tool and skill provenance, and avoided broad collection scans.\\ntau-run-issue102-20260806T131831Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_002\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-he\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        }\n      ],\n      \"meta\": {\n        \"brief\": true,\n        \"collections_filter\": [\n          \"agent_conversations\"\n        ],\n        \"k\": 12,\n        \"memory_first\": true,\n        \"q\": \"issue321_tau_orchestration_episode_1788120675948\",\n        \"recall_envelope\": {\n          \"collections\": [\n            \"agent_conversations\"\n          ],\n          \"include_retired\": false,\n          \"k\": 12,\n          \"limit\": 12,\n          \"profile_hash\": \"638629ccdbe77b7bdad08403d5b538a37f6ffcd4f57bf0c068f9c9535963bce5\",\n          \"profile_version\": \"memory.recall_profile.v1\",\n          \"q\": \"issue321_tau_orchestration_episode_1788120675948\",\n          \"recall_profile\": \"tau_orchestration_recall\",\n          \"recall_profile_source\": \"explicit\",\n          \"required_artifacts\": [\n            \"tau_lineage\",\n            \"episode_receipt\",\n            \"graph_edges\"\n          ],\n          \"scan_decision\": {\n            \"confidence\": 0.0,\n            \"found\": true,\n            \"item_count\": 12,\n            \"should_scan\": false,\n            \"threshold\": 0.0\n          },\n          \"schema\": \"memory.recall_envelope.v1\",\n          \"scope\": \"\",\n          \"selector\": null,\n          \"selector_lifecycle_mode\": null,\n          \"tags\": [],\n          \"threshold\": 0.0,\n          \"took_ms\": 130,\n          \"used_dense\": true,\n          \"used_reranker\": false\n        },\n        \"recall_profile\": \"tau_orchestration_recall\",\n        \"recall_profile_source\": \"explicit\",\n        \"required_artifacts\": [\n          \"tau_lineage\",\n          \"episode_receipt\",\n          \"graph_edges\"\n        ],\n        \"reranker_mode\": \"off\",\n        \"runtime_pressure\": {\n          \"active_workloads\": [],\n          \"checked_at\": 1788120677,\n          \"level\": \"normal\",\n          \"recommended_action\": \"No active persisted runtime pressure detected.\",\n          \"slow_query_risk\": false,\n          \"sources\": []\n        },\n        \"scope\": \"\",\n        \"threshold\": 0.0,\n        \"took_ms\": 130,\n        \"used_dense\": true,\n        \"used_reranker\": false\n      },\n      \"should_scan\": false\n    }\n  },\n  \"memory_readback_count\": 2,\n  \"mocked\": false,\n  \"outage_state\": \"degraded\",\n  \"permanent_rejection_state\": \"permanently_rejected\",\n  \"pre_relay_pending_count\": 2,\n  \"projected_doc_keys\": [\n    \"tau_episode_7bf80e15ce19340831ef23f5591f5bf0fc9de631\",\n    \"tau_episode_4d208fa0a75bca1571d5f824528f99a445a0b105\"\n  ],\n  \"projected_episode_count\": 2,\n  \"provider_live\": false,\n  \"replay_result_count\": 0,\n  \"run_state_after_outage\": \"PASS\",\n  \"run_store_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-memory-episode-work/run/dag-run.sqlite3\",\n  \"schema\": \"tau.memory_episode_projection_proof.v1\",\n  \"source_journal_event_count\": 25,\n  \"source_receipt_admission_count\": 4,\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 2911.819,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e307a77d9d34-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-memory-episode-proof.json": "sha256:63f250fa9ca13052b65c4bb105b7e0c2321f462f65a18b3e6bb6150707b8c7a3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"dag_exit_code\": 0,\n  \"dag_status\": \"PASS\",\n  \"errors\": [],\n  \"forbidden_raw_prompt_rejected\": true,\n  \"lineage_mutation_rejected\": true,\n  \"live\": true,\n  \"live_relay_states\": [\n    \"projected\",\n    \"projected\"\n  ],\n  \"marker\": \"issue321_tau_orchestration_episode_1788120678902\",\n  \"memory_readback\": {\n    \"by_keys\": {\n      \"collection\": \"agent_conversations\",\n      \"count\": 2,\n      \"documents\": [\n        {\n          \"_key\": \"tau_episode_9fdd09577bdb695f16e699e7f6e4400761521cc6\",\n          \"attempt_id\": \"attempt-5218738351d586ffe93bef771bc7f5af\",\n          \"journal_head_hash\": \"sha256:58bce736af689343dcefe2956acb04af4913a8406eeddb2a4f42f29f30f366f5\",\n          \"journal_sequence\": 25,\n          \"node_id\": \"tool-and-join\",\n          \"run_id\": \"issue321-memory-episode\",\n          \"schema\": \"memory.tau_orchestration_episode.v1\",\n          \"source_outbox_row\": \"mp-77d3942605e42849a5b512f2c0cec6cb\",\n          \"source_receipt_hashes\": [\n            \"sha256:c79979a2f50e68957d110cf42a1ee599d8df31426d6669e903e9225c80c6ec42\"\n          ],\n          \"summary\": \"issue321_tau_orchestration_episode_1788120678902 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"_key\": \"tau_episode_55ac58f19ffe7e45dc22686c77216bb39a381193\",\n          \"attempt_id\": \"attempt-d24cb2645914f060ac97683f20d65178\",\n          \"journal_head_hash\": \"sha256:58bce736af689343dcefe2956acb04af4913a8406eeddb2a4f42f29f30f366f5\",\n          \"journal_sequence\": 25,\n          \"node_id\": \"turn-one\",\n          \"run_id\": \"issue321-memory-episode\",\n          \"schema\": \"memory.tau_orchestration_episode.v1\",\n          \"source_outbox_row\": \"mp-d3b90605c59205f9389ed3730c6d6928\",\n          \"source_receipt_hashes\": [\n            \"sha256:128d71c07bedf39cd473bcf39507e1527bd3f4d8e1a5d4c2b8da4d0a4284835b\"\n          ],\n          \"summary\": \"issue321_tau_orchestration_episode_1788120678902 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        }\n      ]\n    },\n    \"recall\": {\n      \"confidence\": 0.0,\n      \"errors\": [],\n      \"found\": true,\n      \"items\": [\n        {\n          \"problem\": \"\",\n          \"score\": 1.0,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120613993 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.981,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120556341 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.962,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120678902 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.942,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120675948 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.923,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120593219 turn-one accepted agent_turn\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"agent_turn\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.904,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120678902 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.885,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120556341 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.865,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120593219 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.846,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120613993 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.827,\n          \"solution\": \"issue321_tau_orchestration_episode_1788120675948 tool-and-join accepted tool_effect\",\n          \"tags\": [\n            \"tau\",\n            \"orchestration\",\n            \"episode\",\n            \"tool_effect\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.808,\n          \"solution\": \"Tau orchestration hardening memory\\nTau orchestration run selected memory.intent.create_evidence_case for Sparta Explorer hardening, used $memory and $create-evidence-case, produced a bounded evidence receipt, ended succeeded, and includes the lexical marker issue102lexicalissue10220260806T131906Z.\\ntau-run-issue102-20260806T131906Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_001\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-head\\nmemory\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        },\n        {\n          \"problem\": \"\",\n          \"score\": 0.788,\n          \"solution\": \"Tau orchestration hardening memory\\nTau orchestration run selected memory.intent.create_evidence_case for Sparta Explorer hardening, used $memory and $create-evidence-case, produced a bounded evidence receipt, ended succeeded, and includes the lexical marker issue102lexicalissue10220260806T132146Z.\\ntau-run-issue102-20260806T132146Z\\ntau-dag-memory-hardening\\nsha256:issue102-plan\\nmemory-intent-create-evidence-case\\nattempt-episode_001\\nsha256:memory-sparta-hardening\\nsha256:issue102-journal-head\\nmemory\",\n          \"tags\": [\n            \"issue102\",\n            \"tau\",\n            \"orchestration\",\n            \"sparta-chat\",\n            \"episode\"\n          ]\n        }\n      ],\n      \"meta\": {\n        \"brief\": true,\n        \"collections_filter\": [\n          \"agent_conversations\"\n        ],\n        \"k\": 12,\n        \"memory_first\": true,\n        \"q\": \"issue321_tau_orchestration_episode_1788120678902\",\n        \"recall_envelope\": {\n          \"collections\": [\n            \"agent_conversations\"\n          ],\n          \"include_retired\": false,\n          \"k\": 12,\n          \"limit\": 12,\n          \"profile_hash\": \"638629ccdbe77b7bdad08403d5b538a37f6ffcd4f57bf0c068f9c9535963bce5\",\n          \"profile_version\": \"memory.recall_profile.v1\",\n          \"q\": \"issue321_tau_orchestration_episode_1788120678902\",\n          \"recall_profile\": \"tau_orchestration_recall\",\n          \"recall_profile_source\": \"explicit\",\n          \"required_artifacts\": [\n            \"tau_lineage\",\n            \"episode_receipt\",\n            \"graph_edges\"\n          ],\n          \"scan_decision\": {\n            \"confidence\": 0.0,\n            \"found\": true,\n            \"item_count\": 12,\n            \"should_scan\": false,\n            \"threshold\": 0.0\n          },\n          \"schema\": \"memory.recall_envelope.v1\",\n          \"scope\": \"\",\n          \"selector\": null,\n          \"selector_lifecycle_mode\": null,\n          \"tags\": [],\n          \"threshold\": 0.0,\n          \"took_ms\": 133,\n          \"used_dense\": true,\n          \"used_reranker\": false\n        },\n        \"recall_profile\": \"tau_orchestration_recall\",\n        \"recall_profile_source\": \"explicit\",\n        \"required_artifacts\": [\n          \"tau_lineage\",\n          \"episode_receipt\",\n          \"graph_edges\"\n        ],\n        \"reranker_mode\": \"off\",\n        \"runtime_pressure\": {\n          \"active_workloads\": [],\n          \"checked_at\": 1788120680,\n          \"level\": \"normal\",\n          \"recommended_action\": \"No active persisted runtime pressure detected.\",\n          \"slow_query_risk\": false,\n          \"sources\": []\n        },\n        \"scope\": \"\",\n        \"threshold\": 0.0,\n        \"took_ms\": 133,\n        \"used_dense\": true,\n        \"used_reranker\": false\n      },\n      \"should_scan\": false\n    }\n  },\n  \"memory_readback_count\": 2,\n  \"mocked\": false,\n  \"outage_state\": \"degraded\",\n  \"permanent_rejection_state\": \"permanently_rejected\",\n  \"pre_relay_pending_count\": 2,\n  \"projected_doc_keys\": [\n    \"tau_episode_9fdd09577bdb695f16e699e7f6e4400761521cc6\",\n    \"tau_episode_55ac58f19ffe7e45dc22686c77216bb39a381193\"\n  ],\n  \"projected_episode_count\": 2,\n  \"provider_live\": false,\n  \"replay_result_count\": 0,\n  \"run_state_after_outage\": \"PASS\",\n  \"run_store_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-memory-episode-work/run/dag-run.sqlite3\",\n  \"schema\": \"tau.memory_episode_projection_proof.v1\",\n  \"source_journal_event_count\": 25,\n  \"source_receipt_admission_count\": 4,\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 2917.329,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e307a77d9d34-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-memory-episode-proof.json": "sha256:3210245a8dc85c90929e33eb3d53f23d00e65484bfacbdc05ec481a2d51829e2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "memory-episode-projection-rejects-raw-text-and-lineage-mutation",
+      "type": "adversarial",
+      "case_id": "e307a77d9d34-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_tau_memory_episode_projection.py::test_tau_orchestration_episode_rejects_mutated_lineage_and_forbidden_fields tests/test_tau_memory_episode_projection.py::test_tau_episode_outbox_replay_is_exactly_once_and_terminal_rejection_does_not_touch_run tests/test_tau_memory_episode_projection.py::test_tau_episode_outage_degrades_then_recovery_projects_distinct_row -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.memory_episode_projection.governed_accepted_episode_outbox"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 969.366,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "...                                                                      [100%]\n3 passed in 0.50s\n",
+          "stderr": "",
+          "duration_ms": 964.434,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e307a77d9d34-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "...                                                                      [100%]\n3 passed in 0.52s\n",
+          "stderr": "",
+          "duration_ms": 974.298,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e307a77d9d34-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

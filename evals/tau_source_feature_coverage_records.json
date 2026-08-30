@@ -53,6 +53,16 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/memory_projection.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+      "feature_id": "evaluator-script:agentic-eval-tau-memory-episode-projection",
+      "status": "CLAIMED"
+    },
+    {
       "expires": "2026-12-31",
       "feature_id": "cli-command:acceptance-bundle",
       "owner": "tau-maintainers",

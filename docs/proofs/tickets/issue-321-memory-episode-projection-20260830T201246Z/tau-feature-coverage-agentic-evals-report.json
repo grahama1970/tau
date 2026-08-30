@@ -1,0 +1,489 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_feature_coverage_agentic_eval.json",
+  "run_id": "abf74908ec13",
+  "fixture_sha256": "sha256:19627165a4949c86b5aac7684a2d6da9c5f0468ec78666ccce4299082317bfeb",
+  "repo": {
+    "sha": "ad34d4f12a04f959048772f86a750019753ce94f",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau source feature inventory, feature-to-agentic-eval reconciliation, and retained report coverage",
+  "claims": {
+    "proves": "Tau derives a source-visible feature inventory, reconciles every inventory item against a capability_claim or explicit expiring non-coverage record, verifies retained READY/live/non-mocked reports for claimed manifests, and catches the ticket's negative controls.",
+    "does_not_prove": "Provider semantic quality, human acceptance of the full five-DAG product outcome, or that OUT_OF_SCOPE records are permanent."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.feature_agentic_eval_coverage",
+        "description": "Tau keeps a machine-checkable source feature inventory reconciled against capability claims, retained reports, duplicate ownership, orphan manifests, and expiring non-coverage records.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "unmanifested-cli-command-is-rejected",
+              "orphan-eval-manifest-is-rejected",
+              "duplicate-feature-owner-is-rejected",
+              "missing-retained-report-is-rejected",
+              "stale-waiver-is-rejected",
+              "missing-capability-claim-is-rejected"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "source-inventory-reconciliation-passes-current-mapped-set"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "source-inventory-reconciliation-passes-current-mapped-set",
+          "unmanifested-cli-command-is-rejected",
+          "orphan-eval-manifest-is-rejected",
+          "duplicate-feature-owner-is-rejected",
+          "missing-retained-report-is-rejected",
+          "stale-waiver-is-rejected",
+          "missing-capability-claim-is-rejected"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T20:11:53.493076+00:00",
+  "case_count": 7,
+  "required_case_count": 7,
+  "outcome_counts": {
+    "PASS": 7,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 14,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "source-inventory-reconciliation-passes-current-mapped-set",
+      "type": "positive",
+      "case_id": "abf74908ec13-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode positive --out local/agentic-evals/tau-feature-coverage-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1577.963,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1572.437,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:2720946cf9f5ad5b6554a57c88a85d1122a2458314726910b0259a961da2d96e",
+            "../local/agentic-evals/source-inventory.json": "sha256:a57732505b633ec5c7cba008c3b1c6d3c6f1da6c58b69b42585cc016b55d0ba2",
+            "../local/agentic-evals/reconciliation-report.json": "sha256:a5f1c9661010d11d47d13514adabe3a1c3e1efd42c951e870e5cf68037a2b58c"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1583.49,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:2720946cf9f5ad5b6554a57c88a85d1122a2458314726910b0259a961da2d96e",
+            "../local/agentic-evals/source-inventory.json": "sha256:2c5dd6db74019f47b2f26d6b1a3068a991cb5695efb764958f1e3b6b1a8a10f2",
+            "../local/agentic-evals/reconciliation-report.json": "sha256:1b2ce4b1d6ee7645ea68ba3270cca319775d92d13713b0b113b12a26e57b45c0"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "unmanifested-cli-command-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode unmanifested-cli-command --out local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2538.814,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"uncovered_source_feature\", \"proof\": \"local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 2563.747,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:4c834b4073896febec0360ddc9e612d095f6754e67c3d66bffa21291d405a011"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"uncovered_source_feature\", \"proof\": \"local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 2513.88,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:4c834b4073896febec0360ddc9e612d095f6754e67c3d66bffa21291d405a011"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "orphan-eval-manifest-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode orphan-eval-manifest --out local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1567.765,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"orphan_eval_manifest\", \"proof\": \"local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1578.19,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c002-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:aba4654156d8aa0d2af1f79dd018ff247bf6764ca4c312a591b5ab0546573d18"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"orphan_eval_manifest\", \"proof\": \"local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1557.34,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c002-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:aba4654156d8aa0d2af1f79dd018ff247bf6764ca4c312a591b5ab0546573d18"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "duplicate-feature-owner-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c003",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode duplicate-feature-owner --out local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1536.024,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"duplicate_feature_owner\", \"proof\": \"local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1558.987,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c003-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:e39bd48af32a58135eb10fc29978d1b85bb1ff75475f1dfc5431bee02c63d617"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"duplicate_feature_owner\", \"proof\": \"local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1513.061,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c003-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:e39bd48af32a58135eb10fc29978d1b85bb1ff75475f1dfc5431bee02c63d617"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing-retained-report-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c004",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode missing-retained-report --out local/agentic-evals/tau-feature-coverage-missing-report-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1553.213,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_retained_report\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1529.267,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c004-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:5670d746af5085780b88a857e7ee92352d1a4fba65600cb96e72cd28a81d107e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_retained_report\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1577.159,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c004-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:5670d746af5085780b88a857e7ee92352d1a4fba65600cb96e72cd28a81d107e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "stale-waiver-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c005",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode stale-waiver --out local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1559.726,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"stale_waiver\", \"proof\": \"local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1551.823,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c005-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:b594c6bb0b402520372f2a2879d5a7be761a30f645a664bdef85857324f56588"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"stale_waiver\", \"proof\": \"local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1567.628,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c005-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:b594c6bb0b402520372f2a2879d5a7be761a30f645a664bdef85857324f56588"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing-capability-claim-is-rejected",
+      "type": "adversarial",
+      "case_id": "abf74908ec13-c006",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode missing-capability-claim --out local/agentic-evals/tau-feature-coverage-missing-claim-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1545.195,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_capability_claims\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1570.515,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c006-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:b2024203432c636d52593e253247855f7f9de495df619ab1cbc70c1cc937fdf4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_capability_claims\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1519.874,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "abf74908ec13-c006-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:b2024203432c636d52593e253247855f7f9de495df619ab1cbc70c1cc937fdf4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

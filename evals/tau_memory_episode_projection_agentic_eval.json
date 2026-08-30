@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau accepted turn/tool/join episode projection through the existing Memory outbox and governed Memory /store API",
+  "claims": {
+    "proves": "Tau builds redacted memory.tau_orchestration_episode.v1 payloads from accepted journal facts, enqueues them in the existing outbox, relays them through governed Memory /store, reads them back by key and recall, replay-dedupes projected rows, degrades on Memory outage without changing settlement, permanently records schema rejection without changing settlement, and rejects forbidden raw text plus lineage mutation.",
+    "does_not_prove": "Full graph traversal UX, multimodal indexing of real image/audio artifacts, provider semantic quality, GOAL.md completion, or human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+      "description": "Accepted Tau turn/tool/join/settlement facts are normalized into governed Memory orchestration episode payloads, projected via the existing outbox, replay-deduped, redacted, and resilient to Memory outage or schema rejection.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "memory-episode-projection-live-store-and-readback",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.memory_episode_projection.governed_accepted_episode_outbox"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && rm -rf local/agentic-evals/tau-memory-episode-work && uv run python scripts/agentic-eval-tau-memory-episode-projection.py --out local/agentic-evals/tau-memory-episode-proof.json --work local/agentic-evals/tau-memory-episode-work"
+      ],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.memory_episode_projection_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "\"dag_status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/projected_episode_count",
+            "equals": 2
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_readback_count",
+            "equals": 2
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/replay_result_count",
+            "equals": 0
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_state",
+            "equals": "degraded"
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/run_state_after_outage",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/permanent_rejection_state",
+            "equals": "permanently_rejected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "memory-episode-projection-rejects-raw-text-and-lineage-mutation",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.memory_episode_projection.governed_accepted_episode_outbox"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_tau_memory_episode_projection.py::test_tau_orchestration_episode_rejects_mutated_lineage_and_forbidden_fields tests/test_tau_memory_episode_projection.py::test_tau_episode_outbox_replay_is_exactly_once_and_terminal_rejection_does_not_touch_run tests/test_tau_memory_episode_projection.py::test_tau_episode_outage_degrades_then_recovery_projects_distinct_row -q"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "3 passed"
+        ]
+      }
+    }
+  ]
+}

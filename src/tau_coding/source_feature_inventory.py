@@ -27,6 +27,7 @@ CAPABILITY_MODULE_PATHS = (
     "src/tau_coding/acceptance_attestation.py",
     "src/tau_coding/child_agent_requests.py",
     "src/tau_coding/codebase_ingest.py",
+    "src/tau_coding/dag_runtime/memory_projection.py",
     "src/tau_coding/dag_runtime/run_store.py",
     "src/tau_coding/dag_runtime/scheduler.py",
     "src/tau_coding/runtime_backends/kernel.py",

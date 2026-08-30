@@ -1,0 +1,285 @@
+{
+  "dag_exit_code": 0,
+  "dag_status": "PASS",
+  "errors": [],
+  "forbidden_raw_prompt_rejected": true,
+  "lineage_mutation_rejected": true,
+  "live": true,
+  "live_relay_states": [
+    "projected",
+    "projected"
+  ],
+  "marker": "issue321_tau_orchestration_episode_1788120678902",
+  "memory_readback": {
+    "by_keys": {
+      "collection": "agent_conversations",
+      "count": 2,
+      "documents": [
+        {
+          "_key": "tau_episode_9fdd09577bdb695f16e699e7f6e4400761521cc6",
+          "attempt_id": "attempt-5218738351d586ffe93bef771bc7f5af",
+          "journal_head_hash": "sha256:58bce736af689343dcefe2956acb04af4913a8406eeddb2a4f42f29f30f366f5",
+          "journal_sequence": 25,
+          "node_id": "tool-and-join",
+          "run_id": "issue321-memory-episode",
+          "schema": "memory.tau_orchestration_episode.v1",
+          "source_outbox_row": "mp-77d3942605e42849a5b512f2c0cec6cb",
+          "source_receipt_hashes": [
+            "sha256:c79979a2f50e68957d110cf42a1ee599d8df31426d6669e903e9225c80c6ec42"
+          ],
+          "summary": "issue321_tau_orchestration_episode_1788120678902 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "_key": "tau_episode_55ac58f19ffe7e45dc22686c77216bb39a381193",
+          "attempt_id": "attempt-d24cb2645914f060ac97683f20d65178",
+          "journal_head_hash": "sha256:58bce736af689343dcefe2956acb04af4913a8406eeddb2a4f42f29f30f366f5",
+          "journal_sequence": 25,
+          "node_id": "turn-one",
+          "run_id": "issue321-memory-episode",
+          "schema": "memory.tau_orchestration_episode.v1",
+          "source_outbox_row": "mp-d3b90605c59205f9389ed3730c6d6928",
+          "source_receipt_hashes": [
+            "sha256:128d71c07bedf39cd473bcf39507e1527bd3f4d8e1a5d4c2b8da4d0a4284835b"
+          ],
+          "summary": "issue321_tau_orchestration_episode_1788120678902 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        }
+      ]
+    },
+    "recall": {
+      "confidence": 0.0,
+      "errors": [],
+      "found": true,
+      "items": [
+        {
+          "problem": "",
+          "score": 1.0,
+          "solution": "issue321_tau_orchestration_episode_1788120613993 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.981,
+          "solution": "issue321_tau_orchestration_episode_1788120556341 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.962,
+          "solution": "issue321_tau_orchestration_episode_1788120678902 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.942,
+          "solution": "issue321_tau_orchestration_episode_1788120675948 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.923,
+          "solution": "issue321_tau_orchestration_episode_1788120593219 turn-one accepted agent_turn",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "agent_turn"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.904,
+          "solution": "issue321_tau_orchestration_episode_1788120678902 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.885,
+          "solution": "issue321_tau_orchestration_episode_1788120556341 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.865,
+          "solution": "issue321_tau_orchestration_episode_1788120593219 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.846,
+          "solution": "issue321_tau_orchestration_episode_1788120613993 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.827,
+          "solution": "issue321_tau_orchestration_episode_1788120675948 tool-and-join accepted tool_effect",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "tool_effect"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.808,
+          "solution": "Tau orchestration hardening memory\nTau orchestration run selected memory.intent.create_evidence_case for Sparta Explorer hardening, used $memory and $create-evidence-case, produced a bounded evidence receipt, ended succeeded, and includes the lexical marker issue102lexicalissue10220260806T131906Z.\ntau-run-issue102-20260806T131906Z\ntau-dag-memory-hardening\nsha256:issue102-plan\nmemory-intent-create-evidence-case\nattempt-episode_001\nsha256:memory-sparta-hardening\nsha256:issue102-journal-head\nmemory",
+          "tags": [
+            "issue102",
+            "tau",
+            "orchestration",
+            "sparta-chat",
+            "episode"
+          ]
+        },
+        {
+          "problem": "",
+          "score": 0.788,
+          "solution": "Tau orchestration hardening memory\nTau orchestration run selected memory.intent.create_evidence_case for Sparta Explorer hardening, used $memory and $create-evidence-case, produced a bounded evidence receipt, ended succeeded, and includes the lexical marker issue102lexicalissue10220260806T132146Z.\ntau-run-issue102-20260806T132146Z\ntau-dag-memory-hardening\nsha256:issue102-plan\nmemory-intent-create-evidence-case\nattempt-episode_001\nsha256:memory-sparta-hardening\nsha256:issue102-journal-head\nmemory",
+          "tags": [
+            "issue102",
+            "tau",
+            "orchestration",
+            "sparta-chat",
+            "episode"
+          ]
+        }
+      ],
+      "meta": {
+        "brief": true,
+        "collections_filter": [
+          "agent_conversations"
+        ],
+        "k": 12,
+        "memory_first": true,
+        "q": "issue321_tau_orchestration_episode_1788120678902",
+        "recall_envelope": {
+          "collections": [
+            "agent_conversations"
+          ],
+          "include_retired": false,
+          "k": 12,
+          "limit": 12,
+          "profile_hash": "638629ccdbe77b7bdad08403d5b538a37f6ffcd4f57bf0c068f9c9535963bce5",
+          "profile_version": "memory.recall_profile.v1",
+          "q": "issue321_tau_orchestration_episode_1788120678902",
+          "recall_profile": "tau_orchestration_recall",
+          "recall_profile_source": "explicit",
+          "required_artifacts": [
+            "tau_lineage",
+            "episode_receipt",
+            "graph_edges"
+          ],
+          "scan_decision": {
+            "confidence": 0.0,
+            "found": true,
+            "item_count": 12,
+            "should_scan": false,
+            "threshold": 0.0
+          },
+          "schema": "memory.recall_envelope.v1",
+          "scope": "",
+          "selector": null,
+          "selector_lifecycle_mode": null,
+          "tags": [],
+          "threshold": 0.0,
+          "took_ms": 133,
+          "used_dense": true,
+          "used_reranker": false
+        },
+        "recall_profile": "tau_orchestration_recall",
+        "recall_profile_source": "explicit",
+        "required_artifacts": [
+          "tau_lineage",
+          "episode_receipt",
+          "graph_edges"
+        ],
+        "reranker_mode": "off",
+        "runtime_pressure": {
+          "active_workloads": [],
+          "checked_at": 1788120680,
+          "level": "normal",
+          "recommended_action": "No active persisted runtime pressure detected.",
+          "slow_query_risk": false,
+          "sources": []
+        },
+        "scope": "",
+        "threshold": 0.0,
+        "took_ms": 133,
+        "used_dense": true,
+        "used_reranker": false
+      },
+      "should_scan": false
+    }
+  },
+  "memory_readback_count": 2,
+  "mocked": false,
+  "outage_state": "degraded",
+  "permanent_rejection_state": "permanently_rejected",
+  "pre_relay_pending_count": 2,
+  "projected_doc_keys": [
+    "tau_episode_9fdd09577bdb695f16e699e7f6e4400761521cc6",
+    "tau_episode_55ac58f19ffe7e45dc22686c77216bb39a381193"
+  ],
+  "projected_episode_count": 2,
+  "provider_live": false,
+  "replay_result_count": 0,
+  "run_state_after_outage": "PASS",
+  "run_store_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-memory-episode-work/run/dag-run.sqlite3",
+  "schema": "tau.memory_episode_projection_proof.v1",
+  "source_journal_event_count": 25,
+  "source_receipt_admission_count": 4,
+  "status": "PASS"
+}
