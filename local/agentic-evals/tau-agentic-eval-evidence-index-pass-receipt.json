@@ -6,14 +6,14 @@
   "failures": [],
   "index_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-agentic-eval-evidence-index.json",
   "index_repo": {
-    "dirty_tree": true,
-    "dirty_tree_declaration": "dirty",
+    "dirty_tree": false,
+    "dirty_tree_declaration": "clean",
     "ref": "main",
     "root": "/home/graham/workspace/experiments/tau",
-    "sha": "bf9f470818978af15f4549a64cd06353455b0974",
-    "status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json"
+    "sha": "f97bf84be97bcd221ed3c4192cee8ed2602d0e31",
+    "status_porcelain": ""
   },
-  "index_sha256": "sha256:935541c1a0b051e0f047a161b74b1bf21dcfa9e336a003a263a41d0a7a5b899c",
+  "index_sha256": "sha256:f306e269ccafc0b36a728e82395faa531fa4668bb2bcd00afb7544a452eba2ad",
   "live": false,
   "mocked": false,
   "ok": true,
@@ -32,11 +32,11 @@
     "dirty_tree": true,
     "ref": "main",
     "root": "/home/graham/workspace/experiments/tau",
-    "sha": "bf9f470818978af15f4549a64cd06353455b0974"
+    "sha": "f97bf84be97bcd221ed3c4192cee8ed2602d0e31"
   },
   "report_count": 15,
-  "require_clean": false,
-  "require_current_sha": false,
+  "require_clean": true,
+  "require_current_sha": true,
   "require_live_reports": true,
   "retained_reports_live_readback": {
     "all_unmocked": true,

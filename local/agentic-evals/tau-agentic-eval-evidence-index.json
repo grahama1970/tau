@@ -506,18 +506,19 @@
       "reason": "self_referential_verifier_report_excluded_from_milestone_index"
     }
   ],
-  "generated_at": "2026-08-30T18:04:37.280651Z",
+  "generated_at": "2026-08-30T18:07:16.970310Z",
   "generating_command": [
-    "uv",
-    "run",
-    "tau",
     "proof-index",
     "agentic-evals",
     "build",
+    "--repo",
+    ".",
     "--out",
-    "local/agentic-evals/tau-agentic-eval-evidence-index.json"
+    "local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "--milestone-id",
+    "tau-agentic-evals"
   ],
-  "index_sha256": "sha256:b2b1ab55355a07b30ae6b1dc75c6a8225366ff3933998992cda42520f805cab1",
+  "index_sha256": "sha256:b05f8bfb31dd72b3646d442b500e7b46020a68469e2120c9ff257d8e598d724c",
   "index_version": 1,
   "milestone_id": "tau-agentic-evals",
   "ok": true,
@@ -537,12 +538,12 @@
     "provider_live": false
   },
   "repo": {
-    "dirty_tree": true,
-    "dirty_tree_declaration": "dirty",
+    "dirty_tree": false,
+    "dirty_tree_declaration": "clean",
     "ref": "main",
     "root": "/home/graham/workspace/experiments/tau",
-    "sha": "bf9f470818978af15f4549a64cd06353455b0974",
-    "status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json"
+    "sha": "f97bf84be97bcd221ed3c4192cee8ed2602d0e31",
+    "status_porcelain": ""
   },
   "report_count": 15,
   "reports": [
