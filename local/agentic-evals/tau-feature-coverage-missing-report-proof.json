@@ -1,7 +1,7 @@
 {
   "adversarial_detection": true,
-  "claim_count": 17,
-  "covered_claim_count": 17,
+  "claim_count": 18,
+  "covered_claim_count": 18,
   "expected_failure_code": "missing_retained_report",
   "finding_count": 1,
   "findings": [
@@ -13,10 +13,10 @@
       "source": "evals/tau_terminal_dag_watch_agentic_eval.json"
     }
   ],
-  "inventory_feature_count": 261,
+  "inventory_feature_count": 263,
   "inventory_path": null,
   "live": true,
-  "manifest_count": 17,
+  "manifest_count": 18,
   "mocked": false,
   "mode": "missing-retained-report",
   "negative_case_receipt": true,
