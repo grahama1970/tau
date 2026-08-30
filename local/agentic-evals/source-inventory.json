@@ -2,13 +2,13 @@
   "counts_by_kind": {
     "capability-module": 3,
     "cli-command": 193,
-    "evaluator-script": 11,
-    "ledger-path": 7,
+    "evaluator-script": 12,
+    "ledger-path": 10,
     "skill-capability": 10,
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 249,
+  "feature_count": 253,
   "features": [
     {
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
@@ -47,7 +47,7 @@
         "detector": "typer"
       },
       "name": "tau acceptance-bundle",
-      "source_line": 399,
+      "source_line": 402,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -57,7 +57,7 @@
         "detector": "manual-branch"
       },
       "name": "tau actor-manifest",
-      "source_line": 3876,
+      "source_line": 3879,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -67,7 +67,7 @@
         "detector": "manual-branch"
       },
       "name": "tau adaptive-revision-conformance",
-      "source_line": 5169,
+      "source_line": 5202,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -77,7 +77,7 @@
         "detector": "manual-branch"
       },
       "name": "tau agent-events",
-      "source_line": 3835,
+      "source_line": 3838,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -87,7 +87,7 @@
         "detector": "manual-branch"
       },
       "name": "tau airgap-no-egress",
-      "source_line": 3159,
+      "source_line": 3162,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -97,7 +97,7 @@
         "detector": "manual-branch"
       },
       "name": "tau approval-gate-check",
-      "source_line": 3791,
+      "source_line": 3794,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -107,7 +107,7 @@
         "detector": "manual-branch"
       },
       "name": "tau browser-cdp-proof",
-      "source_line": 3067,
+      "source_line": 3070,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -117,7 +117,7 @@
         "detector": "manual-branch"
       },
       "name": "tau canonical-dag-launch",
-      "source_line": 3255,
+      "source_line": 3258,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -127,7 +127,7 @@
         "detector": "manual-branch"
       },
       "name": "tau canonical-dags",
-      "source_line": 3245,
+      "source_line": 3248,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -137,7 +137,7 @@
         "detector": "manual-branch"
       },
       "name": "tau canonical-scheduler-conformance",
-      "source_line": 5136,
+      "source_line": 5169,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -147,7 +147,7 @@
         "detector": "manual-branch"
       },
       "name": "tau code-patch",
-      "source_line": 4104,
+      "source_line": 4137,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -157,7 +157,7 @@
         "detector": "manual-branch"
       },
       "name": "tau code-runner-skill-adapter",
-      "source_line": 4549,
+      "source_line": 4582,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -167,7 +167,7 @@
         "detector": "manual-branch"
       },
       "name": "tau commit-plan",
-      "source_line": 4222,
+      "source_line": 4255,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -177,7 +177,7 @@
         "detector": "manual-branch"
       },
       "name": "tau compliance-package",
-      "source_line": 3861,
+      "source_line": 3864,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -187,7 +187,7 @@
         "detector": "manual-branch"
       },
       "name": "tau compliance-package-validate",
-      "source_line": 4774,
+      "source_line": 4807,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -197,7 +197,7 @@
         "detector": "manual-branch"
       },
       "name": "tau course-correction",
-      "source_line": 4070,
+      "source_line": 4103,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -207,7 +207,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-branch-locks-validate",
-      "source_line": 3455,
+      "source_line": 3458,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -217,7 +217,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-clear-lease",
-      "source_line": 3676,
+      "source_line": 3679,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -227,7 +227,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-expansion-apply",
-      "source_line": 3420,
+      "source_line": 3423,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -237,7 +237,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-expansion-policy",
-      "source_line": 3404,
+      "source_line": 3407,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -247,7 +247,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-expansion-validate",
-      "source_line": 3388,
+      "source_line": 3391,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -257,7 +257,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-fail-closed-registry",
-      "source_line": 4059,
+      "source_line": 4092,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -267,7 +267,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-inspect",
-      "source_line": 3608,
+      "source_line": 3611,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -277,7 +277,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-motif-validate",
-      "source_line": 3470,
+      "source_line": 3473,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -287,7 +287,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-plan",
-      "source_line": 3276,
+      "source_line": 3279,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -297,7 +297,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-reconcile",
-      "source_line": 3656,
+      "source_line": 3659,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -307,7 +307,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-resume",
-      "source_line": 3619,
+      "source_line": 3622,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -317,7 +317,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-retention-expire",
-      "source_line": 3630,
+      "source_line": 3633,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -327,7 +327,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-route-memory-candidates",
-      "source_line": 3485,
+      "source_line": 3488,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -337,7 +337,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-route-memory-sync",
-      "source_line": 3500,
+      "source_line": 3503,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -347,7 +347,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-run",
-      "source_line": 3235,
+      "source_line": 3238,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -357,7 +357,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-signals",
-      "source_line": 3360,
+      "source_line": 3363,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -367,7 +367,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-stress-campaign",
-      "source_line": 3728,
+      "source_line": 3731,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -377,7 +377,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-stress-campaign-inspect",
-      "source_line": 3739,
+      "source_line": 3742,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -387,7 +387,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-stress-inspect",
-      "source_line": 3717,
+      "source_line": 3720,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -397,7 +397,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-stress-poc",
-      "source_line": 3706,
+      "source_line": 3709,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -407,7 +407,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-catalog",
-      "source_line": 3289,
+      "source_line": 3292,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -417,7 +417,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-compile",
-      "source_line": 3341,
+      "source_line": 3344,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -427,7 +427,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-describe",
-      "source_line": 3293,
+      "source_line": 3296,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -437,7 +437,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-list",
-      "source_line": 3285,
+      "source_line": 3288,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -447,7 +447,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-preview",
-      "source_line": 3317,
+      "source_line": 3320,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -457,7 +457,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-select",
-      "source_line": 3332,
+      "source_line": 3335,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -467,7 +467,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-template-validate",
-      "source_line": 3302,
+      "source_line": 3305,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -477,7 +477,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-view",
-      "source_line": 2774,
+      "source_line": 2777,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -487,7 +487,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-view-capabilities",
-      "source_line": 2721,
+      "source_line": 2724,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -497,7 +497,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-view-events",
-      "source_line": 2747,
+      "source_line": 2750,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -507,7 +507,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-view-serve",
-      "source_line": 2774,
+      "source_line": 2777,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -517,7 +517,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-view-snapshot",
-      "source_line": 2747,
+      "source_line": 2750,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -527,7 +527,7 @@
         "detector": "manual-branch"
       },
       "name": "tau dag-viewer-link",
-      "source_line": 3850,
+      "source_line": 3853,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -537,7 +537,7 @@
         "detector": "manual-branch"
       },
       "name": "tau debug-session-receipt",
-      "source_line": 4396,
+      "source_line": 4429,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -547,7 +547,7 @@
         "detector": "manual-branch"
       },
       "name": "tau debugger-skill-adapter",
-      "source_line": 4527,
+      "source_line": 4560,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -557,7 +557,7 @@
         "detector": "manual-branch"
       },
       "name": "tau demo",
-      "source_line": 2825,
+      "source_line": 2828,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -567,7 +567,7 @@
         "detector": "manual-branch"
       },
       "name": "tau discord-receipt",
-      "source_line": 3225,
+      "source_line": 3228,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -577,7 +577,7 @@
         "detector": "manual-branch"
       },
       "name": "tau docker-sandbox-check",
-      "source_line": 4818,
+      "source_line": 4851,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -587,7 +587,7 @@
         "detector": "manual-branch"
       },
       "name": "tau docker-sandbox-run",
-      "source_line": 4818,
+      "source_line": 4851,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -597,7 +597,7 @@
         "detector": "manual-branch"
       },
       "name": "tau doctor",
-      "source_line": 2710,
+      "source_line": 2713,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -607,7 +607,7 @@
         "detector": "manual-branch"
       },
       "name": "tau environment-manifest",
-      "source_line": 3891,
+      "source_line": 3894,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -617,7 +617,7 @@
         "detector": "manual-branch"
       },
       "name": "tau evidence-case-create",
-      "source_line": 3544,
+      "source_line": 3547,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -627,7 +627,7 @@
         "detector": "manual-branch"
       },
       "name": "tau evidence-case-skill-adapter",
-      "source_line": 4577,
+      "source_line": 4610,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -637,7 +637,7 @@
         "detector": "manual-branch"
       },
       "name": "tau evidence-validate",
-      "source_line": 3374,
+      "source_line": 3377,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -647,7 +647,7 @@
         "detector": "manual-branch"
       },
       "name": "tau export",
-      "source_line": 2688,
+      "source_line": 2691,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -657,7 +657,7 @@
         "detector": "manual-branch"
       },
       "name": "tau external-research-receipt",
-      "source_line": 5293,
+      "source_line": 5326,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -667,7 +667,7 @@
         "detector": "manual-branch"
       },
       "name": "tau feature-inventory",
-      "source_line": 2737,
+      "source_line": 2740,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -677,7 +677,7 @@
         "detector": "manual-branch"
       },
       "name": "tau gap-expansion-bridge",
-      "source_line": 3436,
+      "source_line": 3439,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -687,7 +687,7 @@
         "detector": "manual-branch"
       },
       "name": "tau gap-expansion-conformance",
-      "source_line": 5180,
+      "source_line": 5213,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -697,7 +697,7 @@
         "detector": "manual-branch"
       },
       "name": "tau generated-ticket-github-create",
-      "source_line": 4831,
+      "source_line": 4864,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -707,7 +707,7 @@
         "detector": "manual-branch"
       },
       "name": "tau generic-provider-dag-node",
-      "source_line": 3695,
+      "source_line": 3698,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -717,7 +717,7 @@
         "detector": "manual-branch"
       },
       "name": "tau github-apply-policy-check",
-      "source_line": 4705,
+      "source_line": 4738,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -727,7 +727,7 @@
         "detector": "manual-branch"
       },
       "name": "tau github-read",
-      "source_line": 4413,
+      "source_line": 4446,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -737,7 +737,7 @@
         "detector": "typer"
       },
       "name": "tau github-redact-projection",
-      "source_line": 383,
+      "source_line": 386,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -747,7 +747,7 @@
         "detector": "manual-branch"
       },
       "name": "tau goal",
-      "source_line": 5042,
+      "source_line": 5075,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -757,7 +757,7 @@
         "detector": "manual-branch"
       },
       "name": "tau goal-guardian-reconciliation-github-transport",
-      "source_line": 4871,
+      "source_line": 4904,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -767,7 +767,7 @@
         "detector": "manual-branch"
       },
       "name": "tau goal-guardian-ticket-source-github-fetch",
-      "source_line": 4905,
+      "source_line": 4938,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -777,7 +777,7 @@
         "detector": "manual-branch"
       },
       "name": "tau gs001-closure-publish",
-      "source_line": 3265,
+      "source_line": 3268,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -787,7 +787,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-agent-adapter",
-      "source_line": 5267,
+      "source_line": 5300,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -797,7 +797,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-chain-dry-run",
-      "source_line": 4924,
+      "source_line": 4957,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -807,7 +807,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-command-loop",
-      "source_line": 5014,
+      "source_line": 5047,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -817,7 +817,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-command-loop-github-transport",
-      "source_line": 4855,
+      "source_line": 4888,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -827,7 +827,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-command-loop-reconciliation-github-transport",
-      "source_line": 4887,
+      "source_line": 4920,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -837,7 +837,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-dispatch-agent-command",
-      "source_line": 4996,
+      "source_line": 5029,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -847,7 +847,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-dispatch-command",
-      "source_line": 4978,
+      "source_line": 5011,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -857,7 +857,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-dispatch-once",
-      "source_line": 4960,
+      "source_line": 4993,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -867,7 +867,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-github-transport",
-      "source_line": 4664,
+      "source_line": 4697,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -877,7 +877,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-goal-guardian-adapter",
-      "source_line": 5276,
+      "source_line": 5309,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -887,7 +887,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-loop-dry-run",
-      "source_line": 4941,
+      "source_line": 4974,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -897,7 +897,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-project",
-      "source_line": 4647,
+      "source_line": 4680,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -907,7 +907,7 @@
         "detector": "manual-branch"
       },
       "name": "tau handoff-research-auditor-adapter",
-      "source_line": 5285,
+      "source_line": 5318,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -917,7 +917,7 @@
         "detector": "manual-branch"
       },
       "name": "tau herdr-cleanup",
-      "source_line": 3772,
+      "source_line": 3775,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -927,7 +927,7 @@
         "detector": "manual-branch"
       },
       "name": "tau herdr-observation-gate",
-      "source_line": 4432,
+      "source_line": 4465,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -937,7 +937,7 @@
         "detector": "manual-branch"
       },
       "name": "tau human-goal-change-bridge",
-      "source_line": 4622,
+      "source_line": 4655,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -947,7 +947,7 @@
         "detector": "manual-branch"
       },
       "name": "tau init",
-      "source_line": 2793,
+      "source_line": 2796,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -957,7 +957,7 @@
         "detector": "manual-branch"
       },
       "name": "tau installed-wheel-viewer-proof",
-      "source_line": 5093,
+      "source_line": 5126,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -967,7 +967,7 @@
         "detector": "manual-branch"
       },
       "name": "tau issue-180-final-conformance-bundle",
-      "source_line": 5125,
+      "source_line": 5158,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -977,7 +977,7 @@
         "detector": "manual-branch"
       },
       "name": "tau itar-access-preflight",
-      "source_line": 4741,
+      "source_line": 4774,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -987,7 +987,7 @@
         "detector": "manual-branch"
       },
       "name": "tau itar-contract-review",
-      "source_line": 4752,
+      "source_line": 4785,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -997,7 +997,7 @@
         "detector": "manual-branch"
       },
       "name": "tau ledger",
-      "source_line": 2727,
+      "source_line": 2730,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1007,7 +1007,7 @@
         "detector": "manual-branch"
       },
       "name": "tau local-provider-readiness",
-      "source_line": 3148,
+      "source_line": 3151,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1017,7 +1017,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-backfill-artifacts",
-      "source_line": 3017,
+      "source_line": 3020,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1027,7 +1027,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-check-monitor",
-      "source_line": 2976,
+      "source_line": 2979,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1037,7 +1037,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-check-scillm-doctor",
-      "source_line": 3007,
+      "source_line": 3010,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1047,7 +1047,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-emit-peer",
-      "source_line": 2989,
+      "source_line": 2992,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1057,7 +1057,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-inspect",
-      "source_line": 2962,
+      "source_line": 2965,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1067,7 +1067,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-run",
-      "source_line": 2944,
+      "source_line": 2947,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1077,7 +1077,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-sanity",
-      "source_line": 3030,
+      "source_line": 3033,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1087,7 +1087,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-serve",
-      "source_line": 4610,
+      "source_line": 4643,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1097,7 +1097,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-validate",
-      "source_line": 2911,
+      "source_line": 2914,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1107,7 +1107,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-validate-contract",
-      "source_line": 2921,
+      "source_line": 2924,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1117,7 +1117,7 @@
         "detector": "manual-branch"
       },
       "name": "tau loop2-validate-native",
-      "source_line": 2931,
+      "source_line": 2934,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1127,7 +1127,7 @@
         "detector": "manual-branch"
       },
       "name": "tau lsp-diagnostics",
-      "source_line": 4146,
+      "source_line": 4179,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1137,7 +1137,7 @@
         "detector": "manual-branch"
       },
       "name": "tau lsp-rename-plan",
-      "source_line": 4185,
+      "source_line": 4218,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1147,7 +1147,7 @@
         "detector": "manual-branch"
       },
       "name": "tau lsp-symbols",
-      "source_line": 4168,
+      "source_line": 4201,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1157,7 +1157,7 @@
         "detector": "manual-branch"
       },
       "name": "tau media-explainer-inspect",
-      "source_line": 3761,
+      "source_line": 3764,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1167,7 +1167,7 @@
         "detector": "manual-branch"
       },
       "name": "tau media-explainer-smoke",
-      "source_line": 3750,
+      "source_line": 3753,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1177,7 +1177,7 @@
         "detector": "manual-branch"
       },
       "name": "tau memory-intent",
-      "source_line": 3523,
+      "source_line": 3526,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1187,7 +1187,7 @@
         "detector": "manual-branch"
       },
       "name": "tau memory-provenance-proof",
-      "source_line": 5114,
+      "source_line": 5147,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1197,7 +1197,7 @@
         "detector": "manual-branch"
       },
       "name": "tau omp-worker-doctor",
-      "source_line": 4318,
+      "source_line": 4351,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1207,7 +1207,7 @@
         "detector": "manual-branch"
       },
       "name": "tau omp-worker-launch",
-      "source_line": 4302,
+      "source_line": 4335,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1217,7 +1217,7 @@
         "detector": "manual-branch"
       },
       "name": "tau omp-worker-validate",
-      "source_line": 4265,
+      "source_line": 4298,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1227,7 +1227,7 @@
         "detector": "manual-branch"
       },
       "name": "tau orchestration-evidence",
-      "source_line": 3214,
+      "source_line": 3217,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1237,7 +1237,7 @@
         "detector": "manual-branch"
       },
       "name": "tau orchestration-redteam",
-      "source_line": 4796,
+      "source_line": 4829,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1247,7 +1247,7 @@
         "detector": "manual-branch"
       },
       "name": "tau orchestration-reliability",
-      "source_line": 4245,
+      "source_line": 4278,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1257,7 +1257,7 @@
         "detector": "manual-branch"
       },
       "name": "tau pdf-lab-second-pass-review",
-      "source_line": 4372,
+      "source_line": 4405,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1267,7 +1267,7 @@
         "detector": "manual-branch"
       },
       "name": "tau permission-reply",
-      "source_line": 3813,
+      "source_line": 3816,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1277,7 +1277,7 @@
         "detector": "manual-branch"
       },
       "name": "tau permission-request",
-      "source_line": 3802,
+      "source_line": 3805,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1287,7 +1287,7 @@
         "detector": "manual-branch"
       },
       "name": "tau persona-dream-panel-proof",
-      "source_line": 5257,
+      "source_line": 5290,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1297,7 +1297,7 @@
         "detector": "manual-branch"
       },
       "name": "tau project",
-      "source_line": 2808,
+      "source_line": 2811,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1307,7 +1307,7 @@
         "detector": "manual-branch"
       },
       "name": "tau project-profile-conformance",
-      "source_line": 5213,
+      "source_line": 5246,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1317,7 +1317,7 @@
         "detector": "manual-branch"
       },
       "name": "tau project-profile-validate",
-      "source_line": 4467,
+      "source_line": 4500,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1327,7 +1327,7 @@
         "detector": "manual-branch"
       },
       "name": "tau project-status",
-      "source_line": 5104,
+      "source_line": 5137,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1337,7 +1337,7 @@
         "detector": "manual-branch"
       },
       "name": "tau proof-index",
-      "source_line": 3945,
+      "source_line": 3948,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1347,7 +1347,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-dag-inspect",
-      "source_line": 3203,
+      "source_line": 3206,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1357,7 +1357,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-dag-orchestrate",
-      "source_line": 3192,
+      "source_line": 3195,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1367,7 +1367,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-dag-plan",
-      "source_line": 3181,
+      "source_line": 3184,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1377,7 +1377,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-dag-poc",
-      "source_line": 3170,
+      "source_line": 3173,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1387,7 +1387,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-pane-inspect",
-      "source_line": 3115,
+      "source_line": 3118,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1397,7 +1397,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-pane-poc",
-      "source_line": 3104,
+      "source_line": 3107,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1407,7 +1407,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-readiness-inspect",
-      "source_line": 3137,
+      "source_line": 3140,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1417,7 +1417,7 @@
         "detector": "manual-branch"
       },
       "name": "tau provider-readiness-poc",
-      "source_line": 3126,
+      "source_line": 3129,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1427,7 +1427,7 @@
         "detector": "manual-branch"
       },
       "name": "tau providers",
-      "source_line": 2706,
+      "source_line": 2709,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1437,7 +1437,7 @@
         "detector": "manual-branch"
       },
       "name": "tau replacement-harness-sanity",
-      "source_line": 2673,
+      "source_line": 2676,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1447,7 +1447,7 @@
         "detector": "manual-branch"
       },
       "name": "tau report",
-      "source_line": 4008,
+      "source_line": 4041,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1457,7 +1457,7 @@
         "detector": "manual-branch"
       },
       "name": "tau research-query-gate",
-      "source_line": 4730,
+      "source_line": 4763,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1467,7 +1467,7 @@
         "detector": "manual-branch"
       },
       "name": "tau research-skill-adapter",
-      "source_line": 4593,
+      "source_line": 4626,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1477,7 +1477,7 @@
         "detector": "manual-branch"
       },
       "name": "tau research-source-receipt",
-      "source_line": 4716,
+      "source_line": 4749,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1487,7 +1487,7 @@
         "detector": "manual-branch"
       },
       "name": "tau resource-lease-conformance",
-      "source_line": 5158,
+      "source_line": 5191,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1497,7 +1497,7 @@
         "detector": "manual-branch"
       },
       "name": "tau review-code-skill-adapter",
-      "source_line": 4563,
+      "source_line": 4596,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1507,7 +1507,7 @@
         "detector": "manual-branch"
       },
       "name": "tau review-findings",
-      "source_line": 4127,
+      "source_line": 4160,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1517,7 +1517,7 @@
         "detector": "manual-branch"
       },
       "name": "tau run",
-      "source_line": 3235,
+      "source_line": 3238,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1527,7 +1527,7 @@
         "detector": "manual-branch"
       },
       "name": "tau run-status",
-      "source_line": 3824,
+      "source_line": 3827,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1537,7 +1537,7 @@
         "detector": "manual-branch"
       },
       "name": "tau runs",
-      "source_line": 2639,
+      "source_line": 2642,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1547,7 +1547,7 @@
         "detector": "manual-branch"
       },
       "name": "tau runtime-handshake",
-      "source_line": 5246,
+      "source_line": 5279,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1557,7 +1557,7 @@
         "detector": "manual-branch"
       },
       "name": "tau sandbox-run",
-      "source_line": 3979,
+      "source_line": 4012,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1567,7 +1567,7 @@
         "detector": "manual-branch"
       },
       "name": "tau scillm-chat-review",
-      "source_line": 4348,
+      "source_line": 4381,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1577,7 +1577,7 @@
         "detector": "manual-branch"
       },
       "name": "tau scillm-subagent-gate",
-      "source_line": 5072,
+      "source_line": 5105,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1587,7 +1587,7 @@
         "detector": "manual-branch"
       },
       "name": "tau scillm-worker-launch",
-      "source_line": 4331,
+      "source_line": 4364,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1597,7 +1597,7 @@
         "detector": "manual-branch"
       },
       "name": "tau scillm-worker-validate",
-      "source_line": 4281,
+      "source_line": 4314,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1607,7 +1607,7 @@
         "detector": "manual-branch"
       },
       "name": "tau secure-execution-conformance",
-      "source_line": 5147,
+      "source_line": 5180,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1617,7 +1617,7 @@
         "detector": "manual-branch"
       },
       "name": "tau security-audit-conformance",
-      "source_line": 5235,
+      "source_line": 5268,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1627,7 +1627,7 @@
         "detector": "manual-branch"
       },
       "name": "tau self-fix",
-      "source_line": 5053,
+      "source_line": 5086,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1637,7 +1637,7 @@
         "detector": "manual-branch"
       },
       "name": "tau serve",
-      "source_line": 4023,
+      "source_line": 4056,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1647,7 +1647,7 @@
         "detector": "manual-branch"
       },
       "name": "tau sessions",
-      "source_line": 2650,
+      "source_line": 2653,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1657,7 +1657,7 @@
         "detector": "manual-branch"
       },
       "name": "tau setup",
-      "source_line": 2868,
+      "source_line": 2871,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1667,7 +1667,7 @@
         "detector": "manual-branch"
       },
       "name": "tau setup-chutes",
-      "source_line": 2881,
+      "source_line": 2884,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1677,7 +1677,7 @@
         "detector": "manual-branch"
       },
       "name": "tau sign-receipt",
-      "source_line": 3920,
+      "source_line": 3923,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1687,7 +1687,7 @@
         "detector": "manual-branch"
       },
       "name": "tau skill-capability-registry-default",
-      "source_line": 4499,
+      "source_line": 4532,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1697,7 +1697,7 @@
         "detector": "manual-branch"
       },
       "name": "tau skill-capability-registry-validate",
-      "source_line": 4482,
+      "source_line": 4515,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1707,7 +1707,7 @@
         "detector": "manual-branch"
       },
       "name": "tau skill-chain-recall",
-      "source_line": 3565,
+      "source_line": 3568,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1717,7 +1717,7 @@
         "detector": "manual-branch"
       },
       "name": "tau skill-composition-redteam",
-      "source_line": 4807,
+      "source_line": 4840,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1727,7 +1727,7 @@
         "detector": "manual-branch"
       },
       "name": "tau skill-invocation",
-      "source_line": 4510,
+      "source_line": 4543,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1737,7 +1737,7 @@
         "detector": "manual-branch"
       },
       "name": "tau sparta-posture-export",
-      "source_line": 4763,
+      "source_line": 4796,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1747,7 +1747,7 @@
         "detector": "manual-branch"
       },
       "name": "tau sprite-sheet-conformance",
-      "source_line": 5191,
+      "source_line": 5224,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1757,7 +1757,7 @@
         "detector": "manual-branch"
       },
       "name": "tau status",
-      "source_line": 2654,
+      "source_line": 2657,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1767,7 +1767,7 @@
         "detector": "manual-branch"
       },
       "name": "tau subagent-receipt-from-handoff",
-      "source_line": 5302,
+      "source_line": 5335,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1777,7 +1777,7 @@
         "detector": "manual-branch"
       },
       "name": "tau targeted-repair-conformance",
-      "source_line": 5202,
+      "source_line": 5235,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1787,7 +1787,7 @@
         "detector": "manual-branch"
       },
       "name": "tau test-run",
-      "source_line": 4203,
+      "source_line": 4236,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1797,7 +1797,7 @@
         "detector": "typer"
       },
       "name": "tau ticket-subagent-closure-proof",
-      "source_line": 459,
+      "source_line": 462,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1807,7 +1807,7 @@
         "detector": "manual-branch"
       },
       "name": "tau tool-chain-recall",
-      "source_line": 3589,
+      "source_line": 3592,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1817,7 +1817,7 @@
         "detector": "manual-branch"
       },
       "name": "tau traycer",
-      "source_line": 2891,
+      "source_line": 2894,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1827,7 +1827,7 @@
         "detector": "typer"
       },
       "name": "tau tui-proof",
-      "source_line": 430,
+      "source_line": 433,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1837,7 +1837,7 @@
         "detector": "manual-branch"
       },
       "name": "tau update",
-      "source_line": 2603,
+      "source_line": 2606,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1847,7 +1847,7 @@
         "detector": "manual-branch"
       },
       "name": "tau verify-signed-receipt",
-      "source_line": 3964,
+      "source_line": 3997,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1857,7 +1857,7 @@
         "detector": "manual-branch"
       },
       "name": "tau visible-dag-inspect",
-      "source_line": 3093,
+      "source_line": 3096,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1867,7 +1867,7 @@
         "detector": "manual-branch"
       },
       "name": "tau visible-dag-poc",
-      "source_line": 3082,
+      "source_line": 3085,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1877,7 +1877,7 @@
         "detector": "manual-branch"
       },
       "name": "tau worker-controlled-data-conformance",
-      "source_line": 5224,
+      "source_line": 5257,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1887,7 +1887,7 @@
         "detector": "manual-branch"
       },
       "name": "tau workflows",
-      "source_line": 2609,
+      "source_line": 2612,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1897,7 +1897,7 @@
         "detector": "typer"
       },
       "name": "tau workflows approve",
-      "source_line": 830,
+      "source_line": 833,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1907,7 +1907,7 @@
         "detector": "typer"
       },
       "name": "tau workflows describe",
-      "source_line": 688,
+      "source_line": 691,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1917,7 +1917,7 @@
         "detector": "typer"
       },
       "name": "tau workflows list",
-      "source_line": 478,
+      "source_line": 481,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1927,7 +1927,7 @@
         "detector": "typer"
       },
       "name": "tau workflows repair",
-      "source_line": 868,
+      "source_line": 871,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1937,7 +1937,7 @@
         "detector": "typer"
       },
       "name": "tau workflows resume",
-      "source_line": 854,
+      "source_line": 857,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1947,7 +1947,7 @@
         "detector": "typer"
       },
       "name": "tau workflows run",
-      "source_line": 706,
+      "source_line": 709,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1957,7 +1957,7 @@
         "detector": "manual-branch"
       },
       "name": "tau zero-trust-doctor",
-      "source_line": 2842,
+      "source_line": 2845,
       "source_path": "src/tau_coding/cli.py"
     },
     {
@@ -1967,8 +1967,16 @@
         "detector": "manual-branch"
       },
       "name": "tau zero-trust-redteam",
-      "source_line": 4785,
+      "source_line": 4818,
       "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "feature_id": "evaluator-script:agentic-eval-tau-agentic-eval-evidence-index",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-agentic-eval-evidence-index",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-agentic-eval-evidence-index.py"
     },
     {
       "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
@@ -2063,15 +2071,23 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "_run_ledger_cli",
-      "source_line": 8840,
+      "source_line": 9002,
       "source_path": "src/tau_coding/cli.py"
+    },
+    {
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_agentic_eval_ledger_evidence_index",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "build_agentic_eval_ledger_evidence_index",
+      "source_line": 760,
+      "source_path": "src/tau_coding/run_ledger.py"
     },
     {
       "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_ledger",
       "kind": "ledger-path",
       "metadata": {},
       "name": "build_ledger",
-      "source_line": 95,
+      "source_line": 112,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2079,7 +2095,7 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "build_run_ledger_from_run_dir",
-      "source_line": 132,
+      "source_line": 149,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2087,7 +2103,15 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "read_ledger",
-      "source_line": 915,
+      "source_line": 1679,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_agentic_eval_ledger_evidence_index",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "verify_agentic_eval_ledger_evidence_index",
+      "source_line": 875,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2095,7 +2119,7 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "verify_ledger",
-      "source_line": 932,
+      "source_line": 1702,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2103,7 +2127,15 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "verify_ledger_file",
-      "source_line": 919,
+      "source_line": 1683,
+      "source_path": "src/tau_coding/run_ledger.py"
+    },
+    {
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_agentic_eval_ledger_evidence_selftest",
+      "kind": "ledger-path",
+      "metadata": {},
+      "name": "write_agentic_eval_ledger_evidence_selftest",
+      "source_line": 966,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2111,7 +2143,7 @@
       "kind": "ledger-path",
       "metadata": {},
       "name": "write_ledger",
-      "source_line": 909,
+      "source_line": 1673,
       "source_path": "src/tau_coding/run_ledger.py"
     },
     {
@@ -2485,10 +2517,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T17:04:35Z",
+  "generated_at": "2026-08-30T17:53:38Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
-  "source_root": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-330",
-  "source_sha256": "sha256:a557ee795c5f23b022e40ba099abaf58eb7af21dd500f2d05ee2d53eb7183fda"
+  "source_root": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329",
+  "source_sha256": "sha256:ad2d49ed67341998f6f7176103bd486d2d6e8b6c3639eafaf77ea25132146738"
 }

@@ -280,9 +280,12 @@ from tau_coding.resources import TauResourcePaths
 from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
 from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_ledger import (
+    build_agentic_eval_ledger_evidence_index,
     build_run_ledger_from_run_dir,
     read_ledger,
+    verify_agentic_eval_ledger_evidence_index,
     verify_ledger_file,
+    write_agentic_eval_ledger_evidence_selftest,
 )
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
@@ -3945,15 +3948,45 @@ def main(
     if not print_requested and command == "proof-index":
         try:
             options = _parse_proof_index_cli_args(positional_args[1:])
-            payload = build_proof_index(
-                Path(str(options["proofs_dir"])),
-                output_path=Path(str(options["output_path"])),
-                receipt_path=(
-                    Path(str(options["receipt_path"]))
-                    if options.get("receipt_path") is not None
-                    else None
-                ),
-            )
+            action = str(options["action"])
+            if action == "build":
+                payload = build_proof_index(
+                    Path(str(options["proofs_dir"])),
+                    output_path=Path(str(options["output_path"])),
+                    receipt_path=(
+                        Path(str(options["receipt_path"]))
+                        if options.get("receipt_path") is not None
+                        else None
+                    ),
+                )
+            elif action == "agentic-evals-build":
+                payload = build_agentic_eval_ledger_evidence_index(
+                    Path(str(options["repo"])),
+                    output_path=Path(str(options["output_path"])),
+                    generating_command=positional_args,
+                    milestone_id=str(options["milestone_id"]),
+                )
+            elif action == "agentic-evals-verify":
+                payload = verify_agentic_eval_ledger_evidence_index(
+                    Path(str(options["index_path"])),
+                    Path(str(options["repo"])),
+                    require_clean=bool(options["require_clean"]),
+                    require_current_sha=bool(options["require_current_sha"]),
+                    require_live_reports=bool(options["require_live_reports"]),
+                    receipt_path=(
+                        Path(str(options["receipt_path"]))
+                        if options.get("receipt_path") is not None
+                        else None
+                    ),
+                )
+            elif action == "agentic-evals-selftest":
+                payload = write_agentic_eval_ledger_evidence_selftest(
+                    Path(str(options["repo"])),
+                    mode=str(options["mode"]),
+                    out=Path(str(options["out"])),
+                )
+            else:
+                raise RuntimeError(f"unknown proof-index action: {action}")
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -7371,10 +7404,134 @@ def _parse_evidence_validate_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_proof_index_cli_args(args: list[str]) -> dict[str, object]:
+    if args[:2] == ["agentic-evals", "build"]:
+        output_path: Path | None = None
+        repo = Path(".")
+        milestone_id = "tau-agentic-evals"
+        index = 2
+        while index < len(args):
+            arg = args[index]
+            if arg == "--out":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--out requires a value")
+                output_path = Path(args[index])
+            elif arg.startswith("--out="):
+                output_path = Path(arg.partition("=")[2])
+            elif arg == "--repo":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--repo requires a value")
+                repo = Path(args[index])
+            elif arg.startswith("--repo="):
+                repo = Path(arg.partition("=")[2])
+            elif arg == "--milestone-id":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--milestone-id requires a value")
+                milestone_id = args[index]
+            elif arg.startswith("--milestone-id="):
+                milestone_id = arg.partition("=")[2]
+            else:
+                raise RuntimeError(f"unknown proof-index agentic-evals build option: {arg}")
+            index += 1
+        if output_path is None:
+            raise RuntimeError("proof-index agentic-evals build requires --out <index.json>")
+        return {
+            "action": "agentic-evals-build",
+            "repo": repo,
+            "output_path": output_path,
+            "milestone_id": milestone_id,
+        }
+    if args[:2] == ["agentic-evals", "verify"]:
+        if len(args) < 3 or args[2].startswith("--"):
+            raise RuntimeError(
+                "Usage: tau proof-index agentic-evals verify <index.json> "
+                "[--repo <dir>] [--receipt <receipt.json>] "
+                "[--allow-dirty] [--allow-current-sha-drift] [--allow-non-live-reports]"
+            )
+        index_path = Path(args[2])
+        repo = Path(".")
+        receipt_path: Path | None = None
+        require_clean = True
+        require_current_sha = True
+        require_live_reports = True
+        index = 3
+        while index < len(args):
+            arg = args[index]
+            if arg == "--repo":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--repo requires a value")
+                repo = Path(args[index])
+            elif arg.startswith("--repo="):
+                repo = Path(arg.partition("=")[2])
+            elif arg == "--receipt":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--receipt requires a value")
+                receipt_path = Path(args[index])
+            elif arg.startswith("--receipt="):
+                receipt_path = Path(arg.partition("=")[2])
+            elif arg == "--allow-dirty":
+                require_clean = False
+            elif arg == "--allow-current-sha-drift":
+                require_current_sha = False
+            elif arg == "--allow-non-live-reports":
+                require_live_reports = False
+            else:
+                raise RuntimeError(f"unknown proof-index agentic-evals verify option: {arg}")
+            index += 1
+        return {
+            "action": "agentic-evals-verify",
+            "index_path": index_path,
+            "repo": repo,
+            "receipt_path": receipt_path,
+            "require_clean": require_clean,
+            "require_current_sha": require_current_sha,
+            "require_live_reports": require_live_reports,
+        }
+    if args[:2] == ["agentic-evals", "selftest"]:
+        mode: str | None = None
+        out: Path | None = None
+        repo = Path(".")
+        index = 2
+        while index < len(args):
+            arg = args[index]
+            if arg == "--mode":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--mode requires a value")
+                mode = args[index]
+            elif arg.startswith("--mode="):
+                mode = arg.partition("=")[2]
+            elif arg == "--out":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--out requires a value")
+                out = Path(args[index])
+            elif arg.startswith("--out="):
+                out = Path(arg.partition("=")[2])
+            elif arg == "--repo":
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError("--repo requires a value")
+                repo = Path(args[index])
+            elif arg.startswith("--repo="):
+                repo = Path(arg.partition("=")[2])
+            else:
+                raise RuntimeError(f"unknown proof-index agentic-evals selftest option: {arg}")
+            index += 1
+        if not mode:
+            raise RuntimeError("proof-index agentic-evals selftest requires --mode")
+        if out is None:
+            raise RuntimeError("proof-index agentic-evals selftest requires --out <receipt.json>")
+        return {"action": "agentic-evals-selftest", "mode": mode, "out": out, "repo": repo}
     if not args or args[0] != "build":
         raise RuntimeError(
             "Usage: tau proof-index build <proofs-dir> --out <index.jsonl> "
-            "[--receipt <receipt.json>]"
+            "[--receipt <receipt.json>] | tau proof-index agentic-evals "
+            "build|verify|selftest ..."
         )
     if len(args) < 2:
         raise RuntimeError(
@@ -7406,7 +7563,12 @@ def _parse_proof_index_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if output_path is None:
         raise RuntimeError("--out is required")
-    return {"proofs_dir": proofs_dir, "output_path": output_path, "receipt_path": receipt_path}
+    return {
+        "action": "build",
+        "proofs_dir": proofs_dir,
+        "output_path": output_path,
+        "receipt_path": receipt_path,
+    }
 
 
 def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]:

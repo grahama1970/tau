@@ -1,0 +1,81 @@
+{
+  "adversarial_detection": true,
+  "expected_failure_code": "artifact_missing",
+  "failure_codes": [
+    "artifact_missing"
+  ],
+  "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-_nd28eeg/index.json",
+  "live": true,
+  "mocked": false,
+  "mode": "deleted-artifact",
+  "ok": true,
+  "provider_live": false,
+  "retained_reports_live_readback": {
+    "all_unmocked": true,
+    "count": 15,
+    "live": true,
+    "mocked": false,
+    "ready": true
+  },
+  "schema": "tau.agentic_eval_evidence_selftest_receipt.v1",
+  "status": "PASS",
+  "verification": {
+    "agentic_evals_runner_version": "agentic_evals.report.v2",
+    "artifact_count": 21,
+    "failure_codes": [
+      "artifact_missing"
+    ],
+    "failure_count": 1,
+    "failures": [
+      {
+        "code": "artifact_missing",
+        "path": "local/agentic-evals/reconciliation-report.json"
+      }
+    ],
+    "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-_nd28eeg/index.json",
+    "index_repo": {
+      "dirty_tree": false,
+      "dirty_tree_declaration": "clean",
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-_nd28eeg/repo",
+      "sha": "c2bca6a7ccdab758f52ddc5c2af7b3c47a77499f",
+      "status_porcelain": ""
+    },
+    "index_sha256": "sha256:848385b7bbd8b295e158b5542e69d2ace1e7d2f0f7ce519af2b48c2097464691",
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "proof_scope": {
+      "does_not_prove": [
+        "Provider semantic quality.",
+        "Human acceptance of the full GOAL.md outcome."
+      ],
+      "proves": [
+        "The verifier re-read the evidence index, retained reports, and referenced artifacts by digest without regenerating reports.",
+        "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence can be represented as stable failure codes."
+      ]
+    },
+    "provider_live": false,
+    "repo": {
+      "dirty_tree": true,
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-_nd28eeg/repo",
+      "sha": "c2bca6a7ccdab758f52ddc5c2af7b3c47a77499f"
+    },
+    "report_count": 15,
+    "require_clean": false,
+    "require_current_sha": false,
+    "require_live_reports": true,
+    "retained_reports_live_readback": {
+      "all_unmocked": true,
+      "count": 15,
+      "live": true,
+      "mocked": false,
+      "ready": true
+    },
+    "schema": "tau.agentic_eval_evidence_verification.v1",
+    "status": "FAIL",
+    "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
+  },
+  "verifier_exit_code": 1
+}

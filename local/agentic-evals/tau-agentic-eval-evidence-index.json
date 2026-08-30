@@ -1,0 +1,988 @@
+{
+  "agentic_evals_runner_version": "agentic_evals.report.v2",
+  "artifact_count": 21,
+  "artifacts": [
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/reconciliation-report.json",
+      "bytes": 185291,
+      "path": "local/agentic-evals/reconciliation-report.json",
+      "reported_sha256_values": [
+        "sha256:03fe18d29e1dbc1c09eb9790c24f0c57a8b9a9c202dd23a8939eb2a2ce31af64",
+        "sha256:a84218c714a66ee1ddca9460495ee2dd23d483b358d63e9f93e73ad604ed3f9e"
+      ],
+      "reports": [
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/reconciliation-report.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t00"
+        },
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/reconciliation-report.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t01"
+        }
+      ],
+      "sha256": "sha256:a84218c714a66ee1ddca9460495ee2dd23d483b358d63e9f93e73ad604ed3f9e"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/source-inventory.json",
+      "bytes": 72392,
+      "path": "local/agentic-evals/source-inventory.json",
+      "reported_sha256_values": [
+        "sha256:9f141a3e5c2272623d6350c2abb8511210a71a5624f25d9d9cae8d1120e31ea8",
+        "sha256:a39cf1f863d9466f81d3fac013c2948e94765532f0f68035792b290427a84797"
+      ],
+      "reports": [
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/source-inventory.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t00"
+        },
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/source-inventory.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t01"
+        }
+      ],
+      "sha256": "sha256:a39cf1f863d9466f81d3fac013c2948e94765532f0f68035792b290427a84797"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-core-proof.json",
+      "bytes": 2420,
+      "path": "local/agentic-evals/tau-core-proof.json",
+      "reported_sha256_values": [
+        "sha256:45eedadbf4b08952ee464f648148789ae290199d82ebfb81f4aa8fedfb887097",
+        "sha256:2e247f30697f029d9019145a8ed85d5e0f723b101472b4bb329d477f972384e0"
+      ],
+      "reports": [
+        {
+          "case": "live-local-dag-ledger-tamper-proof",
+          "reference": "../local/agentic-evals/tau-core-proof.json",
+          "report": "local/agentic-evals/tau-core-agentic-evals-report.json",
+          "trial_id": "2f71e2465398-c000-t00"
+        },
+        {
+          "case": "live-local-dag-ledger-tamper-proof",
+          "reference": "../local/agentic-evals/tau-core-proof.json",
+          "report": "local/agentic-evals/tau-core-agentic-evals-report.json",
+          "trial_id": "2f71e2465398-c000-t01"
+        }
+      ],
+      "sha256": "sha256:2e247f30697f029d9019145a8ed85d5e0f723b101472b4bb329d477f972384e0"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+      "bytes": 7528,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+      "reported_sha256_values": [
+        "sha256:d6799ae8467045c5360f507cc43d552483bd9b5b2f864d77ffb67592a4fd0164",
+        "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
+      ],
+      "reports": [
+        {
+          "case": "rung1-artifact-mutation-and-missing-artifact-detected",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "3641ed4f5fcc-c001-t00"
+        },
+        {
+          "case": "rung1-artifact-mutation-and-missing-artifact-detected",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "3641ed4f5fcc-c001-t01"
+        }
+      ],
+      "sha256": "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+      "bytes": 7528,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+      "reported_sha256_values": [
+        "sha256:0d28f4eaa6c23a834e736f6205c3fc5e0627718319c385987fae330461caffb9",
+        "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "3641ed4f5fcc-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "3641ed4f5fcc-c000-t01"
+        }
+      ],
+      "sha256": "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-discord-failure-path-proof.json",
+      "bytes": 7600,
+      "path": "local/agentic-evals/tau-discord-failure-path-proof.json",
+      "reported_sha256_values": [
+        "sha256:babde533b33695508998086865a1a5ab0b90271ff2f990a9470e087a02acb32a",
+        "sha256:57727de81241391a8526c1ab8a286f3ae6dbb4fc3abc6408ff05c187811e3942"
+      ],
+      "reports": [
+        {
+          "case": "missing-discord-channel-is-visible-failure",
+          "reference": "../local/agentic-evals/tau-discord-failure-path-proof.json",
+          "report": "local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json",
+          "trial_id": "51b9c8723132-c000-t00"
+        },
+        {
+          "case": "missing-discord-channel-is-visible-failure",
+          "reference": "../local/agentic-evals/tau-discord-failure-path-proof.json",
+          "report": "local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json",
+          "trial_id": "51b9c8723132-c000-t01"
+        }
+      ],
+      "sha256": "sha256:57727de81241391a8526c1ab8a286f3ae6dbb4fc3abc6408ff05c187811e3942"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-discord-idempotency-proof.json",
+      "bytes": 6099,
+      "path": "local/agentic-evals/tau-discord-idempotency-proof.json",
+      "reported_sha256_values": [
+        "sha256:93e75b2e73282accaf75bdeaeebeeb93f8da89f84979aee297fd26e0aaabe319",
+        "sha256:c5a495c1752ae846b15ea60f768e9ff22ddaf4fe654869d278b0a1f8d8ec99d5"
+      ],
+      "reports": [
+        {
+          "case": "duplicate-category-routes-to-deduped-receipt",
+          "reference": "../local/agentic-evals/tau-discord-idempotency-proof.json",
+          "report": "local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json",
+          "trial_id": "f31f96e6d2ec-c000-t00"
+        },
+        {
+          "case": "duplicate-category-routes-to-deduped-receipt",
+          "reference": "../local/agentic-evals/tau-discord-idempotency-proof.json",
+          "report": "local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json",
+          "trial_id": "f31f96e6d2ec-c000-t01"
+        }
+      ],
+      "sha256": "sha256:c5a495c1752ae846b15ea60f768e9ff22ddaf4fe654869d278b0a1f8d8ec99d5"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-discord-unblock-proof.json",
+      "bytes": 3861,
+      "path": "local/agentic-evals/tau-discord-unblock-proof.json",
+      "reported_sha256_values": [
+        "sha256:a313cba55c39d5e08148994ae31745d7cdef587f5a4c30712fa154a1c85b1cef",
+        "sha256:9cbaa3800297bd8eb2915fc0764b20ae77658441a05e423ceed1953dd95a270c"
+      ],
+      "reports": [
+        {
+          "case": "live-discord-question-status-answer-validation",
+          "reference": "../local/agentic-evals/tau-discord-unblock-proof.json",
+          "report": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json",
+          "trial_id": "4a5d95984cf7-c000-t00"
+        },
+        {
+          "case": "live-discord-question-status-answer-validation",
+          "reference": "../local/agentic-evals/tau-discord-unblock-proof.json",
+          "report": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json",
+          "trial_id": "4a5d95984cf7-c000-t01"
+        }
+      ],
+      "sha256": "sha256:9cbaa3800297bd8eb2915fc0764b20ae77658441a05e423ceed1953dd95a270c"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+      "bytes": 771,
+      "path": "local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+      "reported_sha256_values": [
+        "sha256:8cf62b2a2b461cdc33734fe0cd25becb34a458a7dd61ab1d305b7da2d3b9cf5c"
+      ],
+      "reports": [
+        {
+          "case": "duplicate-feature-owner-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c003-t00"
+        },
+        {
+          "case": "duplicate-feature-owner-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c003-t01"
+        }
+      ],
+      "sha256": "sha256:8cf62b2a2b461cdc33734fe0cd25becb34a458a7dd61ab1d305b7da2d3b9cf5c"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+      "bytes": 1012,
+      "path": "local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+      "reported_sha256_values": [
+        "sha256:0aed7e4995411f96a58cb0ec7d2ee77085f7b7d9ceb0e4e5dadb26cf266f3f23"
+      ],
+      "reports": [
+        {
+          "case": "missing-capability-claim-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c006-t00"
+        },
+        {
+          "case": "missing-capability-claim-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c006-t01"
+        }
+      ],
+      "sha256": "sha256:0aed7e4995411f96a58cb0ec7d2ee77085f7b7d9ceb0e4e5dadb26cf266f3f23"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+      "bytes": 726,
+      "path": "local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+      "reported_sha256_values": [
+        "sha256:d4c1acb811db7fceafbdd0774fb188e6fe927ffb998f1f7d0892d737349dd016"
+      ],
+      "reports": [
+        {
+          "case": "missing-retained-report-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c004-t00"
+        },
+        {
+          "case": "missing-retained-report-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c004-t01"
+        }
+      ],
+      "sha256": "sha256:d4c1acb811db7fceafbdd0774fb188e6fe927ffb998f1f7d0892d737349dd016"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+      "bytes": 992,
+      "path": "local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+      "reported_sha256_values": [
+        "sha256:908e74dd4c2cd7079ecaf86ae175a4a302c76969d5bc927d20d5b32ff5f98577"
+      ],
+      "reports": [
+        {
+          "case": "orphan-eval-manifest-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c002-t00"
+        },
+        {
+          "case": "orphan-eval-manifest-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c002-t01"
+        }
+      ],
+      "sha256": "sha256:908e74dd4c2cd7079ecaf86ae175a4a302c76969d5bc927d20d5b32ff5f98577"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-proof.json",
+      "bytes": 442,
+      "path": "local/agentic-evals/tau-feature-coverage-proof.json",
+      "reported_sha256_values": [
+        "sha256:85fcd8aa9485bf7f9f7106cc47657f7eb31e6c4b220590215bd17537601e6813"
+      ],
+      "reports": [
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/tau-feature-coverage-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t00"
+        },
+        {
+          "case": "source-inventory-reconciliation-passes-current-mapped-set",
+          "reference": "../local/agentic-evals/tau-feature-coverage-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c000-t01"
+        }
+      ],
+      "sha256": "sha256:85fcd8aa9485bf7f9f7106cc47657f7eb31e6c4b220590215bd17537601e6813"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+      "bytes": 680,
+      "path": "local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+      "reported_sha256_values": [
+        "sha256:ecd0544d1f6cfd675da07b0ef8e55fe2f02c37f8d438d44d5c52dd03c581d9fd"
+      ],
+      "reports": [
+        {
+          "case": "stale-waiver-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c005-t00"
+        },
+        {
+          "case": "stale-waiver-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c005-t01"
+        }
+      ],
+      "sha256": "sha256:ecd0544d1f6cfd675da07b0ef8e55fe2f02c37f8d438d44d5c52dd03c581d9fd"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+      "bytes": 776,
+      "path": "local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+      "reported_sha256_values": [
+        "sha256:ef5f9d48119405db7a17074f5b64c43fb642a27f5acb825f37b1fcbc00ec6792"
+      ],
+      "reports": [
+        {
+          "case": "unmanifested-cli-command-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c001-t00"
+        },
+        {
+          "case": "unmanifested-cli-command-is-rejected",
+          "reference": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+          "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+          "trial_id": "0cb7698d3f1b-c001-t01"
+        }
+      ],
+      "sha256": "sha256:ef5f9d48119405db7a17074f5b64c43fb642a27f5acb825f37b1fcbc00ec6792"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-ledger-trace-proof.json",
+      "bytes": 532,
+      "path": "local/agentic-evals/tau-ledger-trace-proof.json",
+      "reported_sha256_values": [
+        "sha256:25598edd8f7ea08abebf93a9b3ee006feb69cb5e5219109636b2722766688586",
+        "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
+      ],
+      "reports": [
+        {
+          "case": "live-ledger-trace-readback",
+          "reference": "../local/agentic-evals/tau-ledger-trace-proof.json",
+          "report": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
+          "trial_id": "f0c9fcfb2f2f-c000-t00"
+        },
+        {
+          "case": "live-ledger-trace-readback",
+          "reference": "../local/agentic-evals/tau-ledger-trace-proof.json",
+          "report": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
+          "trial_id": "f0c9fcfb2f2f-c000-t01"
+        }
+      ],
+      "sha256": "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-pipeline-self-repair-proof.json",
+      "bytes": 1567,
+      "path": "local/agentic-evals/tau-pipeline-self-repair-proof.json",
+      "reported_sha256_values": [
+        "sha256:c33b9065b10cb8a5a2bb5c473ff7609a3c372e32b05a5f4c2a468bc1550a07e6",
+        "sha256:8a02e5da1c5b303ffb3a6494d88d53dfc5f1eceffe2fb45148bf9a22a00b0feb"
+      ],
+      "reports": [
+        {
+          "case": "live-required-node-failure-records-repair-overlay",
+          "reference": "../local/agentic-evals/tau-pipeline-self-repair-proof.json",
+          "report": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json",
+          "trial_id": "498f8b4f0bf9-c000-t00"
+        },
+        {
+          "case": "live-required-node-failure-records-repair-overlay",
+          "reference": "../local/agentic-evals/tau-pipeline-self-repair-proof.json",
+          "report": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json",
+          "trial_id": "498f8b4f0bf9-c000-t01"
+        }
+      ],
+      "sha256": "sha256:8a02e5da1c5b303ffb3a6494d88d53dfc5f1eceffe2fb45148bf9a22a00b0feb"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-repair-overlay-browser-proof.json",
+      "bytes": 6255,
+      "path": "local/agentic-evals/tau-repair-overlay-browser-proof.json",
+      "reported_sha256_values": [
+        "sha256:d5b06a5535fae3ef76255d5717839aa018cc775b12d33ff9d88036d177215a3e",
+        "sha256:2f42bbce15faf2d1c0982c913ab5592de853ca15fd236ef197c3336a5ae37963"
+      ],
+      "reports": [
+        {
+          "case": "live-browser-sees-discord-repair-overlay",
+          "reference": "../local/agentic-evals/tau-repair-overlay-browser-proof.json",
+          "report": "local/agentic-evals/tau-repair-overlay-browser-agentic-evals-report.json",
+          "trial_id": "27d1bff0b0d3-c000-t00"
+        },
+        {
+          "case": "live-browser-sees-discord-repair-overlay",
+          "reference": "../local/agentic-evals/tau-repair-overlay-browser-proof.json",
+          "report": "local/agentic-evals/tau-repair-overlay-browser-agentic-evals-report.json",
+          "trial_id": "27d1bff0b0d3-c000-t01"
+        }
+      ],
+      "sha256": "sha256:2f42bbce15faf2d1c0982c913ab5592de853ca15fd236ef197c3336a5ae37963"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-same-node-rerun-proof.json",
+      "bytes": 13382,
+      "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
+      "reported_sha256_values": [
+        "sha256:ddf76c25bd0facc40476868caa73b15a99213e42d6cff2016248fbf780d37171",
+        "sha256:12ad2e7ead382555ac6f69e82ba397f726a6ab7c1ca6b85b4fd314c61f7bfba6"
+      ],
+      "reports": [
+        {
+          "case": "blocked-node-reruns-after-category-green",
+          "reference": "../local/agentic-evals/tau-same-node-rerun-proof.json",
+          "report": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json",
+          "trial_id": "86ef3747c57d-c000-t00"
+        },
+        {
+          "case": "blocked-node-reruns-after-category-green",
+          "reference": "../local/agentic-evals/tau-same-node-rerun-proof.json",
+          "report": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json",
+          "trial_id": "86ef3747c57d-c000-t01"
+        }
+      ],
+      "sha256": "sha256:12ad2e7ead382555ac6f69e82ba397f726a6ab7c1ca6b85b4fd314c61f7bfba6"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+      "bytes": 824,
+      "path": "local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+      "reported_sha256_values": [
+        "sha256:3d02e6bf56ffae18ec52b39f900a5b5cdb1337bd0058941fe36326130dffaf34",
+        "sha256:396dcb30c366577f935571db79c10db415dad58012da47682be4a33faadef00d"
+      ],
+      "reports": [
+        {
+          "case": "watch-missing-progress-fails-closed",
+          "reference": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+          "report": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
+          "trial_id": "1676b780b658-c001-t00"
+        },
+        {
+          "case": "watch-missing-progress-fails-closed",
+          "reference": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+          "report": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
+          "trial_id": "1676b780b658-c001-t01"
+        }
+      ],
+      "sha256": "sha256:396dcb30c366577f935571db79c10db415dad58012da47682be4a33faadef00d"
+    },
+    {
+      "absolute_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-terminal-dag-watch-proof.json",
+      "bytes": 1790,
+      "path": "local/agentic-evals/tau-terminal-dag-watch-proof.json",
+      "reported_sha256_values": [
+        "sha256:53389e1675639272c82a63ed7a4b0504803eadb281b45886e50928d104ddfdfa"
+      ],
+      "reports": [
+        {
+          "case": "watch-existing-live-pass-progress",
+          "reference": "../local/agentic-evals/tau-terminal-dag-watch-proof.json",
+          "report": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
+          "trial_id": "1676b780b658-c000-t00"
+        },
+        {
+          "case": "watch-existing-live-pass-progress",
+          "reference": "../local/agentic-evals/tau-terminal-dag-watch-proof.json",
+          "report": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
+          "trial_id": "1676b780b658-c000-t01"
+        }
+      ],
+      "sha256": "sha256:53389e1675639272c82a63ed7a4b0504803eadb281b45886e50928d104ddfdfa"
+    }
+  ],
+  "errors": [],
+  "excluded_reports": [
+    {
+      "path": "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json",
+      "reason": "self_referential_verifier_report_excluded_from_milestone_index"
+    }
+  ],
+  "generated_at": "2026-08-30T17:54:06.937733Z",
+  "generating_command": [
+    "uv",
+    "run",
+    "tau",
+    "proof-index",
+    "agentic-evals",
+    "build",
+    "--out",
+    "local/agentic-evals/tau-agentic-eval-evidence-index.json"
+  ],
+  "index_sha256": "sha256:e8c5fd7b730a592ae4b59dd484816ed8bc32175ef0aa1809a00612407d57bd79",
+  "index_version": 1,
+  "milestone_id": "tau-agentic-evals",
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": [
+      "Provider semantic quality.",
+      "Human acceptance of the full GOAL.md outcome.",
+      "That excluded self-referential verifier reports are milestone inputs."
+    ],
+    "live": false,
+    "mocked": false,
+    "proves": [
+      "Retained agentic-eval report bytes are content-addressed.",
+      "Report-referenced retained artifacts are content-addressed.",
+      "Report commands, report schema version, report source SHA/ref, and checkout dirty state are recorded."
+    ],
+    "provider_live": false
+  },
+  "repo": {
+    "dirty_tree": true,
+    "dirty_tree_declaration": "dirty",
+    "ref": "watchdog/issue-329",
+    "root": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329",
+    "sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb",
+    "status_porcelain": "M docs/evals/agentic-evals-feature-coverage.md\n M evals/tau_feature_coverage_agentic_eval.json\n M evals/tau_source_feature_coverage_records.json\n M local/agentic-evals/reconciliation-report.json\n M local/agentic-evals/source-inventory.json\n M local/agentic-evals/tau-feature-coverage-agentic-evals-report.json\n M local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\n M local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\n M local/agentic-evals/tau-feature-coverage-missing-report-proof.json\n M local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\n M local/agentic-evals/tau-feature-coverage-proof.json\n M local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\n M local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\n M src/tau_coding/cli.py\n M src/tau_coding/project_status.py\n M src/tau_coding/run_ledger.py\n M tests/test_project_status.py\n M tests/test_run_ledger.py\n?? evals/tau_agentic_eval_evidence_index_agentic_eval.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index.json\n?? scripts/agentic-eval-tau-agentic-eval-evidence-index.py"
+  },
+  "report_count": 15,
+  "reports": [
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 6025,
+      "case_count": 2,
+      "fixture_sha256": "sha256:415f52f57bae0d936f298d3d699e06b98daf2084028bf4d5d4459a201cb1f306",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run pytest --tau-suite=all tests/test_codebase_ingest.py -q"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run pytest --tau-suite=all tests/test_codebase_ingest.py -q -k 'cancellation or restart_live_worker or dead_retry or unknown_liveness or projection_request_mutation or projection_receipt_mismatch'"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:de4674cd57d90ad4ca699756f3343bf28e360332d84870c971f5613d6eda2549",
+      "skill": null,
+      "source_manifest": "evals/codebase_ingest_agentic_eval.json",
+      "trial_count": 4
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 6217,
+      "case_count": 2,
+      "fixture_sha256": "sha256:0bf39ed45f1a5ffc2e146dda833563fe12a4b89139ccf69f47c2e74b0c2fbf91",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q -k 'stale_generation or binding_mutations or absolute_and_parent or symlink or graph_query or evidence_emit or undeclared or late_request'"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/python-host-bridge-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:7ca2eee2de003bb77675ce6721e547967aeb0722e061413773986b9c99b82176",
+      "skill": null,
+      "source_manifest": "evals/python_host_bridge_agentic_eval.json",
+      "trial_count": 4
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 31335,
+      "case_count": 3,
+      "fixture_sha256": "sha256:df48592d014568d3234755fe547a526e8d1e1dc202f2fd7bc9eb25555641c90b",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && out=$(mktemp -d /tmp/tau-kernel-worker-eval-XXXXXX) && uv run --extra python-workspace tau-python-kernel-worker --canary-output-dir \"$out\""
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q -k 'unknown_capability or binding_mutation or import_failure or interrupt or unrelated_reused_pid'"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/python-workspace-kernel-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:89605567a27cd8893f884863fbace87cd2e2b4d77927a98242a5d75be66f2a4c",
+      "skill": null,
+      "source_manifest": "evals/python_workspace_kernel_agentic_eval.json",
+      "trial_count": 6
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 9344,
+      "case_count": 1,
+      "fixture_sha256": "sha256:b442efac9c4ae1eb62f726afe4d8af4e3e332636a5e4fee6c43c2b03148fcc59",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-core-proof.py --out local/agentic-evals/tau-core-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-core-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:336b20147befd9aab1ed6d22c3f5e76569f524e7b94f48f4a0d22d59a64551ef",
+      "skill": null,
+      "source_manifest": "evals/tau_core_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 7107,
+      "case_count": 2,
+      "fixture_sha256": "sha256:1127c52004476559c0f98adeab8ab36db7828c07f7ec4439bb34d0228709f45b",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json --timeout-seconds 180"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:a27e2c3dabde53cdc084c497d7ff1e255fbdce8c04c3ae1b760bb1ea056691c4",
+      "skill": null,
+      "source_manifest": "evals/tau_dag_ladder_rung1_agentic_eval.json",
+      "trial_count": 4
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 21098,
+      "case_count": 1,
+      "fixture_sha256": "sha256:20359c765d8b035739abb6a6a135bf5521a659f0b821f848138b3d967253f65f",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-discord-failure-path.py --out local/agentic-evals/tau-discord-failure-path-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "267c3d513053c49445270ec4cf3c331ae99e05a8",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:18100246f17bbddcad1566fb4a04d5a03f3e9c0c7ae6a596f31533853c7cb095",
+      "skill": null,
+      "source_manifest": "evals/tau_discord_failure_path_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 17142,
+      "case_count": 1,
+      "fixture_sha256": "sha256:98715de93017afaf4c1ba478de9eddea8136e170efc5dcb08e1996b4d470f5ec",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-discord-idempotency.py --out local/agentic-evals/tau-discord-idempotency-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "267c3d513053c49445270ec4cf3c331ae99e05a8",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:1111b7efce98c7e151c4f756aab88d55ba97d986bfa3e549e689eeb88ce03d84",
+      "skill": null,
+      "source_manifest": "evals/tau_discord_idempotency_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 12579,
+      "case_count": 1,
+      "fixture_sha256": "sha256:4535b148400f0052a6343d2ed49a8457e952e844eb34947c9982b490da064492",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-discord-unblock.py --out local/agentic-evals/tau-discord-unblock-proof.json --discord-bot --channel-name horus"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "db5b19cf395a99c728175eaee95e549e97ff4568",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:cab070e0083d1579abf33a1ad367985feb2cedff0f9167c4a7f40fdabc99276a",
+      "skill": null,
+      "source_manifest": "evals/tau_discord_unblock_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 19708,
+      "case_count": 7,
+      "fixture_sha256": "sha256:888549ca16c4f722ab000d961fbef31d535cb380eed3c30752ae832a070e9a8d",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode positive --out local/agentic-evals/tau-feature-coverage-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode unmanifested-cli-command --out local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode orphan-eval-manifest --out local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode duplicate-feature-owner --out local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode missing-retained-report --out local/agentic-evals/tau-feature-coverage-missing-report-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode stale-waiver --out local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode missing-capability-claim --out local/agentic-evals/tau-feature-coverage-missing-claim-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "watchdog/issue-329",
+      "repo_sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:f57e8ed1d6d6d15acbca828e6a0a9d75b1057af77265ec5a739bba64713fac44",
+      "skill": null,
+      "source_manifest": "evals/tau_feature_coverage_agentic_eval.json",
+      "trial_count": 14
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 5115,
+      "case_count": 1,
+      "fixture_sha256": "sha256:5f87dab7eb3baae54550531853463b9a7d40f31a2761af5208f8c82af7de927f",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-ledger-trace.py --out local/agentic-evals/tau-ledger-trace-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "6af149c659d262a8398f53fbe85f7a4b7711e6f1",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:ee62e64936860c765ccb94940610e6d36a68aa4e27f008e7381c2727824a9f88",
+      "skill": null,
+      "source_manifest": "evals/tau_ledger_trace_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 7589,
+      "case_count": 1,
+      "fixture_sha256": "sha256:023a2ec0593dc9608be4813cfb028edd0bb428f40fb464d7c84c5360b899c46e",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-pipeline-self-repair.py --out local/agentic-evals/tau-pipeline-self-repair-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "f0fe54d825f8600afd3197fa9318620681399dee",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:29939a5639d48af89064dfc88425c7eef0ab6ac3c8ccb5b2a67f05654df10a05",
+      "skill": null,
+      "source_manifest": "evals/tau_pipeline_self_repair_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 17665,
+      "case_count": 1,
+      "fixture_sha256": "sha256:3cf235c94faf19abe0f2000256e1977a334bea5379c9f58f0731a31e82caf040",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-repair-overlay-browser.py --out local/agentic-evals/tau-repair-overlay-browser-proof.json --live-notify --channel-name horus"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-repair-overlay-browser-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "267c3d513053c49445270ec4cf3c331ae99e05a8",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:ae24a866253fc6c00ea1d08dec571329babb21b5aab77e5f006f81aef30b2771",
+      "skill": null,
+      "source_manifest": "evals/tau_repair_overlay_browser_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 33207,
+      "case_count": 1,
+      "fixture_sha256": "sha256:6ab946b5c8e36275ecea9d1c859558aedbdab562f1fbb49ebe97792cba30fae9",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-same-node-rerun.py --out local/agentic-evals/tau-same-node-rerun-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "f6d05a7c9d0211bfb69f86e6eb881181b7d33d39",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:5fb6e9bdd59c588a08553dff734c1fe1c8596f252baf6f5eec6036e434eaad1b",
+      "skill": null,
+      "source_manifest": "evals/tau_same_node_rerun_agentic_eval.json",
+      "trial_count": 2
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 6975,
+      "case_count": 2,
+      "fixture_sha256": "sha256:976f6fc6c64bfea37f4fe7ead73aa832827cad24d3d4a2e6383bc330ec518f3b",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode positive --out local/agentic-evals/tau-terminal-dag-watch-proof.json"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode missing-progress --out local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-terminal-dag-watch-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "9b3c65266d20ce8fac1876813fe2f30edd34f697",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:a6a595964867641dc393ba388542c603ce423fcf6a65846fd3fbbc418b223df9",
+      "skill": null,
+      "source_manifest": "evals/tau_terminal_dag_watch_agentic_eval.json",
+      "trial_count": 4
+    },
+    {
+      "agentic_evals_runner_version": "agentic_evals.report.v2",
+      "bytes": 16697,
+      "case_count": 4,
+      "fixture_sha256": "sha256:0d9a31f322d40f372b157335f3b50ff12292ef9abb1ad63d7ffa1da002579ec2",
+      "generating_commands": [
+        [
+          "bash",
+          "-lc",
+          "cd .. && out_dir=\"/tmp/tau-agentic-evals-dag-viewer-${RANDOM}-$(date +%s%N)\" && mkdir -p \"$out_dir\" && CHROME_BIN=/usr/bin/google-chrome uv run python scripts/run-dag-viewer-browser-proof.py --out \"$out_dir/browser-proof.json\" --screenshot \"$out_dir/browser-proof.png\" --run-root \"$out_dir/run\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' \"$out_dir/browser-proof.json\""
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone'"
+        ],
+        [
+          "bash",
+          "-lc",
+          "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline selectors remain unique when node ids sanitize to the same qid token'"
+        ]
+      ],
+      "live": true,
+      "mocked": false,
+      "path": "local/agentic-evals/tau-timeline-viewer-agentic-evals-report.json",
+      "readiness": "READY",
+      "repo_ref": "main",
+      "repo_sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+      "schema": "agentic_evals.report.v2",
+      "sha256": "sha256:2d6a256a56858beb666c6e13439f89a5f8aa8e2db84aba9335e3b5568237c158",
+      "skill": null,
+      "source_manifest": "evals/tau_timeline_viewer_agentic_eval.json",
+      "trial_count": 8
+    }
+  ],
+  "schema": "tau.agentic_eval_evidence_index.v1",
+  "status": "PASS",
+  "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
+}

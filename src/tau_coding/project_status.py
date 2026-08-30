@@ -35,6 +35,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.run_ledger import (
+    DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
+    verify_agentic_eval_ledger_evidence_index,
+)
+
 PROJECT_STATUS_SCHEMA = "tau.project_status.v1"
 GENERATOR_VERSION = "1.0.0"
 
@@ -112,6 +117,38 @@ def _proof_index(repo: Path) -> dict[str, Any]:
                 )
     combined = _sha256_text(_canonical(entries))
     return {"count": len(entries), "entries": entries, "digest": combined}
+
+
+def _agentic_eval_evidence_index(repo: Path) -> dict[str, Any]:
+    path = repo / DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX
+    if not path.is_file():
+        return {
+            "present": False,
+            "status": "MISSING",
+            "ok": False,
+            "source": DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
+            "sha256": None,
+            "failure_codes": ["agentic_eval_evidence_index_missing"],
+        }
+    digest = _digest_file(path)
+    verification = verify_agentic_eval_ledger_evidence_index(
+        path,
+        repo,
+        require_clean=False,
+        require_current_sha=False,
+        require_live_reports=True,
+    )
+    return {
+        "present": True,
+        "status": verification["status"],
+        "ok": verification["ok"],
+        "source": DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
+        "sha256": digest,
+        "report_count": verification["report_count"],
+        "artifact_count": verification["artifact_count"],
+        "failure_codes": verification["failure_codes"],
+        "retained_reports_live_readback": verification["retained_reports_live_readback"],
+    }
 
 
 def _immutable_goal(repo: Path) -> dict[str, Any]:
@@ -234,6 +271,7 @@ def build_project_status(
     goal = _immutable_goal(repo)
     package = _package(repo)
     proof_index = _proof_index(repo)
+    agentic_eval_evidence_index = _agentic_eval_evidence_index(repo)
     workflows = _workflows(repo)
     capabilities = _capabilities(repo)
     acceptance = _acceptance(repo)
@@ -243,6 +281,7 @@ def build_project_status(
         "GOAL.md": goal["sha256"],
         "pyproject.toml": package["sha256"],
         "proof_index": proof_index["digest"],
+        "agentic_eval_evidence_index": agentic_eval_evidence_index["sha256"],
         "acceptance_receipt": acceptance["sha256"],
     }
     if github_snapshot is not None:
@@ -262,6 +301,7 @@ def build_project_status(
         "human_acceptance": acceptance,
         "github": github,
         "proof_index": proof_index,
+        "agentic_eval_evidence_index": agentic_eval_evidence_index,
         "source_digests": source_digests,
         "proof_boundary": {
             "mocked": False,
@@ -272,6 +312,7 @@ def build_project_status(
                 "package version/description from pyproject.toml",
                 "immutable-goal status from GOAL.md",
                 "checked-in closure-evidence proof index digest",
+                "checked-in retained agentic-eval evidence index digest and verifier status",
                 "clean-wheel acceptance baseline presence and signature presence",
             ] + (["GitHub branch-protection, required checks, and open/closed critical issues"]
                  if github_snapshot is not None else []),
@@ -342,6 +383,7 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
     gh = status["github"]
     accept = status["human_acceptance"]
     caps = status["capabilities"]["present"]
+    agentic_eval_index = status.get("agentic_eval_evidence_index", {})
 
     def _mark(value: Any) -> str:
         if value is True:
@@ -383,6 +425,9 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
         f"open critical issues: {_issue_numbers(gh['open_critical_issues'])})",
         f"- **Proof index**: {status['proof_index']['count']} checked-in "
         "closure-evidence records",
+        f"- **Agentic-eval evidence index**: {agentic_eval_index.get('status', UNKNOWN)} "
+        f"({agentic_eval_index.get('report_count', 0)} reports, "
+        f"{agentic_eval_index.get('artifact_count', 0)} artifacts)",
         "",
         f"This section is generated from explicit sources; it carries no runtime "
         f"authority. Bound semantic-content digest: `{digest}`.",

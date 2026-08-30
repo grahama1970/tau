@@ -1,0 +1,92 @@
+{
+  "adversarial_detection": true,
+  "expected_failure_code": "report_repo_sha_mismatch",
+  "failure_codes": [
+    "report_digest_mismatch",
+    "report_repo_sha_mismatch"
+  ],
+  "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/index.json",
+  "live": true,
+  "mocked": false,
+  "mode": "substituted-report",
+  "ok": true,
+  "provider_live": false,
+  "retained_reports_live_readback": {
+    "all_unmocked": true,
+    "count": 15,
+    "live": true,
+    "mocked": false,
+    "ready": true
+  },
+  "schema": "tau.agentic_eval_evidence_selftest_receipt.v1",
+  "status": "PASS",
+  "verification": {
+    "agentic_evals_runner_version": "agentic_evals.report.v2",
+    "artifact_count": 21,
+    "failure_codes": [
+      "report_digest_mismatch",
+      "report_repo_sha_mismatch"
+    ],
+    "failure_count": 2,
+    "failures": [
+      {
+        "actual": "sha256:f2303b63938cc54c42bcb732d6b610674730701b9563e52e603d547383b6b4f3",
+        "code": "report_digest_mismatch",
+        "expected": "sha256:de4674cd57d90ad4ca699756f3343bf28e360332d84870c971f5613d6eda2549",
+        "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
+      },
+      {
+        "actual": "substituted-from-another-sha",
+        "code": "report_repo_sha_mismatch",
+        "expected": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+        "field": "repo_sha",
+        "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
+      }
+    ],
+    "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/index.json",
+    "index_repo": {
+      "dirty_tree": false,
+      "dirty_tree_declaration": "clean",
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/repo",
+      "sha": "d4cd7f73ec9f9867c265e74a475a24850b745ef0",
+      "status_porcelain": ""
+    },
+    "index_sha256": "sha256:6a7ea7e9086460375232dbe58921d2ec243f43abeb8ef643b85c0490588435d7",
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "proof_scope": {
+      "does_not_prove": [
+        "Provider semantic quality.",
+        "Human acceptance of the full GOAL.md outcome."
+      ],
+      "proves": [
+        "The verifier re-read the evidence index, retained reports, and referenced artifacts by digest without regenerating reports.",
+        "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence can be represented as stable failure codes."
+      ]
+    },
+    "provider_live": false,
+    "repo": {
+      "dirty_tree": true,
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/repo",
+      "sha": "d4cd7f73ec9f9867c265e74a475a24850b745ef0"
+    },
+    "report_count": 15,
+    "require_clean": false,
+    "require_current_sha": false,
+    "require_live_reports": true,
+    "retained_reports_live_readback": {
+      "all_unmocked": true,
+      "count": 15,
+      "live": true,
+      "mocked": false,
+      "ready": true
+    },
+    "schema": "tau.agentic_eval_evidence_verification.v1",
+    "status": "FAIL",
+    "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
+  },
+  "verifier_exit_code": 1
+}

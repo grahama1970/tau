@@ -1,0 +1,82 @@
+{
+  "adversarial_detection": true,
+  "expected_failure_code": "dirty_tree_mismatch",
+  "failure_codes": [
+    "dirty_tree_mismatch"
+  ],
+  "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/index.json",
+  "live": true,
+  "mocked": false,
+  "mode": "dirty-tree",
+  "ok": true,
+  "provider_live": false,
+  "retained_reports_live_readback": {
+    "all_unmocked": true,
+    "count": 15,
+    "live": true,
+    "mocked": false,
+    "ready": true
+  },
+  "schema": "tau.agentic_eval_evidence_selftest_receipt.v1",
+  "status": "PASS",
+  "verification": {
+    "agentic_evals_runner_version": "agentic_evals.report.v2",
+    "artifact_count": 21,
+    "failure_codes": [
+      "dirty_tree_mismatch"
+    ],
+    "failure_count": 1,
+    "failures": [
+      {
+        "actual": "dirty",
+        "code": "dirty_tree_mismatch",
+        "expected": "clean"
+      }
+    ],
+    "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/index.json",
+    "index_repo": {
+      "dirty_tree": false,
+      "dirty_tree_declaration": "clean",
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/repo",
+      "sha": "217402edffb8958ee87bb2cf71d288a9b0f19fff",
+      "status_porcelain": ""
+    },
+    "index_sha256": "sha256:c4766389bd72e282f19d2100f0aad933df9188a39a63e9feeb4d351d709f65ef",
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "proof_scope": {
+      "does_not_prove": [
+        "Provider semantic quality.",
+        "Human acceptance of the full GOAL.md outcome."
+      ],
+      "proves": [
+        "The verifier re-read the evidence index, retained reports, and referenced artifacts by digest without regenerating reports.",
+        "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence can be represented as stable failure codes."
+      ]
+    },
+    "provider_live": false,
+    "repo": {
+      "dirty_tree": true,
+      "ref": "main",
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/repo",
+      "sha": "217402edffb8958ee87bb2cf71d288a9b0f19fff"
+    },
+    "report_count": 15,
+    "require_clean": true,
+    "require_current_sha": false,
+    "require_live_reports": true,
+    "retained_reports_live_readback": {
+      "all_unmocked": true,
+      "count": 15,
+      "live": true,
+      "mocked": false,
+      "ready": true
+    },
+    "schema": "tau.agentic_eval_evidence_verification.v1",
+    "status": "FAIL",
+    "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
+  },
+  "verifier_exit_code": 1
+}

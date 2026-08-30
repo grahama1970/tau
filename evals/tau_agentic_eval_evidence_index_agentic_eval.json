@@ -1,0 +1,144 @@
+{
+  "version": 2,
+  "skill": "tau-agentic-eval-evidence-index",
+  "trials": 2,
+  "proof_scope": "Tau retained agentic-eval evidence index build and fail-closed verification",
+  "claims": {
+    "proves": "Tau builds a verifier-owned evidence index over retained agentic-eval reports and referenced artifacts, re-reads that index without regenerating reports, and fails closed on mutation, substitution, deletion, and dirty-tree controls.",
+    "does_not_prove": "Provider semantic quality, human acceptance of the full five-DAG product outcome, or that the verifier's self-referential agentic-evals report is itself a milestone input."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "description": "Tau content-addresses retained agentic-eval reports and report-referenced artifacts, records report commands and runner schema version, binds report source SHA/ref and checkout dirty-tree declarations, and verifies the retained evidence fail-closed.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": true,
+        "fault_injected_deterministic": true
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "retained-agentic-eval-evidence-index-verifies",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.agentic_eval_evidence_index.revision_bound_retained_reports"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode positive --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json", "json_pointer": "/retained_reports_live_readback/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json", "json_pointer": "/retained_reports_live_readback/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json", "json_pointer": "/retained_reports_live_readback/all_unmocked", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index.json", "json_pointer": "/schema", "equals": "tau.agentic_eval_evidence_index.v1"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json", "json_pointer": "/schema", "equals": "tau.agentic_eval_evidence_verification.v1"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json", "json_pointer": "/retained_reports_live_readback/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json", "json_pointer": "/retained_reports_live_readback/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json", "json_pointer": "/retained_reports_live_readback/all_unmocked", "equals": true}
+        ]
+      }
+    },
+    {
+      "name": "mutated-report-is-rejected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.agentic_eval_evidence_index.revision_bound_retained_reports"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode mutated-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"expected_failure_code\": \"report_digest_mismatch\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json", "json_pointer": "/expected_failure_code", "equals": "report_digest_mismatch"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json", "json_pointer": "/adversarial_detection", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json", "json_pointer": "/verifier_exit_code", "equals": 1}
+        ]
+      }
+    },
+    {
+      "name": "substituted-report-from-wrong-sha-is-rejected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.agentic_eval_evidence_index.revision_bound_retained_reports"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode substituted-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"expected_failure_code\": \"report_repo_sha_mismatch\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json", "json_pointer": "/expected_failure_code", "equals": "report_repo_sha_mismatch"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json", "json_pointer": "/adversarial_detection", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json", "json_pointer": "/verifier_exit_code", "equals": 1}
+        ]
+      }
+    },
+    {
+      "name": "deleted-artifact-is-rejected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.agentic_eval_evidence_index.revision_bound_retained_reports"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode deleted-artifact --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"expected_failure_code\": \"artifact_missing\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json", "json_pointer": "/expected_failure_code", "equals": "artifact_missing"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json", "json_pointer": "/adversarial_detection", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json", "json_pointer": "/verifier_exit_code", "equals": 1}
+        ]
+      }
+    },
+    {
+      "name": "dirty-tree-is-rejected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.agentic_eval_evidence_index.revision_bound_retained_reports"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode dirty-tree --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"expected_failure_code\": \"dirty_tree_mismatch\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json", "json_pointer": "/expected_failure_code", "equals": "dirty_tree_mismatch"},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json", "json_pointer": "/adversarial_detection", "equals": true},
+          {"path": "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json", "json_pointer": "/verifier_exit_code", "equals": 1}
+        ]
+      }
+    }
+  ]
+}

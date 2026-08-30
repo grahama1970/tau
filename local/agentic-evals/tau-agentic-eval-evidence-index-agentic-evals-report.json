@@ -1,0 +1,371 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_agentic_eval_evidence_index_agentic_eval.json",
+  "run_id": "26b7501b2440",
+  "fixture_sha256": "sha256:612289cdd4219e278d7da305b0a84f949265a767c4e894f08eb3b744266df045",
+  "repo": {
+    "sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb",
+    "ref": "watchdog/issue-329"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau retained agentic-eval evidence index build and fail-closed verification",
+  "claims": {
+    "proves": "Tau builds a verifier-owned evidence index over retained agentic-eval reports and referenced artifacts, re-reads that index without regenerating reports, and fails closed on mutation, substitution, deletion, and dirty-tree controls.",
+    "does_not_prove": "Provider semantic quality, human acceptance of the full five-DAG product outcome, or that the verifier's self-referential agentic-evals report is itself a milestone input."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+        "description": "Tau content-addresses retained agentic-eval reports and report-referenced artifacts, records report commands and runner schema version, binds report source SHA/ref and checkout dirty-tree declarations, and verifies the retained evidence fail-closed.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "mutated-report-is-rejected",
+              "substituted-report-from-wrong-sha-is-rejected",
+              "deleted-artifact-is-rejected",
+              "dirty-tree-is-rejected"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "retained-agentic-eval-evidence-index-verifies"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "retained-agentic-eval-evidence-index-verifies",
+          "mutated-report-is-rejected",
+          "substituted-report-from-wrong-sha-is-rejected",
+          "deleted-artifact-is-rejected",
+          "dirty-tree-is-rejected"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T17:55:10.052398+00:00",
+  "case_count": 5,
+  "required_case_count": 5,
+  "outcome_counts": {
+    "PASS": 5,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 10,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "retained-agentic-eval-evidence-index-verifies",
+      "type": "positive",
+      "case_id": "26b7501b2440-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode positive --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.agentic_eval_evidence_index.revision_bound_retained_reports"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1043.001,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": null, \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1037.896,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:50ea58ad58877bd2b64cdc361e7067bec5d985f119f7a605001b991ecc96fe4f",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:dbc9648dcfc8474656c11ae9af5a2f08cc87f0ab39d7692d1e7bee822c4fe07f",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:74a567666de20f14533fb53aec31684740987dfca586807c3eb0b1e96a576b30"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": null, \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1048.105,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:d9fb437a3d28dc0709ce66ac2bfabae2c88f8e3d9e5dd5d2c65fcfb484fe4130",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:5ae72db3a43fd7f7a894b3877a62411f4c553d9d848b9e4c555512f77953efa5",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:59c01e4f363c0f7130d45530183571d876b822c0703a2be9bba30d67ce5c7e75"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "mutated-report-is-rejected",
+      "type": "adversarial",
+      "case_id": "26b7501b2440-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode mutated-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.agentic_eval_evidence_index.revision_bound_retained_reports"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 7871.193,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"report_digest_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7919.352,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:a18811a6e67f8d0c6b9b15ecc1e2c91acea6480c1bd9f5dd68bf6d693bbfdbbb"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"report_digest_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7823.033,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:b30af69aa60e1af55ece3d3dde90b28e936f9e200db6b07b8744e454894645b3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "substituted-report-from-wrong-sha-is-rejected",
+      "type": "adversarial",
+      "case_id": "26b7501b2440-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode substituted-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.agentic_eval_evidence_index.revision_bound_retained_reports"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 7859.511,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"report_repo_sha_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7822.449,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c002-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:2825fe132a9123d6a971560d524c3dcc36e365612bcb2888fea95ea1deee5957"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"report_repo_sha_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7896.572,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c002-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:1d9a8e76120acb477bd830a805d7734ea39ee8aaf181e3b8efb5720e4f2b1040"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "deleted-artifact-is-rejected",
+      "type": "adversarial",
+      "case_id": "26b7501b2440-c003",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode deleted-artifact --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.agentic_eval_evidence_index.revision_bound_retained_reports"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 7791.418,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"artifact_missing\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7765.757,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c003-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:5eba356d8b1d850315e4009438dd896b902faddcf5821c2f6447b8dfc14c4bd2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"artifact_missing\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7817.08,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c003-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:e13f2d19236a518d78c3ddac0ad7260e34e1db48a34d03493eafb56016979ea4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "dirty-tree-is-rejected",
+      "type": "adversarial",
+      "case_id": "26b7501b2440-c004",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode dirty-tree --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.agentic_eval_evidence_index.revision_bound_retained_reports"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 7838.251,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"dirty_tree_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7878.742,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c004-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:c8f1f115f940725132adad3041e8265b02acedbcff79d788bbe756b8a7b9c3a2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"expected_failure_code\": \"dirty_tree_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 7797.76,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "26b7501b2440-c004-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:54e8d887d63c403231f87e7d328bef0db23943efcb55e2444244affe0ed9ef75"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

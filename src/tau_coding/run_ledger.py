@@ -20,6 +20,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
+import subprocess
+import tempfile
 from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -32,12 +35,26 @@ AGENTIC_EVAL_RECEIPT_SCHEMA = "tau.agentic_eval_receipt.v1"
 ARTIFACT_DIGEST_SCHEMA = "tau.run_ledger_artifact_digest.v1"
 RUN_LEDGER_AUDIT_PROJECTION_SCHEMA = "tau.run_ledger_audit_projection.v1"
 RUN_LEDGER_AUDIT_VERIFICATION_SCHEMA = "tau.run_ledger_audit_verification.v1"
+AGENTIC_EVAL_EVIDENCE_INDEX_SCHEMA = "tau.agentic_eval_evidence_index.v1"
+AGENTIC_EVAL_EVIDENCE_VERIFICATION_SCHEMA = "tau.agentic_eval_evidence_verification.v1"
+AGENTIC_EVAL_EVIDENCE_SELFTEST_SCHEMA = "tau.agentic_eval_evidence_selftest_receipt.v1"
 AUDIT_POLICY_VERSION = "tau.run_ledger_audit_policy.v1"
 AUDIT_VERIFIER_VERSION = "tau.run_ledger_audit_verifier.v1"
+AGENTIC_EVAL_EVIDENCE_VERIFIER_VERSION = "tau.agentic_eval_evidence_verifier.v1"
+AGENTIC_EVAL_REPORT_SCHEMA = "agentic_evals.report.v2"
 GENESIS = "GENESIS"
 DEFAULT_CLOCK_SOURCE = "ledger_projection_clock"
 DEFAULT_RETENTION_CLASS = "standard"
 DEFAULT_REDACTION_STATUS = "none"
+DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX = (
+    "local/agentic-evals/tau-agentic-eval-evidence-index.json"
+)
+DEFAULT_AGENTIC_EVAL_EVIDENCE_PASS_RECEIPT = (
+    "local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json"
+)
+SELF_AGENTIC_EVAL_EVIDENCE_REPORT = (
+    "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json"
+)
 RETENTION_CLASSES = frozenset(
     {"standard", "restricted", "legal_hold", "ephemeral", "public", "audit_failure"}
 )
@@ -740,6 +757,658 @@ def verify_audit_projection_files(
     }
 
 
+def build_agentic_eval_ledger_evidence_index(
+    repo: Path,
+    *,
+    report_paths: Sequence[Path] = (),
+    output_path: Path | None = None,
+    generating_command: Sequence[str] = (),
+    milestone_id: str = "tau-agentic-evals",
+) -> dict[str, Any]:
+    """Build a verifier-owned digest index for retained agentic-eval reports.
+
+    The index records report bytes, report-declared commands, report-declared
+    source SHA/ref, and every retained artifact hash named by trial
+    ``artifact_hashes``. It intentionally excludes its own verifier report by
+    default to avoid a self-referential digest loop.
+    """
+
+    resolved_repo = repo.expanduser().resolve()
+    reports = (
+        [path.expanduser() for path in report_paths]
+        if report_paths
+        else _default_agentic_eval_report_paths(resolved_repo)
+    )
+    current_sha = _git_text(resolved_repo, "rev-parse", "HEAD")
+    current_ref = _git_text(resolved_repo, "branch", "--show-current")
+    porcelain = _git_text(resolved_repo, "status", "--porcelain", "--untracked-files=all")
+    dirty_tree = porcelain != "" if porcelain is not None else None
+    report_entries: list[dict[str, Any]] = []
+    artifact_entries: dict[str, dict[str, Any]] = {}
+    errors: list[dict[str, Any]] = []
+    for raw_report in sorted(reports, key=lambda item: item.as_posix()):
+        report_path = raw_report
+        if not report_path.is_absolute():
+            report_path = resolved_repo / report_path
+        try:
+            resolved_report = report_path.resolve()
+            report = _read_json_object(resolved_report)
+            rel_report = _repo_relative(resolved_repo, resolved_report)
+            report_entry = _agentic_eval_report_entry(resolved_repo, resolved_report, report)
+            report_entries.append(report_entry)
+            for artifact in _agentic_eval_artifact_entries(resolved_repo, resolved_report, report):
+                artifact_entries[artifact["path"]] = artifact
+        except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            errors.append(
+                {
+                    "code": "report_unreadable",
+                    "path": _repo_relative(resolved_repo, report_path),
+                    "message": str(exc),
+                }
+            )
+            continue
+        if report.get("schema") != AGENTIC_EVAL_REPORT_SCHEMA:
+            errors.append(
+                {
+                    "code": "report_schema_mismatch",
+                    "path": rel_report,
+                    "expected": AGENTIC_EVAL_REPORT_SCHEMA,
+                    "actual": report.get("schema"),
+                }
+            )
+    artifacts = [artifact_entries[key] for key in sorted(artifact_entries)]
+    index = {
+        "schema": AGENTIC_EVAL_EVIDENCE_INDEX_SCHEMA,
+        "index_version": 1,
+        "milestone_id": milestone_id,
+        "verifier_version": AGENTIC_EVAL_EVIDENCE_VERIFIER_VERSION,
+        "agentic_evals_runner_version": AGENTIC_EVAL_REPORT_SCHEMA,
+        "generated_at": _utc_now(),
+        "generating_command": list(generating_command),
+        "repo": {
+            "root": str(resolved_repo),
+            "sha": current_sha,
+            "ref": current_ref,
+            "dirty_tree": dirty_tree,
+            "dirty_tree_declaration": "dirty" if dirty_tree else "clean",
+            "status_porcelain": porcelain or "",
+        },
+        "excluded_reports": [
+            {
+                "path": SELF_AGENTIC_EVAL_EVIDENCE_REPORT,
+                "reason": "self_referential_verifier_report_excluded_from_milestone_index",
+            }
+        ],
+        "report_count": len(report_entries),
+        "artifact_count": len(artifacts),
+        "reports": report_entries,
+        "artifacts": artifacts,
+        "errors": errors,
+        "ok": not errors,
+        "status": "PASS" if not errors else "FAIL",
+        "proof_boundary": {
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "proves": [
+                "Retained agentic-eval report bytes are content-addressed.",
+                "Report-referenced retained artifacts are content-addressed.",
+                "Report commands, report schema version, report source SHA/ref, and checkout dirty state are recorded.",
+            ],
+            "does_not_prove": [
+                "Provider semantic quality.",
+                "Human acceptance of the full GOAL.md outcome.",
+                "That excluded self-referential verifier reports are milestone inputs.",
+            ],
+        },
+    }
+    index["index_sha256"] = "sha256:" + hashlib.sha256(
+        _canonical({key: value for key, value in index.items() if key != "index_sha256"}).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    if output_path is not None:
+        _write_json(output_path.expanduser(), index)
+    return index
+
+
+def verify_agentic_eval_ledger_evidence_index(
+    index_path: Path,
+    repo: Path,
+    *,
+    require_clean: bool = True,
+    require_current_sha: bool = False,
+    require_live_reports: bool = True,
+    receipt_path: Path | None = None,
+) -> dict[str, Any]:
+    """Verify an agentic-eval evidence index without regenerating reports."""
+
+    resolved_repo = repo.expanduser().resolve()
+    resolved_index = index_path.expanduser().resolve()
+    failures: list[dict[str, Any]] = []
+    try:
+        index = _read_json_object(resolved_index)
+    except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+        result = _agentic_eval_verification_result(
+            index_path=resolved_index,
+            repo=resolved_repo,
+            failures=[{"code": "index_unreadable", "message": str(exc)}],
+            require_clean=require_clean,
+            require_current_sha=require_current_sha,
+            require_live_reports=require_live_reports,
+            index={},
+        )
+        if receipt_path is not None:
+            _write_json(receipt_path.expanduser(), result)
+        return result
+
+    if index.get("schema") != AGENTIC_EVAL_EVIDENCE_INDEX_SCHEMA:
+        failures.append(
+            {
+                "code": "index_schema_mismatch",
+                "expected": AGENTIC_EVAL_EVIDENCE_INDEX_SCHEMA,
+                "actual": index.get("schema"),
+            }
+        )
+    if index.get("verifier_version") != AGENTIC_EVAL_EVIDENCE_VERIFIER_VERSION:
+        failures.append(
+            {
+                "code": "verifier_version_mismatch",
+                "expected": AGENTIC_EVAL_EVIDENCE_VERIFIER_VERSION,
+                "actual": index.get("verifier_version"),
+            }
+        )
+    current_sha = _git_text(resolved_repo, "rev-parse", "HEAD")
+    porcelain = _git_text(resolved_repo, "status", "--porcelain", "--untracked-files=all")
+    current_dirty = porcelain != "" if porcelain is not None else None
+    index_repo = index.get("repo") if isinstance(index.get("repo"), dict) else {}
+    if require_current_sha and index_repo.get("sha") != current_sha:
+        failures.append(
+            {
+                "code": "index_source_sha_mismatch",
+                "expected": index_repo.get("sha"),
+                "actual": current_sha,
+            }
+        )
+    if require_clean and current_dirty is not False:
+        failures.append(
+            {
+                "code": "dirty_tree_mismatch",
+                "expected": "clean",
+                "actual": "dirty" if current_dirty else "unknown",
+            }
+        )
+    _verify_agentic_eval_reports(
+        resolved_repo,
+        index.get("reports") if isinstance(index.get("reports"), list) else [],
+        failures,
+        require_live_reports=require_live_reports,
+    )
+    _verify_agentic_eval_artifacts(
+        resolved_repo,
+        index.get("artifacts") if isinstance(index.get("artifacts"), list) else [],
+        failures,
+    )
+    result = _agentic_eval_verification_result(
+        index_path=resolved_index,
+        repo=resolved_repo,
+        failures=failures,
+        require_clean=require_clean,
+        require_current_sha=require_current_sha,
+        require_live_reports=require_live_reports,
+        index=index,
+    )
+    if receipt_path is not None:
+        _write_json(receipt_path.expanduser(), result)
+    return result
+
+
+def write_agentic_eval_ledger_evidence_selftest(
+    repo: Path,
+    *,
+    mode: str,
+    out: Path,
+) -> dict[str, Any]:
+    """Write positive or adversarial receipts for the evidence-index verifier."""
+
+    resolved_repo = repo.expanduser().resolve()
+    resolved_out = out.expanduser()
+    if mode == "positive":
+        index_path = resolved_repo / DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX
+        pass_receipt = resolved_repo / DEFAULT_AGENTIC_EVAL_EVIDENCE_PASS_RECEIPT
+        index = build_agentic_eval_ledger_evidence_index(
+            resolved_repo,
+            output_path=index_path,
+            generating_command=[
+                "uv",
+                "run",
+                "tau",
+                "proof-index",
+                "agentic-evals",
+                "build",
+                "--out",
+                DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
+            ],
+        )
+        verification = verify_agentic_eval_ledger_evidence_index(
+            index_path,
+            resolved_repo,
+            require_clean=False,
+            require_current_sha=False,
+            require_live_reports=True,
+            receipt_path=pass_receipt,
+        )
+        payload = _agentic_eval_selftest_payload(
+            mode=mode,
+            ok=index.get("ok") is True and verification.get("ok") is True,
+            verification=verification,
+            index_path=index_path,
+            expected_failure_code=None,
+        )
+        _write_json(resolved_out, payload)
+        return payload
+    return _write_agentic_eval_negative_selftest(resolved_repo, mode=mode, out=resolved_out)
+
+
+def _write_agentic_eval_negative_selftest(repo: Path, *, mode: str, out: Path) -> dict[str, Any]:
+    expected_codes = {
+        "mutated-report": "report_digest_mismatch",
+        "substituted-report": "report_repo_sha_mismatch",
+        "deleted-artifact": "artifact_missing",
+        "dirty-tree": "dirty_tree_mismatch",
+    }
+    if mode not in expected_codes:
+        raise ValueError(f"unknown agentic-eval evidence selftest mode: {mode}")
+    with tempfile.TemporaryDirectory(prefix=f"tau-agentic-eval-evidence-{mode}-") as tmp:
+        mirror = Path(tmp) / "repo"
+        shutil.copytree(
+            repo,
+            mirror,
+            ignore=shutil.ignore_patterns(".git", ".venv", "__pycache__", ".mypy_cache"),
+        )
+        _git_init_commit(mirror)
+        index_path = Path(tmp) / "index.json"
+        build_agentic_eval_ledger_evidence_index(mirror, output_path=index_path)
+        if mode == "mutated-report":
+            report = _first_index_report(index_path)
+            (mirror / report).write_text(
+                (mirror / report).read_text(encoding="utf-8") + "\n",
+                encoding="utf-8",
+            )
+        elif mode == "substituted-report":
+            reports = _index_report_paths(index_path)
+            if not reports:
+                raise RuntimeError("substituted-report selftest requires one retained report")
+            report_path = mirror / reports[0]
+            substituted = _read_json_object(report_path)
+            repo_block = substituted.get("repo") if isinstance(substituted.get("repo"), dict) else {}
+            substituted["repo"] = {**repo_block, "sha": "substituted-from-another-sha"}
+            _write_json(report_path, substituted)
+        elif mode == "deleted-artifact":
+            artifact = _first_index_artifact(index_path)
+            (mirror / artifact).unlink()
+        elif mode == "dirty-tree":
+            (mirror / "DIRTY-TREE-CONTROL.txt").write_text("dirty\n", encoding="utf-8")
+        verification = verify_agentic_eval_ledger_evidence_index(
+            index_path,
+            mirror,
+            require_clean=mode == "dirty-tree",
+            require_current_sha=False,
+            require_live_reports=True,
+        )
+        expected_code = expected_codes[mode]
+        detected = expected_code in verification.get("failure_codes", [])
+        payload = _agentic_eval_selftest_payload(
+            mode=mode,
+            ok=detected and verification.get("ok") is False,
+            verification=verification,
+            index_path=index_path,
+            expected_failure_code=expected_code,
+        )
+        payload["adversarial_detection"] = detected
+        payload["verifier_exit_code"] = 1 if verification.get("ok") is False else 0
+        _write_json(out, payload)
+        return payload
+
+
+def _agentic_eval_report_entry(
+    repo: Path, report_path: Path, report: dict[str, Any]
+) -> dict[str, Any]:
+    repo_block = report.get("repo") if isinstance(report.get("repo"), dict) else {}
+    commands: list[list[str]] = []
+    for case in report.get("cases", []) or []:
+        if isinstance(case, dict) and isinstance(case.get("argv"), list):
+            command = [str(part) for part in case["argv"]]
+            if command not in commands:
+                commands.append(command)
+    return {
+        "path": _repo_relative(repo, report_path),
+        "sha256": "sha256:" + _sha256_file(report_path),
+        "bytes": report_path.stat().st_size,
+        "schema": report.get("schema"),
+        "agentic_evals_runner_version": report.get("schema"),
+        "skill": report.get("skill"),
+        "source_manifest": report.get("source"),
+        "fixture_sha256": report.get("fixture_sha256"),
+        "readiness": report.get("readiness"),
+        "mocked": report.get("mocked"),
+        "live": report.get("live"),
+        "repo_sha": repo_block.get("sha"),
+        "repo_ref": repo_block.get("ref"),
+        "case_count": report.get("case_count"),
+        "trial_count": report.get("trial_count"),
+        "generating_commands": commands,
+    }
+
+
+def _agentic_eval_artifact_entries(
+    repo: Path, report_path: Path, report: dict[str, Any]
+) -> list[dict[str, Any]]:
+    source = report.get("source") if isinstance(report.get("source"), str) else "evals"
+    fixture_dir = (repo / source).parent
+    by_path: dict[str, dict[str, Any]] = {}
+    for case in report.get("cases", []) or []:
+        if not isinstance(case, dict):
+            continue
+        case_name = str(case.get("name") or "")
+        for trial in case.get("trials", []) or []:
+            if not isinstance(trial, dict):
+                continue
+            artifact_hashes = trial.get("artifact_hashes")
+            if not isinstance(artifact_hashes, dict):
+                continue
+            for raw_ref, expected_sha in artifact_hashes.items():
+                if not isinstance(raw_ref, str) or not isinstance(expected_sha, str):
+                    continue
+                artifact_path = Path(raw_ref)
+                if not artifact_path.is_absolute():
+                    artifact_path = fixture_dir / artifact_path
+                resolved_artifact = artifact_path.resolve()
+                rel = _repo_relative(repo, resolved_artifact)
+                entry = by_path.setdefault(
+                    rel,
+                    {
+                        "path": rel,
+                        "absolute_path": str(resolved_artifact),
+                        "sha256": None,
+                        "bytes": None,
+                        "reports": [],
+                        "reported_sha256_values": [],
+                    },
+                )
+                reference = {
+                    "report": _repo_relative(repo, report_path),
+                    "case": case_name,
+                    "trial_id": trial.get("trial_id"),
+                    "reference": raw_ref,
+                }
+                if reference not in entry["reports"]:
+                    entry["reports"].append(reference)
+                if expected_sha not in entry["reported_sha256_values"]:
+                    entry["reported_sha256_values"].append(expected_sha)
+                if resolved_artifact.is_file():
+                    entry["sha256"] = "sha256:" + _sha256_file(resolved_artifact)
+                    entry["bytes"] = resolved_artifact.stat().st_size
+    return [by_path[key] for key in sorted(by_path)]
+
+
+def _verify_agentic_eval_reports(
+    repo: Path,
+    reports: list[Any],
+    failures: list[dict[str, Any]],
+    *,
+    require_live_reports: bool,
+) -> None:
+    for entry in reports:
+        if not isinstance(entry, dict):
+            failures.append({"code": "index_report_entry_invalid"})
+            continue
+        path = repo / str(entry.get("path") or "")
+        if not path.is_file():
+            failures.append({"code": "report_missing", "path": entry.get("path")})
+            continue
+        actual_sha = "sha256:" + _sha256_file(path)
+        if actual_sha != entry.get("sha256"):
+            failures.append(
+                {
+                    "code": "report_digest_mismatch",
+                    "path": entry.get("path"),
+                    "expected": entry.get("sha256"),
+                    "actual": actual_sha,
+                }
+            )
+        try:
+            report = _read_json_object(path)
+        except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            failures.append({"code": "report_unreadable", "path": entry.get("path"), "message": str(exc)})
+            continue
+        repo_block = report.get("repo") if isinstance(report.get("repo"), dict) else {}
+        comparisons = {
+            "schema": report.get("schema"),
+            "skill": report.get("skill"),
+            "source_manifest": report.get("source"),
+            "fixture_sha256": report.get("fixture_sha256"),
+            "repo_sha": repo_block.get("sha"),
+            "repo_ref": repo_block.get("ref"),
+        }
+        for field, actual in comparisons.items():
+            if actual != entry.get(field):
+                failures.append(
+                    {
+                        "code": "report_identity_mismatch" if field != "repo_sha" else "report_repo_sha_mismatch",
+                        "path": entry.get("path"),
+                        "field": field,
+                        "expected": entry.get(field),
+                        "actual": actual,
+                    }
+                )
+        if report.get("readiness") != "READY":
+            failures.append({"code": "retained_report_not_ready", "path": entry.get("path")})
+        if report.get("mocked") is not False:
+            failures.append({"code": "retained_report_mocked", "path": entry.get("path")})
+        if require_live_reports and report.get("live") is not True:
+            failures.append({"code": "retained_report_not_live", "path": entry.get("path")})
+
+
+def _verify_agentic_eval_artifacts(
+    repo: Path, artifacts: list[Any], failures: list[dict[str, Any]]
+) -> None:
+    for entry in artifacts:
+        if not isinstance(entry, dict):
+            failures.append({"code": "index_artifact_entry_invalid"})
+            continue
+        path = repo / str(entry.get("path") or "")
+        if not path.is_file():
+            failures.append({"code": "artifact_missing", "path": entry.get("path")})
+            continue
+        actual_sha = "sha256:" + _sha256_file(path)
+        if actual_sha != entry.get("sha256"):
+            failures.append(
+                {
+                    "code": "artifact_digest_mismatch",
+                    "path": entry.get("path"),
+                    "expected": entry.get("sha256"),
+                    "actual": actual_sha,
+                }
+            )
+        reported_values = entry.get("reported_sha256_values")
+        if isinstance(reported_values, list) and reported_values and actual_sha not in reported_values:
+            failures.append(
+                {
+                    "code": "artifact_reported_digest_mismatch",
+                    "path": entry.get("path"),
+                    "actual": actual_sha,
+                    "reported_sha256_values": reported_values,
+                }
+            )
+
+
+def _agentic_eval_verification_result(
+    *,
+    index_path: Path,
+    repo: Path,
+    failures: list[dict[str, Any]],
+    require_clean: bool,
+    require_current_sha: bool,
+    require_live_reports: bool,
+    index: dict[str, Any],
+) -> dict[str, Any]:
+    current_sha = _git_text(repo, "rev-parse", "HEAD")
+    current_ref = _git_text(repo, "branch", "--show-current")
+    porcelain = _git_text(repo, "status", "--porcelain", "--untracked-files=all")
+    current_dirty = porcelain != "" if porcelain is not None else None
+    reports = index.get("reports") if isinstance(index.get("reports"), list) else []
+    artifacts = index.get("artifacts") if isinstance(index.get("artifacts"), list) else []
+    ok = not failures
+    return {
+        "schema": AGENTIC_EVAL_EVIDENCE_VERIFICATION_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "FAIL",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "verifier_version": AGENTIC_EVAL_EVIDENCE_VERIFIER_VERSION,
+        "agentic_evals_runner_version": index.get("agentic_evals_runner_version"),
+        "index_path": str(index_path),
+        "index_sha256": "sha256:" + _sha256_file(index_path) if index_path.is_file() else None,
+        "repo": {
+            "root": str(repo),
+            "sha": current_sha,
+            "ref": current_ref,
+            "dirty_tree": current_dirty,
+        },
+        "index_repo": index.get("repo"),
+        "require_clean": require_clean,
+        "require_current_sha": require_current_sha,
+        "require_live_reports": require_live_reports,
+        "report_count": len(reports),
+        "artifact_count": len(artifacts),
+        "retained_reports_live_readback": {
+            "mocked": any(not isinstance(row, dict) or row.get("mocked") is not False for row in reports),
+            "all_unmocked": all(
+                isinstance(row, dict) and row.get("mocked") is False for row in reports
+            ),
+            "live": all(isinstance(row, dict) and row.get("live") is True for row in reports),
+            "ready": all(isinstance(row, dict) and row.get("readiness") == "READY" for row in reports),
+            "count": len(reports),
+        },
+        "failure_count": len(failures),
+        "failure_codes": sorted({str(failure.get("code")) for failure in failures}),
+        "failures": failures,
+        "proof_scope": {
+            "proves": [
+                "The verifier re-read the evidence index, retained reports, and referenced artifacts by digest without regenerating reports.",
+                "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence can be represented as stable failure codes.",
+            ],
+            "does_not_prove": [
+                "Provider semantic quality.",
+                "Human acceptance of the full GOAL.md outcome.",
+            ],
+        },
+    }
+
+
+def _agentic_eval_selftest_payload(
+    *,
+    mode: str,
+    ok: bool,
+    verification: dict[str, Any],
+    index_path: Path,
+    expected_failure_code: str | None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema": AGENTIC_EVAL_EVIDENCE_SELFTEST_SCHEMA,
+        "mode": mode,
+        "ok": ok,
+        "status": "PASS" if ok else "FAIL",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "index_path": str(index_path),
+        "verification": verification,
+        "expected_failure_code": expected_failure_code,
+        "failure_codes": verification.get("failure_codes", []),
+        "retained_reports_live_readback": verification.get("retained_reports_live_readback"),
+    }
+    return payload
+
+
+def _default_agentic_eval_report_paths(repo: Path) -> list[Path]:
+    reports = []
+    for path in sorted((repo / "local" / "agentic-evals").glob("*agentic-evals-report.json")):
+        if _repo_relative(repo, path) == SELF_AGENTIC_EVAL_EVIDENCE_REPORT:
+            continue
+        reports.append(path)
+    return reports
+
+
+def _index_report_paths(index_path: Path) -> list[Path]:
+    index = _read_json_object(index_path)
+    reports = index.get("reports") if isinstance(index.get("reports"), list) else []
+    return [Path(str(item.get("path"))) for item in reports if isinstance(item, dict)]
+
+
+def _first_index_report(index_path: Path) -> Path:
+    reports = _index_report_paths(index_path)
+    if not reports:
+        raise RuntimeError("agentic-eval evidence index has no reports")
+    return reports[0]
+
+
+def _first_index_artifact(index_path: Path) -> Path:
+    index = _read_json_object(index_path)
+    artifacts = index.get("artifacts") if isinstance(index.get("artifacts"), list) else []
+    for artifact in artifacts:
+        if isinstance(artifact, dict) and isinstance(artifact.get("path"), str):
+            return Path(artifact["path"])
+    raise RuntimeError("agentic-eval evidence index has no artifacts")
+
+
+def _git_text(repo: Path, *args: str) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), *args],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    return result.stdout.strip()
+
+
+def _git_init_commit(repo: Path) -> None:
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "-c",
+            "user.email=tau@example.invalid",
+            "-c",
+            "user.name=Tau Evidence Selftest",
+            "commit",
+            "-q",
+            "-m",
+            "selftest fixture",
+        ],
+        check=True,
+    )
+
+
+def _repo_relative(repo: Path, path: Path) -> str:
+    try:
+        return path.resolve().relative_to(repo).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _audit_events_from_ledger(
     ledger: dict[str, Any],
     *,
@@ -1022,6 +1691,12 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"expected JSON object: {path}")
     return payload
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    resolved = path.expanduser()
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def verify_ledger(ledger: dict[str, Any]) -> dict[str, Any]:

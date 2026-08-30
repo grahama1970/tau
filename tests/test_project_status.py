@@ -6,14 +6,16 @@ import json
 import subprocess
 from pathlib import Path
 
-import pytest
-
 from tau_coding.project_status import (
     PROJECT_STATUS_SCHEMA,
     build_project_status,
     render_markdown,
     semantic_digest,
     verify_freshness,
+)
+from tau_coding.run_ledger import (
+    DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
+    build_agentic_eval_ledger_evidence_index,
 )
 
 _AT = "2026-07-28T00:00:00Z"
@@ -54,6 +56,11 @@ def _init_repo(root: Path) -> None:
         ["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t",
          "commit", "-q", "-m", "init"], check=True,
     )
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def test_deterministic_apart_from_timestamp(tmp_path: Path) -> None:
@@ -152,6 +159,37 @@ def test_github_snapshot_edit_without_rebuild_fails_verifier(tmp_path: Path) -> 
     snap_mutated = dict(snap, open_critical_issues=[{"number": 999}])
     errors = verify_freshness(status, tmp_path, github_snapshot=snap_mutated)
     assert any(e.startswith("source_drift:github_snapshot") for e in errors)
+
+
+def test_project_status_reports_agentic_eval_evidence_index_mismatch(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    report = tmp_path / "local" / "agentic-evals" / "demo-agentic-evals-report.json"
+    _write_json(
+        report,
+        {
+            "schema": "agentic_evals.report.v2",
+            "source": "evals/demo_agentic_eval.json",
+            "fixture_sha256": "sha256:fixture",
+            "repo": {"sha": "source-sha", "ref": "main"},
+            "mocked": False,
+            "live": True,
+            "skill": "demo",
+            "readiness": "READY",
+            "case_count": 1,
+            "trial_count": 2,
+            "cases": [],
+        },
+    )
+    _write_json(tmp_path / "evals" / "demo_agentic_eval.json", {"version": 2, "skill": "demo"})
+    index_path = tmp_path / DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX
+    build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+    report.write_text(report.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    status = build_project_status(tmp_path, generated_at=_AT)
+
+    evidence = status["agentic_eval_evidence_index"]
+    assert evidence["status"] == "FAIL"
+    assert "report_digest_mismatch" in evidence["failure_codes"]
 
 
 def test_package_description_reflects_control_plane_product() -> None:

@@ -38,16 +38,16 @@
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/ok", "equals": true},
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/mocked", "equals": false},
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/live", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 14},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 14},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/covered_claim_count", "equals": 14},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/inventory_feature_count", "equals": 249},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 15},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 15},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/covered_claim_count", "equals": 15},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/inventory_feature_count", "equals": 253},
           {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/schema", "equals": "tau.source_feature_inventory.v1"},
-          {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/feature_count", "equals": 249},
+          {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/feature_count", "equals": 253},
           {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/counts_by_kind/cli-command", "equals": 193},
           {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/schema", "equals": "tau.source_feature_reconciliation.v1"},
           {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/covered_claim_count", "equals": 14},
+          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/covered_claim_count", "equals": 15},
           {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/self_covered_claim_count", "equals": 1}
         ]
       }

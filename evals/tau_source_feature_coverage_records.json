@@ -915,11 +915,9 @@
       "status": "OUT_OF_SCOPE"
     },
     {
-      "expires": "2026-12-31",
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
       "feature_id": "cli-command:proof-index",
-      "owner": "tau-maintainers",
-      "reason": "Retained in the source inventory; no dedicated agentic-eval capability claim is asserted for this source-visible feature in the current mapped set.",
-      "status": "OUT_OF_SCOPE"
+      "status": "CLAIMED"
     },
     {
       "expires": "2026-12-31",
@@ -1384,6 +1382,11 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "evaluator-script:agentic-eval-tau-agentic-eval-evidence-index",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.feature_agentic_eval_coverage",
       "feature_id": "evaluator-script:agentic-eval-tau-feature-coverage",
       "status": "CLAIMED"
@@ -1429,8 +1432,18 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_agentic_eval_ledger_evidence_index",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/run_ledger.py:read_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:verify_agentic_eval_ledger_evidence_index",
       "status": "CLAIMED"
     },
     {
@@ -1446,6 +1459,11 @@
     {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_agentic_eval_ledger_evidence_selftest",
       "status": "CLAIMED"
     },
     {

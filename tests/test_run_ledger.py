@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
+import subprocess
+from pathlib import Path
 
 from tau_coding import run_ledger as rl
 
@@ -18,6 +21,98 @@ def _sample_entries():
                        "trials": [{"outcome": "PASS"}, {"outcome": "PASS"}]}],
         }),
     ]
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _sha256(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _init_agentic_eval_repo(root: Path) -> None:
+    (root / "evals").mkdir()
+    (root / "local" / "agentic-evals").mkdir(parents=True)
+    _write_json(
+        root / "evals" / "demo_agentic_eval.json",
+        {
+            "version": 2,
+            "skill": "demo",
+            "cases": [{"name": "positive", "command": ["true"]}],
+        },
+    )
+    artifact = root / "local" / "agentic-evals" / "demo-proof.json"
+    _write_json(artifact, {"schema": "tau.demo_proof.v1", "ok": True})
+    _write_json(
+        root / "local" / "agentic-evals" / "demo-agentic-evals-report.json",
+        {
+            "schema": "agentic_evals.report.v2",
+            "source": "evals/demo_agentic_eval.json",
+            "fixture_sha256": "sha256:fixture",
+            "repo": {"sha": "source-sha-a", "ref": "main"},
+            "mocked": False,
+            "live": True,
+            "skill": "demo",
+            "readiness": "READY",
+            "case_count": 1,
+            "trial_count": 2,
+            "cases": [
+                {
+                    "name": "positive",
+                    "argv": ["bash", "-lc", "true"],
+                    "trials": [
+                        {
+                            "trial_id": "t0",
+                            "artifact_hashes": {
+                                "../local/agentic-evals/demo-proof.json": _sha256(artifact)
+                            },
+                            "outcome": "PASS",
+                        }
+                    ],
+                }
+            ],
+        },
+    )
+    _write_json(
+        root / "evals" / "other_agentic_eval.json",
+        {"version": 2, "skill": "other", "cases": []},
+    )
+    _write_json(
+        root / "local" / "agentic-evals" / "other-agentic-evals-report.json",
+        {
+            "schema": "agentic_evals.report.v2",
+            "source": "evals/other_agentic_eval.json",
+            "fixture_sha256": "sha256:other",
+            "repo": {"sha": "source-sha-b", "ref": "main"},
+            "mocked": False,
+            "live": True,
+            "skill": "other",
+            "readiness": "READY",
+            "case_count": 1,
+            "trial_count": 2,
+            "cases": [],
+        },
+    )
+    subprocess.run(["git", "init", "-q", "-b", "main", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "commit",
+            "-q",
+            "-m",
+            "init",
+        ],
+        check=True,
+    )
 
 
 def test_intact_ledger_verifies():
@@ -198,3 +293,101 @@ def test_generic_run_dir_ledger_includes_events_nodes_and_progress(tmp_path):
         and {"node_dispatch", "node_receipt_validated"} <= set(row["events"])
         for row in ledger["trace"]["node_attempts"]
     )
+
+
+def test_agentic_eval_evidence_index_verifies_clean_retained_reports(tmp_path):
+    _init_agentic_eval_repo(tmp_path)
+    index_path = tmp_path.parent / "index.json"
+    index = rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+
+    result = rl.verify_agentic_eval_ledger_evidence_index(
+        index_path,
+        tmp_path,
+        require_clean=True,
+        require_current_sha=True,
+    )
+
+    assert index["schema"] == rl.AGENTIC_EVAL_EVIDENCE_INDEX_SCHEMA
+    assert index["report_count"] == 2
+    assert index["artifact_count"] == 1
+    assert result["ok"] is True
+    assert result["retained_reports_live_readback"] == {
+        "mocked": False,
+        "all_unmocked": True,
+        "live": True,
+        "ready": True,
+        "count": 2,
+    }
+
+
+def test_agentic_eval_evidence_index_rejects_mutated_report(tmp_path):
+    _init_agentic_eval_repo(tmp_path)
+    index_path = tmp_path.parent / "index.json"
+    rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+    report = tmp_path / "local" / "agentic-evals" / "demo-agentic-evals-report.json"
+    report.write_text(report.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    result = rl.verify_agentic_eval_ledger_evidence_index(
+        index_path,
+        tmp_path,
+        require_clean=False,
+        require_current_sha=False,
+    )
+
+    assert result["ok"] is False
+    assert "report_digest_mismatch" in result["failure_codes"]
+
+
+def test_agentic_eval_evidence_index_rejects_substituted_report(tmp_path):
+    _init_agentic_eval_repo(tmp_path)
+    index_path = tmp_path.parent / "index.json"
+    rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+    report = tmp_path / "local" / "agentic-evals" / "demo-agentic-evals-report.json"
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    payload["repo"]["sha"] = "substituted-from-another-sha"
+    _write_json(report, payload)
+
+    result = rl.verify_agentic_eval_ledger_evidence_index(
+        index_path,
+        tmp_path,
+        require_clean=False,
+        require_current_sha=False,
+    )
+
+    assert result["ok"] is False
+    assert "report_digest_mismatch" in result["failure_codes"]
+    assert "report_repo_sha_mismatch" in result["failure_codes"]
+
+
+def test_agentic_eval_evidence_index_rejects_deleted_artifact(tmp_path):
+    _init_agentic_eval_repo(tmp_path)
+    index_path = tmp_path.parent / "index.json"
+    rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+    (tmp_path / "local" / "agentic-evals" / "demo-proof.json").unlink()
+
+    result = rl.verify_agentic_eval_ledger_evidence_index(
+        index_path,
+        tmp_path,
+        require_clean=False,
+        require_current_sha=False,
+    )
+
+    assert result["ok"] is False
+    assert "artifact_missing" in result["failure_codes"]
+
+
+def test_agentic_eval_evidence_index_rejects_dirty_tree(tmp_path):
+    _init_agentic_eval_repo(tmp_path)
+    index_path = tmp_path.parent / "index.json"
+    rl.build_agentic_eval_ledger_evidence_index(tmp_path, output_path=index_path)
+    (tmp_path / "untracked.txt").write_text("dirty\n", encoding="utf-8")
+
+    result = rl.verify_agentic_eval_ledger_evidence_index(
+        index_path,
+        tmp_path,
+        require_clean=True,
+        require_current_sha=False,
+    )
+
+    assert result["ok"] is False
+    assert "dirty_tree_mismatch" in result["failure_codes"]
