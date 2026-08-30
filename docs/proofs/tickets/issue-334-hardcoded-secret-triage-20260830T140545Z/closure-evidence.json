@@ -25,5 +25,12 @@
     "command": "timeout 120s uv run pytest -q -x --tb=short",
     "exit_code": 0,
     "result": "242 passed, 29 skipped, 3431 deselected in 27.10s"
+  },
+  "e2e": {
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/triage-receipt.json",
+    "command": "targeted source-backed hardcoded-secret triage plus gitleaks readback; see validation.log",
+    "exit_code": 0,
+    "live": true,
+    "mocked": false
   }
 }
