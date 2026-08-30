@@ -2,9 +2,9 @@
   "version": 2,
   "skill": "tau",
   "trials": 2,
-  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, receipt-completeness invariants, and live DAG viewer transition-to-ledger correlation",
+  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, receipt-completeness invariants, and live DAG viewer transition-to-ledger correlation, and governed refinement proposal/apply/verify/rollback conformance",
   "claims": {
-    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, still assembles an intact final receipt, and binds live DAG viewer transitions to authoritative run, event, and ledger IDs",
+    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, still assembles an intact final receipt, and binds live DAG viewer transitions to authoritative run, event, and ledger IDs; Tau can preview governed continual-harness refinements without mutation, apply only verified proposals, roll back, and render read-only proposal state.",
     "does_not_prove": "provider or model semantic quality, GitHub mutation, Herdr pane behavior, production deployment, or that any specific downstream worker streams its own output"
   },
   "cases": [
@@ -12,7 +12,14 @@
       "name": "node-output-streams-before-process-exit",
       "type": "positive",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_streaming.py"
+      ],
       "timeout_seconds": 180,
       "expected": {
         "exit_code": 0,
@@ -29,7 +36,14 @@
       "name": "partial-capture-never-reads-as-complete-receipt",
       "type": "adversarial",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_streaming.py"
+      ],
       "timeout_seconds": 180,
       "expected": {
         "exit_code": 0,
@@ -43,7 +57,14 @@
       "name": "streaming-assertion-rejects-non-streaming-baseline",
       "type": "adversarial",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_streaming.py"
+      ],
       "timeout_seconds": 180,
       "expected": {
         "exit_code": 0,
@@ -56,7 +77,14 @@
       "name": "local-runtime-cancellation-and-timeout-terminate",
       "type": "positive",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_local_runtime_contract.py"
+      ],
       "timeout_seconds": 240,
       "expected": {
         "exit_code": 0,
@@ -73,7 +101,14 @@
       "name": "local-runtime-kills-orphaned-grandchildren",
       "type": "adversarial",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_local_runtime_contract.py"
+      ],
       "timeout_seconds": 240,
       "expected": {
         "exit_code": 0,
@@ -87,7 +122,14 @@
       "name": "local-runtime-capture-fails-closed-on-bad-input",
       "type": "adversarial",
       "real_world": true,
-      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_local_runtime_contract.py"
+      ],
       "timeout_seconds": 240,
       "expected": {
         "exit_code": 0,
@@ -162,6 +204,52 @@
           {
             "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
             "json_pointer": "/checks/read_only_requests",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "refinement-preview-apply-verify-rollback-live-memory",
+      "type": "adversarial",
+      "real_world": true,
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "tau",
+        "refinement-conformance",
+        "--out",
+        "../.tmp/agentic-evals/refinement-conformance.json",
+        "--work-dir",
+        "../.tmp/agentic-evals/refinement-conformance",
+        "--memory-url",
+        "http://127.0.0.1:8601"
+      ],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.refinement_conformance_receipt.v1\"",
+          "\"status\": \"PASS\"",
+          "\"memory-offline-pending-degraded-source-truth-unchanged\"",
+          "\"read-only-cli-viewer-renders-state\""
+        ],
+        "artifacts": [
+          {
+            "path": "../.tmp/agentic-evals/refinement-conformance.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../.tmp/agentic-evals/refinement-conformance.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../.tmp/agentic-evals/refinement-conformance.json",
+            "json_pointer": "/live",
             "equals": true
           }
         ]

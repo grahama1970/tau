@@ -271,6 +271,15 @@ from tau_coding.provider_pane_poc import (
 )
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.receipt_signing import sign_receipt, verify_signed_receipt
+from tau_coding.refinement import (
+    refinement_view_payload,
+    render_refinement_view,
+    write_refinement_apply_receipt,
+    write_refinement_preview_receipt,
+    write_refinement_rollback_receipt,
+    write_refinement_verification_receipt,
+)
+from tau_coding.refinement_conformance import write_refinement_conformance_receipt
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_skill_adapter import write_research_skill_adapter_receipt
@@ -3523,6 +3532,107 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "refinement-preview":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = write_refinement_preview_receipt(
+                proposal_path=Path(str(options["proposal"])),
+                ledger_dir=Path(str(options["ledger_dir"])),
+                receipt_path=Path(str(options["receipt"])),
+                diff_path=Path(str(options["diff"])) if options.get("diff") else None,
+                memory_url=str(options["memory_url"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "refinement-apply":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = write_refinement_apply_receipt(
+                proposal_path=Path(str(options["proposal"])),
+                decision_path=Path(str(options["decision"])),
+                ledger_dir=Path(str(options["ledger_dir"])),
+                receipt_path=Path(str(options["receipt"])),
+                memory_url=str(options["memory_url"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "refinement-verify":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = write_refinement_verification_receipt(
+                proposal_path=Path(str(options["proposal"])),
+                ledger_dir=Path(str(options["ledger_dir"])),
+                receipt_path=Path(str(options["receipt"])),
+                memory_url=str(options["memory_url"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "refinement-rollback":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = write_refinement_rollback_receipt(
+                proposal_path=Path(str(options["proposal"])),
+                ledger_dir=Path(str(options["ledger_dir"])),
+                receipt_path=Path(str(options["receipt"])),
+                memory_url=str(options["memory_url"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "refinement-view":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = refinement_view_payload(
+                ledger_dir=Path(str(options["ledger_dir"])),
+                proposal_id=_optional_str(options.get("proposal_id")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if options.get("json"):
+            typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            typer.echo(render_refinement_view(payload), nl=False)
+        raise typer.Exit()
+
+    if not print_requested and command == "refinement-conformance":
+        try:
+            options = _parse_refinement_cli_args(positional_args[1:], command=str(command))
+            payload = write_refinement_conformance_receipt(
+                output=Path(str(options["out"])),
+                work_dir=Path(str(options["work_dir"])) if options.get("work_dir") else None,
+                memory_url=str(options["memory_url"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command == "memory-intent":
         try:
             options = _parse_memory_intent_cli_args(positional_args[1:])
@@ -5559,6 +5669,29 @@ def _manual_command_help(command: str) -> str | None:
         "test-run": (
             "Usage: tau test-run --repo <repo> --out <receipt> "
             "[--command <arg>]... [--tested-path <path>]... [--timeout-s <seconds>]"
+        ),
+        "refinement-preview": (
+            "Usage: tau refinement-preview --proposal <proposal.json> "
+            "--ledger-dir <dir> --receipt <receipt.json> [--diff <diff.json>]"
+        ),
+        "refinement-apply": (
+            "Usage: tau refinement-apply --proposal <proposal.json> "
+            "--decision <decision.json> --ledger-dir <dir> --receipt <receipt.json>"
+        ),
+        "refinement-verify": (
+            "Usage: tau refinement-verify --proposal <proposal.json> "
+            "--ledger-dir <dir> --receipt <receipt.json>"
+        ),
+        "refinement-rollback": (
+            "Usage: tau refinement-rollback --proposal <proposal.json> "
+            "--ledger-dir <dir> --receipt <receipt.json>"
+        ),
+        "refinement-view": (
+            "Usage: tau refinement-view --ledger-dir <dir> [--proposal-id <id>] [--json]"
+        ),
+        "refinement-conformance": (
+            "Usage: tau refinement-conformance --out <receipt.json> "
+            "[--work-dir <dir>] [--memory-url <url>]"
         ),
     }
     return usage_by_command.get(command)
@@ -7859,6 +7992,75 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
             "[--apply --approval-receipt <approval-gate-receipt.json> "
             "--memory-auth-token <token>]"
         )
+    return options
+
+
+def _parse_refinement_cli_args(args: list[str], *, command: str) -> dict[str, object]:
+    options: dict[str, object] = {
+        "proposal": None,
+        "decision": None,
+        "ledger_dir": None,
+        "receipt": None,
+        "diff": None,
+        "out": None,
+        "work_dir": None,
+        "memory_url": "http://127.0.0.1:8601",
+        "memory_auth_token": None,
+        "proposal_id": None,
+        "json": False,
+    }
+    path_keys = {"proposal", "decision", "ledger_dir", "receipt", "diff", "out", "work_dir"}
+    value_flags = {
+        "--proposal",
+        "--decision",
+        "--ledger-dir",
+        "--receipt",
+        "--diff",
+        "--out",
+        "--work-dir",
+        "--memory-url",
+        "--memory-auth-token",
+        "--proposal-id",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--json":
+            options["json"] = True
+            index += 1
+            continue
+        if arg in value_flags:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(args[index]) if key in path_keys else args[index]
+            index += 1
+            continue
+        matched = False
+        for flag in value_flags:
+            prefix = f"{flag}="
+            if arg.startswith(prefix):
+                key = flag.removeprefix("--").replace("-", "_")
+                value = arg.partition("=")[2]
+                options[key] = Path(value) if key in path_keys else value
+                matched = True
+                break
+        if not matched:
+            raise RuntimeError(f"unknown {command} option: {arg}")
+        index += 1
+    required_by_command = {
+        "refinement-preview": ("proposal", "ledger_dir", "receipt"),
+        "refinement-apply": ("proposal", "decision", "ledger_dir", "receipt"),
+        "refinement-verify": ("proposal", "ledger_dir", "receipt"),
+        "refinement-rollback": ("proposal", "ledger_dir", "receipt"),
+        "refinement-view": ("ledger_dir",),
+        "refinement-conformance": ("out",),
+    }
+    missing = [key for key in required_by_command[command] if options[key] is None]
+    if missing:
+        help_text = _manual_command_help(command) or f"Usage: tau {command} [options]"
+        raise RuntimeError(help_text)
     return options
 
 
