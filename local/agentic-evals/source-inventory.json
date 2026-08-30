@@ -1,14 +1,14 @@
 {
   "counts_by_kind": {
-    "capability-module": 8,
+    "capability-module": 11,
     "cli-command": 201,
-    "evaluator-script": 12,
+    "evaluator-script": 15,
     "ledger-path": 10,
     "skill-capability": 10,
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 266,
+  "feature_count": 272,
   "features": [
     {
       "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
@@ -21,6 +21,16 @@
       "source_path": "src/tau_coding/acceptance_attestation.py"
     },
     {
+      "feature_id": "capability-module:src/tau_coding/child_agent_requests.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:55f0506c2fb2759a9ebd7f4a09cd6489757e824746ccdc740aa96d3334f6d574"
+      },
+      "name": "child_agent_requests",
+      "source_line": null,
+      "source_path": "src/tau_coding/child_agent_requests.py"
+    },
+    {
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
       "kind": "capability-module",
       "metadata": {
@@ -29,6 +39,16 @@
       "name": "codebase_ingest",
       "source_line": null,
       "source_path": "src/tau_coding/codebase_ingest.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/memory_projection.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:5854e03f02645fa4d1298be65fa81183bf6742be9321a04967ac528eef4f9924"
+      },
+      "name": "memory_projection",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/memory_projection.py"
     },
     {
       "feature_id": "capability-module:src/tau_coding/dag_runtime/run_store.py",
@@ -49,6 +69,16 @@
       "name": "scheduler",
       "source_line": null,
       "source_path": "src/tau_coding/dag_runtime/scheduler.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:e21fece21305e49e277d9d52af54f4e8755c810028e4ac88d9e36bf4461d87fa"
+      },
+      "name": "herdr",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/herdr.py"
     },
     {
       "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
@@ -2109,6 +2139,14 @@
       "source_path": "scripts/agentic-eval-tau-agentic-eval-evidence-index.py"
     },
     {
+      "feature_id": "evaluator-script:agentic-eval-tau-child-agent-requests",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-child-agent-requests",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-child-agent-requests.py"
+    },
+    {
       "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
       "kind": "evaluator-script",
       "metadata": {},
@@ -2157,12 +2195,28 @@
       "source_path": "scripts/agentic-eval-tau-feature-coverage.py"
     },
     {
+      "feature_id": "evaluator-script:agentic-eval-tau-herdr-agent-node-backend",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-herdr-agent-node-backend",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-herdr-agent-node-backend.py"
+    },
+    {
       "feature_id": "evaluator-script:agentic-eval-tau-ledger-trace",
       "kind": "evaluator-script",
       "metadata": {},
       "name": "agentic-eval-tau-ledger-trace",
       "source_line": null,
       "source_path": "scripts/agentic-eval-tau-ledger-trace.py"
+    },
+    {
+      "feature_id": "evaluator-script:agentic-eval-tau-memory-episode-projection",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-memory-episode-projection",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-memory-episode-projection.py"
     },
     {
       "feature_id": "evaluator-script:agentic-eval-tau-pipeline-self-repair",
@@ -2647,10 +2701,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T19:18:59Z",
+  "generated_at": "2026-08-30T20:29:41Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:5d9251d764c1054157f3b800683e89af7c12e8ad4a8028745a45338474ea9f24"
+  "source_sha256": "sha256:605d9e8e5644a05cb5f5b5812aacc502b73ed9d65647434cde2cc33624022960"
 }

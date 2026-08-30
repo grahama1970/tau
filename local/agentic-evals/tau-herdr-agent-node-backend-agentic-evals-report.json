@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_herdr_agent_node_backend_agentic_eval.json",
+  "run_id": "bafbf0af9def",
+  "fixture_sha256": "sha256:a5d13fb22a0799f5f95a0c8a72e0e1e5d605fb8f59f590a77fdfa0bb8ee5ebdc",
+  "repo": {
+    "sha": "9e5c460120fd9502bcfa0de969ec76ae883e5b88",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Herdr runtime backend support for Tau-owned headless agent-node worker endpoints",
+  "claims": {
+    "does_not_prove": "Provider semantic quality, Textual/React UI rendering, full scheduler restart adoption, or GOAL.md completion.",
+    "proves": "Tau can run live Herdr-hosted headless worker endpoints for agent-node style work, keep exact workspace/pane leases, observe liveness, read settlement receipts from disk, and clean up exact owned endpoints through authorization-bound termination."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.herdr_agent_nodes.live_headless_backend",
+        "description": "Tau-owned headless agent-node workers can run through the live Herdr runtime backend as exact leased endpoints while Tau retains endpoint ownership, observation, worker settlement receipts, and cleanup authority.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "herdr-agent-node-backend-fallback-and-lease-policy-fail-closed"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-herdr-hosts-two-tau-headless-agent-node-workers"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-herdr-hosts-two-tau-headless-agent-node-workers",
+          "herdr-agent-node-backend-fallback-and-lease-policy-fail-closed"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T20:29:32.268143+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-herdr-hosts-two-tau-headless-agent-node-workers",
+      "type": "positive",
+      "case_id": "bafbf0af9def-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals/tau-herdr-agent-node-backend && rm -rf local/agentic-evals/tau-herdr-agent-node-backend/work && uv run python scripts/agentic-eval-tau-herdr-agent-node-backend.py --work local/agentic-evals/tau-herdr-agent-node-backend/work --out local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.herdr_agent_nodes.live_headless_backend"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2362.175,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"endpoint_ids\": [\n    \"wBZ:p2\",\n    \"wBZ:p3\"\n  ],\n  \"errors\": [],\n  \"events\": [\n    {\n      \"confidence\": \"NATIVE\",\n      \"endpoint_lease_sha256\": \"sha256:7a1047249a56d06aecb40384b3357741a248bbfc0037751bc62ebd3da490715b\",\n      \"event_id\": \"herdr:5a3a1fd8bd353cd831fe45dfdcba768cc1b71ec2f7b129518ae7b3312432e484\",\n      \"event_type\": \"RUNTIME_OBSERVATION_RECORDED\",\n      \"liveness\": \"ALIVE\",\n      \"observation\": {\n        \"agent_status\": \"unknown\",\n        \"pane_id\": \"wBZ:p2\",\n        \"process_info_error_code\": null,\n        \"processes\": [\n          {\n            \"argv\": [\n              \"/home/graham/workspace/experiments/tau/.venv/bin/python3\",\n              \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-a-worker.py\"\n            ],\n            \"cmdline\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3 /home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-a-worker.py\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n            \"name\": \"python3\",\n            \"pid\": 2436355\n          }\n        ],\n        \"session\": \"default\",\n        \"terminal_id\": \"term_65a498aafd55f2d4\",\n        \"visible_auth_marker\": false,\n        \"visible_interstitial_marker\": false,\n        \"visible_text_diagnostic_only\": true,\n        \"visible_text_sha256\": \"sha256:f8153912bef15d45524046c7cd6b09e45e8f0a2e5e624155370269be4115edd9\",\n        \"workspace_id\": \"wBZ\"\n      },\n      \"observed_at\": \"2026-08-30T20:29:27.759315+00:00\",\n      \"run_id\": \"issue315_tau_herdr_worker_1788121766106\",\n      \"schema\": \"tau.runtime_event.v1\",\n      \"source\": \"herdr\",\n      \"state\": \"UNKNOWN\"\n    },\n    {\n      \"confidence\": \"NATIVE\",\n      \"endpoint_lease_sha256\": \"sha256:70d215ad9eb0a437aaf428d8951e06c597edc9c13a3926a67ac009f86dc37805\",\n      \"event_id\": \"herdr:bfc7f6d41bcede4f072484d0a8f055b68de7d72cb1ecd09965b83fc2809e0377\",\n      \"event_type\": \"RUNTIME_OBSERVATION_RECORDED\",\n      \"liveness\": \"ALIVE\",\n      \"observation\": {\n        \"agent_status\": \"unknown\",\n        \"pane_id\": \"wBZ:p3\",\n        \"process_info_error_code\": null,\n        \"processes\": [\n          {\n            \"argv\": [\n              \"/home/graham/workspace/experiments/tau/.venv/bin/python3\",\n              \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-b-worker.py\"\n            ],\n            \"cmdline\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3 /home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-b-worker.py\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n            \"name\": \"python3\",\n            \"pid\": 2436388\n          }\n        ],\n        \"session\": \"default\",\n        \"terminal_id\": \"term_65a498ab0c6002d5\",\n        \"visible_auth_marker\": false,\n        \"visible_interstitial_marker\": false,\n        \"visible_text_diagnostic_only\": true,\n        \"visible_text_sha256\": \"sha256:6c3a657e1e6b3eea911edc4b10c8809fd3bf1d73514ad26574ea5e0ae4c60bb1\",\n        \"workspace_id\": \"wBZ\"\n      },\n      \"observed_at\": \"2026-08-30T20:29:27.769103+00:00\",\n      \"run_id\": \"issue315_tau_herdr_worker_1788121766106\",\n      \"schema\": \"tau.runtime_event.v1\",\n      \"source\": \"herdr\",\n      \"state\": \"UNKNOWN\"\n    }\n  ],\n  \"live\": true,\n  \"marker\": \"issue315_tau_herdr_worker_1788121766106\",\n  \"mocked\": false,\n  \"owned_endpoint_count\": 2,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"provider semantic quality, full scheduler kill/restart adoption, or GOAL.md completion\",\n    \"proves\": \"HerdrRuntimeBackend can host two Tau-owned headless worker commands in one live Herdr workspace, bind exact endpoint leases, observe backend liveness, read worker settlement receipts from disk, and cleanup only exact owned endpoints.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.herdr_agent_node_backend_proof.v1\",\n  \"scope\": {\n    \"backend\": \"herdr\",\n    \"backend_session_id\": \"default\",\n    \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n    \"label\": \"tau-issue315-herdr-cf9904d19852\",\n    \"owner\": \"tau\",\n    \"pane_id\": \"wBZ:p2\",\n    \"run_id\": \"issue315_tau_herdr_worker_1788121766106\",\n    \"scope_id\": \"wBZ\",\n    \"tab_id\": \"wBZ:t2\",\n    \"workspace_id\": \"wBZ\"\n  },\n  \"settlement_receipts\": [\n    {\n      \"errors\": [],\n      \"evidence_count\": 1,\n      \"live\": true,\n      \"marker\": \"issue315_tau_herdr_worker_1788121766106\",\n      \"mocked\": false,\n      \"node_id\": \"agent-a\",\n      \"provider_live\": false,\n      \"schema\": \"tau.agent_node_settlement.v1\",\n      \"status\": \"PASS\",\n      \"tool_effect_count\": 1,\n      \"turn_count\": 2,\n      \"verdict\": \"PASS\"\n    },\n    {\n      \"errors\": [],\n      \"evidence_count\": 1,\n      \"live\": true,\n      \"marker\": \"issue315_tau_herdr_worker_1788121766106\",\n      \"mocked\": false,\n      \"node_id\": \"agent-b\",\n      \"provider_live\": false,\n      \"schema\": \"tau.agent_node_settlement.v1\",\n      \"status\": \"PASS\",\n      \"tool_effect_count\": 1,\n      \"turn_count\": 2,\n      \"verdict\": \"PASS\"\n    }\n  ],\n  \"status\": \"PASS\",\n  \"terminations\": [\n    {\n      \"action\": \"endpoint_close\",\n      \"close_returncode\": 0,\n      \"endpoint_id\": \"wBZ:p2\",\n      \"post_verified_absent\": true,\n      \"post_verify_error_code\": \"pane_not_found\",\n      \"post_verify_returncode\": 1,\n      \"status\": \"PASS\"\n    },\n    {\n      \"action\": \"endpoint_close\",\n      \"close_returncode\": 0,\n      \"endpoint_id\": \"wBZ:p3\",\n      \"post_verified_absent\": true,\n      \"post_verify_error_code\": \"pane_not_found\",\n      \"post_verify_returncode\": 1,\n      \"status\": \"PASS\"\n    }\n  ],\n  \"workspace_ids\": [\n    \"wBZ\",\n    \"wBZ\"\n  ]\n}\n",
+          "stderr": "",
+          "duration_ms": 2374.073,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "bafbf0af9def-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json": "sha256:ccc3360e70b377854e1be9237771761b7f17408cca514feb1c0536254d5a57f3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"endpoint_ids\": [\n    \"wB0:p2\",\n    \"wB0:p3\"\n  ],\n  \"errors\": [],\n  \"events\": [\n    {\n      \"confidence\": \"NATIVE\",\n      \"endpoint_lease_sha256\": \"sha256:0550c9a838476dce2d981a0277e0a824ac3d2c26bc228d317b1dcef6151e272a\",\n      \"event_id\": \"herdr:0980659f9a44eeb4af3fab6c74c3ab5c8a801114e5d958672e2d23e07f87ab7b\",\n      \"event_type\": \"RUNTIME_OBSERVATION_RECORDED\",\n      \"liveness\": \"ALIVE\",\n      \"observation\": {\n        \"agent_status\": \"unknown\",\n        \"pane_id\": \"wB0:p2\",\n        \"process_info_error_code\": null,\n        \"processes\": [\n          {\n            \"argv\": [\n              \"/home/graham/workspace/experiments/tau/.venv/bin/python3\",\n              \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-a-worker.py\"\n            ],\n            \"cmdline\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3 /home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-a-worker.py\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n            \"name\": \"python3\",\n            \"pid\": 2439149\n          }\n        ],\n        \"session\": \"default\",\n        \"terminal_id\": \"term_65a498ad45b6f2d7\",\n        \"visible_auth_marker\": false,\n        \"visible_interstitial_marker\": false,\n        \"visible_text_diagnostic_only\": true,\n        \"visible_text_sha256\": \"sha256:819d1d6e2bf6cfefe5bb48b7b6997f5a94cca3ebcfe9eee3f49ac27776db53f1\",\n        \"workspace_id\": \"wB0\"\n      },\n      \"observed_at\": \"2026-08-30T20:29:30.119533+00:00\",\n      \"run_id\": \"issue315_tau_herdr_worker_1788121768475\",\n      \"schema\": \"tau.runtime_event.v1\",\n      \"source\": \"herdr\",\n      \"state\": \"UNKNOWN\"\n    },\n    {\n      \"confidence\": \"NATIVE\",\n      \"endpoint_lease_sha256\": \"sha256:ace10acf4fbf32acd6b9ed26d737f31531ea4aa1bc04ebc53df0ef268aea1fcf\",\n      \"event_id\": \"herdr:2b6603a078a78d9d7846ae48df768838714727dbb5e359befe7d02e25669c582\",\n      \"event_type\": \"RUNTIME_OBSERVATION_RECORDED\",\n      \"liveness\": \"ALIVE\",\n      \"observation\": {\n        \"agent_status\": \"unknown\",\n        \"pane_id\": \"wB0:p3\",\n        \"process_info_error_code\": null,\n        \"processes\": [\n          {\n            \"argv\": [\n              \"/home/graham/workspace/experiments/tau/.venv/bin/python3\",\n              \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-b-worker.py\"\n            ],\n            \"cmdline\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3 /home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/agent-b-worker.py\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n            \"name\": \"python3\",\n            \"pid\": 2439232\n          }\n        ],\n        \"session\": \"default\",\n        \"terminal_id\": \"term_65a498ad4f5952d8\",\n        \"visible_auth_marker\": false,\n        \"visible_interstitial_marker\": false,\n        \"visible_text_diagnostic_only\": true,\n        \"visible_text_sha256\": \"sha256:cb545fce361c664f72a86d143d1c3c3cfc90fcba846f357a0502845b11cfd4d2\",\n        \"workspace_id\": \"wB0\"\n      },\n      \"observed_at\": \"2026-08-30T20:29:30.127435+00:00\",\n      \"run_id\": \"issue315_tau_herdr_worker_1788121768475\",\n      \"schema\": \"tau.runtime_event.v1\",\n      \"source\": \"herdr\",\n      \"state\": \"UNKNOWN\"\n    }\n  ],\n  \"live\": true,\n  \"marker\": \"issue315_tau_herdr_worker_1788121768475\",\n  \"mocked\": false,\n  \"owned_endpoint_count\": 2,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"provider semantic quality, full scheduler kill/restart adoption, or GOAL.md completion\",\n    \"proves\": \"HerdrRuntimeBackend can host two Tau-owned headless worker commands in one live Herdr workspace, bind exact endpoint leases, observe backend liveness, read worker settlement receipts from disk, and cleanup only exact owned endpoints.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.herdr_agent_node_backend_proof.v1\",\n  \"scope\": {\n    \"backend\": \"herdr\",\n    \"backend_session_id\": \"default\",\n    \"cwd\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work\",\n    \"label\": \"tau-issue315-herdr-82c8343145b2\",\n    \"owner\": \"tau\",\n    \"pane_id\": \"wB0:p2\",\n    \"run_id\": \"issue315_tau_herdr_worker_1788121768475\",\n    \"scope_id\": \"wB0\",\n    \"tab_id\": \"wB0:t2\",\n    \"workspace_id\": \"wB0\"\n  },\n  \"settlement_receipts\": [\n    {\n      \"errors\": [],\n      \"evidence_count\": 1,\n      \"live\": true,\n      \"marker\": \"issue315_tau_herdr_worker_1788121768475\",\n      \"mocked\": false,\n      \"node_id\": \"agent-a\",\n      \"provider_live\": false,\n      \"schema\": \"tau.agent_node_settlement.v1\",\n      \"status\": \"PASS\",\n      \"tool_effect_count\": 1,\n      \"turn_count\": 2,\n      \"verdict\": \"PASS\"\n    },\n    {\n      \"errors\": [],\n      \"evidence_count\": 1,\n      \"live\": true,\n      \"marker\": \"issue315_tau_herdr_worker_1788121768475\",\n      \"mocked\": false,\n      \"node_id\": \"agent-b\",\n      \"provider_live\": false,\n      \"schema\": \"tau.agent_node_settlement.v1\",\n      \"status\": \"PASS\",\n      \"tool_effect_count\": 1,\n      \"turn_count\": 2,\n      \"verdict\": \"PASS\"\n    }\n  ],\n  \"status\": \"PASS\",\n  \"terminations\": [\n    {\n      \"action\": \"endpoint_close\",\n      \"close_returncode\": 0,\n      \"endpoint_id\": \"wB0:p2\",\n      \"post_verified_absent\": true,\n      \"post_verify_error_code\": \"pane_not_found\",\n      \"post_verify_returncode\": 1,\n      \"status\": \"PASS\"\n    },\n    {\n      \"action\": \"endpoint_close\",\n      \"close_returncode\": 0,\n      \"endpoint_id\": \"wB0:p3\",\n      \"post_verified_absent\": true,\n      \"post_verify_error_code\": \"pane_not_found\",\n      \"post_verify_returncode\": 1,\n      \"status\": \"PASS\"\n    }\n  ],\n  \"workspace_ids\": [\n    \"wB0\",\n    \"wB0\"\n  ]\n}\n",
+          "stderr": "",
+          "duration_ms": 2350.278,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "bafbf0af9def-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json": "sha256:e286557eaf3e706032191e01c6427f5edac9e6cefa4a3db1e7e1b10a9a5246f7"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "herdr-agent-node-backend-fallback-and-lease-policy-fail-closed",
+      "type": "adversarial",
+      "case_id": "bafbf0af9def-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_herdr_runtime_backend.py::test_spawn_falls_back_to_pane_run_for_tau_headless_workers tests/test_herdr_runtime_backend.py::test_terminate_requires_exact_authorization_and_post_verifies_absence -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.herdr_agent_nodes.live_headless_backend"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 964.646,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.58s\n",
+          "stderr": "",
+          "duration_ms": 1015.812,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "bafbf0af9def-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.46s\n",
+          "stderr": "",
+          "duration_ms": 913.48,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "bafbf0af9def-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

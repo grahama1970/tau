@@ -1,7 +1,7 @@
 {
-  "claim_count": 20,
-  "coverage_records_sha256": "sha256:8e788f1a77dd9b2f2bde1bee7c692609fd6bd4b61e97393a83934b79afeb8b29",
-  "covered_claim_count": 20,
+  "claim_count": 23,
+  "coverage_records_sha256": "sha256:62373bc275d0d4fe6e4d939be1de5148dca7739f449fc8720e4035c015722c41",
+  "covered_claim_count": 23,
   "features": [
     {
       "coverage": [
@@ -24,6 +24,24 @@
     {
       "coverage": [
         {
+          "claim_id": "tau.child_agent_requests.bounded_child_dag_compilation",
+          "feature_id": "capability-module:src/tau_coding/child_agent_requests.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/child_agent_requests.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:55f0506c2fb2759a9ebd7f4a09cd6489757e824746ccdc740aa96d3334f6d574"
+      },
+      "name": "child_agent_requests",
+      "source_line": null,
+      "source_path": "src/tau_coding/child_agent_requests.py"
+    },
+    {
+      "coverage": [
+        {
           "claim_id": "tau.codebase_ingest.scan_projection_receipts",
           "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
           "status": "CLAIMED"
@@ -38,6 +56,24 @@
       "name": "codebase_ingest",
       "source_line": null,
       "source_path": "src/tau_coding/codebase_ingest.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+          "feature_id": "capability-module:src/tau_coding/dag_runtime/memory_projection.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/memory_projection.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:5854e03f02645fa4d1298be65fa81183bf6742be9321a04967ac528eef4f9924"
+      },
+      "name": "memory_projection",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/memory_projection.py"
     },
     {
       "coverage": [
@@ -74,6 +110,24 @@
       "name": "scheduler",
       "source_line": null,
       "source_path": "src/tau_coding/dag_runtime/scheduler.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.herdr_agent_nodes.live_headless_backend",
+          "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:e21fece21305e49e277d9d52af54f4e8755c810028e4ac88d9e36bf4461d87fa"
+      },
+      "name": "herdr",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/herdr.py"
     },
     {
       "coverage": [
@@ -4158,6 +4212,22 @@
     {
       "coverage": [
         {
+          "claim_id": "tau.child_agent_requests.bounded_child_dag_compilation",
+          "feature_id": "evaluator-script:agentic-eval-tau-child-agent-requests",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-child-agent-requests",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-child-agent-requests",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-child-agent-requests.py"
+    },
+    {
+      "coverage": [
+        {
           "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
           "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
           "status": "CLAIMED"
@@ -4254,6 +4324,22 @@
     {
       "coverage": [
         {
+          "claim_id": "tau.herdr_agent_nodes.live_headless_backend",
+          "feature_id": "evaluator-script:agentic-eval-tau-herdr-agent-node-backend",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-herdr-agent-node-backend",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-herdr-agent-node-backend",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-herdr-agent-node-backend.py"
+    },
+    {
+      "coverage": [
+        {
           "claim_id": "tau.ledger_trace.default",
           "feature_id": "evaluator-script:agentic-eval-tau-ledger-trace",
           "status": "CLAIMED"
@@ -4266,6 +4352,22 @@
       "name": "agentic-eval-tau-ledger-trace",
       "source_line": null,
       "source_path": "scripts/agentic-eval-tau-ledger-trace.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
+          "feature_id": "evaluator-script:agentic-eval-tau-memory-episode-projection",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-memory-episode-projection",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-memory-episode-projection",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-memory-episode-projection.py"
     },
     {
       "coverage": [
@@ -5171,10 +5273,10 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T19:18:59Z",
-  "inventory_feature_count": 266,
+  "generated_at": "2026-08-30T20:29:41Z",
+  "inventory_feature_count": 272,
   "live": true,
-  "manifest_count": 20,
+  "manifest_count": 23,
   "manifests": [
     {
       "case_count": 2,
@@ -5303,6 +5405,27 @@
       "skill": "tau-agentic-eval-evidence-index"
     },
     {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.child_agent_requests.bounded_child_dag_compilation"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Model-facing child-agent requests are validated, fan-out/depth bounded, byte-idempotently admitted, compiled into Tau child DAG specs, joined by receipt handles, and steerable through agent-actionable operator requests.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.child_agent_requests.bounded_child_dag_compilation"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_child_agent_requests_agentic_eval.json",
+      "skill": "tau"
+    },
+    {
       "case_count": 1,
       "claim_ids": [
         "tau.core.local_dag_with_tamper_evident_ledger"
@@ -5425,6 +5548,27 @@
       "skill": "tau-feature-agentic-eval-coverage"
     },
     {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.herdr_agent_nodes.live_headless_backend"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau-owned headless agent-node workers can run through the live Herdr runtime backend as exact leased endpoints while Tau retains endpoint ownership, observation, worker settlement receipts, and cleanup authority.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.herdr_agent_nodes.live_headless_backend"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_herdr_agent_node_backend_agentic_eval.json",
+      "skill": "tau"
+    },
+    {
       "case_count": 1,
       "claim_ids": [
         "tau.ledger_trace.default"
@@ -5443,6 +5587,27 @@
       "has_real_world_case": true,
       "path": "evals/tau_ledger_trace_agentic_eval.json",
       "skill": "tau-ledger-trace"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.memory_episode_projection.governed_accepted_episode_outbox"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Accepted Tau turn/tool/join/settlement facts are normalized into governed Memory orchestration episode payloads, projected via the existing outbox, replay-deduped, redacted, and resilient to Memory outage or schema rejection.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.memory_episode_projection.governed_accepted_episode_outbox"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_memory_episode_projection_agentic_eval.json",
+      "skill": "tau"
     },
     {
       "case_count": 2,
@@ -5632,6 +5797,9 @@
     "evals/tau_agentic_eval_evidence_index_agentic_eval.json": {
       "path": "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json"
     },
+    "evals/tau_child_agent_requests_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-child-agent-requests-agentic-evals-report.json"
+    },
     "evals/tau_core_agentic_eval.json": {
       "path": "local/agentic-evals/tau-core-agentic-evals-report.json"
     },
@@ -5647,11 +5815,14 @@
     "evals/tau_discord_unblock_agentic_eval.json": {
       "path": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json"
     },
-    "evals/tau_feature_coverage_agentic_eval.json": {
-      "path": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json"
+    "evals/tau_herdr_agent_node_backend_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-herdr-agent-node-backend-agentic-evals-report.json"
     },
     "evals/tau_ledger_trace_agentic_eval.json": {
       "path": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json"
+    },
+    "evals/tau_memory_episode_projection_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-memory-episode-agentic-evals-report.json"
     },
     "evals/tau_operator_action_inbox_agentic_eval.json": {
       "path": "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json"
@@ -5680,6 +5851,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:b02fbd605cbb293ce687f0ba4527935c1cf80876dc071891f083b19b4b935f1b",
+  "source_inventory_sha256": "sha256:c2740e939ff909dae47528c9fff8c89b6ec31b8a92b6b13edfc79ebae18e050a",
   "status": "PASS"
 }

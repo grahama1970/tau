@@ -57,22 +57,22 @@
           {
             "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
             "json_pointer": "/manifest_count",
-            "equals": 22
+            "equals": 23
           },
           {
             "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
             "json_pointer": "/claim_count",
-            "equals": 22
+            "equals": 23
           },
           {
             "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
             "json_pointer": "/covered_claim_count",
-            "equals": 22
+            "equals": 23
           },
           {
             "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
             "json_pointer": "/inventory_feature_count",
-            "equals": 270
+            "equals": 272
           },
           {
             "path": "../local/agentic-evals/source-inventory.json",
@@ -82,7 +82,7 @@
           {
             "path": "../local/agentic-evals/source-inventory.json",
             "json_pointer": "/feature_count",
-            "equals": 270
+            "equals": 272
           },
           {
             "path": "../local/agentic-evals/source-inventory.json",
@@ -102,7 +102,7 @@
           {
             "path": "../local/agentic-evals/reconciliation-report.json",
             "json_pointer": "/covered_claim_count",
-            "equals": 22
+            "equals": 23
           },
           {
             "path": "../local/agentic-evals/reconciliation-report.json",

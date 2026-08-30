@@ -1,0 +1,89 @@
+{
+  "capability_claims": [
+    {
+      "criticality": "critical",
+      "description": "Tau-owned headless agent-node workers can run through the live Herdr runtime backend as exact leased endpoints while Tau retains endpoint ownership, observation, worker settlement receipts, and cleanup authority.",
+      "evidence_required": {
+        "fault_injected_deterministic": 1,
+        "live_e2e": 1
+      },
+      "id": "tau.herdr_agent_nodes.live_headless_backend"
+    }
+  ],
+  "cases": [
+    {
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals/tau-herdr-agent-node-backend && rm -rf local/agentic-evals/tau-herdr-agent-node-backend/work && uv run python scripts/agentic-eval-tau-herdr-agent-node-backend.py --work local/agentic-evals/tau-herdr-agent-node-backend/work --out local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+      ],
+      "evidence_class": "live_e2e",
+      "expected": {
+        "artifacts": [
+          {
+            "equals": "PASS",
+            "json_pointer": "/status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": 2,
+            "json_pointer": "/owned_endpoint_count",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "PASS",
+            "json_pointer": "/settlement_receipts/0/status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "PASS",
+            "json_pointer": "/terminations/1/status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          }
+        ],
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.herdr_agent_node_backend_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "\"owned_endpoint_count\": 2"
+        ]
+      },
+      "name": "live-herdr-hosts-two-tau-headless-agent-node-workers",
+      "real_world": true,
+      "supports_claims": [
+        "tau.herdr_agent_nodes.live_headless_backend"
+      ],
+      "timeout_seconds": 180,
+      "type": "positive"
+    },
+    {
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_herdr_runtime_backend.py::test_spawn_falls_back_to_pane_run_for_tau_headless_workers tests/test_herdr_runtime_backend.py::test_terminate_requires_exact_authorization_and_post_verifies_absence -q"
+      ],
+      "evidence_class": "fault_injected_deterministic",
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "2 passed"
+        ]
+      },
+      "name": "herdr-agent-node-backend-fallback-and-lease-policy-fail-closed",
+      "real_world": true,
+      "supports_claims": [
+        "tau.herdr_agent_nodes.live_headless_backend"
+      ],
+      "timeout_seconds": 120,
+      "type": "adversarial"
+    }
+  ],
+  "claims": {
+    "does_not_prove": "Provider semantic quality, Textual/React UI rendering, full scheduler restart adoption, or GOAL.md completion.",
+    "proves": "Tau can run live Herdr-hosted headless worker endpoints for agent-node style work, keep exact workspace/pane leases, observe liveness, read settlement receipts from disk, and clean up exact owned endpoints through authorization-bound termination."
+  },
+  "proof_scope": "Herdr runtime backend support for Tau-owned headless agent-node worker endpoints",
+  "skill": "tau",
+  "trials": 2,
+  "version": 2
+}

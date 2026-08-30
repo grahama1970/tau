@@ -1,10 +1,10 @@
 {
   "schema": "agentic_evals.report.v2",
   "source": "evals/tau_feature_coverage_agentic_eval.json",
-  "run_id": "d500897e121f",
-  "fixture_sha256": "sha256:23169834fa339d6bd5e5dc7584b1f58f8961cd96ac8ec418a26180d30d87b107",
+  "run_id": "e001a078444b",
+  "fixture_sha256": "sha256:1284a15460dc56c5793c166941db90be92646cfcb2829f83113ffbdcc35dd7ef",
   "repo": {
-    "sha": "59ff327ac4cc17953c52ce83a71d20f093ae8032",
+    "sha": "9e5c460120fd9502bcfa0de969ec76ae883e5b88",
     "ref": "main"
   },
   "mocked": false,
@@ -71,7 +71,7 @@
   },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-30T19:19:20.422156+00:00",
+  "generated_at": "2026-08-30T20:30:02.777012+00:00",
   "case_count": 7,
   "required_case_count": 7,
   "outcome_counts": {
@@ -87,7 +87,7 @@
       "flaky": false,
       "name": "source-inventory-reconciliation-passes-current-mapped-set",
       "type": "positive",
-      "case_id": "d500897e121f-c000",
+      "case_id": "e001a078444b-c000",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -107,20 +107,20 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1562.106,
+      "avg_latency_ms": 1642.03,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1546.575,
+          "duration_ms": 1601.224,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c000-t00",
+          "trial_id": "e001a078444b-c000-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:a9ecee33f0b9af6061e014d7c6cae591b53a058ba4fa350fdd4475a3f42ca8f2",
-            "../local/agentic-evals/source-inventory.json": "sha256:176a9663cd1188a0ac31b25ae65a1f19d3c7a77ef3277daf6397678ca192b2b0",
-            "../local/agentic-evals/reconciliation-report.json": "sha256:0cd8ac2cfdbd1a4836b20ecbf3feb5a9eb5142cd1bb66c5459d2be6770d29a08"
+            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:ecd874fd5554f9cd8bed72c4e579d6cbcff9d62750329a4eb0c9101208d0117d",
+            "../local/agentic-evals/source-inventory.json": "sha256:d935f98636bf5ffff48b035b301b67a27c44dafac97cb95b126baf8e9e1c4517",
+            "../local/agentic-evals/reconciliation-report.json": "sha256:5a8e592cfea7cc7e977bfc03873b1384c0c6a8b83c9f4ec85a3797e1ca5c21d2"
           },
           "outcome": "PASS",
           "problems": []
@@ -129,14 +129,14 @@
           "exit_code": 0,
           "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1577.638,
+          "duration_ms": 1682.836,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c000-t01",
+          "trial_id": "e001a078444b-c000-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:a9ecee33f0b9af6061e014d7c6cae591b53a058ba4fa350fdd4475a3f42ca8f2",
-            "../local/agentic-evals/source-inventory.json": "sha256:f39d69caf7c4f3370c8bea4e83ae6ae4aacd1b25dc3f1cfd28c7813547c88d1e",
-            "../local/agentic-evals/reconciliation-report.json": "sha256:ff2ec87c5d2c329cf36c69f89f144edd937852833936cc77df4e2b7ea1cc6a0d"
+            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:ecd874fd5554f9cd8bed72c4e579d6cbcff9d62750329a4eb0c9101208d0117d",
+            "../local/agentic-evals/source-inventory.json": "sha256:a404db06e9ba8d63c5a18ba24578f485dafb7717c8972bdd4b2038bab5928102",
+            "../local/agentic-evals/reconciliation-report.json": "sha256:78555cb8a5eb0024c231596dbf1ec037b478381b23b10c9ec0394db2073a0d4a"
           },
           "outcome": "PASS",
           "problems": []
@@ -148,7 +148,7 @@
       "flaky": false,
       "name": "unmanifested-cli-command-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c001",
+      "case_id": "e001a078444b-c001",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -168,18 +168,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 2468.535,
+      "avg_latency_ms": 2482.593,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"uncovered_source_feature\", \"proof\": \"local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 2423.408,
+          "duration_ms": 2488.494,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c001-t00",
+          "trial_id": "e001a078444b-c001-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:c17bedfc1a70c9741cae66a88a1d106e240e469989395efbe048d1f96f307306"
+            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:0c821f529d2cc2a38f78924e7c0ab44885afbd31c354b123ee05c9e218387f46"
           },
           "outcome": "PASS",
           "problems": []
@@ -188,12 +188,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"uncovered_source_feature\", \"proof\": \"local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 2513.662,
+          "duration_ms": 2476.693,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c001-t01",
+          "trial_id": "e001a078444b-c001-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:c17bedfc1a70c9741cae66a88a1d106e240e469989395efbe048d1f96f307306"
+            "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json": "sha256:0c821f529d2cc2a38f78924e7c0ab44885afbd31c354b123ee05c9e218387f46"
           },
           "outcome": "PASS",
           "problems": []
@@ -205,7 +205,7 @@
       "flaky": false,
       "name": "orphan-eval-manifest-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c002",
+      "case_id": "e001a078444b-c002",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -225,18 +225,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1622.931,
+      "avg_latency_ms": 1587.193,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"orphan_eval_manifest\", \"proof\": \"local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1528.4,
+          "duration_ms": 1586.604,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c002-t00",
+          "trial_id": "e001a078444b-c002-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:ab88372f4a96ea5085b3e804ef584eaa9ce7b02a98a6b8b54993e2813d5293a9"
+            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:1ef93f0b8cac72eb6ca0192fff2684e04b882d62874f82ef85713086984d222b"
           },
           "outcome": "PASS",
           "problems": []
@@ -245,12 +245,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"orphan_eval_manifest\", \"proof\": \"local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1717.462,
+          "duration_ms": 1587.781,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c002-t01",
+          "trial_id": "e001a078444b-c002-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:ab88372f4a96ea5085b3e804ef584eaa9ce7b02a98a6b8b54993e2813d5293a9"
+            "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json": "sha256:1ef93f0b8cac72eb6ca0192fff2684e04b882d62874f82ef85713086984d222b"
           },
           "outcome": "PASS",
           "problems": []
@@ -262,7 +262,7 @@
       "flaky": false,
       "name": "duplicate-feature-owner-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c003",
+      "case_id": "e001a078444b-c003",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -282,18 +282,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1558.928,
+      "avg_latency_ms": 1579.496,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"duplicate_feature_owner\", \"proof\": \"local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1530.712,
+          "duration_ms": 1587.183,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c003-t00",
+          "trial_id": "e001a078444b-c003-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:2c8a11a36daaced6e84b774e7f77c642d702a02095a536d11bc0485887c7db10"
+            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:400f788be152f49be3fecd9d5a555dfeb99f13d2d940412c4686db017e762086"
           },
           "outcome": "PASS",
           "problems": []
@@ -302,12 +302,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"duplicate_feature_owner\", \"proof\": \"local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1587.143,
+          "duration_ms": 1571.81,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c003-t01",
+          "trial_id": "e001a078444b-c003-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:2c8a11a36daaced6e84b774e7f77c642d702a02095a536d11bc0485887c7db10"
+            "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json": "sha256:400f788be152f49be3fecd9d5a555dfeb99f13d2d940412c4686db017e762086"
           },
           "outcome": "PASS",
           "problems": []
@@ -319,7 +319,7 @@
       "flaky": false,
       "name": "missing-retained-report-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c004",
+      "case_id": "e001a078444b-c004",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -339,18 +339,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1554.061,
+      "avg_latency_ms": 1554.144,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_retained_report\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1584.845,
+          "duration_ms": 1570.869,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c004-t00",
+          "trial_id": "e001a078444b-c004-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:3b44f7dedb53fcdf8189479115dcc8f8194e954354c1dd5314c76659541b57b3"
+            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:35b9dccb572f4a5a9281db1a41850f603bb46991ee4efd298ed0d2f2ff679710"
           },
           "outcome": "PASS",
           "problems": []
@@ -359,12 +359,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_retained_report\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1523.277,
+          "duration_ms": 1537.42,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c004-t01",
+          "trial_id": "e001a078444b-c004-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:3b44f7dedb53fcdf8189479115dcc8f8194e954354c1dd5314c76659541b57b3"
+            "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json": "sha256:35b9dccb572f4a5a9281db1a41850f603bb46991ee4efd298ed0d2f2ff679710"
           },
           "outcome": "PASS",
           "problems": []
@@ -376,7 +376,7 @@
       "flaky": false,
       "name": "stale-waiver-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c005",
+      "case_id": "e001a078444b-c005",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -396,18 +396,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1557.535,
+      "avg_latency_ms": 1589.178,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"stale_waiver\", \"proof\": \"local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1579.978,
+          "duration_ms": 1562.304,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c005-t00",
+          "trial_id": "e001a078444b-c005-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:b69d7050be2a3c52106d3d665449473d1fbf7090a3f8d7504e56b61d343cc667"
+            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:c90ec267f40e67e1546b7954675d013b6b721327396e2377130bf1272b5f7ada"
           },
           "outcome": "PASS",
           "problems": []
@@ -416,12 +416,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"stale_waiver\", \"proof\": \"local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1535.092,
+          "duration_ms": 1616.052,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c005-t01",
+          "trial_id": "e001a078444b-c005-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:b69d7050be2a3c52106d3d665449473d1fbf7090a3f8d7504e56b61d343cc667"
+            "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json": "sha256:c90ec267f40e67e1546b7954675d013b6b721327396e2377130bf1272b5f7ada"
           },
           "outcome": "PASS",
           "problems": []
@@ -433,7 +433,7 @@
       "flaky": false,
       "name": "missing-capability-claim-is-rejected",
       "type": "adversarial",
-      "case_id": "d500897e121f-c006",
+      "case_id": "e001a078444b-c006",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -453,18 +453,18 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1550.347,
+      "avg_latency_ms": 1642.641,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_capability_claims\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1577.985,
+          "duration_ms": 1684.022,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c006-t00",
+          "trial_id": "e001a078444b-c006-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:478aab530027a45c63049c88609193735801bcc7c3520c60dff6e8e59bc07d05"
+            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:980dde418359c11e92afe7b4c2711a9bb5b7639a806ed5c10836827ff96adabb"
           },
           "outcome": "PASS",
           "problems": []
@@ -473,12 +473,12 @@
           "exit_code": 0,
           "stdout": "{\"detected\": true, \"expected_failure_code\": \"missing_capability_claims\", \"proof\": \"local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 1522.71,
+          "duration_ms": 1601.26,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "d500897e121f-c006-t01",
+          "trial_id": "e001a078444b-c006-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:478aab530027a45c63049c88609193735801bcc7c3520c60dff6e8e59bc07d05"
+            "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json": "sha256:980dde418359c11e92afe7b4c2711a9bb5b7639a806ed5c10836827ff96adabb"
           },
           "outcome": "PASS",
           "problems": []

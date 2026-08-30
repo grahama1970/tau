@@ -56,6 +56,8 @@ class FakeHerdr:
         self.start_wrap_agent_in_list = False
         self.start_prepend_unrelated_agent = False
         self.start_unrelated_pane_id = False
+        self.agent_start_error_code: str | None = None
+        self.pane_runs: list[list[str]] = []
         self.start_pane_id_override: str | None = None
         self.start_workspace_id_override: str | None = None
         self.pane_get_agent_override: str | None = None
@@ -81,9 +83,20 @@ class FakeHerdr:
             workspace_id = command[command.index("--workspace") + 1]
             return self._ok(
                 argv,
-                {"result": {"tab": {"tab_id": f"{workspace_id}:t1"}}},
+                {
+                    "result": {
+                        "root_pane": {
+                            "pane_id": f"{workspace_id}:p1",
+                            "workspace_id": workspace_id,
+                            "terminal_id": "term-root",
+                        },
+                        "tab": {"tab_id": f"{workspace_id}:t1"},
+                    }
+                },
             )
         if command[:2] == ["agent", "start"]:
+            if self.agent_start_error_code is not None:
+                return self._error(argv, self.agent_start_error_code)
             self.pane_count += 1
             name = command[2]
             workspace_id = command[command.index("--workspace") + 1]
@@ -117,6 +130,25 @@ class FakeHerdr:
             if self.start_unrelated_pane_id:
                 result["unrelated"] = {"pane_id": "w-unowned:p99"}
             return self._ok(argv, {"result": result})
+        if command[:2] == ["pane", "split"]:
+            source = command[2]
+            workspace_id = source.split(":p", 1)[0]
+            self.pane_count += 1
+            return self._ok(
+                argv,
+                {
+                    "result": {
+                        "pane": {
+                            "pane_id": f"{workspace_id}:p{self.pane_count + 1}",
+                            "workspace_id": workspace_id,
+                            "terminal_id": f"term-split-{self.pane_count}",
+                        }
+                    }
+                },
+            )
+        if command[:2] == ["pane", "run"]:
+            self.pane_runs.append(command)
+            return self._ok(argv, {"result": {"type": "pane_command_started"}})
         if command[:2] == ["pane", "send-text"]:
             return self._ok(argv, {"result": {"type": "text_sent"}})
         if command[:2] == ["pane", "read"]:
@@ -139,6 +171,7 @@ class FakeHerdr:
                             or self.pane_agents.get(pane_id),
                             "workspace_id": workspace_id,
                             "pane_id": pane_id,
+                            "terminal_id": f"term-{pane_id}",
                             "agent_status": self.pane_status,
                         }
                     }
@@ -276,6 +309,39 @@ def test_spawn_binds_exact_workspace_pane_terminal_and_session(tmp_path: Path) -
     assert backend_ids["pane_id"] == "w1:p1"
     assert backend_ids["terminal_id"] == "term-1"
     assert backend.list_owned("run-1") == [lease]
+
+
+def test_spawn_falls_back_to_pane_run_for_tau_headless_workers(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.agent_start_error_code = "unsupported_agent_kind"
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    lease = backend.spawn(
+        herdr_runtime_spawn_request(
+            run_id="run-1",
+            plan_revision=canonical_sha256({"plan": 1}),
+            dag_id="dag-1",
+            node_id="worker",
+            attempt_id="attempt-1",
+            attempt_number=1,
+            execution_token="token-1",
+            scope_id=scope["scope_id"],
+            command=("uv", "run", "tau", "agent-node-worker"),
+            cwd=tmp_path,
+            work_order_sha256=canonical_sha256({"work": "bounded"}),
+            goal_hash=canonical_sha256({"goal": 1}),
+            owner="tau",
+            label="worker",
+        )
+    )
+
+    assert fake.pane_runs == [["pane", "run", "w1:p1", "uv", "run", "tau", "agent-node-worker"]]
+    assert lease.endpoint_id == "w1:p1"
+    assert lease.backend_ids.to_value()["terminal_id"] == "term-w1:p1"
 
 
 @pytest.mark.parametrize("response_shape", ["list", "multiple"])

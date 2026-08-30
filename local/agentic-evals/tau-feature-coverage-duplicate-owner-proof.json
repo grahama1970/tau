@@ -1,7 +1,7 @@
 {
   "adversarial_detection": true,
-  "claim_count": 20,
-  "covered_claim_count": 20,
+  "claim_count": 23,
+  "covered_claim_count": 23,
   "expected_failure_code": "duplicate_feature_owner",
   "finding_count": 1,
   "findings": [
@@ -13,10 +13,10 @@
       "source": null
     }
   ],
-  "inventory_feature_count": 266,
+  "inventory_feature_count": 272,
   "inventory_path": null,
   "live": true,
-  "manifest_count": 20,
+  "manifest_count": 23,
   "mocked": false,
   "mode": "duplicate-feature-owner",
   "negative_case_receipt": true,

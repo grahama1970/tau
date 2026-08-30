@@ -41,6 +41,7 @@ class HerdrRuntimeScope:
     tab_id: str
     cwd: Path
     label: str
+    pane_id: str = ""
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -51,6 +52,7 @@ class HerdrRuntimeScope:
             "scope_id": self.workspace_id,
             "workspace_id": self.workspace_id,
             "tab_id": self.tab_id,
+            "pane_id": self.pane_id,
             "cwd": str(self.cwd),
             "label": self.label,
         }
@@ -180,6 +182,10 @@ class HerdrRuntimeBackend:
                 "--no-focus",
             )
             tab_id = _find_required_id(tab, "tab_id")
+            try:
+                pane_id = _find_required_id(tab, "pane_id")
+            except ValueError:
+                pane_id = ""
         except Exception:
             self._run_json("workspace", "close", workspace_id, check=False)
             raise
@@ -191,6 +197,7 @@ class HerdrRuntimeBackend:
             tab_id=tab_id,
             cwd=cwd,
             label=label,
+            pane_id=pane_id,
         )
         with self._lock:
             if run_id in self._scopes or workspace_id in self._scope_ids:
@@ -261,22 +268,29 @@ class HerdrRuntimeBackend:
         for item in environment:
             args.extend(("--env", item))
         args.extend(("--no-focus", "--", *command))
-        started = self._run_json(*args)
-        try:
-            agent = _find_agent(started, endpoint_label)
-        except ValueError:
-            recoverable = [
-                candidate
-                for candidate in _find_objects(started, "agent")
-                if isinstance(candidate.get("pane_id"), str) and candidate.get("pane_id")
-            ]
-            if len(recoverable) == 1:
-                self._reclaim_failed_spawn(
-                    recoverable[0],
-                    expected_workspace_id=scope.workspace_id,
-                    expected_agent_name=endpoint_label,
-                )
-            raise RuntimeError("herdr_runtime_spawn_agent_mismatch") from None
+        started = self._run_json(*args, check=False)
+        if started["returncode"] != 0:
+            agent = self._spawn_via_pane_run(
+                scope=scope,
+                endpoint_label=endpoint_label,
+                command=command,
+            )
+        else:
+            try:
+                agent = _find_agent(started, endpoint_label)
+            except ValueError:
+                recoverable = [
+                    candidate
+                    for candidate in _find_objects(started, "agent")
+                    if isinstance(candidate.get("pane_id"), str) and candidate.get("pane_id")
+                ]
+                if len(recoverable) == 1:
+                    self._reclaim_failed_spawn(
+                        recoverable[0],
+                        expected_workspace_id=scope.workspace_id,
+                        expected_agent_name=endpoint_label,
+                    )
+                raise RuntimeError("herdr_runtime_spawn_agent_mismatch") from None
         try:
             workspace_id = _required_string(agent, "workspace_id")
             pane_id = _required_string(agent, "pane_id")
@@ -349,6 +363,53 @@ class HerdrRuntimeBackend:
             self._endpoints[lease.sha256] = state
             self._endpoint_ids[pane_id] = lease.sha256
         return lease
+
+    def _spawn_via_pane_run(
+        self,
+        *,
+        scope: HerdrRuntimeScope,
+        endpoint_label: str,
+        command: Sequence[str],
+    ) -> dict[str, Any]:
+        """Start an arbitrary Tau-owned worker in a Herdr shell pane.
+
+        Herdr 0.8 restricts ``agent start`` to built-in interactive agent kinds.
+        Tau workers are ordinary headless commands, so they use ``pane run`` in
+        the scope's root pane while preserving the same endpoint identity fields.
+        """
+
+        if not scope.pane_id:
+            raise RuntimeError("herdr_runtime_scope_pane_missing")
+        pane_id = scope.pane_id
+        with self._lock:
+            pane_in_use = pane_id in self._endpoint_ids
+        if pane_in_use:
+            split = self._run_json(
+                "pane",
+                "split",
+                scope.pane_id,
+                "--direction",
+                "right",
+                "--cwd",
+                str(scope.cwd),
+                "--no-focus",
+            )
+            pane_id = _find_required_id(split, "pane_id")
+        run_result = self._run_json("pane", "run", pane_id, *command, check=False)
+        if run_result["returncode"] != 0:
+            raise RuntimeError("herdr_runtime_pane_run_failed")
+        pane = self._run_json("pane", "get", pane_id)
+        pane_payload = _find_object(pane, "pane")
+        terminal_id = _required_string(pane_payload, "terminal_id")
+        workspace_id = _required_string(pane_payload, "workspace_id")
+        if workspace_id != scope.workspace_id:
+            raise RuntimeError("herdr_runtime_spawn_workspace_mismatch")
+        return {
+            "agent": endpoint_label,
+            "workspace_id": workspace_id,
+            "pane_id": pane_id,
+            "terminal_id": terminal_id,
+        }
 
     def _reclaim_failed_spawn(
         self,

@@ -1502,6 +1502,16 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.herdr_agent_nodes.live_headless_backend",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.herdr_agent_nodes.live_headless_backend",
+      "feature_id": "evaluator-script:agentic-eval-tau-herdr-agent-node-backend",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
       "status": "CLAIMED"
