@@ -1,7 +1,7 @@
 {
   "adversarial_detection": true,
-  "claim_count": 15,
-  "covered_claim_count": 15,
+  "claim_count": 16,
+  "covered_claim_count": 16,
   "expected_failure_code": "uncovered_source_feature",
   "finding_count": 1,
   "findings": [
@@ -13,10 +13,10 @@
       "source": "src/tau_coding/cli.py"
     }
   ],
-  "inventory_feature_count": 254,
+  "inventory_feature_count": 260,
   "inventory_path": null,
   "live": true,
-  "manifest_count": 15,
+  "manifest_count": 16,
   "mocked": false,
   "mode": "unmanifested-cli-command",
   "negative_case_receipt": true,

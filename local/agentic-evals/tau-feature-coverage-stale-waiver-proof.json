@@ -1,7 +1,7 @@
 {
   "adversarial_detection": true,
-  "claim_count": 15,
-  "covered_claim_count": 15,
+  "claim_count": 16,
+  "covered_claim_count": 16,
   "expected_failure_code": "stale_waiver",
   "finding_count": 1,
   "findings": [
@@ -13,10 +13,10 @@
       "source": null
     }
   ],
-  "inventory_feature_count": 253,
+  "inventory_feature_count": 259,
   "inventory_path": null,
   "live": true,
-  "manifest_count": 15,
+  "manifest_count": 16,
   "mocked": false,
   "mode": "stale-waiver",
   "negative_case_receipt": true,

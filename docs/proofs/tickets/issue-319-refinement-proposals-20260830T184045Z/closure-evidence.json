@@ -40,6 +40,18 @@
     {
       "command": "agentic-evals/run.sh run fixtures/agentic_eval.json --case refinement-preview-apply-verify-rollback-live-memory --output /tmp/issue319-main-agentic-evals-report.json",
       "result": "readiness=READY; outcome_counts={'PASS': 1, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=2; repo={'sha': '3ee598452f2112e53b3c1bfa0f5f17e440f1ef5e', 'ref': 'main'}"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_refinement_agentic_eval.json --output local/agentic-evals/tau-refinement-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
+    },
+    {
+      "command": "uv run pytest tests/test_refinement.py -q && uv run ruff check src/tau_coding/refinement.py src/tau_coding/refinement_conformance.py tests/test_refinement.py && uv run pytest -q",
+      "result": "5 passed; All checks passed!; 253 passed, 29 skipped, 3432 deselected in 25.66s"
     }
   ],
   "conformance_readback": {
@@ -54,16 +66,28 @@
   "agentic_eval_readback": {
     "readiness": "READY",
     "outcome_counts": {
-      "PASS": 1,
+      "PASS": 2,
       "FAIL": 0,
       "BLOCKED": 0,
       "NOT_TESTED": 0
     },
-    "trial_count": 2,
-    "repo": {
-      "sha": "3ee598452f2112e53b3c1bfa0f5f17e440f1ef5e",
-      "ref": "main"
-    }
+    "trial_count": 4,
+    "source": "evals/tau_refinement_agentic_eval.json"
   },
-  "status": "PASS"
+  "status": "PASS",
+  "feature_coverage_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 7,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 14,
+    "source": "evals/tau_feature_coverage_agentic_eval.json",
+    "inventory_feature_count": 259,
+    "cli_command_count": 199,
+    "claim_count": 16,
+    "covered_claim_count": 16
+  }
 }

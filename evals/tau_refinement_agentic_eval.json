@@ -1,0 +1,134 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau governed refinement preview/apply/verify/rollback conformance",
+  "claims": {
+    "proves": "Tau can preview governed continual-harness refinements without mutation, apply only verified proposals, roll back failed verification, fail closed on mutated approvals and target state, and render read-only proposal state.",
+    "does_not_prove": "Provider semantic quality, executable-skill adapters, Tau GOAL.md completion, or human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.refinement.preview_apply_verify_rollback",
+      "description": "Tau exposes governed refinement preview, apply, verify, rollback, conformance, and read-only view commands with live Memory-backed conformance proof.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "refinement-preview-apply-verify-rollback-live-memory",
+      "type": "adversarial",
+      "real_world": true,
+      "supports_claims": [
+        "tau.refinement.preview_apply_verify_rollback"
+      ],
+      "evidence_class": "live_e2e",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "tau",
+        "refinement-conformance",
+        "--out",
+        "../local/agentic-evals/tau-refinement-proof.json",
+        "--work-dir",
+        "../.tmp/agentic-evals/refinement-conformance",
+        "--memory-url",
+        "http://127.0.0.1:8601"
+      ],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.refinement_conformance_receipt.v1\"",
+          "\"status\": \"PASS\"",
+          "\"memory-offline-pending-degraded-source-truth-unchanged\"",
+          "\"read-only-cli-viewer-renders-state\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "refinement-fail-closed-adversarial-conformance",
+      "type": "adversarial",
+      "real_world": true,
+      "supports_claims": [
+        "tau.refinement.preview_apply_verify_rollback"
+      ],
+      "evidence_class": "fault_injected_deterministic",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "tau",
+        "refinement-conformance",
+        "--out",
+        "../local/agentic-evals/tau-refinement-proof.json",
+        "--work-dir",
+        "../.tmp/agentic-evals/refinement-conformance",
+        "--memory-url",
+        "http://127.0.0.1:8601"
+      ],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"fail-closed-mutated-proposed_content\"",
+          "\"fail-closed-mutated-approval\"",
+          "\"malicious-recalled-instructions-cannot-mint-approval\"",
+          "\"verification-failure-rolls-back-exact-hash\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-refinement-proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          }
+        ]
+      }
+    }
+  ]
+}

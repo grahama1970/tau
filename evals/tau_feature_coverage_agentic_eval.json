@@ -24,7 +24,9 @@
       "type": "positive",
       "real_world": true,
       "evidence_class": "live_e2e",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -33,22 +35,80 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\""],
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/mocked", "equals": false},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/live", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 15},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 15},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/covered_claim_count", "equals": 15},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/inventory_feature_count", "equals": 253},
-          {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/schema", "equals": "tau.source_feature_inventory.v1"},
-          {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/feature_count", "equals": 253},
-          {"path": "../local/agentic-evals/source-inventory.json", "json_pointer": "/counts_by_kind/cli-command", "equals": 193},
-          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/schema", "equals": "tau.source_feature_reconciliation.v1"},
-          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/covered_claim_count", "equals": 15},
-          {"path": "../local/agentic-evals/reconciliation-report.json", "json_pointer": "/self_covered_claim_count", "equals": 1}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/manifest_count",
+            "equals": 16
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/claim_count",
+            "equals": 16
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/covered_claim_count",
+            "equals": 16
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-proof.json",
+            "json_pointer": "/inventory_feature_count",
+            "equals": 259
+          },
+          {
+            "path": "../local/agentic-evals/source-inventory.json",
+            "json_pointer": "/schema",
+            "equals": "tau.source_feature_inventory.v1"
+          },
+          {
+            "path": "../local/agentic-evals/source-inventory.json",
+            "json_pointer": "/feature_count",
+            "equals": 259
+          },
+          {
+            "path": "../local/agentic-evals/source-inventory.json",
+            "json_pointer": "/counts_by_kind/cli-command",
+            "equals": 199
+          },
+          {
+            "path": "../local/agentic-evals/reconciliation-report.json",
+            "json_pointer": "/schema",
+            "equals": "tau.source_feature_reconciliation.v1"
+          },
+          {
+            "path": "../local/agentic-evals/reconciliation-report.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/reconciliation-report.json",
+            "json_pointer": "/covered_claim_count",
+            "equals": 16
+          },
+          {
+            "path": "../local/agentic-evals/reconciliation-report.json",
+            "json_pointer": "/self_covered_claim_count",
+            "equals": 1
+          }
         ]
       }
     },
@@ -57,7 +117,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -66,11 +128,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json", "json_pointer": "/expected_failure_code", "equals": "uncovered_source_feature"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "uncovered_source_feature"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     },
@@ -79,7 +156,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -88,11 +167,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json", "json_pointer": "/expected_failure_code", "equals": "orphan_eval_manifest"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "orphan_eval_manifest"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     },
@@ -101,7 +195,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -110,11 +206,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json", "json_pointer": "/expected_failure_code", "equals": "duplicate_feature_owner"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "duplicate_feature_owner"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     },
@@ -123,7 +234,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -132,11 +245,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json", "json_pointer": "/expected_failure_code", "equals": "missing_retained_report"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "missing_retained_report"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     },
@@ -145,7 +273,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -154,11 +284,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json", "json_pointer": "/expected_failure_code", "equals": "stale_waiver"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "stale_waiver"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     },
@@ -167,7 +312,9 @@
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
-      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "supports_claims": [
+        "tau.feature_agentic_eval_coverage"
+      ],
       "timeout_seconds": 60,
       "command": [
         "bash",
@@ -176,11 +323,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"detected\": true"
+        ],
         "artifacts": [
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json", "json_pointer": "/expected_failure_code", "equals": "missing_capability_claims"},
-          {"path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "missing_capability_claims"
+          },
+          {
+            "path": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+            "json_pointer": "/adversarial_detection",
+            "equals": true
+          }
         ]
       }
     }

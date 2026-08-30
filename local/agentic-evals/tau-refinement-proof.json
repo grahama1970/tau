@@ -1,0 +1,224 @@
+{
+  "artifact_paths": [
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-approval-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-approval-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-approval-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-before_hash-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-before_hash-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-before_hash-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-data_boundary_version-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-data_boundary_version-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-data_boundary_version-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-goal_hash-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-goal_hash-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-goal_hash-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-policy_version-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-policy_version-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-policy_version-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-proposed_content-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-proposed_content-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-proposed_content-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-target_ref-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-target_ref-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-target_ref-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-validity_window-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-validity_window-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-validity_window-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/base_prompt-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/base_prompt-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/base_prompt-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/conflict-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/conflict-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/conflict-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/evidence_requirement-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/evidence_requirement-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/evidence_requirement-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/executable_skill-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/executable_skill-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/executable_skill-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/immutable_goal-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/immutable_goal-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/immutable_goal-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/malicious-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/malicious-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/malicious-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-apply-verify-accepted-apply-second.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-apply-verify-accepted-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-apply-verify-accepted-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-apply-verify-accepted-verify.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-document-preview-no-mutation-diff.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-document-preview-no-mutation.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-offline-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/offline-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-apply-verify-accepted-apply-second.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-apply-verify-accepted-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-apply-verify-accepted-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-apply-verify-accepted-verify.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/provider_profile-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/provider_profile-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/provider_profile-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/refinement-view.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-failed-verify.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-preview.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-receipt.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/route-apply.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/route-decision.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/route-proposal.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/source-run-truth.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/supplemental-prompt-preview-no-mutation-diff.json",
+    "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/supplemental-prompt-preview-no-mutation.json"
+  ],
+  "case_count": 23,
+  "cases": [
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-document-preview-no-mutation.json",
+      "name": "memory-document-preview-no-mutation",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/supplemental-prompt-preview-no-mutation.json",
+      "name": "supplemental-prompt-preview-no-mutation",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-apply-verify-accepted-verify.json",
+      "name": "memory-apply-verify-accepted",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/prompt-apply-verify-accepted-verify.json",
+      "name": "prompt-apply-verify-accepted",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-proposed_content-apply.json",
+      "name": "fail-closed-mutated-proposed_content",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-target_ref-apply.json",
+      "name": "fail-closed-mutated-target_ref",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-before_hash-apply.json",
+      "name": "fail-closed-mutated-before_hash",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-approval-apply.json",
+      "name": "fail-closed-mutated-approval",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-validity_window-apply.json",
+      "name": "fail-closed-mutated-validity_window",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-goal_hash-apply.json",
+      "name": "fail-closed-mutated-goal_hash",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-policy_version-apply.json",
+      "name": "fail-closed-mutated-policy_version",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/bad-data_boundary_version-apply.json",
+      "name": "fail-closed-mutated-data_boundary_version",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/conflict-apply.json",
+      "name": "memory-conflict-requires-reconciliation",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/rollback-receipt.json",
+      "name": "verification-failure-rolls-back-exact-hash",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/memory-offline-apply.json",
+      "name": "memory-offline-pending-degraded-source-truth-unchanged",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/immutable_goal-apply.json",
+      "name": "non-targetable-immutable_goal-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/base_prompt-apply.json",
+      "name": "non-targetable-base_prompt-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/evidence_requirement-apply.json",
+      "name": "non-targetable-evidence_requirement-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/executable_skill-apply.json",
+      "name": "non-targetable-executable_skill-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/route-apply.json",
+      "name": "non-targetable-route-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/provider_profile-apply.json",
+      "name": "non-targetable-provider_profile-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/malicious-apply.json",
+      "name": "malicious-recalled-instructions-cannot-mint-approval",
+      "ok": true
+    },
+    {
+      "artifact": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/refinement-view.json",
+      "name": "read-only-cli-viewer-renders-state",
+      "ok": true
+    }
+  ],
+  "ledger": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance/ledger/refinement-ledger.json",
+  "live": true,
+  "memory_collection": "tau_refinement_proof",
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Semantic improvement quality.",
+      "Executable-skill adapters."
+    ],
+    "proves": [
+      "Preview rendered Memory and prompt diffs without mutation.",
+      "Approved proposals applied, verified, and reached ACCEPTED.",
+      "Repeated apply was idempotent.",
+      "Mutated proposal, approval, policy, and boundary inputs failed closed.",
+      "Conflicting Memory state required reconciliation instead of overwrite.",
+      "Post-apply verification failure rolled back to the recorded hash.",
+      "Memory outage left the proposal pending/degraded.",
+      "Immutable and unsupported target kinds could not apply.",
+      "Malicious recalled instructions could not mint approval.",
+      "Read-only viewer rendered refinement state."
+    ]
+  },
+  "schema": "tau.refinement_conformance_receipt.v1",
+  "source_truth_hash_after": "sha256:31140aeda4ebeb58a76c95931d766b15deb2071540dbc05f4dcdfd60fedb941c",
+  "source_truth_hash_before": "sha256:31140aeda4ebeb58a76c95931d766b15deb2071540dbc05f4dcdfd60fedb941c",
+  "status": "PASS",
+  "timestamp": "2026-08-30T18:45:07.604795Z",
+  "work_dir": "/home/graham/workspace/experiments/tau/.tmp/agentic-evals/refinement-conformance"
+}

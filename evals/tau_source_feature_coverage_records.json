@@ -983,6 +983,36 @@
       "status": "OUT_OF_SCOPE"
     },
     {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-apply",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-conformance",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-preview",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-rollback",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-verify",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.refinement.preview_apply_verify_rollback",
+      "feature_id": "cli-command:refinement-view",
+      "status": "CLAIMED"
+    },
+    {
       "expires": "2026-12-31",
       "feature_id": "cli-command:replacement-harness-sanity",
       "owner": "tau-maintainers",
@@ -1357,6 +1387,11 @@
       "status": "OUT_OF_SCOPE"
     },
     {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "evaluator-script:agentic-eval-tau-agentic-eval-evidence-index",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.core.local_dag_with_tamper_evident_ledger",
       "feature_id": "evaluator-script:agentic-eval-tau-core-proof",
       "status": "CLAIMED"
@@ -1379,11 +1414,6 @@
     {
       "claim_id": "tau.discord.typed_human_unblock_receipts",
       "feature_id": "evaluator-script:agentic-eval-tau-discord-unblock",
-      "status": "CLAIMED"
-    },
-    {
-      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
-      "feature_id": "evaluator-script:agentic-eval-tau-agentic-eval-evidence-index",
       "status": "CLAIMED"
     },
     {
@@ -1422,6 +1452,11 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_agentic_eval_ledger_evidence_index",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_ledger",
       "status": "CLAIMED"
@@ -1429,11 +1464,6 @@
     {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_run_ledger_from_run_dir",
-      "status": "CLAIMED"
-    },
-    {
-      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
-      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:build_agentic_eval_ledger_evidence_index",
       "status": "CLAIMED"
     },
     {
@@ -1457,13 +1487,13 @@
       "status": "CLAIMED"
     },
     {
-      "claim_id": "tau.ledger_trace.default",
-      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
+      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_agentic_eval_ledger_evidence_selftest",
       "status": "CLAIMED"
     },
     {
-      "claim_id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
-      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_agentic_eval_ledger_evidence_selftest",
+      "claim_id": "tau.ledger_trace.default",
+      "feature_id": "ledger-path:src/tau_coding/run_ledger.py:write_ledger",
       "status": "CLAIMED"
     },
     {
