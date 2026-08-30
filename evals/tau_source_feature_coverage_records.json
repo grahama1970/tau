@@ -18,6 +18,16 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace_worker.py",
+      "status": "CLAIMED"
+    },
+    {
       "expires": "2026-12-31",
       "feature_id": "cli-command:acceptance-bundle",
       "owner": "tau-maintainers",

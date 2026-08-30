@@ -41,24 +41,41 @@
             "equals": true
           }
         ]
-      }
+      },
+      "supports_claims": [
+        "tau.python_workspace_sandbox.lifecycle_and_admission"
+      ]
     },
     {
       "name": "workspace-contract-negative-regressions",
       "type": "adversarial",
       "real_world": true,
-      "evidence_class": "adversarial_live_e2e",
+      "evidence_class": "fault_injected_deterministic",
       "timeout_seconds": 240,
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run --project . pytest tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
+        "cd .. && uv run --project . pytest --tau-suite=all tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "passed"
         ]
+      },
+      "supports_claims": [
+        "tau.python_workspace_sandbox.lifecycle_and_admission"
+      ]
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+      "description": "Tau can run an optional Docker-sandboxed persistent Python workspace with snapshot restore, admission gating, stale-snapshot rejection, duplicate execution protection, and no ambient host/network authority.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
       }
     }
   ]

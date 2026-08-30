@@ -1,6 +1,6 @@
 {
   "counts_by_kind": {
-    "capability-module": 3,
+    "capability-module": 5,
     "cli-command": 199,
     "evaluator-script": 12,
     "ledger-path": 10,
@@ -8,7 +8,7 @@
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 259,
+  "feature_count": 261,
   "features": [
     {
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
@@ -39,6 +39,26 @@
       "name": "kernel_host_bridge",
       "source_line": null,
       "source_path": "src/tau_coding/runtime_backends/kernel_host_bridge.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:a067cfb0df5ee9e37c29e243c0e6e5ef30513b43a790a69c2a8877755443791e"
+      },
+      "name": "python_workspace",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/python_workspace.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace_worker.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:a7c8f6af99ba2d2f27b6f987e8ade1d65184aabdd1efd266d06c80ed70db7577"
+      },
+      "name": "python_workspace_worker",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/python_workspace_worker.py"
     },
     {
       "feature_id": "cli-command:acceptance-bundle",
@@ -2577,10 +2597,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T18:46:01Z",
+  "generated_at": "2026-08-30T18:53:22Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:b0d374939fd0205f3278e9aaf57b526661e0056ffa94094711b9d83352dc149d"
+  "source_sha256": "sha256:3305ea1dcd92e0379c7c1a546d71c46df832b563e0b1e05d2d1b8e55fbfc453f"
 }

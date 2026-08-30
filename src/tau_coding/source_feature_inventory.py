@@ -27,6 +27,8 @@ CAPABILITY_MODULE_PATHS = (
     "src/tau_coding/codebase_ingest.py",
     "src/tau_coding/runtime_backends/kernel.py",
     "src/tau_coding/runtime_backends/kernel_host_bridge.py",
+    "src/tau_coding/runtime_backends/python_workspace.py",
+    "src/tau_coding/runtime_backends/python_workspace_worker.py",
 )
 
 

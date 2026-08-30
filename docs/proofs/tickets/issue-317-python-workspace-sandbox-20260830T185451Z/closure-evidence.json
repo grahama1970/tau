@@ -1,0 +1,82 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 317,
+  "title": "Add an optional sandboxed persistent Python workspace for Tau-native agent nodes",
+  "main_commit": "bfc3b30b2bb8a2b85c9e09b61612e5e1eb6dfdec",
+  "proof_boundary": {
+    "proves": [
+      "Docker-sandboxed persistent Python workspace endpoint starts from Tau-local proof script.",
+      "Namespace state persists across multiple turns and compaction-handle replay.",
+      "Snapshot restore is explicit and stale-snapshot identity changes are rejected.",
+      "Execution output is retained as artifacts but is not admitted as Tau acceptance evidence without gate receipts.",
+      "Host/path/socket/network ambient authority checks fail closed in the v1 sandbox proof.",
+      "Duplicate execution conflicts are rejected."
+    ],
+    "does_not_prove": [
+      "Herdr-hosted execution parity for issue #315.",
+      "Kernel escape resistance beyond the scripted Docker-local sandbox checks.",
+      "Provider/model quality.",
+      "Arbitrary package installation.",
+      "Tau GOAL.md completion, provider-live workflow acceptance, or human acceptance."
+    ]
+  },
+  "commands": [
+    {
+      "command": "uv run --extra python-workspace pytest --tau-suite=all tests/test_sandboxed_python_workspace.py tests/test_python_kernel_backend.py tests/test_kernel_host_bridge.py -q",
+      "result": "34 passed in 16.33s"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output local/agentic-evals/python-workspace-sandbox-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
+    },
+    {
+      "command": "uv run pytest -q",
+      "result": "253 passed, 29 skipped, 3436 deselected in 25.66s"
+    }
+  ],
+  "live_proof_readback": {
+    "status": "PASS",
+    "live": true,
+    "mocked": false,
+    "checks": {
+      "backend_neutral_receipts": true,
+      "compaction_handle_valid_without_hidden_state": true,
+      "duplicate_execution_id_guarded": true,
+      "export_requires_artifact_admission": true,
+      "ordinary_tau_no_startup_cost": true,
+      "pass_stdout_cannot_settle": true,
+      "sandbox_denials_recorded": true,
+      "snapshot_restore_reports_non_restorable": true,
+      "stale_snapshot_rejection": true,
+      "three_turn_persistence": true,
+      "workspace_ready": true
+    }
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 2,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 4,
+    "source": "evals/python_workspace_sandbox_agentic_eval.json"
+  },
+  "feature_coverage_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 7,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 14,
+    "source": "evals/tau_feature_coverage_agentic_eval.json"
+  },
+  "status": "PASS"
+}

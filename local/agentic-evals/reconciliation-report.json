@@ -1,7 +1,7 @@
 {
-  "claim_count": 16,
-  "coverage_records_sha256": "sha256:6caa9ca66d0594696d635bf7b507de0bbd6d25275468122f80c7d063d02d1ae2",
-  "covered_claim_count": 16,
+  "claim_count": 17,
+  "coverage_records_sha256": "sha256:f94b1697f24f599c5f31fa03068ba36233cc6e6e1e8fd48a4b0caf04ce260d64",
+  "covered_claim_count": 17,
   "features": [
     {
       "coverage": [
@@ -56,6 +56,42 @@
       "name": "kernel_host_bridge",
       "source_line": null,
       "source_path": "src/tau_coding/runtime_backends/kernel_host_bridge.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+          "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:a067cfb0df5ee9e37c29e243c0e6e5ef30513b43a790a69c2a8877755443791e"
+      },
+      "name": "python_workspace",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/python_workspace.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+          "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace_worker.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/runtime_backends/python_workspace_worker.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:a7c8f6af99ba2d2f27b6f987e8ade1d65184aabdd1efd266d06c80ed70db7577"
+      },
+      "name": "python_workspace_worker",
+      "source_line": null,
+      "source_path": "src/tau_coding/runtime_backends/python_workspace_worker.py"
     },
     {
       "coverage": [
@@ -5045,10 +5081,10 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T18:46:01Z",
-  "inventory_feature_count": 259,
+  "generated_at": "2026-08-30T18:53:22Z",
+  "inventory_feature_count": 261,
   "live": true,
-  "manifest_count": 16,
+  "manifest_count": 17,
   "manifests": [
     {
       "case_count": 2,
@@ -5112,6 +5148,27 @@
       "has_real_world_case": true,
       "path": "evals/python_workspace_kernel_agentic_eval.json",
       "skill": "tau-python-workspace-kernel"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.python_workspace_sandbox.lifecycle_and_admission"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau can run an optional Docker-sandboxed persistent Python workspace with snapshot restore, admission gating, stale-snapshot rejection, duplicate execution protection, and no ambient host/network authority.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.python_workspace_sandbox.lifecycle_and_admission"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/python_workspace_sandbox_agentic_eval.json",
+      "skill": "tau-python-workspace-sandbox"
     },
     {
       "case_count": 5,
@@ -5413,6 +5470,9 @@
     "evals/python_workspace_kernel_agentic_eval.json": {
       "path": "local/agentic-evals/python-workspace-kernel-agentic-evals-report.json"
     },
+    "evals/python_workspace_sandbox_agentic_eval.json": {
+      "path": "local/agentic-evals/python-workspace-sandbox-agentic-evals-report.json"
+    },
     "evals/tau_agentic_eval_evidence_index_agentic_eval.json": {
       "path": "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json"
     },
@@ -5458,6 +5518,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:8c45331872ea09c9745398a8c44151a3d4ca91dd52a5df0b2f1cb4c31b70d252",
+  "source_inventory_sha256": "sha256:dd8cd36ddd0fdcf6e27c8cc4e959028b321f422591b1a6ec8da91526d61764f8",
   "status": "PASS"
 }
