@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-08-29T17:15:58.424193+00:00",
+  "generated_at": "2026-08-30T13:44:19.214545+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "5510e1e1d7fe757c373965c344ea3fd3df88b4a3"
+    "commit": "c80980c4100132ad0dea3224aa922fcdfc85f26a"
   },
   "github": {
     "branch_protection": {
@@ -260,8 +260,8 @@
     "provider_live": false
   },
   "proof_index": {
-    "count": 29,
-    "digest": "sha256:c50d57b02e7bbd72678a8dfeca2bccc0b45ffc17d8bc400bcac1c8877ad31c54",
+    "count": 30,
+    "digest": "sha256:c906c3d7e2fa11c2ee8f546e48dcd73cc081424d74a9b36b987ae7ba5df56bf2",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -360,6 +360,10 @@
         "sha256": "sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd"
       },
       {
+        "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
+        "sha256": "sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639"
+      },
+      {
         "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
         "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575"
       },
@@ -382,12 +386,12 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:9b2ed9bf98c6461f7222c3cf66f76ac447d2319eb771b62bf9eeff6ee1905202",
+  "semantic_content_digest": "sha256:adccbca97536412fc95f07b512e00fcdbabec36d026205c5090eb060ebd6d1ed",
   "source_digests": {
     "GOAL.md": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
     "github_snapshot": "sha256:34db1d1728f9bea9a879b648568effb6a0b4121c1d96c1eb2ea677b1ef0191d0",
-    "proof_index": "sha256:c50d57b02e7bbd72678a8dfeca2bccc0b45ffc17d8bc400bcac1c8877ad31c54",
+    "proof_index": "sha256:c906c3d7e2fa11c2ee8f546e48dcd73cc081424d74a9b36b987ae7ba5df56bf2",
     "pyproject.toml": "sha256:0129dd918978c3760bd29ca736f5f6e01e5402d2dfa840a7df5538fd11fe854f"
   },
   "workflows": {
