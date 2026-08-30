@@ -6,6 +6,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from tau_coding.acceptance_attestation import DEFAULT_ACCEPTANCE_ATTESTATION, sha256_file
 from tau_coding.project_status import (
     PROJECT_STATUS_SCHEMA,
     build_project_status,
@@ -45,6 +46,10 @@ def _init_repo(root: Path) -> None:
     accept.mkdir(parents=True)
     (accept / "rungs-evidence-receipt.json").write_text(
         json.dumps({"schema": "x", "signature": None}), encoding="utf-8"
+    )
+    (accept / "provider-live-receipt.json").write_text(
+        json.dumps({"schema": "tau.workflow_provider_live_acceptance_receipt.v1", "provider_live": True}),
+        encoding="utf-8",
     )
     ticket = root / "docs" / "proofs" / "tickets" / "issue-1-demo"
     ticket.mkdir(parents=True)
@@ -127,6 +132,42 @@ def test_render_binds_semantic_digest(tmp_path: Path) -> None:
     assert status["semantic_content_digest"] in rendered.markdown
     assert "BEGIN GENERATED CURRENT STATE" in rendered.markdown
     assert PROJECT_STATUS_SCHEMA in rendered.markdown
+
+
+def test_project_status_distinguishes_verified_and_invalid_human_acceptance(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    head = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"],
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    attestation = {
+        "schema": "tau.human_acceptance_attestation.v1",
+        "signer": {"id": "graham", "authority_class": "human_operator"},
+        "decision": "ACCEPTED",
+        "attested_at": "2026-07-28T00:00:00Z",
+        "source_commit": head,
+        "baseline": {
+            "path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+            "sha256": sha256_file(tmp_path / "docs" / "proofs" / "acceptance" / "rungs-evidence-receipt.json"),
+        },
+        "proof_receipt": {
+            "path": "docs/proofs/acceptance/provider-live-receipt.json",
+            "sha256": sha256_file(tmp_path / "docs" / "proofs" / "acceptance" / "provider-live-receipt.json"),
+        },
+    }
+    _write_json(tmp_path / DEFAULT_ACCEPTANCE_ATTESTATION, attestation)
+
+    accepted = build_project_status(tmp_path, generated_at=_AT)
+    assert accepted["human_acceptance"]["state"] == "VERIFIED_ACCEPTANCE"
+    assert accepted["human_acceptance"]["verification"]["ok"] is True
+
+    attestation["baseline"]["sha256"] = "sha256:" + "0" * 64  # type: ignore[index]
+    _write_json(tmp_path / DEFAULT_ACCEPTANCE_ATTESTATION, attestation)
+    invalid = build_project_status(tmp_path, generated_at=_AT)
+    assert invalid["human_acceptance"]["state"] == "INVALID_HUMAN_SIGNATURE"
+    assert "baseline_receipt_digest_mismatch" in invalid["human_acceptance"]["verification"]["failure_codes"]
 
 
 def test_capabilities_and_workflows_reflect_present_sources(tmp_path: Path) -> None:

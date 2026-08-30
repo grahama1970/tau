@@ -1,0 +1,136 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 305,
+  "title": "Bind human acceptance attestation to the exact tested baseline digest",
+  "proof_boundary": {
+    "proves": [
+      "Verifier accepts a fixture human attestation only when signer authority, ACCEPTED decision, timestamp, source commit, baseline digest, and provider-live proof digest match.",
+      "Verifier rejects missing, invalid, future/expired, source-commit-mismatched, baseline-digest-mismatched, proof-digest-mismatched, and non-human-authority attestations with stable codes.",
+      "project-status distinguishes PENDING_HUMAN_SIGNATURE, INVALID_HUMAN_SIGNATURE, and VERIFIED_ACCEPTANCE.",
+      "Current real Tau checkout still reports PENDING_HUMAN_SIGNATURE because no human acceptance attestation file exists."
+    ],
+    "does_not_prove": [
+      "A real human has accepted Tau.",
+      "GOAL.md completion.",
+      "Provider semantic quality.",
+      "Production readiness."
+    ]
+  },
+  "commands": [
+    {
+      "command": "uv run pytest --tau-suite=all tests/test_acceptance_attestation.py tests/test_project_status.py -q",
+      "result": "17 passed in 0.96s"
+    },
+    {
+      "command": "uv run pytest -q",
+      "result": "253 passed, 29 skipped, 3451 deselected in 25.69s"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_acceptance_attestation_agentic_eval.json --output local/agentic-evals/tau-acceptance-attestation-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
+    },
+    {
+      "command": "uv run tau project-status verify-attestation --repo .",
+      "result": "status=PENDING_HUMAN_SIGNATURE; failure_codes=['human_acceptance_attestation_missing']; exit_code=1 because no real human signature exists"
+    }
+  ],
+  "fixture_acceptance_readback": {
+    "attestation_path": "docs/proofs/acceptance/human-acceptance-attestation.json",
+    "attestation_present": true,
+    "attestation_sha256": "sha256:07592c893b49898d16e9938dee442eb5f9d104c7f32aaa3ed3e4debcaed2b110",
+    "baseline_receipt_path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+    "baseline_receipt_sha256": "sha256:b0194c55f582d24fad7be82357e985285ce5c5a8875829cfa9e345914b868c87",
+    "checked_at": "2026-08-30T12:00:00+00:00",
+    "failure_codes": [],
+    "ok": true,
+    "proof_receipt_path": "docs/proofs/tickets/issue-304/provider-live-acceptance-receipt.json",
+    "proof_receipt_sha256": "sha256:2643bb2ecc68582f556754e167ccd65d822c1988fef595ec65a3fa7f5d2b01b7",
+    "schema": "tau.human_acceptance_attestation_verification.v1",
+    "source_commit": "6317e63a02ca803db47f0997215318f7c720154f",
+    "state": "VERIFIED_ACCEPTANCE",
+    "status": "ACCEPTED"
+  },
+  "current_real_acceptance_readback": {
+    "action": "verify-attestation",
+    "attestation_path": "docs/proofs/acceptance/human-acceptance-attestation.json",
+    "attestation_present": false,
+    "attestation_sha256": null,
+    "baseline_receipt_path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+    "baseline_receipt_sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+    "checked_at": "2026-08-30T19:20:55.916744+00:00",
+    "failure_codes": [
+      "human_acceptance_attestation_missing"
+    ],
+    "ok": false,
+    "schema": "tau.human_acceptance_attestation_verification.v1",
+    "source_commit": "59ff327ac4cc17953c52ce83a71d20f093ae8032",
+    "state": "PENDING_HUMAN_SIGNATURE",
+    "status": "PENDING_HUMAN_SIGNATURE"
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 2,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 4,
+    "capability_readiness": {
+      "aggregate_readiness": "READY",
+      "critical_claim_count": 1,
+      "critical_claims_proven": 1,
+      "claims": [
+        {
+          "id": "tau.acceptance_attestation.bound_baseline_verifier",
+          "description": "Tau verifies human acceptance attestations against exact baseline/source/proof digests and reports verified vs missing vs invalid acceptance in project status.",
+          "criticality": "critical",
+          "required_evidence": [
+            "fault_injected_deterministic",
+            "live_e2e"
+          ],
+          "verdict": "PROVEN",
+          "per_class": {
+            "fault_injected_deterministic": {
+              "status": "PROVEN",
+              "cases": [
+                "acceptance-attestation-verifier-rejects-mutated-bindings"
+              ]
+            },
+            "live_e2e": {
+              "status": "PROVEN",
+              "cases": [
+                "acceptance-attestation-verifier-accepts-exact-git-baseline"
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "blocked_evidence": [],
+          "exempt_evidence": [],
+          "exemptions": [],
+          "unqualified_live_cases": [],
+          "supporting_cases": [
+            "acceptance-attestation-verifier-accepts-exact-git-baseline",
+            "acceptance-attestation-verifier-rejects-mutated-bindings"
+          ]
+        }
+      ]
+    }
+  },
+  "feature_coverage_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 7,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 14,
+    "source": "evals/tau_feature_coverage_agentic_eval.json"
+  },
+  "status": "PASS"
+}

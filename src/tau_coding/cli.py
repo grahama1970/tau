@@ -16017,11 +16017,12 @@ def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
 
 
 def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
-    """Dispatch `tau project-status build|render|verify` (#224).
+    """Dispatch `tau project-status build|render|verify|verify-attestation` (#224/#305).
 
     build   --out <status.json> [--github-snapshot <file>] [--repo <dir>]
     render  <status.json> --out <status.md>
     verify  [--status <status.json>] [--github-snapshot <file>] [--repo <dir>]
+    verify-attestation [--attestation <file>] [--baseline-receipt <file>] [--proof-receipt <file>] [--repo <dir>]
     """
 
     from datetime import UTC, datetime
@@ -16093,6 +16094,19 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
             "errors": errors,
             "checked": status_path,
         }
+
+    if action == "verify-attestation":
+        from tau_coding.acceptance_attestation import verify_acceptance_attestation
+
+        result = verify_acceptance_attestation(
+            repo,
+            attestation_path=Path(_opt("--attestation")) if _opt("--attestation") else None,
+            baseline_receipt_path=(
+                Path(_opt("--baseline-receipt")) if _opt("--baseline-receipt") else None
+            ),
+            proof_receipt_path=Path(_opt("--proof-receipt")) if _opt("--proof-receipt") else None,
+        )
+        return {"action": "verify-attestation", **result}
 
     raise RuntimeError(f"unknown project-status subcommand: {action}")
 

@@ -3,6 +3,11 @@
   "owner": "tau-maintainers",
   "records": [
     {
+      "claim_id": "tau.acceptance_attestation.bound_baseline_verifier",
+      "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.codebase_ingest.scan_projection_receipts",
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
       "status": "CLAIMED"

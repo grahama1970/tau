@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau human acceptance attestation verifier and project-status integration",
+  "claims": {
+    "proves": "Tau validates a human acceptance attestation against the exact baseline receipt digest, source commit, proof receipt digest, signer authority, decision, and timestamp policy; project-status distinguishes missing, invalid, and verified acceptance states.",
+    "does_not_prove": "A real human has accepted the Tau goal, provider semantic quality, production readiness, or GOAL.md completion."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.acceptance_attestation.bound_baseline_verifier",
+      "description": "Tau verifies human acceptance attestations against exact baseline/source/proof digests and reports verified vs missing vs invalid acceptance in project status.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "acceptance-attestation-verifier-accepts-exact-git-baseline",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.acceptance_attestation.bound_baseline_verifier"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && TAU_ACCEPTANCE_ATTESTATION_PROOF=local/agentic-evals/tau-acceptance-attestation-proof.json uv run pytest --tau-suite=all tests/test_acceptance_attestation.py::test_valid_attestation_accepts_exact_baseline_commit_and_receipt tests/test_project_status.py::test_project_status_distinguishes_verified_and_invalid_human_acceptance -q -s"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "2 passed"
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-acceptance-attestation-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-acceptance-attestation-proof.json",
+            "json_pointer": "/status",
+            "equals": "ACCEPTED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-acceptance-attestation-proof.json",
+            "json_pointer": "/state",
+            "equals": "VERIFIED_ACCEPTANCE"
+          }
+        ]
+      }
+    },
+    {
+      "name": "acceptance-attestation-verifier-rejects-mutated-bindings",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.acceptance_attestation.bound_baseline_verifier"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_acceptance_attestation.py::test_missing_attestation_is_pending_not_accepted tests/test_acceptance_attestation.py::test_mutated_baseline_digest_is_rejected tests/test_acceptance_attestation.py::test_mutated_source_commit_signer_timestamp_and_proof_digest_are_rejected tests/test_acceptance_attestation.py::test_expired_or_non_accepted_attestation_is_rejected -q"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "4 passed"
+        ]
+      }
+    }
+  ]
+}

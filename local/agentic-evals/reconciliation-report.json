@@ -1,8 +1,26 @@
 {
-  "claim_count": 19,
-  "coverage_records_sha256": "sha256:c619265d52204252d1bd5b396cec385952147e77a6f0d0c869eabcb522c3ded8",
-  "covered_claim_count": 19,
+  "claim_count": 20,
+  "coverage_records_sha256": "sha256:8e788f1a77dd9b2f2bde1bee7c692609fd6bd4b61e97393a83934b79afeb8b29",
+  "covered_claim_count": 20,
   "features": [
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.acceptance_attestation.bound_baseline_verifier",
+          "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:ec675683c9de22a306f0f85ba845a98b3432e62750cae8213b32148e4d15aa11"
+      },
+      "name": "acceptance_attestation",
+      "source_line": null,
+      "source_path": "src/tau_coding/acceptance_attestation.py"
+    },
     {
       "coverage": [
         {
@@ -5153,10 +5171,10 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T19:12:21Z",
-  "inventory_feature_count": 265,
+  "generated_at": "2026-08-30T19:18:59Z",
+  "inventory_feature_count": 266,
   "live": true,
-  "manifest_count": 19,
+  "manifest_count": 20,
   "manifests": [
     {
       "case_count": 2,
@@ -5241,6 +5259,27 @@
       "has_real_world_case": true,
       "path": "evals/python_workspace_sandbox_agentic_eval.json",
       "skill": "tau-python-workspace-sandbox"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.acceptance_attestation.bound_baseline_verifier"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau verifies human acceptance attestations against exact baseline/source/proof digests and reports verified vs missing vs invalid acceptance in project status.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.acceptance_attestation.bound_baseline_verifier"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_acceptance_attestation_agentic_eval.json",
+      "skill": "tau"
     },
     {
       "case_count": 5,
@@ -5587,6 +5626,9 @@
     "evals/python_workspace_sandbox_agentic_eval.json": {
       "path": "local/agentic-evals/python-workspace-sandbox-agentic-evals-report.json"
     },
+    "evals/tau_acceptance_attestation_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-acceptance-attestation-agentic-evals-report.json"
+    },
     "evals/tau_agentic_eval_evidence_index_agentic_eval.json": {
       "path": "local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json"
     },
@@ -5638,6 +5680,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:4bb5df0a784f8ecd69d667e20c6c18df1692920110b49d431c8706b4aa5ff714",
+  "source_inventory_sha256": "sha256:b02fbd605cbb293ce687f0ba4527935c1cf80876dc071891f083b19b4b935f1b",
   "status": "PASS"
 }

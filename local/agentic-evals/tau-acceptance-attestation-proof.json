@@ -1,0 +1,16 @@
+{
+  "attestation_path": "docs/proofs/acceptance/human-acceptance-attestation.json",
+  "attestation_present": true,
+  "attestation_sha256": "sha256:07592c893b49898d16e9938dee442eb5f9d104c7f32aaa3ed3e4debcaed2b110",
+  "baseline_receipt_path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+  "baseline_receipt_sha256": "sha256:b0194c55f582d24fad7be82357e985285ce5c5a8875829cfa9e345914b868c87",
+  "checked_at": "2026-08-30T12:00:00+00:00",
+  "failure_codes": [],
+  "ok": true,
+  "proof_receipt_path": "docs/proofs/tickets/issue-304/provider-live-acceptance-receipt.json",
+  "proof_receipt_sha256": "sha256:2643bb2ecc68582f556754e167ccd65d822c1988fef595ec65a3fa7f5d2b01b7",
+  "schema": "tau.human_acceptance_attestation_verification.v1",
+  "source_commit": "6317e63a02ca803db47f0997215318f7c720154f",
+  "state": "VERIFIED_ACCEPTANCE",
+  "status": "ACCEPTED"
+}

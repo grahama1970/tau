@@ -1,0 +1,17 @@
+{
+  "action": "verify-attestation",
+  "attestation_path": "docs/proofs/acceptance/human-acceptance-attestation.json",
+  "attestation_present": false,
+  "attestation_sha256": null,
+  "baseline_receipt_path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+  "baseline_receipt_sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+  "checked_at": "2026-08-30T19:20:55.916744+00:00",
+  "failure_codes": [
+    "human_acceptance_attestation_missing"
+  ],
+  "ok": false,
+  "schema": "tau.human_acceptance_attestation_verification.v1",
+  "source_commit": "59ff327ac4cc17953c52ce83a71d20f093ae8032",
+  "state": "PENDING_HUMAN_SIGNATURE",
+  "status": "PENDING_HUMAN_SIGNATURE"
+}

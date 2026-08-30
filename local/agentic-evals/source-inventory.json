@@ -1,6 +1,6 @@
 {
   "counts_by_kind": {
-    "capability-module": 7,
+    "capability-module": 8,
     "cli-command": 201,
     "evaluator-script": 12,
     "ledger-path": 10,
@@ -8,8 +8,18 @@
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 265,
+  "feature_count": 266,
   "features": [
+    {
+      "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:ec675683c9de22a306f0f85ba845a98b3432e62750cae8213b32148e4d15aa11"
+      },
+      "name": "acceptance_attestation",
+      "source_line": null,
+      "source_path": "src/tau_coding/acceptance_attestation.py"
+    },
     {
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
       "kind": "capability-module",
@@ -2637,10 +2647,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T19:12:21Z",
+  "generated_at": "2026-08-30T19:18:59Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:de8c7f21ecdac5d124da1d3e377c7d796166a21c846f85d336614bd393eb01da"
+  "source_sha256": "sha256:5d9251d764c1054157f3b800683e89af7c12e8ad4a8028745a45338474ea9f24"
 }

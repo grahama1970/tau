@@ -24,6 +24,7 @@ REPORT_GLOBS = (
 )
 VALID_NON_CLAIM_STATUSES = {"BLOCKED", "OUT_OF_SCOPE"}
 CAPABILITY_MODULE_PATHS = (
+    "src/tau_coding/acceptance_attestation.py",
     "src/tau_coding/codebase_ingest.py",
     "src/tau_coding/dag_runtime/run_store.py",
     "src/tau_coding/dag_runtime/scheduler.py",

@@ -35,6 +35,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.acceptance_attestation import (
+    DEFAULT_ACCEPTANCE_ATTESTATION,
+    DEFAULT_ACCEPTANCE_BASELINE,
+    verify_acceptance_attestation,
+)
 from tau_coding.run_ledger import (
     DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
     verify_agentic_eval_ledger_evidence_index,
@@ -210,21 +215,46 @@ def _capabilities(repo: Path) -> dict[str, Any]:
 
 
 def _acceptance(repo: Path) -> dict[str, Any]:
-    receipt = repo / "docs" / "proofs" / "acceptance" / "rungs-evidence-receipt.json"
+    receipt = repo / DEFAULT_ACCEPTANCE_BASELINE
+    attestation = repo / DEFAULT_ACCEPTANCE_ATTESTATION
     if not receipt.is_file():
-        return {"baseline_present": False, "signature_present": False,
-                "state": UNKNOWN, "source": receipt.name, "sha256": None}
+        return {
+            "baseline_present": False,
+            "signature_present": attestation.is_file(),
+            "attestation_present": attestation.is_file(),
+            "state": UNKNOWN,
+            "source": DEFAULT_ACCEPTANCE_BASELINE.as_posix(),
+            "sha256": None,
+            "attestation_source": DEFAULT_ACCEPTANCE_ATTESTATION.as_posix(),
+            "attestation_sha256": _digest_file(attestation),
+            "verification": {
+                "status": "BLOCKED",
+                "ok": False,
+                "failure_codes": ["baseline_receipt_missing"],
+            },
+        }
     raw = receipt.read_bytes()
-    data = json.loads(raw.decode("utf-8"))
-    signature_present = bool(data.get("signature") or data.get("signer"))
+    verification = dict(verify_acceptance_attestation(repo))
+    verification.pop("checked_at", None)
+    signature_present = bool(verification.get("attestation_present"))
+    if verification.get("ok"):
+        state = "VERIFIED_ACCEPTANCE"
+    elif signature_present:
+        state = "INVALID_HUMAN_SIGNATURE"
+    else:
+        state = "PENDING_HUMAN_SIGNATURE"
     return {
         "baseline_present": True,
         "signature_present": signature_present,
+        "attestation_present": signature_present,
         # Human acceptance is a distinct field: a clean-wheel baseline existing
-        # is NOT a signed human acceptance.
-        "state": "SIGNED" if signature_present else "PENDING_HUMAN_SIGNATURE",
-        "source": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+        # is NOT a verified signed human acceptance.
+        "state": state,
+        "source": DEFAULT_ACCEPTANCE_BASELINE.as_posix(),
         "sha256": _sha256_bytes(raw),
+        "attestation_source": DEFAULT_ACCEPTANCE_ATTESTATION.as_posix(),
+        "attestation_sha256": _digest_file(attestation),
+        "verification": verification,
     }
 
 
@@ -283,6 +313,7 @@ def build_project_status(
         "proof_index": proof_index["digest"],
         "agentic_eval_evidence_index": agentic_eval_evidence_index["sha256"],
         "acceptance_receipt": acceptance["sha256"],
+        "human_acceptance_attestation": acceptance.get("attestation_sha256"),
     }
     if github_snapshot is not None:
         # Bind the GitHub snapshot so editing docs/status/github-snapshot.json
@@ -313,11 +344,10 @@ def build_project_status(
                 "immutable-goal status from GOAL.md",
                 "checked-in closure-evidence proof index digest",
                 "checked-in retained agentic-eval evidence index digest and verifier status",
-                "clean-wheel acceptance baseline presence and signature presence",
+                "clean-wheel acceptance baseline presence and verified signature binding",
             ] + (["GitHub branch-protection, required checks, and open/closed critical issues"]
                  if github_snapshot is not None else []),
             "not_checked": [
-                "human acceptance signature validity (distinct from presence)",
                 "provider semantic correctness",
                 "runtime settlement authority (this artifact has none)",
             ] + ([] if github_snapshot is not None else
