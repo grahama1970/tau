@@ -1,0 +1,43 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 335,
+  "title": "Prune stale Tau project-knowledge references found by project-state",
+  "proof_boundary": {
+    "proves": [
+      "PROJECT_KNOWLEDGE.md project-state drift findings fell and PROJECT_KNOWLEDGE.md-specific drift findings fell to zero",
+      "PROJECT_KNOWLEDGE.md was synced to Memory through project-knowledge sync"
+    ],
+    "does_not_prove": [
+      "Tau GOAL.md completion",
+      "provider-live proof",
+      "human acceptance",
+      "closure of other open Tau tickets"
+    ]
+  },
+  "commands": [
+    {
+      "command": "PROJECT_STATE_ROOT=/home/graham/workspace/experiments/tau PROJECT_STATE_NAME=tau skills/project-state/run.sh report --json --output /tmp/tau-project-state-current-for-335.json",
+      "result": {
+        "drift_count": 15,
+        "project_knowledge_drift_count": 11
+      }
+    },
+    {
+      "command": "PROJECT_STATE_ROOT=/home/graham/workspace/experiments/tau PROJECT_STATE_NAME=tau skills/project-state/run.sh report --json --output /tmp/tau-project-state-after-doc-prune-v4.json",
+      "result": {
+        "drift_count": 4,
+        "project_knowledge_drift_count": 0
+      }
+    },
+    {
+      "command": "/home/graham/.pi/agent/skills/project-knowledge/run.sh sync",
+      "result": "Synced PROJECT_KNOWLEDGE.md to /memory\n  Project: tau\n  Chunks: 899"
+    }
+  ],
+  "artifacts": [
+    "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/project-knowledge-sync.out",
+    "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/project-state-after.json",
+    "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/project-state-before.json"
+  ],
+  "status": "PASS"
+}
