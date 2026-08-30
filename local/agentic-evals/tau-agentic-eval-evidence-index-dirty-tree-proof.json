@@ -2,9 +2,10 @@
   "adversarial_detection": true,
   "expected_failure_code": "dirty_tree_mismatch",
   "failure_codes": [
-    "dirty_tree_mismatch"
+    "dirty_tree_mismatch",
+    "report_digest_mismatch"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/index.json",
   "live": true,
   "mocked": false,
   "mode": "dirty-tree",
@@ -23,26 +24,36 @@
     "agentic_evals_runner_version": "agentic_evals.report.v2",
     "artifact_count": 21,
     "failure_codes": [
-      "dirty_tree_mismatch"
+      "dirty_tree_mismatch",
+      "report_digest_mismatch"
     ],
-    "failure_count": 1,
+    "failure_count": 2,
     "failures": [
       {
         "actual": "dirty",
         "code": "dirty_tree_mismatch",
+        "disallowed_paths": [
+          "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
+        ],
         "expected": "clean"
+      },
+      {
+        "actual": "sha256:cbd8592a2904694e8201aa16f3960eb169f3781a96481f102e43d8ccfa3b1753",
+        "code": "report_digest_mismatch",
+        "expected": "sha256:de4674cd57d90ad4ca699756f3343bf28e360332d84870c971f5613d6eda2549",
+        "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/repo",
-      "sha": "217402edffb8958ee87bb2cf71d288a9b0f19fff",
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/repo",
+      "sha": "6b548e4fe3209c09997c4a2aa9760d5ad65ec612",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:c4766389bd72e282f19d2100f0aad933df9188a39a63e9feeb4d351d709f65ef",
+    "index_sha256": "sha256:f6d4af6da94204d01a4f5cee24c441968e99c691e024b31b5adf96cceb70a583",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -60,8 +71,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-q07ig56b/repo",
-      "sha": "217402edffb8958ee87bb2cf71d288a9b0f19fff"
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/repo",
+      "sha": "6b548e4fe3209c09997c4a2aa9760d5ad65ec612"
     },
     "report_count": 15,
     "require_clean": true,

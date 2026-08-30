@@ -4,7 +4,7 @@
   "failure_codes": [
     "report_digest_mismatch"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-mutated-report-r_hlkscf/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-mutated-report-y9_pp_rk/index.json",
   "live": true,
   "mocked": false,
   "mode": "mutated-report",
@@ -34,16 +34,16 @@
         "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-mutated-report-r_hlkscf/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-mutated-report-y9_pp_rk/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-mutated-report-r_hlkscf/repo",
-      "sha": "f8ad95ece100c625e51cbf3798808188ca785d82",
+      "root": "/tmp/tau-agentic-eval-evidence-mutated-report-y9_pp_rk/repo",
+      "sha": "c9355709d4e7f0ea1299aa0baa438e8a587712f3",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:e920e581914da3c866fe8a00d97a0298d4124c9c55b3a93566d4ca27f7fedaca",
+    "index_sha256": "sha256:944d2d63f00658311c94e8fbcb6ffb8099db412882a39e9272c0bd00d45ce543",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -61,8 +61,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-mutated-report-r_hlkscf/repo",
-      "sha": "f8ad95ece100c625e51cbf3798808188ca785d82"
+      "root": "/tmp/tau-agentic-eval-evidence-mutated-report-y9_pp_rk/repo",
+      "sha": "c9355709d4e7f0ea1299aa0baa438e8a587712f3"
     },
     "report_count": 15,
     "require_clean": false,

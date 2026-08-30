@@ -1,7 +1,7 @@
 {
   "expected_failure_code": null,
   "failure_codes": [],
-  "index_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-agentic-eval-evidence-index.json",
+  "index_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-agentic-eval-evidence-index.json",
   "live": true,
   "mocked": false,
   "mode": "positive",
@@ -22,16 +22,16 @@
     "failure_codes": [],
     "failure_count": 0,
     "failures": [],
-    "index_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329/local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "index_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-agentic-eval-evidence-index.json",
     "index_repo": {
       "dirty_tree": true,
       "dirty_tree_declaration": "dirty",
-      "ref": "watchdog/issue-329",
-      "root": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329",
-      "sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb",
-      "status_porcelain": "M docs/evals/agentic-evals-feature-coverage.md\n M evals/tau_feature_coverage_agentic_eval.json\n M evals/tau_source_feature_coverage_records.json\n M local/agentic-evals/reconciliation-report.json\n M local/agentic-evals/source-inventory.json\n M local/agentic-evals/tau-feature-coverage-agentic-evals-report.json\n M local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json\n M local/agentic-evals/tau-feature-coverage-missing-claim-proof.json\n M local/agentic-evals/tau-feature-coverage-missing-report-proof.json\n M local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json\n M local/agentic-evals/tau-feature-coverage-proof.json\n M local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json\n M local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json\n M src/tau_coding/cli.py\n M src/tau_coding/project_status.py\n M src/tau_coding/run_ledger.py\n M tests/test_project_status.py\n M tests/test_run_ledger.py\n?? evals/tau_agentic_eval_evidence_index_agentic_eval.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\n?? local/agentic-evals/tau-agentic-eval-evidence-index.json\n?? scripts/agentic-eval-tau-agentic-eval-evidence-index.py"
+      "ref": "main",
+      "root": "/home/graham/workspace/experiments/tau",
+      "sha": "bf9f470818978af15f4549a64cd06353455b0974",
+      "status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json"
     },
-    "index_sha256": "sha256:5ae72db3a43fd7f7a894b3877a62411f4c553d9d848b9e4c555512f77953efa5",
+    "index_sha256": "sha256:935541c1a0b051e0f047a161b74b1bf21dcfa9e336a003a263a41d0a7a5b899c",
     "live": false,
     "mocked": false,
     "ok": true,
@@ -48,9 +48,9 @@
     "provider_live": false,
     "repo": {
       "dirty_tree": true,
-      "ref": "watchdog/issue-329",
-      "root": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-329",
-      "sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb"
+      "ref": "main",
+      "root": "/home/graham/workspace/experiments/tau",
+      "sha": "bf9f470818978af15f4549a64cd06353455b0974"
     },
     "report_count": 15,
     "require_clean": false,

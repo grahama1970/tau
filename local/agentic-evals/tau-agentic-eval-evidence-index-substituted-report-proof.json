@@ -5,7 +5,7 @@
     "report_digest_mismatch",
     "report_repo_sha_mismatch"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/index.json",
   "live": true,
   "mocked": false,
   "mode": "substituted-report",
@@ -43,16 +43,16 @@
         "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/repo",
-      "sha": "d4cd7f73ec9f9867c265e74a475a24850b745ef0",
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/repo",
+      "sha": "bbcaff549d1fa62689c36bbc2a142e28bd65171f",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:6a7ea7e9086460375232dbe58921d2ec243f43abeb8ef643b85c0490588435d7",
+    "index_sha256": "sha256:15c58b0f4fbd1d7823f77665acbec5306e1aadf7332abcaf0abe0d3dd2a7332f",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -70,8 +70,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-lqgtfk07/repo",
-      "sha": "d4cd7f73ec9f9867c265e74a475a24850b745ef0"
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/repo",
+      "sha": "bbcaff549d1fa62689c36bbc2a142e28bd65171f"
     },
     "report_count": 15,
     "require_clean": false,
