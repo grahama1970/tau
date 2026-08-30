@@ -10,6 +10,7 @@ from collections.abc import Callable, Mapping
 from concurrent.futures import FIRST_COMPLETED, CancelledError, Future, ThreadPoolExecutor, wait
 from contextlib import suppress
 from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event
 from typing import Any
@@ -234,6 +235,8 @@ def run_dag_plan(
     blocked_result: dict[str, Any] | None = None
     transition_receipt_paths: list[str] = []
     deadlines: dict[str, float] = {}
+    paused_by_operator = False
+    operator_cancel_requested = False
 
     if run_store is not None and lease is not None:
         uncertain = run_store.mark_dispatched_attempts_uncertain(lease)
@@ -266,6 +269,7 @@ def run_dag_plan(
             )
             run_store.release_lease(lease)
             return uncertain_result
+        run_store.reconcile_claimed_operator_actions(lease)
         try:
             replayed_event_count, replayed_block = _restore_durable_state(
                 plan=plan,
@@ -362,6 +366,53 @@ def run_dag_plan(
                 ):
                     lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
                     next_lease_renewal = time.monotonic() + lease_renewal_interval
+                if run_store is not None and lease is not None:
+                    lease, paused_by_operator, operator_cancel_requested = (
+                        _process_operator_actions(
+                            plan=plan,
+                            nodes=nodes,
+                            lease=lease,
+                            run_store=run_store,
+                            paused=paused_by_operator,
+                            futures=futures,
+                            future_attempts=future_attempts,
+                            cancel_events=cancel_events,
+                            node_states=node_states,
+                            resolved=resolved,
+                            scheduled=scheduled,
+                            completed=completed,
+                            results=results,
+                            result_order=result_order,
+                            attempt_counts=attempt_counts,
+                            event_sink=event_sink,
+                            fault_injector=fault_injector,
+                        )
+                    )
+                    if operator_cancel_requested:
+                        blocked_result = {
+                            "status": "CANCELLED",
+                            "verdict": "CANCELLED",
+                            "errors": ["DAG run cancelled by durable operator action"],
+                        }
+                        lease = _cancel_and_collect_futures(
+                            plan=plan,
+                            futures=futures,
+                            future_attempts=future_attempts,
+                            cancel_events=cancel_events,
+                            results=results,
+                            result_order=result_order,
+                            node_states=node_states,
+                            resolved=resolved,
+                            event_sink=event_sink,
+                            run_store=run_store,
+                            lease=lease,
+                            lease_ttl_seconds=lease_ttl_seconds,
+                            lease_renewal_interval=lease_renewal_interval,
+                        )
+                        break
+                    if paused_by_operator:
+                        time.sleep(0.05)
+                        continue
                 if cancel_requested is not None and cancel_requested():
                     blocked_result = {
                         "status": "CANCELLED",
@@ -795,6 +846,7 @@ def run_dag_plan(
                     wait_timeout = (
                         lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
                     )
+                    wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
                 if cancel_requested is not None:
                     wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
                 done, _ = wait(futures, timeout=wait_timeout, return_when=FIRST_COMPLETED)
@@ -1396,6 +1448,306 @@ def _finish_interrupted_run(
             run_store.mark_run_finished(lease, status=status, verdict=verdict)
     with suppress(Exception):
         run_store.release_lease(lease)
+
+
+def _process_operator_actions(
+    *,
+    plan: DagPlan,
+    nodes: Mapping[str, DagPlanNode],
+    lease: DagRunLease,
+    run_store: SqliteDagRunStore,
+    paused: bool,
+    futures: Mapping[Future[dict[str, Any]], str],
+    future_attempts: Mapping[Future[dict[str, Any]], DagAttemptIdentity],
+    cancel_events: Mapping[str, Event],
+    node_states: dict[str, str],
+    resolved: set[str],
+    scheduled: set[str],
+    completed: set[str],
+    results: dict[str, dict[str, Any]],
+    result_order: list[str],
+    attempt_counts: dict[str, int],
+    event_sink: EventSink | None,
+    fault_injector: Callable[[str, Mapping[str, Any]], None] | None,
+) -> tuple[DagRunLease, bool, bool]:
+    """Claim and apply durable operator actions at scheduler-owned boundaries."""
+
+    cancel_requested = False
+    while True:
+        action_request = run_store.claim_operator_action(
+            lease,
+            skip_actions=("pause",) if futures else (),
+        )
+        if action_request is None:
+            return lease, paused, cancel_requested
+        _inject_fault(fault_injector, "after_operator_action_claimed", action_request)
+        action = str(action_request["action"])
+        action_request_id = str(action_request["action_request_id"])
+        node_id = str(action_request["node_id"])
+        arguments = action_request.get("arguments")
+        if not isinstance(arguments, Mapping):
+            arguments = {}
+        expires_at = _parse_operator_action_expiry(action_request.get("expires_at"))
+        if expires_at is None or expires_at <= datetime.now(UTC):
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="REJECTED",
+                outcome="rejected",
+                code="operator_action_expired",
+                canonical_transition={"boundary": "scheduler_claim"},
+            )
+            continue
+        node = nodes.get(node_id)
+        if node is None:
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="REJECTED",
+                outcome="rejected",
+                code="operator_action_identity_mismatch",
+                canonical_transition={"boundary": "scheduler_claim"},
+            )
+            continue
+        running_node_ids = set(futures.values())
+        if action == "pause":
+            if running_node_ids:
+                run_store.complete_operator_action(
+                    lease,
+                    action_request_id=action_request_id,
+                    status="DEFERRED",
+                    outcome="deferred",
+                    code="operator_action_safe_point_pending",
+                    canonical_transition={
+                        "requested_safe_point": action_request["requested_safe_point"],
+                        "running_node_ids": sorted(running_node_ids),
+                    },
+                )
+                _emit(
+                    event_sink,
+                    {
+                        "event": "operator_action_deferred",
+                        "action": action,
+                        "action_request_id": action_request_id,
+                        "reason": "safe_point_pending",
+                    },
+                )
+                continue
+            paused = True
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="paused",
+                code="operator_action_pause_applied",
+                canonical_transition={"safe_point": "scheduler_idle_boundary"},
+            )
+            _emit(event_sink, {"event": "operator_paused", "action_request_id": action_request_id})
+            continue
+        if action == "resume":
+            paused = False
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="resumed",
+                code="operator_action_resume_applied",
+                canonical_transition={"safe_point": "scheduler_boundary"},
+            )
+            _emit(event_sink, {"event": "operator_resumed", "action_request_id": action_request_id})
+            continue
+        if action == "cancel":
+            for event in cancel_events.values():
+                event.set()
+            cancel_requested = True
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="cancel_requested",
+                code="operator_action_cancel_applied",
+                canonical_transition={
+                    "safe_point": "scheduler_boundary",
+                    "running_node_ids": sorted(running_node_ids),
+                    "future_attempt_ids": sorted(
+                        identity.attempt_id for identity in future_attempts.values()
+                    ),
+                },
+            )
+            _emit(
+                event_sink,
+                {"event": "operator_cancel_requested", "action_request_id": action_request_id},
+            )
+            continue
+        if action == "add_next_turn_instruction":
+            instruction = str(arguments.get("instruction") or "")
+            if node.adapter_kind == "tau_native_agent_loop":
+                outcome = "queued_for_next_turn"
+                code = "operator_action_instruction_queued"
+            else:
+                outcome = "fork_required"
+                code = "operator_action_opaque_worker_fork_required"
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome=outcome,
+                code=code,
+                canonical_transition={
+                    "node_id": node_id,
+                    "instruction_sha256": canonical_sha256({"instruction": instruction}),
+                    "pane_input_sent": False,
+                },
+            )
+            _emit(
+                event_sink,
+                {
+                    "event": "operator_next_turn_instruction",
+                    "action_request_id": action_request_id,
+                    "node_id": node_id,
+                    "outcome": outcome,
+                },
+            )
+            continue
+        if action == "retry_requested":
+            if node_id in resolved:
+                resolved.discard(node_id)
+                scheduled.discard(node_id)
+                completed.discard(node_id)
+                results.pop(node_id, None)
+                with suppress(ValueError):
+                    result_order.remove(node_id)
+                attempt_counts[node_id] = max(
+                    attempt_counts.get(node_id, 0),
+                    int(action_request["attempt"]),
+                )
+                node_states[node_id] = "pending"
+                status = "APPLIED"
+                outcome = "retry_requeued"
+                code = "operator_action_retry_requeued"
+            else:
+                status = "DEFERRED"
+                outcome = "deferred"
+                code = "operator_action_retry_waiting_for_terminal_attempt"
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status=status,
+                outcome=outcome,
+                code=code,
+                canonical_transition={
+                    "node_id": node_id,
+                    "next_attempt": attempt_counts.get(node_id, 0) + 1,
+                },
+            )
+            _emit(
+                event_sink,
+                {
+                    "event": "operator_retry_requested",
+                    "action_request_id": action_request_id,
+                    "node_id": node_id,
+                    "outcome": outcome,
+                },
+            )
+            continue
+        if action == "request_fork":
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="fork_required",
+                code="operator_action_fork_required",
+                canonical_transition={
+                    "node_id": node_id,
+                    "reason": str(arguments.get("reason") or "operator_requested_fork"),
+                    "pane_input_sent": False,
+                },
+            )
+            continue
+        if action == "request_independent_review":
+            proposal = {
+                "schema": "tau.review_node_proposal.v1",
+                "run_id": lease.run_id,
+                "plan_id": plan.plan_id,
+                "plan_sha256": plan.plan_sha256,
+                "goal_hash": plan.runtime_goal_hash,
+                "source_node_id": node_id,
+                "source_attempt": action_request["attempt"],
+                "review_node_id": (
+                    "review-"
+                    + canonical_sha256(
+                        {
+                            "run_id": lease.run_id,
+                            "node_id": node_id,
+                            "action_request_id": action_request_id,
+                        }
+                    ).removeprefix("sha256:")[:16]
+                ),
+                "expires_at": action_request["expires_at"],
+                "authorized_by": action_request["principal"],
+            }
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="review_node_proposed",
+                code="operator_action_review_node_proposed",
+                canonical_transition=proposal,
+            )
+            continue
+        if action == "request_human_approval":
+            boundary = {
+                "schema": "tau.human_approval_boundary.v1",
+                "run_id": lease.run_id,
+                "plan_id": plan.plan_id,
+                "plan_sha256": plan.plan_sha256,
+                "goal_hash": plan.runtime_goal_hash,
+                "node_id": node_id,
+                "attempt": action_request["attempt"],
+                "target": arguments.get("target"),
+                "approval_action": arguments.get("approval_action") or arguments.get("action"),
+                "lineage": {
+                    "action_request_id": action_request_id,
+                    "observed_journal_seq": action_request["observed_journal_seq"],
+                    "observed_journal_head_sha256": action_request[
+                        "observed_journal_head_sha256"
+                    ],
+                },
+                "expires_at": action_request["expires_at"],
+                "mutation_invalidates_prior_approval": True,
+            }
+            run_store.complete_operator_action(
+                lease,
+                action_request_id=action_request_id,
+                status="APPLIED",
+                outcome="human_approval_boundary_opened",
+                code="operator_action_approval_boundary_opened",
+                canonical_transition={
+                    **boundary,
+                    "boundary_sha256": canonical_sha256(boundary),
+                },
+            )
+            continue
+        run_store.complete_operator_action(
+            lease,
+            action_request_id=action_request_id,
+            status="REJECTED",
+            outcome="rejected",
+            code="operator_action_unknown",
+            canonical_transition={"action": action},
+        )
+
+
+def _parse_operator_action_expiry(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(UTC)
 
 
 def _inject_fault(

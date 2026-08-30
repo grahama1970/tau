@@ -32,6 +32,7 @@ OPERATOR_ACTIONS = (
     "cancel",
     "add_next_turn_instruction",
     "retry_requested",
+    "request_fork",
     "request_independent_review",
     "request_human_approval",
     "pause",

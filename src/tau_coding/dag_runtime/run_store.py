@@ -42,13 +42,31 @@ AGENT_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.agent_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
-STORE_SCHEMA_VERSION = 4
-STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, 3, STORE_SCHEMA_VERSION})
+STORE_SCHEMA_VERSION = 5
+STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, 3, 4, STORE_SCHEMA_VERSION})
 DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
 DAG_RUN_STALE_LEASE_CLEAR_SCHEMA = "tau.dag_run_stale_lease_clear.v1"
 WORKSPACE_READ_SET_SCHEMA = "tau.workspace_read_set.v1"
 WORKSPACE_CHANGE_SIGNAL_SCHEMA = "tau.workspace_change_signal.v1"
 STALE_READ_RECONCILIATION_SCHEMA = "tau.stale_read_reconciliation.v1"
+OPERATOR_ACTION_REQUEST_SCHEMA = "tau.operator_action_request.v1"
+OPERATOR_ACTION_RECEIPT_SCHEMA = "tau.operator_action_receipt.v1"
+OPERATOR_ACTIONS = frozenset(
+    {
+        "cancel",
+        "add_next_turn_instruction",
+        "retry_requested",
+        "request_fork",
+        "request_independent_review",
+        "request_human_approval",
+        "pause",
+        "resume",
+    }
+)
+AUTHORIZED_OPERATOR_AUTHORITY_CLASSES = frozenset({"human_operator", "project_watchdog"})
+OPERATOR_ACTION_TERMINAL_STATUSES = frozenset(
+    {"APPLIED", "DEFERRED", "REJECTED", "UNCERTAIN", "RECONCILED"}
+)
 
 
 class DagRunStoreError(RuntimeError):
@@ -309,6 +327,62 @@ CREATE TABLE IF NOT EXISTS stale_read_reconciliations (
     created_at TEXT NOT NULL,
     UNIQUE(run_id, attempt_id, signal_id, reconciliation_sha256)
 );
+
+CREATE TABLE IF NOT EXISTS operator_action_requests (
+    action_request_id TEXT PRIMARY KEY,
+    idempotency_key TEXT NOT NULL,
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    plan_id TEXT NOT NULL,
+    plan_sha256 TEXT NOT NULL,
+    node_id TEXT NOT NULL,
+    attempt_no INTEGER NOT NULL CHECK (attempt_no >= 1),
+    goal_hash TEXT NOT NULL,
+    observed_journal_seq INTEGER NOT NULL CHECK (observed_journal_seq >= 0),
+    observed_journal_head_sha256 TEXT NOT NULL,
+    action TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    principal TEXT NOT NULL,
+    authority_class TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    request_sha256 TEXT NOT NULL,
+    arguments_json TEXT NOT NULL,
+    client_correlation_json TEXT NOT NULL,
+    requested_safe_point TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (
+        status IN (
+            'RECEIVED', 'VALIDATED', 'CLAIMED', 'APPLIED',
+            'DEFERRED', 'REJECTED', 'UNCERTAIN', 'RECONCILED'
+        )
+    ),
+    outcome TEXT,
+    code TEXT,
+    claimed_by TEXT,
+    claimed_lease_epoch INTEGER,
+    claimed_at TEXT,
+    receipt_json TEXT,
+    receipt_sha256 TEXT,
+    receipt_event_seq INTEGER,
+    updated_at TEXT NOT NULL,
+    UNIQUE(run_id, idempotency_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_operator_action_requests_run_status
+ON operator_action_requests(run_id, status, created_at, action_request_id);
+
+CREATE TABLE IF NOT EXISTS operator_action_ledger (
+    ledger_id TEXT PRIMARY KEY,
+    action_request_id TEXT NOT NULL REFERENCES operator_action_requests(action_request_id),
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    status TEXT NOT NULL,
+    event_seq INTEGER NOT NULL,
+    receipt_sha256 TEXT,
+    ledger_json TEXT NOT NULL,
+    ledger_sha256 TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(action_request_id, status, event_seq)
+);
 """
 
 
@@ -474,10 +548,73 @@ def _migrate_store_v3_to_v4(connection: sqlite3.Connection) -> None:
     connection.executescript(_workspace_read_schema_sql())
 
 
+def _operator_action_schema_sql() -> str:
+    return """
+        CREATE TABLE IF NOT EXISTS operator_action_requests (
+            action_request_id TEXT PRIMARY KEY,
+            idempotency_key TEXT NOT NULL,
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            plan_id TEXT NOT NULL,
+            plan_sha256 TEXT NOT NULL,
+            node_id TEXT NOT NULL,
+            attempt_no INTEGER NOT NULL CHECK (attempt_no >= 1),
+            goal_hash TEXT NOT NULL,
+            observed_journal_seq INTEGER NOT NULL CHECK (observed_journal_seq >= 0),
+            observed_journal_head_sha256 TEXT NOT NULL,
+            action TEXT NOT NULL,
+            actor TEXT NOT NULL,
+            principal TEXT NOT NULL,
+            authority_class TEXT NOT NULL,
+            request_json TEXT NOT NULL,
+            request_sha256 TEXT NOT NULL,
+            arguments_json TEXT NOT NULL,
+            client_correlation_json TEXT NOT NULL,
+            requested_safe_point TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (
+                status IN (
+                    'RECEIVED', 'VALIDATED', 'CLAIMED', 'APPLIED',
+                    'DEFERRED', 'REJECTED', 'UNCERTAIN', 'RECONCILED'
+                )
+            ),
+            outcome TEXT,
+            code TEXT,
+            claimed_by TEXT,
+            claimed_lease_epoch INTEGER,
+            claimed_at TEXT,
+            receipt_json TEXT,
+            receipt_sha256 TEXT,
+            receipt_event_seq INTEGER,
+            updated_at TEXT NOT NULL,
+            UNIQUE(run_id, idempotency_key)
+        );
+        CREATE INDEX IF NOT EXISTS idx_operator_action_requests_run_status
+        ON operator_action_requests(run_id, status, created_at, action_request_id);
+        CREATE TABLE IF NOT EXISTS operator_action_ledger (
+            ledger_id TEXT PRIMARY KEY,
+            action_request_id TEXT NOT NULL REFERENCES operator_action_requests(action_request_id),
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            status TEXT NOT NULL,
+            event_seq INTEGER NOT NULL,
+            receipt_sha256 TEXT,
+            ledger_json TEXT NOT NULL,
+            ledger_sha256 TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE(action_request_id, status, event_seq)
+        );
+        """
+
+
+def _migrate_store_v4_to_v5(connection: sqlite3.Connection) -> None:
+    connection.executescript(_operator_action_schema_sql())
+
+
 _STORE_MIGRATIONS = {
     1: _migrate_store_v1_to_v2,
     2: _migrate_store_v2_to_v3,
     3: _migrate_store_v3_to_v4,
+    4: _migrate_store_v4_to_v5,
 }
 
 
@@ -499,6 +636,87 @@ def _now_iso() -> str:
 
 def _now_ms() -> int:
     return time.time_ns() // 1_000_000
+
+
+def _parse_iso_timestamp(value: object, *, field: str) -> datetime:
+    if not isinstance(value, str) or not value.strip():
+        raise DagRunStoreError("operator_action_field_missing", field)
+    raw = value.strip()
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise DagRunStoreError("operator_action_timestamp_invalid", field) from exc
+    if parsed.tzinfo is None:
+        raise DagRunStoreError("operator_action_timestamp_invalid", field)
+    return parsed.astimezone(UTC)
+
+
+def _required_operator_string(request: Mapping[str, Any], key: str) -> str:
+    value = request.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise DagRunStoreError("operator_action_field_missing", key)
+    return value.strip()
+
+
+def _operator_mapping(value: object, *, field: str) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise DagRunStoreError("operator_action_field_invalid", field)
+    return dict(value)
+
+
+def _operator_request_arguments(request: Mapping[str, Any]) -> dict[str, Any]:
+    arguments = request.get("arguments")
+    if isinstance(arguments, Mapping):
+        return dict(arguments)
+    if arguments is not None:
+        raise DagRunStoreError("operator_action_field_invalid", "arguments")
+    if "instruction" in request:
+        return {"instruction": request.get("instruction")}
+    return {}
+
+
+def _operator_action_head(connection: sqlite3.Connection, run_id: str) -> tuple[int, str]:
+    row = connection.execute(
+        """SELECT seq, payload_sha256 FROM dag_run_events
+           WHERE run_id = ? ORDER BY seq DESC LIMIT 1""",
+        (run_id,),
+    ).fetchone()
+    if row is None:
+        return 0, ""
+    return int(row["seq"]), str(row["payload_sha256"])
+
+
+def _operator_action_row_to_response(row: sqlite3.Row, *, duplicate: bool) -> dict[str, Any]:
+    receipt = None
+    if row["receipt_json"] is not None:
+        parsed = json.loads(row["receipt_json"])
+        if not isinstance(parsed, dict):
+            raise DagRunStoreError(
+                "operator_action_receipt_hash_mismatch", str(row["action_request_id"])
+            )
+        parsed_body = {key: value for key, value in parsed.items() if key != "sha256"}
+        if canonical_sha256(parsed_body) != row["receipt_sha256"]:
+            raise DagRunStoreError(
+                "operator_action_receipt_hash_mismatch", str(row["action_request_id"])
+            )
+        receipt = parsed
+    return {
+        "schema": "tau.operator_action_submission.v1",
+        "action_request_id": str(row["action_request_id"]),
+        "idempotency_key": str(row["idempotency_key"]),
+        "run_id": str(row["run_id"]),
+        "node_id": str(row["node_id"]),
+        "attempt": int(row["attempt_no"]),
+        "action": str(row["action"]),
+        "status": str(row["status"]),
+        "outcome": str(row["outcome"]) if row["outcome"] is not None else None,
+        "code": str(row["code"]) if row["code"] is not None else None,
+        "receipt": receipt,
+        "receipt_sha256": str(row["receipt_sha256"]) if row["receipt_sha256"] is not None else None,
+        "duplicate": duplicate,
+    }
 
 
 def _runtime_transport_mode(event: RuntimeEvent) -> str:
@@ -1494,6 +1712,402 @@ class SqliteDagRunStore:
                 "journal_preserved": True,
                 "created_at": _now_iso(),
             }
+
+    def submit_operator_action_request(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        """Durably receive and validate one operator action request.
+
+        This is the cross-process inbox for Tau operator control. Submission
+        writes the raw request before validation, returns byte-equivalent
+        results for duplicate delivery, and never mutates scheduler state
+        directly; only the leased scheduler can claim and apply a validated row.
+        """
+
+        value = dict(request)
+        request_sha256 = canonical_sha256(value)
+        action_request_id = _required_operator_string(value, "action_request_id")
+        idempotency_key = _required_operator_string(value, "idempotency_key")
+        run_id = _required_operator_string(value, "run_id")
+        with self._transaction():
+            self._run_row(run_id)
+            validation_head = _operator_action_head(self._connection, run_id)
+            existing = self._connection.execute(
+                "SELECT * FROM operator_action_requests WHERE action_request_id = ?",
+                (action_request_id,),
+            ).fetchone()
+            if existing is not None:
+                if existing["request_sha256"] != request_sha256:
+                    raise DagRunStoreError("operator_action_request_conflict", action_request_id)
+                return _operator_action_row_to_response(existing, duplicate=True)
+            idem_existing = self._connection.execute(
+                """SELECT * FROM operator_action_requests
+                   WHERE run_id = ? AND idempotency_key = ?""",
+                (run_id, idempotency_key),
+            ).fetchone()
+            if idem_existing is not None:
+                if idem_existing["request_sha256"] != request_sha256:
+                    raise DagRunStoreError("operator_action_idempotency_conflict", idempotency_key)
+                return _operator_action_row_to_response(idem_existing, duplicate=True)
+
+            received_at = _now_iso()
+            arguments = _operator_request_arguments(value)
+            client_correlation = _operator_mapping(
+                value.get("client_correlation"), field="client_correlation"
+            )
+            actor = str(value.get("actor") or "")
+            principal = str(value.get("principal") or actor)
+            authority_class = str(value.get("authority_class") or actor)
+            action = str(value.get("action") or "")
+            attempt = value.get("attempt")
+            if attempt is None:
+                attempt = value.get("attempt_no")
+            observed_seq = value.get("observed_journal_seq")
+            if observed_seq is None:
+                observed_seq = value.get("journal_seq")
+            observed_head = str(
+                value.get("observed_journal_head_sha256")
+                or value.get("journal_head_sha256")
+                or ""
+            )
+            requested_safe_point = str(value.get("requested_safe_point") or "scheduler_boundary")
+            self._connection.execute(
+                """INSERT INTO operator_action_requests(
+                    action_request_id, idempotency_key, run_id, plan_id, plan_sha256,
+                    node_id, attempt_no, goal_hash, observed_journal_seq,
+                    observed_journal_head_sha256, action, actor, principal,
+                    authority_class, request_json, request_sha256, arguments_json,
+                    client_correlation_json, requested_safe_point, created_at,
+                    expires_at, status, updated_at
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    'RECEIVED', ?
+                )""",
+                (
+                    action_request_id,
+                    idempotency_key,
+                    run_id,
+                    str(value.get("plan_id") or ""),
+                    str(value.get("plan_sha256") or ""),
+                    str(value.get("node_id") or ""),
+                    int(attempt) if type(attempt) is int and attempt >= 1 else 1,
+                    str(value.get("goal_hash") or ""),
+                    int(observed_seq) if type(observed_seq) is int and observed_seq >= 0 else 0,
+                    observed_head,
+                    action,
+                    actor,
+                    principal,
+                    authority_class,
+                    canonical_json(value),
+                    request_sha256,
+                    canonical_json(arguments),
+                    canonical_json(client_correlation),
+                    requested_safe_point,
+                    str(value.get("created_at") or received_at),
+                    str(value.get("expires_at") or ""),
+                    received_at,
+                ),
+            )
+            pseudo_lease = self._operator_action_pseudo_lease(run_id)
+            received_seq = self._append_event(
+                pseudo_lease,
+                event_key=f"operator-action:{action_request_id}:received",
+                event_type="operator_action_received",
+                entity_type="operator_action",
+                entity_id=action_request_id,
+                payload={
+                    "schema": OPERATOR_ACTION_REQUEST_SCHEMA,
+                    "action_request_id": action_request_id,
+                    "idempotency_key": idempotency_key,
+                    "action": action,
+                    "actor": actor,
+                    "principal": principal,
+                    "authority_class": authority_class,
+                    "client_correlation_sha256": canonical_sha256(client_correlation),
+                    "request_sha256": request_sha256,
+                },
+                check_lease=False,
+            )
+            self._record_operator_action_ledger(
+                action_request_id=action_request_id,
+                run_id=run_id,
+                status="RECEIVED",
+                event_seq=received_seq,
+                receipt_sha256=None,
+                payload={"action": action, "request_sha256": request_sha256},
+            )
+
+            try:
+                self._validate_operator_action_request_locked(value, observed_head=validation_head)
+            except DagRunStoreError as exc:
+                receipt = self._operator_action_receipt_locked(
+                    request=value,
+                    status="REJECTED",
+                    outcome="rejected",
+                    code=exc.code,
+                    detail=exc.detail,
+                    action_event_seq=None,
+                    canonical_transition=None,
+                )
+                return self._finish_operator_action_locked(
+                    action_request_id=action_request_id,
+                    run_id=run_id,
+                    status="REJECTED",
+                    outcome="rejected",
+                    code=exc.code,
+                    receipt=receipt,
+                    event_type="operator_action_rejected",
+                )
+
+            validated_seq = self._append_event(
+                pseudo_lease,
+                event_key=f"operator-action:{action_request_id}:validated",
+                event_type="operator_action_validated",
+                entity_type="operator_action",
+                entity_id=action_request_id,
+                payload={
+                    "action_request_id": action_request_id,
+                    "idempotency_key": idempotency_key,
+                    "action": action,
+                    "request_sha256": request_sha256,
+                },
+                check_lease=False,
+            )
+            self._record_operator_action_ledger(
+                action_request_id=action_request_id,
+                run_id=run_id,
+                status="VALIDATED",
+                event_seq=validated_seq,
+                receipt_sha256=None,
+                payload={"action": action, "request_sha256": request_sha256},
+            )
+            self._connection.execute(
+                """UPDATE operator_action_requests
+                   SET status = 'VALIDATED', updated_at = ? WHERE action_request_id = ?""",
+                (_now_iso(), action_request_id),
+            )
+            row = self._connection.execute(
+                "SELECT * FROM operator_action_requests WHERE action_request_id = ?",
+                (action_request_id,),
+            ).fetchone()
+            if row is None:
+                raise DagRunStoreError("operator_action_request_missing", action_request_id)
+            return _operator_action_row_to_response(row, duplicate=False)
+
+    def list_operator_actions(
+        self,
+        run_id: str,
+        *,
+        statuses: tuple[str, ...] | list[str] | None = None,
+    ) -> tuple[dict[str, Any], ...]:
+        if statuses:
+            placeholders = ",".join("?" for _ in statuses)
+            rows = self._connection.execute(
+                f"""SELECT * FROM operator_action_requests
+                    WHERE run_id = ? AND status IN ({placeholders})
+                    ORDER BY created_at, action_request_id""",
+                (run_id, *tuple(statuses)),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                """SELECT * FROM operator_action_requests
+                   WHERE run_id = ? ORDER BY created_at, action_request_id""",
+                (run_id,),
+            ).fetchall()
+        return tuple(self._operator_action_row(row) for row in rows)
+
+    def claim_operator_action(
+        self,
+        lease: DagRunLease,
+        *,
+        skip_actions: tuple[str, ...] | list[str] = (),
+    ) -> dict[str, Any] | None:
+        """Claim the next validated operator action for the active scheduler lease."""
+
+        with self._transaction():
+            self._assert_lease(lease)
+            if skip_actions:
+                placeholders = ",".join("?" for _ in skip_actions)
+                row = self._connection.execute(
+                    f"""SELECT * FROM operator_action_requests
+                        WHERE run_id = ? AND status = 'VALIDATED'
+                        AND action NOT IN ({placeholders})
+                        ORDER BY created_at, action_request_id LIMIT 1""",
+                    (lease.run_id, *tuple(skip_actions)),
+                ).fetchone()
+            else:
+                row = self._connection.execute(
+                    """SELECT * FROM operator_action_requests
+                       WHERE run_id = ? AND status = 'VALIDATED'
+                       ORDER BY created_at, action_request_id LIMIT 1""",
+                    (lease.run_id,),
+                ).fetchone()
+            if row is None:
+                return None
+            action_request_id = str(row["action_request_id"])
+            claimed_at = _now_iso()
+            self._connection.execute(
+                """UPDATE operator_action_requests
+                   SET status = 'CLAIMED', claimed_by = ?, claimed_lease_epoch = ?,
+                       claimed_at = ?, updated_at = ?
+                   WHERE action_request_id = ? AND status = 'VALIDATED'""",
+                (lease.owner_id, lease.epoch, claimed_at, claimed_at, action_request_id),
+            )
+            seq = self._append_event(
+                lease,
+                event_key=f"operator-action:{action_request_id}:claimed:{lease.epoch}",
+                event_type="operator_action_claimed",
+                entity_type="operator_action",
+                entity_id=action_request_id,
+                payload={
+                    "action_request_id": action_request_id,
+                    "claimed_by": lease.owner_id,
+                    "lease_epoch": lease.epoch,
+                },
+            )
+            self._record_operator_action_ledger(
+                action_request_id=action_request_id,
+                run_id=lease.run_id,
+                status="CLAIMED",
+                event_seq=seq,
+                receipt_sha256=None,
+                payload={"claimed_by": lease.owner_id, "lease_epoch": lease.epoch},
+            )
+            claimed = self._connection.execute(
+                "SELECT * FROM operator_action_requests WHERE action_request_id = ?",
+                (action_request_id,),
+            ).fetchone()
+            if claimed is None:
+                raise DagRunStoreError("operator_action_request_missing", action_request_id)
+            return self._operator_action_row(claimed)
+
+    def complete_operator_action(
+        self,
+        lease: DagRunLease,
+        *,
+        action_request_id: str,
+        status: str,
+        outcome: str,
+        code: str,
+        canonical_transition: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Write the terminal action receipt bound to a canonical journal transition."""
+
+        if status not in OPERATOR_ACTION_TERMINAL_STATUSES:
+            raise DagRunStoreError("operator_action_status_invalid", status)
+        with self._transaction():
+            self._assert_lease(lease)
+            row = self._connection.execute(
+                "SELECT * FROM operator_action_requests WHERE action_request_id = ?",
+                (action_request_id,),
+            ).fetchone()
+            if row is None:
+                raise DagRunStoreError("operator_action_request_missing", action_request_id)
+            if row["status"] in OPERATOR_ACTION_TERMINAL_STATUSES:
+                return _operator_action_row_to_response(row, duplicate=True)
+            if row["status"] != "CLAIMED":
+                raise DagRunStoreError("operator_action_state_invalid", str(row["status"]))
+            claim_lost = (
+                row["claimed_by"] != lease.owner_id
+                or int(row["claimed_lease_epoch"]) != lease.epoch
+            )
+            if claim_lost:
+                raise DagRunStoreError("operator_action_claim_lost", action_request_id)
+            request = cast(dict[str, Any], json.loads(str(row["request_json"])))
+            action_payload = {
+                "action_request_id": action_request_id,
+                "action": str(row["action"]),
+                "outcome": outcome,
+                "code": code,
+                "canonical_transition": dict(canonical_transition or {}),
+            }
+            action_event_seq = self._append_event(
+                lease,
+                event_key=f"operator-action:{action_request_id}:effect:{status}",
+                event_type=f"operator_action_{str(row['action'])}",
+                entity_type="operator_action",
+                entity_id=action_request_id,
+                attempt_id=self._attempt_id_for_operator_action_locked(row),
+                payload=action_payload,
+            )
+            receipt = self._operator_action_receipt_locked(
+                request=request,
+                status=status,
+                outcome=outcome,
+                code=code,
+                detail="",
+                action_event_seq=action_event_seq,
+                canonical_transition=canonical_transition,
+            )
+            return self._finish_operator_action_locked(
+                action_request_id=action_request_id,
+                run_id=lease.run_id,
+                status=status,
+                outcome=outcome,
+                code=code,
+                receipt=receipt,
+                event_type="operator_action_receipt_recorded",
+                lease=lease,
+            )
+
+    def reconcile_claimed_operator_actions(self, lease: DagRunLease) -> tuple[dict[str, Any], ...]:
+        """Reconcile actions left CLAIMED by a crashed prior scheduler process."""
+
+        reconciled: list[dict[str, Any]] = []
+        with self._transaction():
+            self._assert_lease(lease)
+            rows = self._connection.execute(
+                """SELECT * FROM operator_action_requests
+                   WHERE run_id = ? AND status = 'CLAIMED'
+                   ORDER BY claimed_at, action_request_id""",
+                (lease.run_id,),
+            ).fetchall()
+            for row in rows:
+                action_request_id = str(row["action_request_id"])
+                uncertain_seq = self._append_event(
+                    lease,
+                    event_key=f"operator-action:{action_request_id}:uncertain:{lease.epoch}",
+                    event_type="operator_action_uncertain",
+                    entity_type="operator_action",
+                    entity_id=action_request_id,
+                    payload={
+                        "action_request_id": action_request_id,
+                        "prior_claimed_by": row["claimed_by"],
+                        "prior_claimed_lease_epoch": row["claimed_lease_epoch"],
+                        "reason": "scheduler_restart_after_claim_before_receipt",
+                    },
+                )
+                self._record_operator_action_ledger(
+                    action_request_id=action_request_id,
+                    run_id=lease.run_id,
+                    status="UNCERTAIN",
+                    event_seq=uncertain_seq,
+                    receipt_sha256=None,
+                    payload={"reason": "scheduler_restart_after_claim_before_receipt"},
+                )
+                request = cast(dict[str, Any], json.loads(str(row["request_json"])))
+                receipt = self._operator_action_receipt_locked(
+                    request=request,
+                    status="RECONCILED",
+                    outcome="uncertain_reconciled_no_confirmed_effect",
+                    code="operator_action_reconciled_after_uncertain_claim",
+                    detail="prior process claimed the action without a terminal receipt",
+                    action_event_seq=uncertain_seq,
+                    canonical_transition={
+                        "reconciliation": "no_confirmed_application_replayed",
+                        "uncertain_event_seq": uncertain_seq,
+                    },
+                )
+                finished = self._finish_operator_action_locked(
+                    action_request_id=action_request_id,
+                    run_id=lease.run_id,
+                    status="RECONCILED",
+                    outcome="uncertain_reconciled_no_confirmed_effect",
+                    code="operator_action_reconciled_after_uncertain_claim",
+                    receipt=receipt,
+                    event_type="operator_action_reconciled",
+                    lease=lease,
+                )
+                reconciled.append(finished)
+        return tuple(reconciled)
 
     def reserve_attempt(
         self,
@@ -2642,6 +3256,330 @@ class SqliteDagRunStore:
             if isinstance(cursor, str) and cursor:
                 return cursor
         return latest.event_id
+
+    def _operator_action_pseudo_lease(self, run_id: str) -> DagRunLease:
+        row = self._run_row(run_id)
+        return DagRunLease(
+            run_id=run_id,
+            owner_id=str(row["lease_owner"] or "operator-action-inbox"),
+            epoch=int(row["lease_epoch"]),
+            expires_at_ms=int(row["lease_expires_at_ms"] or 0),
+        )
+
+    def _validate_operator_action_request_locked(
+        self,
+        request: Mapping[str, Any],
+        *,
+        observed_head: tuple[int, str] | None = None,
+    ) -> None:
+        if request.get("schema") != OPERATOR_ACTION_REQUEST_SCHEMA:
+            raise DagRunStoreError(
+                "operator_action_schema_invalid", str(request.get("schema"))
+            )
+        action = _required_operator_string(request, "action")
+        if action not in OPERATOR_ACTIONS:
+            raise DagRunStoreError("operator_action_unknown", action)
+        actor = _required_operator_string(request, "actor")
+        principal = _required_operator_string(
+            {**dict(request), "principal": request.get("principal") or actor},
+            "principal",
+        )
+        authority_class = _required_operator_string(
+            {**dict(request), "authority_class": request.get("authority_class") or actor},
+            "authority_class",
+        )
+        del principal
+        if authority_class not in AUTHORIZED_OPERATOR_AUTHORITY_CLASSES:
+            raise DagRunStoreError("operator_action_unauthorized_actor", authority_class)
+        run_id = _required_operator_string(request, "run_id")
+        run = self._run_row(run_id)
+        plan = self._load_plan_for_validation(run_id)
+        plan_id = _required_operator_string(request, "plan_id")
+        if plan_id != plan.plan_id:
+            raise DagRunStoreError("operator_action_plan_mismatch", plan_id)
+        plan_sha256 = _required_operator_string(request, "plan_sha256")
+        if plan_sha256 != plan.plan_sha256 or plan_sha256 != str(run["plan_sha256"]):
+            raise DagRunStoreError("operator_action_plan_mismatch", plan_sha256)
+        goal_hash = _required_operator_string(request, "goal_hash")
+        if goal_hash != plan.runtime_goal_hash:
+            raise DagRunStoreError("operator_action_goal_mismatch")
+        node_id = _required_operator_string(request, "node_id")
+        nodes = {node.node_id: node for node in plan.nodes}
+        node = nodes.get(node_id)
+        if node is None:
+            raise DagRunStoreError("operator_action_identity_mismatch", node_id)
+        attempt = request.get("attempt")
+        if attempt is None:
+            attempt = request.get("attempt_no")
+        if type(attempt) is not int or attempt < 1:
+            raise DagRunStoreError("operator_action_attempt_mismatch", str(attempt))
+        attempt_row = self._connection.execute(
+            """SELECT a.*, o.committed_json, o.committed_sha256
+               FROM dag_node_attempts a LEFT JOIN dag_attempt_outputs o
+               ON o.attempt_id = a.attempt_id
+               WHERE a.run_id = ? AND a.node_id = ? AND a.attempt_no = ?""",
+            (run_id, node_id, attempt),
+        ).fetchone()
+        if attempt_row is None:
+            raise DagRunStoreError("operator_action_attempt_mismatch", f"{node_id}:{attempt}")
+        observed_seq = request.get("observed_journal_seq")
+        if observed_seq is None:
+            observed_seq = request.get("journal_seq")
+        head_seq, head_sha256 = (
+            observed_head
+            if observed_head is not None
+            else _operator_action_head(self._connection, run_id)
+        )
+        if type(observed_seq) is not int or observed_seq != head_seq:
+            raise DagRunStoreError(
+                "operator_action_stale_journal_seq", f"{observed_seq}!={head_seq}"
+            )
+        observed_head = request.get("observed_journal_head_sha256") or request.get(
+            "journal_head_sha256"
+        )
+        if not isinstance(observed_head, str) or observed_head != head_sha256:
+            raise DagRunStoreError("operator_action_stale_journal_head")
+        _parse_iso_timestamp(request.get("created_at"), field="created_at")
+        expires_at = _parse_iso_timestamp(request.get("expires_at"), field="expires_at")
+        if expires_at <= datetime.now(UTC):
+            raise DagRunStoreError("operator_action_expired")
+        _required_operator_string(request, "requested_safe_point")
+        _operator_request_arguments(request)
+        _operator_mapping(request.get("client_correlation"), field="client_correlation")
+        run_status = str(run["status"])
+        attempt_state = str(attempt_row["state"])
+        if run_status != "RUNNING" and action != "retry_requested":
+            raise DagRunStoreError("operator_action_node_terminal", run_status)
+        if action == "retry_requested":
+            committed = self._verified_output_projection(
+                attempt_row["committed_json"],
+                attempt_row["committed_sha256"],
+                attempt_id=str(attempt_row["attempt_id"]),
+            )
+            failed = (
+                committed is not None
+                and (committed.get("status") != "PASS" or committed.get("verdict") != "PASS")
+            )
+            if attempt_state != "SETTLED" or not failed:
+                raise DagRunStoreError("operator_action_retry_not_applicable", attempt_state)
+            if attempt >= node.max_attempts:
+                raise DagRunStoreError(
+                    "operator_action_retry_exhausted",
+                    f"attempt={attempt} max={node.max_attempts}",
+                )
+        elif attempt_state == "SETTLED" and action not in {
+            "pause",
+            "resume",
+            "request_fork",
+            "request_independent_review",
+            "request_human_approval",
+        }:
+            raise DagRunStoreError("operator_action_node_terminal", attempt_state)
+
+    def _operator_action_row(self, row: sqlite3.Row) -> dict[str, Any]:
+        request = cast(dict[str, Any], json.loads(str(row["request_json"])))
+        if canonical_sha256(request) != str(row["request_sha256"]):
+            raise DagRunStoreError(
+                "operator_action_request_hash_mismatch", str(row["action_request_id"])
+            )
+        arguments = cast(dict[str, Any], json.loads(str(row["arguments_json"])))
+        client_correlation = cast(
+            dict[str, Any], json.loads(str(row["client_correlation_json"]))
+        )
+        return {
+            "action_request_id": str(row["action_request_id"]),
+            "idempotency_key": str(row["idempotency_key"]),
+            "run_id": str(row["run_id"]),
+            "plan_id": str(row["plan_id"]),
+            "plan_sha256": str(row["plan_sha256"]),
+            "node_id": str(row["node_id"]),
+            "attempt": int(row["attempt_no"]),
+            "goal_hash": str(row["goal_hash"]),
+            "observed_journal_seq": int(row["observed_journal_seq"]),
+            "observed_journal_head_sha256": str(row["observed_journal_head_sha256"]),
+            "action": str(row["action"]),
+            "actor": str(row["actor"]),
+            "principal": str(row["principal"]),
+            "authority_class": str(row["authority_class"]),
+            "arguments": arguments,
+            "client_correlation": client_correlation,
+            "requested_safe_point": str(row["requested_safe_point"]),
+            "created_at": str(row["created_at"]),
+            "expires_at": str(row["expires_at"]),
+            "status": str(row["status"]),
+            "outcome": str(row["outcome"]) if row["outcome"] is not None else None,
+            "code": str(row["code"]) if row["code"] is not None else None,
+            "claimed_by": str(row["claimed_by"]) if row["claimed_by"] is not None else None,
+            "claimed_lease_epoch": (
+                int(row["claimed_lease_epoch"]) if row["claimed_lease_epoch"] is not None else None
+            ),
+            "claimed_at": str(row["claimed_at"]) if row["claimed_at"] is not None else None,
+            "receipt_sha256": (
+                str(row["receipt_sha256"]) if row["receipt_sha256"] is not None else None
+            ),
+        }
+
+    def _attempt_id_for_operator_action_locked(self, row: sqlite3.Row) -> str | None:
+        attempt = self._connection.execute(
+            """SELECT attempt_id FROM dag_node_attempts
+               WHERE run_id = ? AND node_id = ? AND attempt_no = ?""",
+            (row["run_id"], row["node_id"], row["attempt_no"]),
+        ).fetchone()
+        return str(attempt["attempt_id"]) if attempt is not None else None
+
+    def _operator_action_receipt_locked(
+        self,
+        *,
+        request: Mapping[str, Any],
+        status: str,
+        outcome: str,
+        code: str,
+        detail: str,
+        action_event_seq: int | None,
+        canonical_transition: Mapping[str, Any] | None,
+    ) -> dict[str, Any]:
+        run_id = str(request.get("run_id") or "")
+        head_seq, head_sha256 = _operator_action_head(self._connection, run_id)
+        observed_seq = request.get("observed_journal_seq")
+        if observed_seq is None:
+            observed_seq = request.get("journal_seq")
+        observed_head = request.get("observed_journal_head_sha256") or request.get(
+            "journal_head_sha256"
+        )
+        body = {
+            "schema": OPERATOR_ACTION_RECEIPT_SCHEMA,
+            "action_request_id": request.get("action_request_id"),
+            "idempotency_key": request.get("idempotency_key"),
+            "request": dict(request),
+            "request_sha256": canonical_sha256(dict(request)),
+            "run_id": run_id,
+            "plan_id": request.get("plan_id"),
+            "plan_sha256": request.get("plan_sha256"),
+            "node_id": request.get("node_id"),
+            "attempt": request.get("attempt") or request.get("attempt_no"),
+            "goal_hash": request.get("goal_hash"),
+            "actor": request.get("actor"),
+            "principal": request.get("principal") or request.get("actor"),
+            "authority_class": request.get("authority_class") or request.get("actor"),
+            "action": request.get("action"),
+            "status": status,
+            "outcome": outcome,
+            "code": code,
+            "detail": detail,
+            "journal_transition": {
+                "observed_seq": observed_seq,
+                "observed_head_sha256": observed_head,
+                "resulting_seq": action_event_seq if action_event_seq is not None else head_seq,
+                "resulting_head_sha256": head_sha256,
+                "journal_changed": (
+                    type(observed_seq) is int
+                    and (action_event_seq if action_event_seq is not None else head_seq)
+                    > observed_seq
+                ),
+                "canonical_transition": dict(canonical_transition or {}),
+            },
+            "created_at": _now_iso(),
+        }
+        return {**body, "sha256": canonical_sha256(body)}
+
+    def _finish_operator_action_locked(
+        self,
+        *,
+        action_request_id: str,
+        run_id: str,
+        status: str,
+        outcome: str,
+        code: str,
+        receipt: Mapping[str, Any],
+        event_type: str,
+        lease: DagRunLease | None = None,
+    ) -> dict[str, Any]:
+        receipt_dict = dict(receipt)
+        receipt_body = {key: value for key, value in receipt_dict.items() if key != "sha256"}
+        receipt_sha256 = canonical_sha256(receipt_body)
+        if receipt_dict.get("sha256") != receipt_sha256:
+            raise DagRunStoreError("operator_action_receipt_hash_mismatch", action_request_id)
+        effective_lease = lease or self._operator_action_pseudo_lease(run_id)
+        receipt_seq = self._append_event(
+            effective_lease,
+            event_key=f"operator-action:{action_request_id}:receipt:{status}",
+            event_type=event_type,
+            entity_type="operator_action",
+            entity_id=action_request_id,
+            payload=receipt_dict,
+            check_lease=lease is not None,
+        )
+        self._connection.execute(
+            """UPDATE operator_action_requests
+               SET status = ?, outcome = ?, code = ?, receipt_json = ?,
+                   receipt_sha256 = ?, receipt_event_seq = ?, updated_at = ?
+               WHERE action_request_id = ?""",
+            (
+                status,
+                outcome,
+                code,
+                canonical_json(receipt_dict),
+                receipt_sha256,
+                receipt_seq,
+                _now_iso(),
+                action_request_id,
+            ),
+        )
+        self._record_operator_action_ledger(
+            action_request_id=action_request_id,
+            run_id=run_id,
+            status=status,
+            event_seq=receipt_seq,
+            receipt_sha256=receipt_sha256,
+            payload={"outcome": outcome, "code": code},
+        )
+        row = self._connection.execute(
+            "SELECT * FROM operator_action_requests WHERE action_request_id = ?",
+            (action_request_id,),
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("operator_action_request_missing", action_request_id)
+        return _operator_action_row_to_response(row, duplicate=False)
+
+    def _record_operator_action_ledger(
+        self,
+        *,
+        action_request_id: str,
+        run_id: str,
+        status: str,
+        event_seq: int,
+        receipt_sha256: str | None,
+        payload: Mapping[str, Any],
+    ) -> None:
+        ledger_payload = {
+            "schema": "tau.operator_action_ledger_entry.v1",
+            "action_request_id": action_request_id,
+            "run_id": run_id,
+            "status": status,
+            "event_seq": event_seq,
+            "receipt_sha256": receipt_sha256,
+            "payload": dict(payload),
+            "created_at": _now_iso(),
+        }
+        ledger_sha256 = canonical_sha256(ledger_payload)
+        ledger_id = ledger_sha256.removeprefix("sha256:")[:32]
+        self._connection.execute(
+            """INSERT OR IGNORE INTO operator_action_ledger(
+                ledger_id, action_request_id, run_id, status, event_seq,
+                receipt_sha256, ledger_json, ledger_sha256, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                ledger_id,
+                action_request_id,
+                run_id,
+                status,
+                event_seq,
+                receipt_sha256,
+                canonical_json(ledger_payload),
+                ledger_sha256,
+                ledger_payload["created_at"],
+            ),
+        )
 
     def _latest_workspace_read_sets_locked(self, run_id: str) -> tuple[dict[str, Any], ...]:
         rows = self._connection.execute(
