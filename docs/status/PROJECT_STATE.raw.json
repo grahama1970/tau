@@ -1,0 +1,578 @@
+{
+  "project": "tau",
+  "project_root": "/home/graham/workspace/experiments/tau",
+  "project_profile": "generic",
+  "timestamp": "2026-08-30T12:41:50.364650+00:00",
+  "mode": "standard",
+  "phase_1_infrastructure": {
+    "daemons": {
+      "applicable": false,
+      "reason": "target root is not an Embry-style project",
+      "daemons": {},
+      "up": 0,
+      "total": 0
+    },
+    "tests": {
+      "total": 3702,
+      "collected": true,
+      "path": "/home/graham/workspace/experiments/tau/tests"
+    },
+    "cascade": {
+      "applicable": false,
+      "reason": "target root is not an Embry-style project",
+      "registry": {
+        "validators": 0,
+        "classifiers": 0,
+        "regressors": 0,
+        "gpts": 0
+      },
+      "shadow": {
+        "total": 0,
+        "usable": 0
+      },
+      "training_data": {},
+      "classifiers_on_disk": [],
+      "tier_status": {
+        "tier_2_teacher": "NOT_APPLICABLE",
+        "tier_1_5_gpt": "NOT_APPLICABLE",
+        "tier_0_5_classifier": "NOT_APPLICABLE"
+      }
+    },
+    "daemon_cascade_wiring": {
+      "applicable": false,
+      "reason": "target root is not an Embry-style project",
+      "wired": {}
+    },
+    "skills": {
+      "total": 1,
+      "path": "/home/graham/workspace/experiments/tau/skills",
+      "missing_skill_md": [
+        "persona-dream"
+      ],
+      "missing_skill_md_count": 1,
+      "missing_sanity": [],
+      "missing_sanity_count": 0
+    },
+    "frontend": {
+      "exists": false
+    },
+    "deploy": {
+      "systemd_units": 0,
+      "containerfile": false,
+      "docker_compose": true
+    },
+    "components": {
+      "registered": 0,
+      "projects": {},
+      "note": "No component registry found"
+    }
+  },
+  "phase_2_memory": {
+    "available": true,
+    "successful_recalls": 3,
+    "attempted_recalls": 3,
+    "recalls": [
+      {
+        "query": "tau features architecture deployment",
+        "found": true,
+        "confidence": 0.8,
+        "count": 5,
+        "top_items": [
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (10)",
+            "solution": "- 2026-07-26 operating target reset: the recent Pi TUI parity work is a\n  separate coding-harness usability slice; it do"
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (702)",
+            "solution": "- 2026-08-29 proof-boundary milestone: Tau now has claim-based `-evals` posture for every committed feature eval manifes"
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (690)",
+            "solution": "- `handoff-command-loop-reconciliation-github-transport` now starts from a command-loop receipt, extracts the goal-guard"
+          }
+        ]
+      },
+      {
+        "query": "tau competitive advantages unique capabilities",
+        "found": true,
+        "confidence": 0.8,
+        "count": 5,
+        "top_items": [
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (463)",
+            "solution": "  provider/model quality, or runtime sandbox isolation.\n  Aggregate proof: `scripts/run-coding-capability-sanity.py --ru"
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (453)",
+            "solution": "  rename planning plus baseline diagnostics regression recording; it does not\n  prove semantic code correctness, full la"
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (465)",
+            "solution": "  /tmp/tau-coding-reliability-commit-plan-evidence` exited 0; nested\n  `/tmp/tau-coding-reliability-commit-plan-evidence"
+          }
+        ]
+      },
+      {
+        "query": "tau known issues gaps missing features",
+        "found": true,
+        "confidence": 0.8,
+        "count": 5,
+        "top_items": [
+          {
+            "problem": "",
+            "solution": ""
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (690)",
+            "solution": "- `handoff-command-loop-reconciliation-github-transport` now starts from a command-loop receipt, extracts the goal-guard"
+          },
+          {
+            "problem": "project knowledge chunk for tau: Current Understanding (691)",
+            "solution": "- 2026-07-04 Corrected feature framing: call the proposed feature a JSON trace / goal-alignment monitor, not a reasoning"
+          }
+        ]
+      }
+    ]
+  },
+  "phase_3_doc_drift": {
+    "docs_checked": 7,
+    "docs_found": 3,
+    "drift_items": [
+      {
+        "file": "README.md",
+        "issue": "planned",
+        "severity": "low",
+        "line": "In the planned GitHub-backed deployment, the same state machine can be driven by"
+      },
+      {
+        "file": "README.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "compliance, legal sufficiency, model safety, future route correctness, or that"
+      },
+      {
+        "file": "README.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "browser rendering, provider semantic quality, GitHub mutation, or future route"
+      },
+      {
+        "file": "README.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "or a future trusted `/tau self-fix` command. The issue body remains the durable"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "aspirational_will",
+        "severity": "low",
+        "line": "provider subprocesses will complete within 900s."
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "aspirational_will",
+        "severity": "low",
+        "line": "- 2026-07-03 Generic DAG checkpoint/resume observability slice added. `src/tau_coding/generic_dag.py` now writes `tau.ge"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "aspirational_will",
+        "severity": "low",
+        "line": "| 2026-06-29 | `experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T191900Z/receipts/20260629T191900"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "todo",
+        "severity": "medium",
+        "line": "- 2026-08-13 project-state snapshot for Tau is /tmp/tau-project-state-20260813.json, generated with project-state report"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "planned",
+        "severity": "low",
+        "line": "planned repository as `repo:<absolute repo path>`. Approval receipts for a"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "planned",
+        "severity": "low",
+        "line": "`--evidence-receipt` path to resolve inside the repository being planned."
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "planned",
+        "severity": "low",
+        "line": "derives planned edits from the same exact-token evidence. Focused proof:"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "durable restart, OS sandbox isolation, or future route correctness."
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "change, or prove arbitrary future skill routes."
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "future",
+        "severity": "low",
+        "line": "prove WebGPT advice correctness, architecture correctness, future skill-route"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "not_yet",
+        "severity": "low",
+        "line": "- Command-loop terminal GitHub transport now supports `target: \"new\"` for UI-originated handoffs. The dry-run path rende"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "not_yet",
+        "severity": "low",
+        "line": "filter/comparison slices not yet implemented."
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `project_dag.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `handoff_dispatch.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `project_dag.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `test_project_dag.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `handoff_dispatch.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `src/example.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `tests/test_example.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `src.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `src/example.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `tests/test_example.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `generated/example.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `packages/ux-lab/src/components/tau/TauDagRunView.tsx` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `packages/ux-lab/src/components/tau/tauDagEvidenceAdapter.ts` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `packages/ux-lab/src/components/tau/tauDagEvidenceAdapter.test.ts` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `project_dag.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `red_exploit_submission.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `app.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `TauChatView.test.ts` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `TauChatView.test.ts` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `battle_live_handoff.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `battle_scillm.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `battle_worker_specs.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `test_battle_live_handoff.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `cli.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `test_self_fix_poll.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `project_dag.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_runtime/replay.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_runtime/correction.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_runtime/replay.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_viewer/causal.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_viewer/query.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `dag_viewer/compare.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `test_battle_live_handoff.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `skills/battle/tests/test_arena_live_battle_proof_contract.py` but file not found"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "severity": "medium",
+        "line": "References `test_argue_verifier.py` but file not found"
+      }
+    ],
+    "drift_count": 51
+  },
+  "phase_4_best_practices": {
+    "findings": [
+      {
+        "file": "scripts/run-herdr-native-event-smoke.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "scripts/run-battle-artifact-transaction-canary.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "scripts/prove-canonical-dag-viewer-corpus.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "scripts/run-dag-viewer-browser-proof.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "scripts/skill-contract-live.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "tests/test_storage_redaction_boundaries.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_tau_ai.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_scillm_chat_review.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_commit_plan.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_battle_scillm_auth_preflight.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_dag_route_memory.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_immutable_goal_audit.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "tests/test_coding_worker_adapters.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "src/tau_coding/cli.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "src/tau_coding/security_audit_conformance.py",
+        "issue": "hardcoded_secret",
+        "severity": "critical"
+      },
+      {
+        "file": "src/tau_coding/dag_runtime/ticket_repair_release.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "experiments/loop2-alignment/reliability-stress/memory_brave_harness.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      },
+      {
+        "file": "experiments/loop2-alignment/reliability-stress/run_live_stress.py",
+        "issue": "hardcoded_home_path",
+        "severity": "low"
+      }
+    ],
+    "total_findings": 18,
+    "by_severity": {
+      "critical": 11,
+      "high": 0,
+      "medium": 0,
+      "low": 7
+    },
+    "best_practice_skills_available": [
+      "best-practices-python",
+      "best-practices-react",
+      "best-practices-skills",
+      "best-practices-kde"
+    ]
+  },
+  "phase_5_research": {
+    "skipped": true,
+    "reason": "Use standard or --full mode"
+  },
+  "phase_6_gaps": {
+    "gaps": [
+      {
+        "category": "security",
+        "severity": "critical",
+        "gap": "11 critical best-practice violations (possible hardcoded secrets)",
+        "action": "Run /security-scan and fix immediately"
+      },
+      {
+        "category": "documentation",
+        "severity": "low",
+        "gap": "3 aspirational/TODO items in docs",
+        "action": "Implement or remove aspirational claims"
+      }
+    ],
+    "improvements": []
+  }
+}
