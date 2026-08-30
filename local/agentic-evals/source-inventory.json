@@ -74,7 +74,7 @@
       "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
       "kind": "capability-module",
       "metadata": {
-        "sha256": "sha256:e21fece21305e49e277d9d52af54f4e8755c810028e4ac88d9e36bf4461d87fa"
+        "sha256": "sha256:f53df2da6aaa66b1b518358c141ca0e3c56d04243dc03e8020ad0e4004c01a06"
       },
       "name": "herdr",
       "source_line": null,
@@ -2701,10 +2701,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T20:29:41Z",
+  "generated_at": "2026-08-30T20:47:00Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:605d9e8e5644a05cb5f5b5812aacc502b73ed9d65647434cde2cc33624022960"
+  "source_sha256": "sha256:df77f1bd9e7a1bb2617ed351361e2665df30572bcc7ff02ffc51ec4ebc7dd2b7"
 }

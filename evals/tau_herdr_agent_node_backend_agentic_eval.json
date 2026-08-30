@@ -27,12 +27,42 @@
           },
           {
             "equals": 2,
-            "json_pointer": "/owned_endpoint_count",
+            "json_pointer": "/tau_sqlite_projection_count",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": 1,
+            "json_pointer": "/restart_adoption/owned_after_adoption_count",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/pane_text_status_only/projection_unchanged",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/confirmed_dead_retry/retry_lineage_new",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "APPLIED",
+            "json_pointer": "/operator_action/completed_status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/local_vs_herdr_equivalence",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
             "equals": "PASS",
-            "json_pointer": "/settlement_receipts/0/status",
+            "json_pointer": "/installed_wheel_probe/status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "completed",
+            "json_pointer": "/settlement_receipts/0/state",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
@@ -45,7 +75,7 @@
         "stdout_contains": [
           "\"schema\": \"tau.herdr_agent_node_backend_proof.v1\"",
           "\"status\": \"PASS\"",
-          "\"owned_endpoint_count\": 2"
+          "\"tau_sqlite_projection_count\": 2"
         ]
       },
       "name": "live-herdr-hosts-two-tau-headless-agent-node-workers",
@@ -79,8 +109,8 @@
     }
   ],
   "claims": {
-    "does_not_prove": "Provider semantic quality, Textual/React UI rendering, full scheduler restart adoption, or GOAL.md completion.",
-    "proves": "Tau can run live Herdr-hosted headless worker endpoints for agent-node style work, keep exact workspace/pane leases, observe liveness, read settlement receipts from disk, and clean up exact owned endpoints through authorization-bound termination."
+    "does_not_prove": "Provider semantic quality, paid-provider execution, React Flow rendering, or GOAL.md completion.",
+    "proves": "Tau can compile explicit Herdr runtime requirements for tau_native_agent_loop nodes, run live Herdr-hosted headless worker endpoints, keep exact workspace/pane leases, read Tau SQLite runtime projections, adopt an existing endpoint after scheduler lease takeover, keep pane text/status diagnostic-only for settlement, route an operator action through Tau's inbox and Herdr submit path, retry confirmed-dead endpoints with new lineage, compare local and Herdr settlement fields, and verify installed-wheel import outside the source checkout."
   },
   "proof_scope": "Herdr runtime backend support for Tau-owned headless agent-node worker endpoints",
   "skill": "tau",

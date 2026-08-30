@@ -123,7 +123,7 @@
       "feature_id": "capability-module:src/tau_coding/runtime_backends/herdr.py",
       "kind": "capability-module",
       "metadata": {
-        "sha256": "sha256:e21fece21305e49e277d9d52af54f4e8755c810028e4ac88d9e36bf4461d87fa"
+        "sha256": "sha256:f53df2da6aaa66b1b518358c141ca0e3c56d04243dc03e8020ad0e4004c01a06"
       },
       "name": "herdr",
       "source_line": null,
@@ -5273,7 +5273,7 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T20:29:41Z",
+  "generated_at": "2026-08-30T20:47:00Z",
   "inventory_feature_count": 272,
   "live": true,
   "manifest_count": 23,
@@ -5815,6 +5815,9 @@
     "evals/tau_discord_unblock_agentic_eval.json": {
       "path": "local/agentic-evals/tau-discord-unblock-agentic-evals-report.json"
     },
+    "evals/tau_feature_coverage_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json"
+    },
     "evals/tau_herdr_agent_node_backend_agentic_eval.json": {
       "path": "local/agentic-evals/tau-herdr-agent-node-backend-agentic-evals-report.json"
     },
@@ -5851,6 +5854,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:c2740e939ff909dae47528c9fff8c89b6ec31b8a92b6b13edfc79ebae18e050a",
+  "source_inventory_sha256": "sha256:89b74b738cf66a4b6dac1453af71fdc12d8546975ab4f7823ef46b2988ff2cdd",
   "status": "PASS"
 }

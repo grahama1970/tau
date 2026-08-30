@@ -353,6 +353,7 @@ class HerdrRuntimeBackend:
                     "pane_id": pane_id,
                     "terminal_id": terminal_id,
                     "agent_name": endpoint_label,
+                    "cwd": str(cwd),
                 }
             ),
         )
@@ -382,12 +383,20 @@ class HerdrRuntimeBackend:
             raise RuntimeError("herdr_runtime_scope_pane_missing")
         pane_id = scope.pane_id
         with self._lock:
+            live_scope_endpoints = [
+                state.lease.endpoint_id
+                for state in self._endpoints.values()
+                if state.lease.scope_id == scope.workspace_id and not state.terminated
+            ]
             pane_in_use = pane_id in self._endpoint_ids
-        if pane_in_use:
+        root_check = self._run_json("pane", "get", pane_id, check=False)
+        root_absent = root_check["returncode"] != 0 and _herdr_error_code(root_check) == "pane_not_found"
+        if pane_in_use or root_absent:
+            split_source = next((item for item in live_scope_endpoints if item != pane_id), pane_id)
             split = self._run_json(
                 "pane",
                 "split",
-                scope.pane_id,
+                split_source,
                 "--direction",
                 "right",
                 "--cwd",
@@ -743,8 +752,64 @@ class HerdrRuntimeBackend:
             raise RuntimeError("herdr_runtime_endpoint_session_mismatch")
         with self._lock:
             state = self._endpoints.get(endpoint.sha256)
-        if state is None or state.lease != endpoint:
+        if state is None:
+            state = self._adopt_endpoint_state(endpoint)
+        if state.lease != endpoint:
             raise RuntimeError("herdr_runtime_endpoint_unknown")
+        return state
+
+    def _adopt_endpoint_state(self, endpoint: RuntimeEndpointLease) -> _HerdrEndpointState:
+        backend_ids = endpoint.backend_ids.to_value()
+        if not isinstance(backend_ids, dict):
+            raise RuntimeError("herdr_runtime_endpoint_unknown")
+        if endpoint.owner != "tau":
+            raise RuntimeError("herdr_runtime_endpoint_owner_not_adoptable")
+        if backend_ids.get("session") != self._session:
+            raise RuntimeError("herdr_runtime_endpoint_session_mismatch")
+        if backend_ids.get("workspace_id") != endpoint.scope_id:
+            raise RuntimeError("herdr_runtime_endpoint_scope_mismatch")
+        if backend_ids.get("pane_id") != endpoint.endpoint_id:
+            raise RuntimeError("herdr_runtime_endpoint_unknown")
+        agent_name = backend_ids.get("agent_name")
+        if not isinstance(agent_name, str) or not agent_name.startswith("tau-"):
+            raise RuntimeError("herdr_runtime_endpoint_not_tau_owned")
+        pane_result = self._run_json("pane", "get", endpoint.endpoint_id, check=False)
+        if pane_result["returncode"] == 0:
+            try:
+                pane = _find_object(pane_result["payload"], "pane")
+            except ValueError as exc:
+                raise RuntimeError("herdr_runtime_endpoint_adoption_unverified") from exc
+            if _optional_string(pane.get("workspace_id")) != endpoint.scope_id:
+                raise RuntimeError("herdr_runtime_endpoint_scope_mismatch")
+            if backend_ids.get("terminal_id") is not None and pane.get("terminal_id") not in {
+                backend_ids.get("terminal_id"),
+                None,
+            }:
+                raise RuntimeError("herdr_runtime_endpoint_terminal_mismatch")
+        elif _herdr_error_code(pane_result) != "pane_not_found":
+            raise RuntimeError("herdr_runtime_endpoint_adoption_unverified")
+        scope = HerdrRuntimeScope(
+            run_id=endpoint.run_id,
+            owner=endpoint.owner,
+            session=self._session,
+            workspace_id=endpoint.scope_id,
+            tab_id=str(backend_ids.get("tab_id") or ""),
+            cwd=Path(str(backend_ids.get("cwd") or ".")).expanduser().resolve(),
+            label=agent_name,
+            pane_id=endpoint.endpoint_id,
+        )
+        state = _HerdrEndpointState(lease=endpoint, scope=scope)
+        with self._lock:
+            existing = self._endpoints.get(endpoint.sha256)
+            if existing is not None:
+                return existing
+            claimed_by = self._endpoint_ids.get(endpoint.endpoint_id)
+            if claimed_by is not None and claimed_by != endpoint.sha256:
+                raise RuntimeError("herdr_runtime_endpoint_already_exists")
+            self._scopes.setdefault(endpoint.run_id, scope)
+            self._scope_ids.setdefault(endpoint.scope_id, endpoint.run_id)
+            self._endpoints[endpoint.sha256] = state
+            self._endpoint_ids[endpoint.endpoint_id] = endpoint.sha256
         return state
 
     def _run_json(

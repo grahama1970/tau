@@ -362,13 +362,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
                 _extensions(raw_nodes[node_id], GENERIC_NODE_KEYS)
             ),
             runtime_requirement=FrozenJson.from_value(
-                RuntimeRequirement(
-                    backend="local",
-                    interaction_mode="one_shot",
-                    required_capabilities=("one_shot", "supports_working_directory"),
-                    session_scope="node_attempt",
-                    observation_requirements=("PROCESS",),
-                ).to_payload()
+                _generic_runtime_requirement(raw_nodes[node_id]).to_payload()
             ),
         )
         for node_id in sorted(typed_nodes)
@@ -624,6 +618,41 @@ def _generic_adapter_config(raw: Mapping[str, Any], *, source_dir: Path) -> dict
             "transaction_max_attempts": int(raw.get("max_attempts", 1)),
         }
     return {"argv": list(raw.get("command", []))}
+
+
+def _generic_runtime_requirement(raw: Mapping[str, Any]) -> RuntimeRequirement:
+    declared = raw.get("runtime_requirement")
+    if declared is not None:
+        if not isinstance(declared, Mapping):
+            raise RuntimeError("runtime_requirement must be an object when provided")
+        return RuntimeRequirement.from_payload(dict(declared))
+    backend = raw.get("runtime_backend")
+    if backend is not None and (not isinstance(backend, str) or not backend.strip()):
+        raise RuntimeError("runtime_backend must be a non-empty string when provided")
+    if backend == "herdr" and raw.get("tau_agent") is not None:
+        return RuntimeRequirement(
+            backend="herdr",
+            interaction_mode="interactive",
+            required_capabilities=(
+                "interactive",
+                "stable_endpoint_id",
+                "human_attach",
+                "native_agent_state",
+                "foreground_process_state",
+                "supports_working_directory",
+                "supports_owned_inventory",
+                "supports_terminate",
+            ),
+            session_scope="node_attempt",
+            observation_requirements=("PROCESS",),
+        )
+    return RuntimeRequirement(
+        backend="local" if backend is None else backend,
+        interaction_mode="one_shot",
+        required_capabilities=("one_shot", "supports_working_directory"),
+        session_scope="node_attempt",
+        observation_requirements=("PROCESS",),
+    )
 
 
 def _project_runtime_requirement(

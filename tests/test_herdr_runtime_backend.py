@@ -37,6 +37,7 @@ class FakeHerdr:
         self.pane_count = 0
         self.closed_panes: set[str] = set()
         self.pane_agents: dict[str, str] = {}
+        self.pane_terminals: dict[str, str] = {}
         self.pane_status = "idle"
         self.visible_text = "ready"
         self.processes: list[dict[str, Any]] = [
@@ -81,14 +82,16 @@ class FakeHerdr:
             )
         if command[:2] == ["tab", "create"]:
             workspace_id = command[command.index("--workspace") + 1]
+            pane_id = f"{workspace_id}:p1"
+            self.pane_terminals[pane_id] = f"term-{pane_id}"
             return self._ok(
                 argv,
                 {
                     "result": {
                         "root_pane": {
-                            "pane_id": f"{workspace_id}:p1",
+                            "pane_id": pane_id,
                             "workspace_id": workspace_id,
-                            "terminal_id": "term-root",
+                            "terminal_id": self.pane_terminals[pane_id],
                         },
                         "tab": {"tab_id": f"{workspace_id}:t1"},
                     }
@@ -102,11 +105,12 @@ class FakeHerdr:
             workspace_id = command[command.index("--workspace") + 1]
             pane_id = self.start_pane_id_override or f"{workspace_id}:p{self.pane_count}"
             self.pane_agents[pane_id] = name
+            self.pane_terminals[pane_id] = f"term-{self.pane_count}"
             agent = {
                 "agent": name,
                 "workspace_id": workspace_id,
                 "pane_id": pane_id,
-                "terminal_id": f"term-{self.pane_count}",
+                "terminal_id": self.pane_terminals[pane_id],
             }
             if self.start_missing_terminal_id:
                 agent.pop("terminal_id")
@@ -134,14 +138,16 @@ class FakeHerdr:
             source = command[2]
             workspace_id = source.split(":p", 1)[0]
             self.pane_count += 1
+            pane_id = f"{workspace_id}:p{self.pane_count + 1}"
+            self.pane_terminals[pane_id] = f"term-split-{self.pane_count}"
             return self._ok(
                 argv,
                 {
                     "result": {
                         "pane": {
-                            "pane_id": f"{workspace_id}:p{self.pane_count + 1}",
+                            "pane_id": pane_id,
                             "workspace_id": workspace_id,
-                            "terminal_id": f"term-split-{self.pane_count}",
+                            "terminal_id": self.pane_terminals[pane_id],
                         }
                     }
                 },
@@ -171,7 +177,7 @@ class FakeHerdr:
                             or self.pane_agents.get(pane_id),
                             "workspace_id": workspace_id,
                             "pane_id": pane_id,
-                            "terminal_id": f"term-{pane_id}",
+                            "terminal_id": self.pane_terminals.get(pane_id, f"term-{pane_id}"),
                             "agent_status": self.pane_status,
                         }
                     }
@@ -308,6 +314,52 @@ def test_spawn_binds_exact_workspace_pane_terminal_and_session(tmp_path: Path) -
     assert backend_ids["workspace_id"] == "w1"
     assert backend_ids["pane_id"] == "w1:p1"
     assert backend_ids["terminal_id"] == "term-1"
+    assert backend.list_owned("run-1") == [lease]
+
+
+def test_backend_reopens_and_adopts_existing_tau_endpoint_from_lease(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    original = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = original.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    lease = original.spawn(
+        herdr_runtime_spawn_request(
+            run_id="run-1",
+            plan_revision=canonical_sha256({"plan": 1}),
+            dag_id="dag-1",
+            node_id="worker",
+            attempt_id="attempt-1",
+            attempt_number=1,
+            execution_token="token-1",
+            scope_id=scope["scope_id"],
+            command=("bash",),
+            cwd=tmp_path,
+            work_order_sha256=canonical_sha256({"work": "bounded"}),
+            goal_hash=canonical_sha256({"goal": 1}),
+            owner="tau",
+            label="worker",
+        )
+    )
+    restarted = HerdrRuntimeBackend(session="default", command_runner=fake)
+
+    event = restarted.observe(lease)
+
+    assert event.liveness == "ALIVE"
+    assert restarted.list_owned("run-1") == [lease]
+    assert not any(call[3:5] == ["agent", "start"] for call in fake.calls[3:])
+
+
+def test_adoption_rejects_forged_non_tau_endpoint(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    backend, _, lease, _ = _spawned_backend(tmp_path, command_runner=fake)
+    forged = replace(lease, owner="other")
+    restarted = HerdrRuntimeBackend(session="default", command_runner=fake)
+
+    with pytest.raises(RuntimeError, match="endpoint_owner_not_adoptable"):
+        restarted.observe(forged)
     assert backend.list_owned("run-1") == [lease]
 
 

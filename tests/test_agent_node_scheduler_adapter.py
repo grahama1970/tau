@@ -134,6 +134,37 @@ def test_scheduler_runs_tau_native_agent_nodes(tmp_path: Path) -> None:
     assert "worker" in seen_context["verifier"]
 
 
+def test_generic_tau_agent_node_accepts_explicit_herdr_runtime_requirement(
+    tmp_path: Path,
+) -> None:
+    spec = _spec(tmp_path)
+    spec["nodes"][1]["runtime_requirement"] = {
+        "schema": "tau.runtime_requirement.v1",
+        "backend": "herdr",
+        "interaction_mode": "interactive",
+        "required_capabilities": [
+            "interactive",
+            "stable_endpoint_id",
+            "human_attach",
+            "native_agent_state",
+            "foreground_process_state",
+            "supports_working_directory",
+            "supports_owned_inventory",
+            "supports_terminate",
+        ],
+        "session_scope": "node_attempt",
+        "observation_requirements": ["PROCESS"],
+    }
+
+    plan = compile_generic_dag_plan(spec, source_path=tmp_path / "dag.json")
+    runtime = {node.node_id: node.runtime_requirement.to_value() for node in plan.nodes}
+
+    assert runtime["worker"]["backend"] == "herdr"
+    assert runtime["worker"]["interaction_mode"] == "interactive"
+    assert "human_attach" in runtime["worker"]["required_capabilities"]
+    assert runtime["verifier"]["backend"] == "local"
+
+
 def test_scheduler_agent_node_failure_is_fail_closed(tmp_path: Path) -> None:
     plan = compile_generic_dag_plan(_spec(tmp_path), source_path=tmp_path / "dag.json")
     providers = {
