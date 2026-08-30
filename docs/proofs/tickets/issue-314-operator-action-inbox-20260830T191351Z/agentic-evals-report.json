@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_operator_action_inbox_agentic_eval.json",
+  "run_id": "d20703238d7d",
+  "fixture_sha256": "sha256:be12287a82e4771e277026f0c55986fd41de69b44eefef77e182d5bc9e7fc716",
+  "repo": {
+    "sha": "81aff44711baa3288b578fa50906857e37ff7d1e",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau durable operator action inbox, idempotency, cross-process application, and uncertain-claim reconciliation",
+  "claims": {
+    "proves": "Tau can persist bounded operator actions in the SQLite run store, reject idempotency conflicts, apply an action exactly once through the scheduler-owned claim/complete path after reopening the store, and reconcile a claimed action left without a terminal receipt after process restart.",
+    "does_not_prove": "Human acceptance, external UI delivery, provider semantic quality, or that every operator action subtype is semantically applied by a live runtime backend."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+        "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "operator-action-inbox-sqlite-cross-process-apply-once"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "operator-action-inbox-sqlite-cross-process-apply-once",
+          "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T19:12:14.047211+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "operator-action-inbox-sqlite-cross-process-apply-once",
+      "type": "positive",
+      "case_id": "d20703238d7d-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && TAU_OPERATOR_ACTION_INBOX_PROOF=local/agentic-evals/tau-operator-action-inbox-proof.json uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_request_survives_process_reopen_and_applies_once tests/test_operator_action_inbox.py::test_operator_action_inbox_can_emit_machine_readable_proof -q -s"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.operator_action_inbox.durable_idempotent_cross_process"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1037.443,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": ".{\"completion_status\": \"APPLIED\", \"database_exists\": true, \"live\": true, \"mocked\": false, \"ok\": true, \"receipt_sha256\": \"sha256:c1e30c6a366fe64f285040ab089ba3b8aa33ef59f8abe8c755e0079e9b2ecee6\", \"schema\": \"tau.operator_action_inbox_proof.v1\", \"submission_status\": \"VALIDATED\"}\n.\n2 passed in 0.56s\n",
+          "stderr": "",
+          "duration_ms": 1041.185,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "d20703238d7d-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-operator-action-inbox-proof.json": "sha256:b9af04dd23240650177bf599d41a14fb49c9a6c777785fe30982cef1f50a8f10"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": ".{\"completion_status\": \"APPLIED\", \"database_exists\": true, \"live\": true, \"mocked\": false, \"ok\": true, \"receipt_sha256\": \"sha256:bcb31d7c7aa12734d730c87735c225529f996f38722e11fbff73b5ef82094424\", \"schema\": \"tau.operator_action_inbox_proof.v1\", \"submission_status\": \"VALIDATED\"}\n.\n2 passed in 0.55s\n",
+          "stderr": "",
+          "duration_ms": 1033.701,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "d20703238d7d-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-operator-action-inbox-proof.json": "sha256:3100b236376183d8133409f64fccf6cde237c15a487116ead9ea710a0f8e0dc0"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim",
+      "type": "adversarial",
+      "case_id": "d20703238d7d-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_inbox_rejects_idempotency_key_conflicts tests/test_operator_action_inbox.py::test_claimed_operator_action_reconciles_after_scheduler_restart -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.operator_action_inbox.durable_idempotent_cross_process"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 998.822,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.54s\n",
+          "stderr": "",
+          "duration_ms": 1004.378,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "d20703238d7d-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.53s\n",
+          "stderr": "",
+          "duration_ms": 993.267,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "d20703238d7d-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

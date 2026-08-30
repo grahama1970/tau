@@ -1,6 +1,6 @@
 {
   "counts_by_kind": {
-    "capability-module": 5,
+    "capability-module": 7,
     "cli-command": 201,
     "evaluator-script": 12,
     "ledger-path": 10,
@@ -8,7 +8,7 @@
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 263,
+  "feature_count": 265,
   "features": [
     {
       "feature_id": "capability-module:src/tau_coding/codebase_ingest.py",
@@ -19,6 +19,26 @@
       "name": "codebase_ingest",
       "source_line": null,
       "source_path": "src/tau_coding/codebase_ingest.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/run_store.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:b6b2dfaaf43af088474e90ff15fc303119108a89fa9f90e41c6b847752946380"
+      },
+      "name": "run_store",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/run_store.py"
+    },
+    {
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/scheduler.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:0bacf55d17fcd9a7135b23b256d5c21a7612e2c34aa9b1ef0fd5b8cea6692476"
+      },
+      "name": "scheduler",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/scheduler.py"
     },
     {
       "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
@@ -2617,10 +2637,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T19:01:45Z",
+  "generated_at": "2026-08-30T19:12:21Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:492ecac0ee1a886f5bdb859ad7bb33f5e0102a6c875ca9a3631ad09f553cd24e"
+  "source_sha256": "sha256:de8c7f21ecdac5d124da1d3e377c7d796166a21c846f85d336614bd393eb01da"
 }

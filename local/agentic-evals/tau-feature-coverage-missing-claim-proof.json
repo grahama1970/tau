@@ -1,7 +1,7 @@
 {
   "adversarial_detection": true,
-  "claim_count": 17,
-  "covered_claim_count": 17,
+  "claim_count": 18,
+  "covered_claim_count": 18,
   "expected_failure_code": "missing_capability_claims",
   "finding_count": 2,
   "findings": [
@@ -20,10 +20,10 @@
       "source": "evals/tau_terminal_dag_watch_agentic_eval.json"
     }
   ],
-  "inventory_feature_count": 263,
+  "inventory_feature_count": 265,
   "inventory_path": null,
   "live": true,
-  "manifest_count": 18,
+  "manifest_count": 19,
   "mocked": false,
   "mode": "missing-capability-claim",
   "negative_case_receipt": true,

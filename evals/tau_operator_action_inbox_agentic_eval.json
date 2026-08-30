@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau durable operator action inbox, idempotency, cross-process application, and uncertain-claim reconciliation",
+  "claims": {
+    "proves": "Tau can persist bounded operator actions in the SQLite run store, reject idempotency conflicts, apply an action exactly once through the scheduler-owned claim/complete path after reopening the store, and reconcile a claimed action left without a terminal receipt after process restart.",
+    "does_not_prove": "Human acceptance, external UI delivery, provider semantic quality, or that every operator action subtype is semantically applied by a live runtime backend."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+      "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "operator-action-inbox-sqlite-cross-process-apply-once",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.operator_action_inbox.durable_idempotent_cross_process"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && TAU_OPERATOR_ACTION_INBOX_PROOF=local/agentic-evals/tau-operator-action-inbox-proof.json uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_request_survives_process_reopen_and_applies_once tests/test_operator_action_inbox.py::test_operator_action_inbox_can_emit_machine_readable_proof -q -s"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "tau.operator_action_inbox_proof.v1",
+          "\"completion_status\": \"APPLIED\"",
+          "2 passed"
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-operator-action-inbox-proof.json",
+            "json_pointer": "/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-action-inbox-proof.json",
+            "json_pointer": "/completion_status",
+            "equals": "APPLIED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-action-inbox-proof.json",
+            "json_pointer": "/submission_status",
+            "equals": "VALIDATED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-action-inbox-proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-action-inbox-proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.operator_action_inbox.durable_idempotent_cross_process"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_inbox_rejects_idempotency_key_conflicts tests/test_operator_action_inbox.py::test_claimed_operator_action_reconciles_after_scheduler_restart -q"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "2 passed"
+        ]
+      }
+    }
+  ]
+}

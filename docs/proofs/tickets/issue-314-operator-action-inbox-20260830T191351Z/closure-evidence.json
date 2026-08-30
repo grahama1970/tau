@@ -1,0 +1,111 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 314,
+  "title": "Make Tau operator actions durable, idempotent, and applicable across process boundaries",
+  "implementation_commit": "81aff44711baa3288b578fa50906857e37ff7d1e",
+  "proof_boundary": {
+    "proves": [
+      "Operator action requests are stored durably in the SQLite run store.",
+      "Duplicate request delivery is byte-idempotent.",
+      "Idempotency-key conflicts fail closed.",
+      "A reopened scheduler owner can claim and complete an action exactly once with a receipt.",
+      "A claimed action left without a terminal receipt is reconciled to RECONCILED after restart instead of being replayed silently."
+    ],
+    "does_not_prove": [
+      "Human acceptance.",
+      "External UI delivery.",
+      "Provider semantic quality.",
+      "Semantic application coverage for every operator action subtype against live runtime backends."
+    ]
+  },
+  "commands": [
+    {
+      "command": "uv run pytest --tau-suite=all tests/test_operator_action_inbox.py tests/test_project_dag.py tests/test_run_ledger.py tests/test_agent_projection_actions.py -q",
+      "result": "129 passed in 15.65s"
+    },
+    {
+      "command": "uv run pytest -q",
+      "result": "253 passed, 29 skipped, 3445 deselected in 26.52s"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_operator_action_inbox_agentic_eval.json --output local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
+    },
+    {
+      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
+    }
+  ],
+  "operator_action_readback": {
+    "completion_status": "APPLIED",
+    "database_exists": true,
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "receipt_sha256": "sha256:bcb31d7c7aa12734d730c87735c225529f996f38722e11fbff73b5ef82094424",
+    "schema": "tau.operator_action_inbox_proof.v1",
+    "submission_status": "VALIDATED"
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 2,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 4,
+    "capability_readiness": {
+      "aggregate_readiness": "READY",
+      "critical_claim_count": 1,
+      "critical_claims_proven": 1,
+      "claims": [
+        {
+          "id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+          "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
+          "criticality": "critical",
+          "required_evidence": [
+            "fault_injected_deterministic",
+            "live_e2e"
+          ],
+          "verdict": "PROVEN",
+          "per_class": {
+            "fault_injected_deterministic": {
+              "status": "PROVEN",
+              "cases": [
+                "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
+              ]
+            },
+            "live_e2e": {
+              "status": "PROVEN",
+              "cases": [
+                "operator-action-inbox-sqlite-cross-process-apply-once"
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "blocked_evidence": [],
+          "exempt_evidence": [],
+          "exemptions": [],
+          "unqualified_live_cases": [],
+          "supporting_cases": [
+            "operator-action-inbox-sqlite-cross-process-apply-once",
+            "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
+          ]
+        }
+      ]
+    }
+  },
+  "feature_coverage_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 7,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 14,
+    "source": "evals/tau_feature_coverage_agentic_eval.json"
+  },
+  "status": "PASS"
+}

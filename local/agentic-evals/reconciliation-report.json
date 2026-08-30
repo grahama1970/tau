@@ -1,7 +1,7 @@
 {
-  "claim_count": 18,
-  "coverage_records_sha256": "sha256:d210e2063b7b296200977fabdf3590e91d39fad22c249b3b98e7561f0290abcc",
-  "covered_claim_count": 18,
+  "claim_count": 19,
+  "coverage_records_sha256": "sha256:c619265d52204252d1bd5b396cec385952147e77a6f0d0c869eabcb522c3ded8",
+  "covered_claim_count": 19,
   "features": [
     {
       "coverage": [
@@ -20,6 +20,42 @@
       "name": "codebase_ingest",
       "source_line": null,
       "source_path": "src/tau_coding/codebase_ingest.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+          "feature_id": "capability-module:src/tau_coding/dag_runtime/run_store.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/run_store.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:b6b2dfaaf43af088474e90ff15fc303119108a89fa9f90e41c6b847752946380"
+      },
+      "name": "run_store",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/run_store.py"
+    },
+    {
+      "coverage": [
+        {
+          "claim_id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+          "feature_id": "capability-module:src/tau_coding/dag_runtime/scheduler.py",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/scheduler.py",
+      "kind": "capability-module",
+      "metadata": {
+        "sha256": "sha256:0bacf55d17fcd9a7135b23b256d5c21a7612e2c34aa9b1ef0fd5b8cea6692476"
+      },
+      "name": "scheduler",
+      "source_line": null,
+      "source_path": "src/tau_coding/dag_runtime/scheduler.py"
     },
     {
       "coverage": [
@@ -5117,10 +5153,10 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T19:01:45Z",
-  "inventory_feature_count": 263,
+  "generated_at": "2026-08-30T19:12:21Z",
+  "inventory_feature_count": 265,
   "live": true,
-  "manifest_count": 18,
+  "manifest_count": 19,
   "manifests": [
     {
       "case_count": 2,
@@ -5370,6 +5406,27 @@
       "skill": "tau-ledger-trace"
     },
     {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.operator_action_inbox.durable_idempotent_cross_process"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.operator_action_inbox.durable_idempotent_cross_process"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_operator_action_inbox_agentic_eval.json",
+      "skill": "tau"
+    },
+    {
       "case_count": 1,
       "claim_ids": [
         "tau.repair.required_node_failure_overlay"
@@ -5554,6 +5611,9 @@
     "evals/tau_ledger_trace_agentic_eval.json": {
       "path": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json"
     },
+    "evals/tau_operator_action_inbox_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json"
+    },
     "evals/tau_pipeline_self_repair_agentic_eval.json": {
       "path": "local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json"
     },
@@ -5578,6 +5638,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:e45e0b18e45a5eb94eb38e4320e5eeea5e649f2f5ff599ccc96f171c4a34a842",
+  "source_inventory_sha256": "sha256:4bb5df0a784f8ecd69d667e20c6c18df1692920110b49d431c8706b4aa5ff714",
   "status": "PASS"
 }

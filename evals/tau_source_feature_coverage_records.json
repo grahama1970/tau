@@ -8,6 +8,16 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/scheduler.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.operator_action_inbox.durable_idempotent_cross_process",
+      "feature_id": "capability-module:src/tau_coding/dag_runtime/run_store.py",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.python_workspace_kernel.lifecycle_receipts",
       "feature_id": "capability-module:src/tau_coding/runtime_backends/kernel.py",
       "status": "CLAIMED"

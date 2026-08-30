@@ -1,0 +1,10 @@
+{
+  "completion_status": "APPLIED",
+  "database_exists": true,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_sha256": "sha256:bcb31d7c7aa12734d730c87735c225529f996f38722e11fbff73b5ef82094424",
+  "schema": "tau.operator_action_inbox_proof.v1",
+  "submission_status": "VALIDATED"
+}
