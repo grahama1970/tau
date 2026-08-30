@@ -1,0 +1,68 @@
+{
+  "agentic_evals": {
+    "command": "/home/graham/.pi/agent/skills/agentic-evals/run.sh run evals/tau_child_agent_requests_agentic_eval.json --output local/agentic-evals/tau-child-agent-requests-agentic-evals-report.json",
+    "exit_code": 0,
+    "report": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/child-agent-requests-agentic-evals-report.json"
+  },
+  "created_at": "2026-08-30T19:57:59.908752+00:00",
+  "e2e": {
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/child-agent-requests-proof.json",
+    "command": "uv run python scripts/agentic-eval-tau-child-agent-requests.py --out local/agentic-evals/tau-child-agent-requests-proof.json --work local/agentic-evals/tau-child-agent-requests-work",
+    "exit_code": 0,
+    "live": true,
+    "mocked": false
+  },
+  "feature_coverage": {
+    "outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 7
+    },
+    "path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/tau-feature-coverage-agentic-evals-report.json",
+    "readiness": "READY",
+    "trial_count": 14
+  },
+  "issue": 316,
+  "live": true,
+  "mocked": false,
+  "not_proven": [
+    "provider semantic quality",
+    "Herdr pane adoption",
+    "React Flow projection rendering",
+    "GOAL.md completion",
+    "human acceptance"
+  ],
+  "observed": {
+    "agentic_eval_outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 2
+    },
+    "agentic_eval_readiness": "READY",
+    "agentic_eval_trial_count": 4,
+    "child_count": 3,
+    "context_compaction_handle_continuity": true,
+    "follow_up_receipt_status": "PASS",
+    "pre_settlement_result_count": 0,
+    "reconstructed_same_handles_after_restart": true,
+    "roles": [
+      "scout",
+      "coder",
+      "reviewer"
+    ]
+  },
+  "proof_boundary": {
+    "does_not_prove": "semantic quality of external provider answers, UI pane rendering, or a real paid-provider child session",
+    "proves": "model-facing child requests are admitted idempotently, compiled into bounded Tau child DAG specs, executed through the installed tau dag-run path, and joined by durable receipt handles"
+  },
+  "provider_live": false,
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "status": "ACCEPTED",
+  "unit": {
+    "command": "uv run pytest --tau-suite=all tests/test_child_agent_requests.py -q",
+    "exit_code": 0,
+    "passed": 4
+  }
+}

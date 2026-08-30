@@ -1,0 +1,167 @@
+{
+  "accepted_results": [
+    {
+      "child_run_id": "child-run-0e29dee4f6838884",
+      "handle_id": "child-handle-0e29dee4f6838884",
+      "output": {
+        "handle_id": "child-handle-0e29dee4f6838884",
+        "message": "child dag executed"
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json",
+      "receipt_sha256": "sha256:36691b9bc750f900f0535faf1b17d3226faa7da8049398423243c686e164ba5b"
+    },
+    {
+      "child_run_id": "child-run-27cff706ed4faa64",
+      "handle_id": "child-handle-27cff706ed4faa64",
+      "output": {
+        "handle_id": "child-handle-27cff706ed4faa64",
+        "message": "child dag executed"
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json",
+      "receipt_sha256": "sha256:b4b2c234812ad35298a0b8202686e0078ce5e0eba82ace74572b9634aa22f927"
+    },
+    {
+      "child_run_id": "child-run-334faa3223f78654",
+      "handle_id": "child-handle-334faa3223f78654",
+      "output": {
+        "handle_id": "child-handle-334faa3223f78654",
+        "message": "child dag executed"
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json",
+      "receipt_sha256": "sha256:a8f30758a91895149246ed69637ab2149427a1ec16223dcd123050f14a4177df"
+    }
+  ],
+  "byte_idempotent_duplicate": true,
+  "child_runs": [
+    {
+      "child_run_id": "child-run-0e29dee4f6838884",
+      "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json",
+      "exit_code": 0,
+      "handle_id": "child-handle-0e29dee4f6838884",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json",
+      "receipt_status": "PASS",
+      "role": "scout",
+      "stderr_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stderr",
+      "stdout_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stdout"
+    },
+    {
+      "child_run_id": "child-run-27cff706ed4faa64",
+      "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json",
+      "exit_code": 0,
+      "handle_id": "child-handle-27cff706ed4faa64",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json",
+      "receipt_status": "PASS",
+      "role": "coder",
+      "stderr_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stderr",
+      "stdout_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stdout"
+    },
+    {
+      "child_run_id": "child-run-334faa3223f78654",
+      "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json",
+      "exit_code": 0,
+      "handle_id": "child-handle-334faa3223f78654",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json",
+      "receipt_status": "PASS",
+      "role": "reviewer",
+      "stderr_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stderr",
+      "stdout_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stdout"
+    }
+  ],
+  "context_compaction_handle_continuity": true,
+  "errors": [],
+  "follow_up": {
+    "exit_code": 0,
+    "handle_id": "child-handle-6b6cdab883b69db4",
+    "lineage_request_sha256": "sha256:6b6cdab883b69db4b132a297fa8e3881080b3b24f4f330dcbe755e5da8c09ce3",
+    "parent_child_run_id": "child-run-0e29dee4f6838884",
+    "receipt_status": "PASS"
+  },
+  "idempotency_conflict_rejected": true,
+  "launched_child_dags_before_waiting": true,
+  "live": true,
+  "mocked": false,
+  "operator_action": {
+    "action": "add_next_turn_instruction",
+    "action_request_id": "issue316-instruction-1",
+    "arguments": {
+      "instruction": "Continue the admitted child DAG only; do not ask a human."
+    },
+    "attempt": 1,
+    "authorized_agent_next_steps": [
+      "add_next_turn_instruction"
+    ],
+    "journal_head_sha256": "sha256:issue316-journal-head",
+    "journal_seq": 1,
+    "node_id": "child-agent",
+    "requires_human_input": false,
+    "run_id": "child-run-0e29dee4f6838884",
+    "schema": "tau.operator_action_request.v1",
+    "source": "child_agent_handle",
+    "target": {
+      "handle_id": "child-handle-0e29dee4f6838884",
+      "parent_run_id": "issue316-parent"
+    }
+  },
+  "pre_settlement_result_count": 0,
+  "proof_boundary": {
+    "does_not_prove": "semantic quality of external provider answers, UI pane rendering, or a real paid-provider child session",
+    "proves": "model-facing child requests are admitted idempotently, compiled into bounded Tau child DAG specs, executed through the installed tau dag-run path, and joined by durable receipt handles"
+  },
+  "provider_live": false,
+  "reconstructed_same_handles_after_restart": true,
+  "registry": {
+    "child_count": 3,
+    "handles": [
+      {
+        "child_run_id": "child-run-0e29dee4f6838884",
+        "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json",
+        "handle_id": "child-handle-0e29dee4f6838884",
+        "operator_action_ids": [],
+        "parent_node_id": "planner",
+        "parent_run_id": "issue316-parent",
+        "request_id": "issue316-alpha",
+        "request_sha256": "sha256:0e29dee4f6838884b28015f0c0af82649ed1440982b1420c4dad49cb6303750f",
+        "result_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json",
+        "role": "scout",
+        "schema": "tau.child_agent_handle.v1",
+        "status": "PASS",
+        "task_summary": "bounded child alpha"
+      },
+      {
+        "child_run_id": "child-run-27cff706ed4faa64",
+        "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json",
+        "handle_id": "child-handle-27cff706ed4faa64",
+        "operator_action_ids": [],
+        "parent_node_id": "planner",
+        "parent_run_id": "issue316-parent",
+        "request_id": "issue316-bravo",
+        "request_sha256": "sha256:27cff706ed4faa640dcc90a0c50ddbb0c50e6f198175d3447c1b70af94272bf1",
+        "result_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json",
+        "role": "coder",
+        "schema": "tau.child_agent_handle.v1",
+        "status": "PASS",
+        "task_summary": "bounded child bravo"
+      },
+      {
+        "child_run_id": "child-run-334faa3223f78654",
+        "dag_spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json",
+        "handle_id": "child-handle-334faa3223f78654",
+        "operator_action_ids": [],
+        "parent_node_id": "planner",
+        "parent_run_id": "issue316-parent",
+        "request_id": "issue316-charlie",
+        "request_sha256": "sha256:334faa3223f78654cba1f97c4ed233aaed99739e8409b54ed1aba65a087d26f7",
+        "result_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json",
+        "role": "reviewer",
+        "schema": "tau.child_agent_handle.v1",
+        "status": "PASS",
+        "task_summary": "bounded child charlie"
+      }
+    ],
+    "max_children": 3,
+    "parent_run_id": "issue316-parent",
+    "schema": "tau.child_agent_registry.v1"
+  },
+  "schema": "tau.child_agent_compilation_proof.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_child_agent_requests_agentic_eval.json",
+  "run_id": "042bb51c4c94",
+  "fixture_sha256": "sha256:b2a3539e49e6ca1c4b278fe14397645ae7dd0213bb923b6005739d805b1e3e9e",
+  "repo": {
+    "sha": "9ef9755f8098011405eb78a508ef0c97c77bd563",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau model-facing child-agent request admission, bounded child DAG compilation, handle registry, and agent-actionable steering requests",
+  "claims": {
+    "does_not_prove": "Semantic quality of external provider answers, UI pane rendering, Herdr pane adoption, or a real paid-provider child session.",
+    "proves": "Tau admits model-facing child-agent requests through a bounded policy, assigns durable child handles idempotently, compiles requests into executable Tau child DAG specs, joins accepted receipt results, and emits child instruction/cancel requests as agent-actionable operator actions rather than human blockers."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.child_agent_requests.bounded_child_dag_compilation",
+        "description": "Model-facing child-agent requests are validated, fan-out/depth bounded, byte-idempotently admitted, compiled into Tau child DAG specs, joined by receipt handles, and steerable through agent-actionable operator requests.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "child-agent-requests-fail-closed-on-policy-and-idempotency-errors"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "child-agent-requests-compile-and-run-three-child-dags"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "child-agent-requests-compile-and-run-three-child-dags",
+          "child-agent-requests-fail-closed-on-policy-and-idempotency-errors"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T19:57:09.770400+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "child-agent-requests-compile-and-run-three-child-dags",
+      "type": "positive",
+      "case_id": "042bb51c4c94-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && rm -rf local/agentic-evals/tau-child-agent-requests-work && uv run python scripts/agentic-eval-tau-child-agent-requests.py --out local/agentic-evals/tau-child-agent-requests-proof.json --work local/agentic-evals/tau-child-agent-requests-work"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.child_agent_requests.bounded_child_dag_compilation"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2531.514,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"accepted_results\": [\n    {\n      \"child_run_id\": \"child-run-0e29dee4f6838884\",\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"output\": {\n        \"handle_id\": \"child-handle-0e29dee4f6838884\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n      \"receipt_sha256\": \"sha256:371f8d2d230ca49b3ba2af9a6941af347bd11528250e7bba80bcdb89ec8e6b17\"\n    },\n    {\n      \"child_run_id\": \"child-run-27cff706ed4faa64\",\n      \"handle_id\": \"child-handle-27cff706ed4faa64\",\n      \"output\": {\n        \"handle_id\": \"child-handle-27cff706ed4faa64\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n      \"receipt_sha256\": \"sha256:4e50144f4a2294e016526519060ae884a34a2f6bef2c11e78f1e2f7ea6e332f6\"\n    },\n    {\n      \"child_run_id\": \"child-run-334faa3223f78654\",\n      \"handle_id\": \"child-handle-334faa3223f78654\",\n      \"output\": {\n        \"handle_id\": \"child-handle-334faa3223f78654\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n      \"receipt_sha256\": \"sha256:de941e5745f3a6f72ea3747e7829642e03977aadb30b01b8d471cf556cce77de\"\n    }\n  ],\n  \"byte_idempotent_duplicate\": true,\n  \"child_runs\": [\n    {\n      \"child_run_id\": \"child-run-0e29dee4f6838884\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"scout\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stdout\"\n    },\n    {\n      \"child_run_id\": \"child-run-27cff706ed4faa64\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-27cff706ed4faa64\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"coder\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stdout\"\n    },\n    {\n      \"child_run_id\": \"child-run-334faa3223f78654\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-334faa3223f78654\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"reviewer\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stdout\"\n    }\n  ],\n  \"context_compaction_handle_continuity\": true,\n  \"errors\": [],\n  \"follow_up\": {\n    \"exit_code\": 0,\n    \"handle_id\": \"child-handle-6b6cdab883b69db4\",\n    \"lineage_request_sha256\": \"sha256:6b6cdab883b69db4b132a297fa8e3881080b3b24f4f330dcbe755e5da8c09ce3\",\n    \"parent_child_run_id\": \"child-run-0e29dee4f6838884\",\n    \"receipt_status\": \"PASS\"\n  },\n  \"idempotency_conflict_rejected\": true,\n  \"launched_child_dags_before_waiting\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"operator_action\": {\n    \"action\": \"add_next_turn_instruction\",\n    \"action_request_id\": \"issue316-instruction-1\",\n    \"arguments\": {\n      \"instruction\": \"Continue the admitted child DAG only; do not ask a human.\"\n    },\n    \"attempt\": 1,\n    \"authorized_agent_next_steps\": [\n      \"add_next_turn_instruction\"\n    ],\n    \"journal_head_sha256\": \"sha256:issue316-journal-head\",\n    \"journal_seq\": 1,\n    \"node_id\": \"child-agent\",\n    \"requires_human_input\": false,\n    \"run_id\": \"child-run-0e29dee4f6838884\",\n    \"schema\": \"tau.operator_action_request.v1\",\n    \"source\": \"child_agent_handle\",\n    \"target\": {\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"parent_run_id\": \"issue316-parent\"\n    }\n  },\n  \"pre_settlement_result_count\": 0,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"semantic quality of external provider answers, UI pane rendering, or a real paid-provider child session\",\n    \"proves\": \"model-facing child requests are admitted idempotently, compiled into bounded Tau child DAG specs, executed through the installed tau dag-run path, and joined by durable receipt handles\"\n  },\n  \"provider_live\": false,\n  \"reconstructed_same_handles_after_restart\": true,\n  \"registry\": {\n    \"child_count\": 3,\n    \"handles\": [\n      {\n        \"child_run_id\": \"child-run-0e29dee4f6838884\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json\",\n        \"handle_id\": \"child-handle-0e29dee4f6838884\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-alpha\",\n        \"request_sha256\": \"sha256:0e29dee4f6838884b28015f0c0af82649ed1440982b1420c4dad49cb6303750f\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n        \"role\": \"scout\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child alpha\"\n      },\n      {\n        \"child_run_id\": \"child-run-27cff706ed4faa64\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json\",\n        \"handle_id\": \"child-handle-27cff706ed4faa64\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-bravo\",\n        \"request_sha256\": \"sha256:27cff706ed4faa640dcc90a0c50ddbb0c50e6f198175d3447c1b70af94272bf1\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n        \"role\": \"coder\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child bravo\"\n      },\n      {\n        \"child_run_id\": \"child-run-334faa3223f78654\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json\",\n        \"handle_id\": \"child-handle-334faa3223f78654\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-charlie\",\n        \"request_sha256\": \"sha256:334faa3223f78654cba1f97c4ed233aaed99739e8409b54ed1aba65a087d26f7\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n        \"role\": \"reviewer\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child charlie\"\n      }\n    ],\n    \"max_children\": 3,\n    \"parent_run_id\": \"issue316-parent\",\n    \"schema\": \"tau.child_agent_registry.v1\"\n  },\n  \"schema\": \"tau.child_agent_compilation_proof.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 2511.283,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "042bb51c4c94-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-child-agent-requests-proof.json": "sha256:110f5ce21dbbeede53cd6d7ff64153ff9e99e07a89c8ca10ce8f2019b08ac4eb"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"accepted_results\": [\n    {\n      \"child_run_id\": \"child-run-0e29dee4f6838884\",\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"output\": {\n        \"handle_id\": \"child-handle-0e29dee4f6838884\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n      \"receipt_sha256\": \"sha256:36691b9bc750f900f0535faf1b17d3226faa7da8049398423243c686e164ba5b\"\n    },\n    {\n      \"child_run_id\": \"child-run-27cff706ed4faa64\",\n      \"handle_id\": \"child-handle-27cff706ed4faa64\",\n      \"output\": {\n        \"handle_id\": \"child-handle-27cff706ed4faa64\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n      \"receipt_sha256\": \"sha256:b4b2c234812ad35298a0b8202686e0078ce5e0eba82ace74572b9634aa22f927\"\n    },\n    {\n      \"child_run_id\": \"child-run-334faa3223f78654\",\n      \"handle_id\": \"child-handle-334faa3223f78654\",\n      \"output\": {\n        \"handle_id\": \"child-handle-334faa3223f78654\",\n        \"message\": \"child dag executed\"\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n      \"receipt_sha256\": \"sha256:a8f30758a91895149246ed69637ab2149427a1ec16223dcd123050f14a4177df\"\n    }\n  ],\n  \"byte_idempotent_duplicate\": true,\n  \"child_runs\": [\n    {\n      \"child_run_id\": \"child-run-0e29dee4f6838884\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"scout\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-0e29dee4f6838884.stdout\"\n    },\n    {\n      \"child_run_id\": \"child-run-27cff706ed4faa64\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-27cff706ed4faa64\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"coder\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-27cff706ed4faa64.stdout\"\n    },\n    {\n      \"child_run_id\": \"child-run-334faa3223f78654\",\n      \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json\",\n      \"exit_code\": 0,\n      \"handle_id\": \"child-handle-334faa3223f78654\",\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n      \"receipt_status\": \"PASS\",\n      \"role\": \"reviewer\",\n      \"stderr_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stderr\",\n      \"stdout_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/child-handle-334faa3223f78654.stdout\"\n    }\n  ],\n  \"context_compaction_handle_continuity\": true,\n  \"errors\": [],\n  \"follow_up\": {\n    \"exit_code\": 0,\n    \"handle_id\": \"child-handle-6b6cdab883b69db4\",\n    \"lineage_request_sha256\": \"sha256:6b6cdab883b69db4b132a297fa8e3881080b3b24f4f330dcbe755e5da8c09ce3\",\n    \"parent_child_run_id\": \"child-run-0e29dee4f6838884\",\n    \"receipt_status\": \"PASS\"\n  },\n  \"idempotency_conflict_rejected\": true,\n  \"launched_child_dags_before_waiting\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"operator_action\": {\n    \"action\": \"add_next_turn_instruction\",\n    \"action_request_id\": \"issue316-instruction-1\",\n    \"arguments\": {\n      \"instruction\": \"Continue the admitted child DAG only; do not ask a human.\"\n    },\n    \"attempt\": 1,\n    \"authorized_agent_next_steps\": [\n      \"add_next_turn_instruction\"\n    ],\n    \"journal_head_sha256\": \"sha256:issue316-journal-head\",\n    \"journal_seq\": 1,\n    \"node_id\": \"child-agent\",\n    \"requires_human_input\": false,\n    \"run_id\": \"child-run-0e29dee4f6838884\",\n    \"schema\": \"tau.operator_action_request.v1\",\n    \"source\": \"child_agent_handle\",\n    \"target\": {\n      \"handle_id\": \"child-handle-0e29dee4f6838884\",\n      \"parent_run_id\": \"issue316-parent\"\n    }\n  },\n  \"pre_settlement_result_count\": 0,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"semantic quality of external provider answers, UI pane rendering, or a real paid-provider child session\",\n    \"proves\": \"model-facing child requests are admitted idempotently, compiled into bounded Tau child DAG specs, executed through the installed tau dag-run path, and joined by durable receipt handles\"\n  },\n  \"provider_live\": false,\n  \"reconstructed_same_handles_after_restart\": true,\n  \"registry\": {\n    \"child_count\": 3,\n    \"handles\": [\n      {\n        \"child_run_id\": \"child-run-0e29dee4f6838884\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/dag.json\",\n        \"handle_id\": \"child-handle-0e29dee4f6838884\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-alpha\",\n        \"request_sha256\": \"sha256:0e29dee4f6838884b28015f0c0af82649ed1440982b1420c4dad49cb6303750f\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-0e29dee4f6838884/receipt.json\",\n        \"role\": \"scout\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child alpha\"\n      },\n      {\n        \"child_run_id\": \"child-run-27cff706ed4faa64\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/dag.json\",\n        \"handle_id\": \"child-handle-27cff706ed4faa64\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-bravo\",\n        \"request_sha256\": \"sha256:27cff706ed4faa640dcc90a0c50ddbb0c50e6f198175d3447c1b70af94272bf1\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-27cff706ed4faa64/receipt.json\",\n        \"role\": \"coder\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child bravo\"\n      },\n      {\n        \"child_run_id\": \"child-run-334faa3223f78654\",\n        \"dag_spec_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/dag.json\",\n        \"handle_id\": \"child-handle-334faa3223f78654\",\n        \"operator_action_ids\": [],\n        \"parent_node_id\": \"planner\",\n        \"parent_run_id\": \"issue316-parent\",\n        \"request_id\": \"issue316-charlie\",\n        \"request_sha256\": \"sha256:334faa3223f78654cba1f97c4ed233aaed99739e8409b54ed1aba65a087d26f7\",\n        \"result_receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-child-agent-requests-work/children/child-handle-334faa3223f78654/receipt.json\",\n        \"role\": \"reviewer\",\n        \"schema\": \"tau.child_agent_handle.v1\",\n        \"status\": \"PASS\",\n        \"task_summary\": \"bounded child charlie\"\n      }\n    ],\n    \"max_children\": 3,\n    \"parent_run_id\": \"issue316-parent\",\n    \"schema\": \"tau.child_agent_registry.v1\"\n  },\n  \"schema\": \"tau.child_agent_compilation_proof.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 2551.744,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "042bb51c4c94-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-child-agent-requests-proof.json": "sha256:77c31d6948c5c4d9936094790c6847722e9b97aec3cc4fad4c23095c6779ad9f"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "child-agent-requests-fail-closed-on-policy-and-idempotency-errors",
+      "type": "adversarial",
+      "case_id": "042bb51c4c94-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_child_agent_requests.py::test_child_agent_request_rejects_depth_fanout_and_idempotency_conflicts tests/test_child_agent_requests.py::test_child_agent_operator_actions_are_agent_actionable_not_human_blockers -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.child_agent_requests.bounded_child_dag_compilation"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 952.316,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.47s\n",
+          "stderr": "",
+          "duration_ms": 883.364,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "042bb51c4c94-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.56s\n",
+          "stderr": "",
+          "duration_ms": 1021.268,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "042bb51c4c94-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

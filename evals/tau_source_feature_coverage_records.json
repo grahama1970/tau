@@ -43,6 +43,16 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.child_agent_requests.bounded_child_dag_compilation",
+      "feature_id": "capability-module:src/tau_coding/child_agent_requests.py",
+      "status": "CLAIMED"
+    },
+    {
+      "claim_id": "tau.child_agent_requests.bounded_child_dag_compilation",
+      "feature_id": "evaluator-script:agentic-eval-tau-child-agent-requests",
+      "status": "CLAIMED"
+    },
+    {
       "expires": "2026-12-31",
       "feature_id": "cli-command:acceptance-bundle",
       "owner": "tau-maintainers",

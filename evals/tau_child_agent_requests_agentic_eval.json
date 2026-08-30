@@ -1,0 +1,119 @@
+{
+  "capability_claims": [
+    {
+      "criticality": "critical",
+      "description": "Model-facing child-agent requests are validated, fan-out/depth bounded, byte-idempotently admitted, compiled into Tau child DAG specs, joined by receipt handles, and steerable through agent-actionable operator requests.",
+      "evidence_required": {
+        "fault_injected_deterministic": 1,
+        "live_e2e": 1
+      },
+      "id": "tau.child_agent_requests.bounded_child_dag_compilation"
+    }
+  ],
+  "cases": [
+    {
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals && rm -rf local/agentic-evals/tau-child-agent-requests-work && uv run python scripts/agentic-eval-tau-child-agent-requests.py --out local/agentic-evals/tau-child-agent-requests-proof.json --work local/agentic-evals/tau-child-agent-requests-work"
+      ],
+      "evidence_class": "live_e2e",
+      "expected": {
+        "artifacts": [
+          {
+            "equals": "PASS",
+            "json_pointer": "/status",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": 3,
+            "json_pointer": "/registry/child_count",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": "child dag executed",
+            "json_pointer": "/accepted_results/2/output/message",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": false,
+            "json_pointer": "/operator_action/requires_human_input",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": 0,
+            "json_pointer": "/pre_settlement_result_count",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/reconstructed_same_handles_after_restart",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/context_compaction_handle_continuity",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": "PASS",
+            "json_pointer": "/follow_up/receipt_status",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": "coder",
+            "json_pointer": "/child_runs/1/role",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": "reviewer",
+            "json_pointer": "/child_runs/2/role",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          }
+        ],
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.child_agent_compilation_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "\"child_count\": 3"
+        ]
+      },
+      "name": "child-agent-requests-compile-and-run-three-child-dags",
+      "real_world": true,
+      "supports_claims": [
+        "tau.child_agent_requests.bounded_child_dag_compilation"
+      ],
+      "timeout_seconds": 180,
+      "type": "positive"
+    },
+    {
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_child_agent_requests.py::test_child_agent_request_rejects_depth_fanout_and_idempotency_conflicts tests/test_child_agent_requests.py::test_child_agent_operator_actions_are_agent_actionable_not_human_blockers -q"
+      ],
+      "evidence_class": "fault_injected_deterministic",
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "2 passed"
+        ]
+      },
+      "name": "child-agent-requests-fail-closed-on-policy-and-idempotency-errors",
+      "real_world": true,
+      "supports_claims": [
+        "tau.child_agent_requests.bounded_child_dag_compilation"
+      ],
+      "timeout_seconds": 120,
+      "type": "adversarial"
+    }
+  ],
+  "claims": {
+    "does_not_prove": "Semantic quality of external provider answers, UI pane rendering, Herdr pane adoption, or a real paid-provider child session.",
+    "proves": "Tau admits model-facing child-agent requests through a bounded policy, assigns durable child handles idempotently, compiles requests into executable Tau child DAG specs, joins accepted receipt results, and emits child instruction/cancel requests as agent-actionable operator actions rather than human blockers."
+  },
+  "proof_scope": "Tau model-facing child-agent request admission, bounded child DAG compilation, handle registry, and agent-actionable steering requests",
+  "skill": "tau",
+  "trials": 2,
+  "version": 2
+}
