@@ -116,3 +116,85 @@ def test_run_dir_ledger_includes_artifact_digests_and_trace(tmp_path):
     assert ledger["trace"]["artifact_count"] == 2
     paths = {row["path"] for row in ledger["trace"]["artifact_digests"]}
     assert paths == {"dag-progress.json", "source-dag.json"}
+
+
+def test_generic_run_dir_ledger_includes_events_nodes_and_progress(tmp_path):
+    events_path = tmp_path / "events.jsonl"
+    events_path.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "schema": "tau.generic_dag_event.v1",
+                        "kind": "node_dispatch",
+                        "run_id": "generic-run",
+                        "node_id": "build",
+                        "attempt": 1,
+                    }
+                ),
+                json.dumps(
+                    {
+                        "schema": "tau.generic_dag_event.v1",
+                        "kind": "node_receipt_validated",
+                        "run_id": "generic-run",
+                        "node_id": "build",
+                        "attempt": 1,
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "source-dag.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_spec.v1",
+                "run_id": "generic-run",
+                "goal_hash": "sha256:goalA",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "dag-progress.json").write_text(
+        json.dumps({"schema": "tau.dag_progress.v1", "status": "PASS"}),
+        encoding="utf-8",
+    )
+    (tmp_path / "run-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_run_receipt.v1",
+                "run_id": "generic-run",
+                "scheduler_run_id": "generic-run",
+                "status": "PASS",
+                "events_jsonl": str(events_path),
+                "nodes": [
+                    {
+                        "node_id": "build",
+                        "attempt": 1,
+                        "attempt_id": "attempt-build",
+                        "status": "PASS",
+                        "verdict": "PASS",
+                        "mocked": False,
+                        "live": True,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    ledger = rl.build_run_ledger_from_run_dir(tmp_path)
+
+    assert rl.verify_ledger(ledger)["ok"] is True
+    assert ledger["source_receipt_path"].endswith("run-receipt.json")
+    assert ledger["trace"]["entry_kind_counts"]["generic_dag_event"] == 2
+    assert ledger["trace"]["entry_kind_counts"]["generic_node_receipt"] == 1
+    assert {
+        row["path"] for row in ledger["trace"]["artifact_digests"]
+    } >= {"events.jsonl", "source-dag.json", "dag-progress.json"}
+    assert any(
+        row["node_id"] == "build"
+        and {"node_dispatch", "node_receipt_validated"} <= set(row["events"])
+        for row in ledger["trace"]["node_attempts"]
+    )

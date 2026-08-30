@@ -2,10 +2,10 @@
   "version": 2,
   "skill": "tau",
   "trials": 2,
-  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, and receipt-completeness invariants",
+  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, receipt-completeness invariants, and live DAG viewer transition-to-ledger correlation",
   "claims": {
-    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, and still assembles an intact final receipt",
-    "does_not_prove": "provider or model semantic quality, browser handler transport, GitHub mutation, Herdr pane behavior, DAG resume across processes, or that any specific downstream worker streams its own output"
+    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, still assembles an intact final receipt, and binds live DAG viewer transitions to authoritative run, event, and ledger IDs",
+    "does_not_prove": "provider or model semantic quality, GitHub mutation, Herdr pane behavior, production deployment, or that any specific downstream worker streams its own output"
   },
   "cases": [
     {
@@ -96,6 +96,74 @@
           "capture rejects negative line bound: PASS",
           "capture honours zero line bound: PASS",
           "stdin delivered and confirmed: PASS"
+        ]
+      }
+    },
+    {
+      "name": "live-dag-viewer-transitions-correlate-to-ledger",
+      "type": "positive",
+      "real_world": true,
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/run-live-dag-viewer-correlation-browser-proof.py",
+        "--output-dir",
+        "/tmp/tau-agentic-issue-332-live-viewer-correlation",
+        "--step-delay-seconds",
+        "1.2"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "artifacts": [
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/sequential_transition",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/concurrent_branch_transition",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/blocked_or_approval_state",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/resume_transition",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/completion_transition",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/every_visible_transition_bound_to_event_and_ledger",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/negative_stale_and_out_of_order_receipts",
+            "equals": true
+          },
+          {
+            "path": "/tmp/tau-agentic-issue-332-live-viewer-correlation/latest-proof.json",
+            "json_pointer": "/checks/read_only_requests",
+            "equals": true
+          }
         ]
       }
     }

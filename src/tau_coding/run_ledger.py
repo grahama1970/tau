@@ -138,41 +138,131 @@ def build_run_ledger_from_run_dir(
     """Build and optionally write a ledger for an existing Tau DAG run directory."""
     resolved_run_dir = run_dir.expanduser().resolve()
     receipt_path = resolved_run_dir / "dag-receipt.json"
+    generic_receipt = False
+    if not receipt_path.is_file():
+        receipt_path = resolved_run_dir / "run-receipt.json"
+        generic_receipt = True
     receipt = _read_json_object(receipt_path)
-    goal_hash = str(receipt.get("active_goal_hash") or receipt.get("goal_hash") or "")
+    source_dag = _optional_json_object(resolved_run_dir / "source-dag.json")
+    source_goal = source_dag.get("goal") if isinstance(source_dag.get("goal"), dict) else {}
+    goal_hash = str(
+        receipt.get("active_goal_hash")
+        or receipt.get("goal_hash")
+        or source_dag.get("goal_hash")
+        or source_goal.get("sha256")
+        or ""
+    )
     if not goal_hash:
-        raise ValueError("dag receipt is missing active_goal_hash")
+        raise ValueError("run ledger source receipt is missing goal_hash")
     entries: list[dict[str, Any]] = []
-    for event in receipt.get("scheduler_events", []) or []:
-        if isinstance(event, dict):
-            entries.append({"kind": "scheduler_event", **event})
-    for dispatch in receipt.get("dispatches", []) or []:
-        if isinstance(dispatch, dict):
-            entries.append(
-                {
-                    "kind": "dispatch_receipt",
-                    "schema": dispatch.get("schema"),
-                    "selected_agent": dispatch.get("selected_agent"),
-                    "status": dispatch.get("status"),
-                    "stop_reason": dispatch.get("stop_reason"),
-                    "mocked": dispatch.get("mocked"),
-                    "live": dispatch.get("live"),
-                }
-            )
+    if generic_receipt:
+        entries.extend(_generic_dag_event_entries(receipt, resolved_run_dir))
+        entries.extend(_generic_dag_node_entries(receipt))
+    else:
+        for event in receipt.get("scheduler_events", []) or []:
+            if isinstance(event, dict):
+                entries.append({"kind": "scheduler_event", **event})
+        for dispatch in receipt.get("dispatches", []) or []:
+            if isinstance(dispatch, dict):
+                entries.append(
+                    {
+                        "kind": "dispatch_receipt",
+                        "schema": dispatch.get("schema"),
+                        "selected_agent": dispatch.get("selected_agent"),
+                        "status": dispatch.get("status"),
+                        "stop_reason": dispatch.get("stop_reason"),
+                        "mocked": dispatch.get("mocked"),
+                        "live": dispatch.get("live"),
+                    }
+                )
     entries.extend(_artifact_digest_entries(receipt, resolved_run_dir))
     for path in agentic_eval_reports:
         entries.append(admit_agentic_eval(_read_json_object(path.expanduser().resolve())))
     ledger = build_ledger(
         entries,
         goal_hash=goal_hash,
-        run_id=str(receipt.get("dag_id") or receipt.get("run_id") or resolved_run_dir.name),
-        dag_id=str(receipt.get("dag_id")) if receipt.get("dag_id") is not None else None,
+        run_id=str(
+            receipt.get("scheduler_run_id")
+            or receipt.get("dag_id")
+            or receipt.get("run_id")
+            or resolved_run_dir.name
+        ),
+        dag_id=str(receipt.get("dag_id") or source_dag.get("run_id") or receipt.get("run_id")),
     )
     ledger["source_run_dir"] = str(resolved_run_dir)
     ledger["source_receipt_path"] = str(receipt_path)
     if output_path is not None:
         write_ledger(output_path, ledger)
     return ledger
+
+
+def _optional_json_object(path: Path) -> dict[str, Any]:
+    try:
+        return _read_json_object(path)
+    except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        return {}
+
+
+def _generic_dag_event_entries(receipt: dict[str, Any], run_dir: Path) -> list[dict[str, Any]]:
+    events_path = Path(str(receipt.get("events_jsonl") or run_dir / "events.jsonl")).expanduser()
+    if not events_path.is_absolute():
+        events_path = run_dir / events_path
+    entries: list[dict[str, Any]] = []
+    try:
+        lines = events_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return [
+            {
+                "kind": "generic_dag_event_source_missing",
+                "path": str(events_path),
+            }
+        ]
+    for index, line in enumerate(lines):
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            entries.append(
+                {
+                    "kind": "generic_dag_event_source_invalid",
+                    "source_event_index": index,
+                    "path": str(events_path),
+                }
+            )
+            continue
+        if not isinstance(event, dict):
+            continue
+        source_kind = event.get("kind")
+        payload = dict(event)
+        payload["kind"] = "generic_dag_event"
+        payload["event"] = source_kind if isinstance(source_kind, str) else None
+        payload["source_event_index"] = index
+        entries.append(payload)
+    return entries
+
+
+def _generic_dag_node_entries(receipt: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for node in receipt.get("nodes", []) or []:
+        if not isinstance(node, dict):
+            continue
+        rows.append(
+            {
+                "kind": "generic_node_receipt",
+                "event": "node_receipt",
+                "node_id": node.get("node_id"),
+                "attempt": node.get("attempt") or node.get("scheduler_attempt"),
+                "attempt_id": node.get("attempt_id") or node.get("scheduler_attempt_id"),
+                "status": node.get("status"),
+                "verdict": node.get("verdict"),
+                "receipt_path": node.get("receipt_path"),
+                "resumed": node.get("resumed"),
+                "mocked": node.get("mocked"),
+                "live": node.get("live"),
+            }
+        )
+    return rows
 
 
 def _artifact_digest_entries(receipt: dict[str, Any], run_dir: Path) -> list[dict[str, Any]]:
@@ -183,9 +273,14 @@ def _artifact_digest_entries(receipt: dict[str, Any], run_dir: Path) -> list[dic
     it would make every default ledger stale the moment the pointer is attached.
     """
     candidates: list[str] = []
-    progress_path = receipt.get("progress_path")
-    if isinstance(progress_path, str):
-        candidates.append(progress_path)
+    for key in ("progress_path", "events_jsonl", "checkpoint_path", "current_state_path"):
+        value = receipt.get(key)
+        if isinstance(value, str):
+            candidates.append(value)
+    for default_name in ("source-dag.json", "dag-progress.json"):
+        default_path = run_dir / default_name
+        if default_path.is_file():
+            candidates.append(str(default_path))
     artifacts = receipt.get("artifacts")
     if isinstance(artifacts, list):
         candidates.extend(str(path) for path in artifacts if isinstance(path, str))
