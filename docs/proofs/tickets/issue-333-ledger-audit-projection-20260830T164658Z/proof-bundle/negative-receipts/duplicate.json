@@ -1,0 +1,26 @@
+{
+  "event_count": 4,
+  "failure_codes": [
+    "duplicate_event_id",
+    "mutation"
+  ],
+  "failure_count": 2,
+  "failures": [
+    {
+      "code": "duplicate_event_id",
+      "event_id": "event-001",
+      "index": 1
+    },
+    {
+      "code": "mutation",
+      "field": "event_id",
+      "index": 1
+    }
+  ],
+  "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "ok": false,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "FAIL",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

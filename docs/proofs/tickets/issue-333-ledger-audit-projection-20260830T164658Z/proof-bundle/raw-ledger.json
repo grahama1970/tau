@@ -1,0 +1,307 @@
+{
+  "audit_projection": {
+    "audit_write_failure_boundary": {
+      "count": 1,
+      "event_ids": [
+        "event-003"
+      ],
+      "status": "RECORDED"
+    },
+    "dag_id": "issue-333-ledger-audit-projection",
+    "events": [
+      {
+        "action": "write_artifact",
+        "actor": "coder",
+        "affected_object": "results/creator-artifact.json",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "correction": null,
+        "event_id": "event-001",
+        "event_schema": "tau.audit_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "reference": "evidence_hash"
+          }
+        ],
+        "evidence_digest": "sha256:52713d354c253cdf6fcb6a96af562ac27f0cb2d16e28950c0c178d6553e604fb",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:3f460861713ff2a031bad30aa6e1beb09227832c14f4dfd4a4a74680ef434b6d",
+        "ledger_seq": 0,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:fafbee664f8ceed7eab09ced22dfbcbe7fa36f8fa59b90d5f3d3ba24f4a5a30e",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "GENESIS",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "issue-333-proof-run",
+        "timestamp": "2026-08-30T16:00:00Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "verify_artifact",
+        "actor": "reviewer",
+        "affected_object": "run-ledger.json",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "correction": {
+          "corrects_event_id": "event-001",
+          "reason": "Bind reviewer verification to creator event."
+        },
+        "event_id": "event-002",
+        "event_schema": "tau.audit_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "reference": "evidence_hash"
+          }
+        ],
+        "evidence_digest": "sha256:a702c8700270194c2ed39b3a4ffd5625d3354c133f93c5f96ddfab08d312450e",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:4a5a4a24b4aa6a74ff893954ad7f854e90afb2d02186a8c5aad0272ee42444f7",
+        "ledger_seq": 1,
+        "outcome": "PASS",
+        "payload_sha256": "sha256:25d46c1b8079bfcfed507b19b63dc97fefc06dc0a3b9aa6ad40d7b87f449f83f",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:3f460861713ff2a031bad30aa6e1beb09227832c14f4dfd4a4a74680ef434b6d",
+        "redaction_status": "partial",
+        "retention_class": "legal_hold",
+        "run_id": "issue-333-proof-run",
+        "timestamp": "2026-08-30T16:01:00Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "audit_write_failure",
+        "actor": "tau",
+        "affected_object": "secondary-audit-sink",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "correction": null,
+        "event_id": "event-003",
+        "event_schema": "tau.audit_event.v1",
+        "evidence": [
+          {
+            "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "reference": "evidence_hash"
+          }
+        ],
+        "evidence_digest": "sha256:bf0eae87842f5d7421bae3912cd055267bcb5d67a6f01e50f5e24ee7d29663ba",
+        "human_acceptance_event": false,
+        "ledger_entry_hash": "sha256:f7079914da80b49cb7857ba419ad6279dd336a8c24b113fe407896271f8a95d2",
+        "ledger_seq": 2,
+        "outcome": "FAIL",
+        "payload_sha256": "sha256:098acee127770b75b6ce60aef24c6294b043b9a4aca5c39f60e81a562b2b6165",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:4a5a4a24b4aa6a74ff893954ad7f854e90afb2d02186a8c5aad0272ee42444f7",
+        "redaction_status": "none",
+        "retention_class": "audit_failure",
+        "run_id": "issue-333-proof-run",
+        "timestamp": "2026-08-30T16:02:00Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      },
+      {
+        "action": "human_acceptance",
+        "actor": "human",
+        "affected_object": "issue-333-proof-run",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "correction": null,
+        "event_id": "event-004",
+        "event_schema": "tau.human_acceptance.v1",
+        "evidence": [
+          {
+            "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "reference": "evidence_hash"
+          }
+        ],
+        "evidence_digest": "sha256:47e01fd94d978c80a38f72b3dc294fa3a6e2a05d39a0f3541e4a2bc7ece489be",
+        "human_acceptance_event": true,
+        "ledger_entry_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+        "ledger_seq": 3,
+        "outcome": "ACCEPTED",
+        "payload_sha256": "sha256:73408ca903fcb3af5a0b3c940e958f5ea183b213289a445d93ee896865b99bd0",
+        "policy_version": "tau.run_ledger_audit_policy.v1",
+        "prior_event_hash": "sha256:f7079914da80b49cb7857ba419ad6279dd336a8c24b113fe407896271f8a95d2",
+        "redaction_status": "none",
+        "retention_class": "restricted",
+        "run_id": "issue-333-proof-run",
+        "timestamp": "2026-08-30T16:03:00Z",
+        "verifier_version": "tau.run_ledger_audit_verifier.v1"
+      }
+    ],
+    "external_anchor": {
+      "boundary": "External milestone head anchoring was not configured for this run.",
+      "status": "NOT_CONFIGURED"
+    },
+    "goal_hash": "sha256:issue-333-ledger-audit-projection",
+    "ledger_built_at": "2026-08-30T16:25:09.273459Z",
+    "ledger_entry_count": 4,
+    "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+    "ledger_schema": "tau.run_ledger.v1",
+    "milestone_head_anchor": {
+      "boundary": "External milestone head anchoring was not configured for this run.",
+      "status": "NOT_CONFIGURED"
+    },
+    "policy_version": "tau.run_ledger_audit_policy.v1",
+    "projected_at": "2026-08-30T16:25:09.273694Z",
+    "projection_version": 1,
+    "raw_history_preserved": true,
+    "run_id": "issue-333-proof-run",
+    "schema": "tau.run_ledger_audit_projection.v1",
+    "summary": {
+      "audit_write_failure_count": 1,
+      "correction_count": 1,
+      "event_count": 4,
+      "human_acceptance_event_count": 1,
+      "redaction_statuses": [
+        "none",
+        "partial"
+      ],
+      "retention_classes": [
+        "audit_failure",
+        "legal_hold",
+        "restricted",
+        "standard"
+      ]
+    },
+    "verifier_version": "tau.run_ledger_audit_verifier.v1"
+  },
+  "built_at": "2026-08-30T16:25:09.273459Z",
+  "dag_id": "issue-333-ledger-audit-projection",
+  "entries": [
+    {
+      "entry_hash": "sha256:3f460861713ff2a031bad30aa6e1beb09227832c14f4dfd4a4a74680ef434b6d",
+      "payload": {
+        "action": "write_artifact",
+        "actor": "coder",
+        "affected_object": "results/creator-artifact.json",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "event_id": "event-001",
+        "evidence_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "outcome": "PASS",
+        "redaction_status": "none",
+        "retention_class": "standard",
+        "run_id": "issue-333-proof-run",
+        "schema": "tau.audit_event.v1",
+        "timestamp": "2026-08-30T16:00:00Z"
+      },
+      "prev_hash": "GENESIS",
+      "seq": 0
+    },
+    {
+      "entry_hash": "sha256:4a5a4a24b4aa6a74ff893954ad7f854e90afb2d02186a8c5aad0272ee42444f7",
+      "payload": {
+        "action": "verify_artifact",
+        "actor": "reviewer",
+        "affected_object": "run-ledger.json",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "correction_reason": "Bind reviewer verification to creator event.",
+        "corrects_event_id": "event-001",
+        "event_id": "event-002",
+        "evidence_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "outcome": "PASS",
+        "redaction_status": "partial",
+        "retention_class": "legal_hold",
+        "run_id": "issue-333-proof-run",
+        "schema": "tau.audit_event.v1",
+        "timestamp": "2026-08-30T16:01:00Z"
+      },
+      "prev_hash": "sha256:3f460861713ff2a031bad30aa6e1beb09227832c14f4dfd4a4a74680ef434b6d",
+      "seq": 1
+    },
+    {
+      "entry_hash": "sha256:f7079914da80b49cb7857ba419ad6279dd336a8c24b113fe407896271f8a95d2",
+      "payload": {
+        "action": "audit_write_failure",
+        "actor": "tau",
+        "affected_object": "secondary-audit-sink",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "event_id": "event-003",
+        "evidence_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "outcome": "FAIL",
+        "redaction_status": "none",
+        "retention_class": "audit_failure",
+        "run_id": "issue-333-proof-run",
+        "schema": "tau.audit_event.v1",
+        "timestamp": "2026-08-30T16:02:00Z"
+      },
+      "prev_hash": "sha256:4a5a4a24b4aa6a74ff893954ad7f854e90afb2d02186a8c5aad0272ee42444f7",
+      "seq": 2
+    },
+    {
+      "entry_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+      "payload": {
+        "action": "human_acceptance",
+        "actor": "human",
+        "affected_object": "issue-333-proof-run",
+        "attempt_id": 1,
+        "clock_source": "system_utc",
+        "event_id": "event-004",
+        "evidence_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "outcome": "ACCEPTED",
+        "redaction_status": "none",
+        "retention_class": "restricted",
+        "run_id": "issue-333-proof-run",
+        "schema": "tau.human_acceptance.v1",
+        "timestamp": "2026-08-30T16:03:00Z"
+      },
+      "prev_hash": "sha256:f7079914da80b49cb7857ba419ad6279dd336a8c24b113fe407896271f8a95d2",
+      "seq": 3
+    }
+  ],
+  "entry_count": 4,
+  "goal_hash": "sha256:issue-333-ledger-audit-projection",
+  "head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "run_id": "issue-333-proof-run",
+  "schema": "tau.run_ledger.v1",
+  "trace": {
+    "agentic_eval_count": 0,
+    "agentic_evals": [],
+    "artifact_count": 0,
+    "artifact_digests": [],
+    "entry_count": 4,
+    "entry_kind_counts": {
+      "tau.audit_event.v1": 3,
+      "tau.human_acceptance.v1": 1
+    },
+    "node_attempts": [],
+    "schema": "tau.run_ledger_trace.v1",
+    "timeline": [
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "tau.audit_event.v1",
+        "node_id": null,
+        "seq": 0,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "tau.audit_event.v1",
+        "node_id": null,
+        "seq": 1,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "tau.audit_event.v1",
+        "node_id": null,
+        "seq": 2,
+        "status": null
+      },
+      {
+        "attempt": null,
+        "event": null,
+        "kind": "tau.human_acceptance.v1",
+        "node_id": null,
+        "seq": 3,
+        "status": null
+      }
+    ]
+  }
+}

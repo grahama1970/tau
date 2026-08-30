@@ -1,0 +1,90 @@
+{
+  "agentic_evals_report": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
+  "external_anchor_boundary": {
+    "boundary": "External milestone head anchoring was not configured for this run.",
+    "status": "NOT_CONFIGURED"
+  },
+  "live": true,
+  "mocked": false,
+  "negative_receipts": {
+    "audit-write-failure-missing": {
+      "codes": [
+        "audit_write_failure_missing"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/audit-write-failure-missing.json",
+      "status": "FAIL"
+    },
+    "duplicate": {
+      "codes": [
+        "duplicate_event_id",
+        "mutation"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/duplicate.json",
+      "status": "FAIL"
+    },
+    "invalid-anchor": {
+      "codes": [
+        "invalid_external_anchor"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/invalid-anchor.json",
+      "status": "FAIL"
+    },
+    "invalid-retention": {
+      "codes": [
+        "invalid_retention_class",
+        "mutation"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/invalid-retention.json",
+      "status": "FAIL"
+    },
+    "missing-required-field": {
+      "codes": [
+        "missing_required_field",
+        "mutation"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/missing-required-field.json",
+      "status": "FAIL"
+    },
+    "mutation": {
+      "codes": [
+        "mutation"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/mutation.json",
+      "status": "FAIL"
+    },
+    "omission": {
+      "codes": [
+        "omission",
+        "reorder",
+        "sequence_gap"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/omission.json",
+      "status": "FAIL"
+    },
+    "reorder": {
+      "codes": [
+        "invalid_correction_link",
+        "reorder",
+        "sequence_gap",
+        "time_skew"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/reorder.json",
+      "status": "FAIL"
+    },
+    "time-skew": {
+      "codes": [
+        "mutation",
+        "time_skew"
+      ],
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/time-skew.json",
+      "status": "FAIL"
+    }
+  },
+  "projection_json": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-projection.json",
+  "projection_markdown": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-projection.md",
+  "provider_live": false,
+  "raw_ledger_fixture": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/raw-ledger.json",
+  "schema": "tau.issue_333_ledger_audit_proof.v1",
+  "status": "PASS",
+  "verifier_pass_receipt": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-verifier-pass.json"
+}

@@ -1,0 +1,81 @@
+{
+  "event_count": 4,
+  "failure_codes": [
+    "invalid_correction_link",
+    "reorder",
+    "sequence_gap",
+    "time_skew"
+  ],
+  "failure_count": 12,
+  "failures": [
+    {
+      "code": "sequence_gap",
+      "index": 0,
+      "ledger_seq": 3
+    },
+    {
+      "code": "reorder",
+      "index": 0,
+      "ledger_seq": 3
+    },
+    {
+      "code": "sequence_gap",
+      "index": 1,
+      "ledger_seq": 2
+    },
+    {
+      "code": "reorder",
+      "index": 1,
+      "ledger_seq": 2
+    },
+    {
+      "code": "sequence_gap",
+      "index": 2,
+      "ledger_seq": 1
+    },
+    {
+      "code": "reorder",
+      "index": 2,
+      "ledger_seq": 1
+    },
+    {
+      "code": "invalid_correction_link",
+      "field": "corrects_event_id",
+      "index": 2
+    },
+    {
+      "code": "sequence_gap",
+      "index": 3,
+      "ledger_seq": 0
+    },
+    {
+      "code": "reorder",
+      "index": 3,
+      "ledger_seq": 0
+    },
+    {
+      "code": "time_skew",
+      "index": 1,
+      "max_clock_skew_seconds": 0,
+      "previous_index": 0
+    },
+    {
+      "code": "time_skew",
+      "index": 2,
+      "max_clock_skew_seconds": 0,
+      "previous_index": 1
+    },
+    {
+      "code": "time_skew",
+      "index": 3,
+      "max_clock_skew_seconds": 0,
+      "previous_index": 2
+    }
+  ],
+  "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "ok": false,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "FAIL",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

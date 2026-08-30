@@ -1,0 +1,18 @@
+{
+  "event_count": 2,
+  "failure_codes": [
+    "audit_write_failure_missing"
+  ],
+  "failure_count": 1,
+  "failures": [
+    {
+      "code": "audit_write_failure_missing"
+    }
+  ],
+  "ledger_head_hash": "sha256:4a5a4a24b4aa6a74ff893954ad7f854e90afb2d02186a8c5aad0272ee42444f7",
+  "ok": false,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "FAIL",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

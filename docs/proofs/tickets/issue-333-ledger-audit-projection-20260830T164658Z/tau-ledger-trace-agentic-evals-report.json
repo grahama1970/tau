@@ -1,0 +1,125 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/evals/tau_ledger_trace_agentic_eval.json",
+  "run_id": "96a9c9f8cb22",
+  "fixture_sha256": "sha256:5f87dab7eb3baae54550531853463b9a7d40f31a2761af5208f8c82af7de927f",
+  "repo": {
+    "sha": "a7f31df1a077eb2745ada7edec42afb64c99a2cf",
+    "ref": "watchdog/issue-333"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau default run ledger traceability",
+  "claims": {
+    "proves": "Tau can execute a live local DAG, write the default run ledger, verify its hash chain, and expose trace fields with artifact digests and entry-kind counts.",
+    "does_not_prove": "provider semantic quality, browser rendering quality, GitHub mutation, or full product readiness."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.ledger_trace.default",
+        "description": "Default Tau DAG runs emit a verifiable traceable run ledger.",
+        "criticality": "critical",
+        "required_evidence": [
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-ledger-trace-readback"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-ledger-trace-readback"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-30T16:27:14.853512+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-ledger-trace-readback",
+      "type": "adversarial",
+      "case_id": "96a9c9f8cb22-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-ledger-trace.py --out local/agentic-evals/tau-ledger-trace-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.ledger_trace.default"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1923.617,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-ossy_mgt\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
+          "stderr": "",
+          "duration_ms": 1937.817,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "96a9c9f8cb22-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:fda0b6e98386050406652bc3e41678018464351e0ec988e7c1cbfef8e8b474b8"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-w5sdh_bx\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
+          "stderr": "",
+          "duration_ms": 1909.417,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "96a9c9f8cb22-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:29582690d72cff48ee064e90bcf08e7c0a32a28cf4411d7ced8ebbd02c9e95f2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

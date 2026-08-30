@@ -1,0 +1,12 @@
+{
+  "event_count": 4,
+  "failure_codes": [],
+  "failure_count": 0,
+  "failures": [],
+  "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "ok": true,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "PASS",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

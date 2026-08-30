@@ -1,0 +1,42 @@
+{
+  "event_count": 3,
+  "failure_codes": [
+    "omission",
+    "reorder",
+    "sequence_gap"
+  ],
+  "failure_count": 5,
+  "failures": [
+    {
+      "actual_event_count": 3,
+      "code": "omission",
+      "expected_event_count": 4
+    },
+    {
+      "code": "sequence_gap",
+      "index": 1,
+      "ledger_seq": 2
+    },
+    {
+      "code": "reorder",
+      "index": 1,
+      "ledger_seq": 2
+    },
+    {
+      "code": "sequence_gap",
+      "index": 2,
+      "ledger_seq": 3
+    },
+    {
+      "code": "reorder",
+      "index": 2,
+      "ledger_seq": 3
+    }
+  ],
+  "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "ok": false,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "FAIL",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

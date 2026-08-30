@@ -1,0 +1,19 @@
+{
+  "event_count": 4,
+  "failure_codes": [
+    "invalid_external_anchor"
+  ],
+  "failure_count": 1,
+  "failures": [
+    {
+      "code": "invalid_external_anchor",
+      "reason": "head_hash_mismatch"
+    }
+  ],
+  "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+  "ok": false,
+  "policy_version": "tau.run_ledger_audit_policy.v1",
+  "schema": "tau.run_ledger_audit_verification.v1",
+  "status": "FAIL",
+  "verifier_version": "tau.run_ledger_audit_verifier.v1"
+}

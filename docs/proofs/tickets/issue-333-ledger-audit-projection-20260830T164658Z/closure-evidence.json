@@ -1,0 +1,155 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 333,
+  "title": "Formalize compliance-officer ledger audit projection and independent verification",
+  "main_commit": "a7f31df1a077eb2745ada7edec42afb64c99a2cf",
+  "proof_boundary": {
+    "proves": [
+      "run_ledger audit projection/verifier code is on main",
+      "verifier PASS receipt exists",
+      "negative verifier receipts exist for mutation/omission/reorder/duplicate/time-skew/audit-write-failure/anchor/field/retention cases",
+      "full Tau pytest regression passed in this turn"
+    ],
+    "does_not_prove": [
+      "external anchoring is configured",
+      "provider-live execution",
+      "Tau GOAL.md completion",
+      "human acceptance"
+    ]
+  },
+  "commands": [
+    {
+      "command": "uv run python -m py_compile src/tau_coding/run_ledger.py",
+      "result": "exit 0"
+    },
+    {
+      "command": "uv run ruff check --select I,F,E501 src/tau_coding/run_ledger.py",
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_run_ledger.py -q",
+      "result": "7 passed"
+    },
+    {
+      "command": "timeout 120s uv run pytest -q -x --tb=short",
+      "result": "242 passed, 29 skipped, 3431 deselected in 25.03s"
+    }
+  ],
+  "verifier_pass": {
+    "event_count": 4,
+    "failure_codes": [],
+    "failure_count": 0,
+    "failures": [],
+    "ledger_head_hash": "sha256:06e8bfe51a8f3dba54e784737a42f6cf10ee8703365441cda7f2f6295e51dc7a",
+    "ok": true,
+    "policy_version": "tau.run_ledger_audit_policy.v1",
+    "schema": "tau.run_ledger_audit_verification.v1",
+    "status": "PASS",
+    "verifier_version": "tau.run_ledger_audit_verifier.v1"
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 1,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 2,
+    "repo": {
+      "sha": "a7f31df1a077eb2745ada7edec42afb64c99a2cf",
+      "ref": "watchdog/issue-333"
+    }
+  },
+  "proof_summary": {
+    "agentic_evals_report": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
+    "external_anchor_boundary": {
+      "boundary": "External milestone head anchoring was not configured for this run.",
+      "status": "NOT_CONFIGURED"
+    },
+    "live": true,
+    "mocked": false,
+    "negative_receipts": {
+      "audit-write-failure-missing": {
+        "codes": [
+          "audit_write_failure_missing"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/audit-write-failure-missing.json",
+        "status": "FAIL"
+      },
+      "duplicate": {
+        "codes": [
+          "duplicate_event_id",
+          "mutation"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/duplicate.json",
+        "status": "FAIL"
+      },
+      "invalid-anchor": {
+        "codes": [
+          "invalid_external_anchor"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/invalid-anchor.json",
+        "status": "FAIL"
+      },
+      "invalid-retention": {
+        "codes": [
+          "invalid_retention_class",
+          "mutation"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/invalid-retention.json",
+        "status": "FAIL"
+      },
+      "missing-required-field": {
+        "codes": [
+          "missing_required_field",
+          "mutation"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/missing-required-field.json",
+        "status": "FAIL"
+      },
+      "mutation": {
+        "codes": [
+          "mutation"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/mutation.json",
+        "status": "FAIL"
+      },
+      "omission": {
+        "codes": [
+          "omission",
+          "reorder",
+          "sequence_gap"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/omission.json",
+        "status": "FAIL"
+      },
+      "reorder": {
+        "codes": [
+          "invalid_correction_link",
+          "reorder",
+          "sequence_gap",
+          "time_skew"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/reorder.json",
+        "status": "FAIL"
+      },
+      "time-skew": {
+        "codes": [
+          "mutation",
+          "time_skew"
+        ],
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/negative-receipts/time-skew.json",
+        "status": "FAIL"
+      }
+    },
+    "projection_json": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-projection.json",
+    "projection_markdown": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-projection.md",
+    "provider_live": false,
+    "raw_ledger_fixture": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/raw-ledger.json",
+    "schema": "tau.issue_333_ledger_audit_proof.v1",
+    "status": "PASS",
+    "verifier_pass_receipt": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-333/local/agentic-evals/issue-333-ledger-audit-proof/audit-verifier-pass.json"
+  },
+  "status": "PASS"
+}
