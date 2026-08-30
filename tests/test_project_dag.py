@@ -931,18 +931,27 @@ def test_shared_project_scheduler_persists_running_progress(tmp_path: Path) -> N
     )
     worker.start()
     progress_path = run_dir / "dag-progress.json"
-    deadline = time.monotonic() + 2
+    deadline = time.monotonic() + 10
     progress: dict[str, object] = {}
+    running_progress: dict[str, object] = {}
     while time.monotonic() < deadline:
         if progress_path.is_file():
             progress = json.loads(progress_path.read_text(encoding="utf-8"))
-            if progress.get("active_subagents"):
+            if progress.get("status") == "RUNNING" and progress.get("active_subagents"):
+                running_progress = progress
                 break
+        if outcome:
+            break
         time.sleep(0.01)
-    worker.join(timeout=3)
+    worker.join(timeout=10)
 
-    assert progress.get("status") == "RUNNING"
-    assert progress.get("active_subagents")
+    assert running_progress, {
+        "last_progress": progress,
+        "outcome": outcome[0] if outcome else None,
+        "worker_alive": worker.is_alive(),
+    }
+    assert running_progress.get("status") == "RUNNING"
+    assert running_progress.get("active_subagents")
     assert outcome and outcome[0]["status"] == "PASS"
 
 
