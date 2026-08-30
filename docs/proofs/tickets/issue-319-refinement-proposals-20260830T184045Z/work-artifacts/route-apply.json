@@ -1,0 +1,53 @@
+{
+  "alerts": [
+    {
+      "code": "immutable_target_not_applyable",
+      "details": {},
+      "level": "BLOCK",
+      "message": "V1 cannot apply immutable goal/base prompt/policy/route/provider changes."
+    },
+    {
+      "code": "target_hash_conflict_requires_reconciliation",
+      "details": {
+        "current_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "proposal_before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c"
+      },
+      "level": "BLOCK",
+      "message": "Current target hash differs from proposal before_hash."
+    }
+  ],
+  "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "decision": "/tmp/issue319-main-work/route-decision.json",
+  "decision_sha256": "sha256:b3978f9e0604e3031e93e2c149efc175efc9e9e0b1b696fa4729c367af1526aa",
+  "expected_after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "idempotency_key": "idem-route-184009833821",
+  "idempotent_replay": false,
+  "kind": "route",
+  "lifecycle_state": "BLOCKED",
+  "live": true,
+  "memory_url": null,
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/route-proposal.json",
+  "proposal_id": "route-184009833813",
+  "proposal_sha256": "sha256:9caf514fade9b49f38bc39eee4a5c30644ad03dc975021be687dbc56436c078b",
+  "readback_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "receipt_path": "/tmp/issue319-main-work/route-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.834436Z"
+}

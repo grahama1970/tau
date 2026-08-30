@@ -1,0 +1,27 @@
+Tau refinement proposals
+ledger: /tmp/issue319-main-work/ledger/refinement-ledger.json
+proposal_count: 3
+
+- mem-20260830T184008Z [ACCEPTED]
+  kind/scope: memory_document / project
+  target: {"adapter": "memory", "collection": "tau_refinement_proof", "key": "issue319_20260830T184008Z_target"}
+  risk: ['incorrect persistent mutation']
+  approval: human_exact by human
+  verification: {"checks": ["readback_hash"], "declared": true}
+  rollback: available
+
+- prompt-20260830T184008Z [ACCEPTED]
+  kind/scope: supplemental_prompt / project
+  target: {"adapter": "supplemental_prompt", "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"}
+  risk: ['incorrect persistent mutation']
+  approval: human_exact by human
+  verification: {"checks": ["readback_hash"], "declared": true}
+  rollback: available
+
+- rollback-20260830T184008Z [ROLLED_BACK]
+  kind/scope: supplemental_prompt / project
+  target: {"adapter": "supplemental_prompt", "path": "/tmp/issue319-main-work/rollback-prompt.json"}
+  risk: ['incorrect persistent mutation']
+  approval: human_exact by human
+  verification: {"checks": ["readback_hash"], "declared": true}
+  rollback: rolled_back

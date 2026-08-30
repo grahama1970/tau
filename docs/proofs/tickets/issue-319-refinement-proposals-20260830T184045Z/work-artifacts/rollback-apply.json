@@ -1,0 +1,37 @@
+{
+  "alerts": [],
+  "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "decision": "/tmp/issue319-main-work/rollback-decision.json",
+  "decision_sha256": "sha256:1ee3c5313a2dd79cde4186a5f35c2a794dbae356822fbf8205d170c9f1227ae0",
+  "expected_after_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+  "idempotency_key": "idem-rollback-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "supplemental_prompt",
+  "lifecycle_state": "APPLIED",
+  "live": true,
+  "memory_url": null,
+  "mocked": false,
+  "mutation_performed": true,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/rollback-proposal.json",
+  "proposal_id": "rollback-20260830T184008Z",
+  "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+  "readback_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+  "receipt_path": "/tmp/issue319-main-work/rollback-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "PASS",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/rollback-prompt.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.821162Z"
+}

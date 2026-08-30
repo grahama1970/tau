@@ -1,0 +1,85 @@
+{
+  "journal_count": 21,
+  "ledger": "/tmp/issue319-main-work/ledger/refinement-ledger.json",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proposal_count": 3,
+  "proposals": [
+    {
+      "approval_class": "human_exact",
+      "diff_state": "rendered",
+      "kind": "memory_document",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "required_actor": "human",
+      "risk": [
+        "incorrect persistent mutation"
+      ],
+      "rollback_state": "available",
+      "scope": "project",
+      "state": "ACCEPTED",
+      "target": {
+        "adapter": "memory",
+        "collection": "tau_refinement_proof",
+        "key": "issue319_20260830T184008Z_target"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    },
+    {
+      "approval_class": "human_exact",
+      "diff_state": "rendered",
+      "kind": "supplemental_prompt",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "required_actor": "human",
+      "risk": [
+        "incorrect persistent mutation"
+      ],
+      "rollback_state": "available",
+      "scope": "project",
+      "state": "ACCEPTED",
+      "target": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    },
+    {
+      "approval_class": "human_exact",
+      "diff_state": "rendered",
+      "kind": "supplemental_prompt",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "required_actor": "human",
+      "risk": [
+        "incorrect persistent mutation"
+      ],
+      "rollback_state": "rolled_back",
+      "scope": "project",
+      "state": "ROLLED_BACK",
+      "target": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/rollback-prompt.json"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    }
+  ],
+  "schema": "tau.refinement_view.v1",
+  "timestamp": "2026-08-30T18:40:09.836374Z"
+}

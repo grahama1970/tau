@@ -1,0 +1,53 @@
+{
+  "alerts": [
+    {
+      "code": "immutable_target_not_applyable",
+      "details": {},
+      "level": "BLOCK",
+      "message": "V1 cannot apply immutable goal/base prompt/policy/route/provider changes."
+    },
+    {
+      "code": "target_hash_conflict_requires_reconciliation",
+      "details": {
+        "current_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "proposal_before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c"
+      },
+      "level": "BLOCK",
+      "message": "Current target hash differs from proposal before_hash."
+    }
+  ],
+  "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "decision": "/tmp/issue319-main-work/provider_profile-decision.json",
+  "decision_sha256": "sha256:e36dc6102e211783a6329777f77533b916185c9b41fe99ceb555705522139922",
+  "expected_after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "idempotency_key": "idem-provider_profile-184009834579",
+  "idempotent_replay": false,
+  "kind": "provider_profile",
+  "lifecycle_state": "BLOCKED",
+  "live": true,
+  "memory_url": null,
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/provider_profile-proposal.json",
+  "proposal_id": "provider_profile-184009834571",
+  "proposal_sha256": "sha256:baaf99936cba3f511c948a64cb5022cf5a11bbc9322fa5909ce33adc93c18fe8",
+  "readback_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "receipt_path": "/tmp/issue319-main-work/provider_profile-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.835207Z"
+}

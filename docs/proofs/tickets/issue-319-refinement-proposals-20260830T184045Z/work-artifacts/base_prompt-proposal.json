@@ -1,0 +1,64 @@
+{
+  "accepted_evidence_hashes": [
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  ],
+  "after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "approval_class": "human_exact",
+  "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+  "conflicts": [],
+  "data_boundary_version": "public-boundary.v1",
+  "expected_outcome": "Target readback matches after_hash only after approval.",
+  "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "idempotency_key": "idem-base_prompt-184009831384",
+  "kind": "base_prompt",
+  "model_confidence": 0.1,
+  "observation": {
+    "schema": "tau.refinement_observation.v1",
+    "text": "observed refinement need"
+  },
+  "policy_version": "zero-trust-policy.v1",
+  "problem_statement": "Current target needs a governed refinement proof update.",
+  "proposal_id": "base_prompt-184009831375",
+  "proposed_content": {
+    "content": "accepted supplemental prompt",
+    "schema": "tau.supplemental_prompt_resource.v1"
+  },
+  "rationale": "Exercise preview/apply/verify/rollback governance.",
+  "redaction_version": "tau-redaction.v1",
+  "required_actor": "human",
+  "risks": [
+    "incorrect persistent mutation"
+  ],
+  "schema": "tau.refinement_proposal.v1",
+  "scope": "project",
+  "source": {
+    "attempt": 1,
+    "node_id": "conformance",
+    "run_id": "20260830T184008Z",
+    "turn": 1
+  },
+  "superseded_by": null,
+  "supersedes": [],
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "validation_plan": {
+    "checks": [
+      "schema",
+      "hash",
+      "policy"
+    ],
+    "declared": true
+  },
+  "validity_window": {
+    "not_after": "2099-01-01T00:00:00Z",
+    "not_before": "2026-01-01T00:00:00Z"
+  },
+  "verification_plan": {
+    "checks": [
+      "readback_hash"
+    ],
+    "declared": true
+  }
+}

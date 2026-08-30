@@ -1,0 +1,53 @@
+{
+  "alerts": [
+    {
+      "code": "decision_after_hash_mismatch",
+      "details": {},
+      "level": "BLOCK",
+      "message": "Decision after_hash is not exact."
+    },
+    {
+      "code": "target_hash_conflict_requires_reconciliation",
+      "details": {
+        "current_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+        "proposal_before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c"
+      },
+      "level": "BLOCK",
+      "message": "Current target hash differs from proposal before_hash."
+    }
+  ],
+  "before_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "decision": "/tmp/issue319-main-work/bad-approval-decision.json",
+  "decision_sha256": "sha256:52f5d1f7fca21062d2c25637a3f2d11a7cc75eb56a6e64fc65cd2bd92ef4c9c7",
+  "expected_after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "idempotency_key": "idem-prompt-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "supplemental_prompt",
+  "lifecycle_state": "BLOCKED",
+  "live": true,
+  "memory_url": null,
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/bad-approval-proposal.json",
+  "proposal_id": "prompt-20260830T184008Z",
+  "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+  "readback_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "receipt_path": "/tmp/issue319-main-work/bad-approval-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.439978Z"
+}

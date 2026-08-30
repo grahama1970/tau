@@ -1,0 +1,38 @@
+{
+  "after_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "approval_class": "human_exact",
+  "before_hash": "sha256:9a4f6617bb42ef7448582b70d263c0ac04efd179a8ca82b30f2dea60e148689f",
+  "proposal_id": "mem-20260830T184008Z",
+  "risk": [
+    "incorrect persistent mutation"
+  ],
+  "rollback": "restore recorded before_content by adapter CAS",
+  "schema": "tau.refinement_diff.v1",
+  "scope": "project",
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_target"
+  },
+  "unified_diff": [
+    "--- before",
+    "+++ after",
+    "@@ -4,8 +4,8 @@",
+    "   \"provenance\": {",
+    "     \"source\": \"tau_refinement_conformance\"",
+    "   },",
+    "-  \"retrieval_text\": \"Tau issue 319 refinement proof 20260830T184008Z issue319_20260830T184008Z_target baseline\",",
+    "+  \"retrieval_text\": \"Tau issue 319 refinement proof 20260830T184008Z issue319_20260830T184008Z_target accepted-memory\",",
+    "   \"run_id\": \"20260830T184008Z\",",
+    "   \"scope\": \"tau\",",
+    "-  \"value\": \"baseline\"",
+    "+  \"value\": \"accepted-memory\"",
+    " }"
+  ],
+  "verification_plan": {
+    "checks": [
+      "readback_hash"
+    ],
+    "declared": true
+  }
+}

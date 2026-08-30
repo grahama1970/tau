@@ -1,0 +1,68 @@
+{
+  "after_preview_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+  "alerts": [],
+  "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+  "diff": {
+    "after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+    "approval_class": "human_exact",
+    "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+    "proposal_id": "prompt-20260830T184008Z",
+    "risk": [
+      "incorrect persistent mutation"
+    ],
+    "rollback": "restore recorded before_content by adapter CAS",
+    "schema": "tau.refinement_diff.v1",
+    "scope": "project",
+    "target_ref": {
+      "adapter": "supplemental_prompt",
+      "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+    },
+    "unified_diff": [
+      "--- before",
+      "+++ after",
+      "@@ -1,4 +1,4 @@",
+      " {",
+      "-  \"content\": \"baseline\",",
+      "+  \"content\": \"accepted supplemental prompt\",",
+      "   \"schema\": \"tau.supplemental_prompt_resource.v1\"",
+      " }"
+    ],
+    "verification_plan": {
+      "checks": [
+        "readback_hash"
+      ],
+      "declared": true
+    }
+  },
+  "diff_path": "/tmp/issue319-main-work/supplemental-prompt-preview-no-mutation-diff.json",
+  "idempotency_key": "idem-prompt-20260830T184008Z",
+  "kind": "supplemental_prompt",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "Future improvement quality.",
+      "Human approval."
+    ],
+    "proves": [
+      "Proposal schema and governance fields were inspected.",
+      "A read-only diff was rendered.",
+      "Target state was read before and after preview to prove no mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/prompt-proposal.json",
+  "proposal_id": "prompt-20260830T184008Z",
+  "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+  "receipt_path": "/tmp/issue319-main-work/supplemental-prompt-preview-no-mutation.json",
+  "schema": "tau.refinement_preview_receipt.v1",
+  "scope": "project",
+  "status": "PASS",
+  "target_mutated": false,
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.228681Z"
+}

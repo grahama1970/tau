@@ -1,0 +1,47 @@
+{
+  "alerts": [
+    {
+      "code": "memory_offline_pending_degraded",
+      "details": {
+        "error": "[Errno 111] Connection refused"
+      },
+      "level": "BLOCK",
+      "message": "Memory is unavailable; proposal remains pending/degraded."
+    }
+  ],
+  "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "decision": "/tmp/issue319-main-work/offline-decision.json",
+  "decision_sha256": "sha256:b7c9614257afef729413962e0bcd300aec3ef85e1ae09fb1c23e18217aec056b",
+  "expected_after_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "idempotency_key": "idem-mem-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "memory_document",
+  "lifecycle_state": "PENDING_DEGRADED",
+  "live": true,
+  "memory_url": "http://127.0.0.1:41721",
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/memory-proposal.json",
+  "proposal_id": "mem-20260830T184008Z",
+  "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+  "readback_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "receipt_path": "/tmp/issue319-main-work/memory-offline-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "PENDING_DEGRADED",
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_target"
+  },
+  "timestamp": "2026-08-30T18:40:09.830340Z"
+}

@@ -1,0 +1,38 @@
+{
+  "alerts": [],
+  "before_hash": "sha256:9a4f6617bb42ef7448582b70d263c0ac04efd179a8ca82b30f2dea60e148689f",
+  "decision": "/tmp/issue319-main-work/memory-apply-verify-accepted-decision.json",
+  "decision_sha256": "sha256:e4f8a8f1820d831238d96b34f7f34c94c32e16ccf6756df5d9a668955840cd0b",
+  "expected_after_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "idempotency_key": "idem-mem-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "memory_document",
+  "lifecycle_state": "APPLIED",
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "mutation_performed": true,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/memory-proposal.json",
+  "proposal_id": "mem-20260830T184008Z",
+  "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+  "readback_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "receipt_path": "/tmp/issue319-main-work/memory-apply-verify-accepted-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "PASS",
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_target"
+  },
+  "timestamp": "2026-08-30T18:40:09.400470Z"
+}

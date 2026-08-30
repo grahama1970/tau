@@ -1,0 +1,72 @@
+{
+  "accepted_evidence_hashes": [
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  ],
+  "after_hash": "sha256:03bff032cae0946f71bf5c47de07f4e05e44dd61debf22402e65671fb3d20572",
+  "approval_class": "human_exact",
+  "before_hash": "sha256:4aed2d354685edbf641409a13cb412c52c2b738161fd04afe933f6381ed8b226",
+  "conflicts": [],
+  "data_boundary_version": "public-boundary.v1",
+  "expected_outcome": "Target readback matches after_hash only after approval.",
+  "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "idempotency_key": "idem-conflict-20260830T184008Z",
+  "kind": "memory_document",
+  "model_confidence": 0.1,
+  "observation": {
+    "schema": "tau.refinement_observation.v1",
+    "text": "observed refinement need"
+  },
+  "policy_version": "zero-trust-policy.v1",
+  "problem_statement": "Current target needs a governed refinement proof update.",
+  "proposal_id": "conflict-20260830T184008Z",
+  "proposed_content": {
+    "_key": "issue319_20260830T184008Z_conflict",
+    "kind": "tau_refinement_proof",
+    "provenance": {
+      "source": "tau_refinement_conformance"
+    },
+    "retrieval_text": "Tau issue 319 refinement proof 20260830T184008Z issue319_20260830T184008Z_conflict new",
+    "run_id": "20260830T184008Z",
+    "scope": "tau",
+    "value": "new"
+  },
+  "rationale": "Exercise preview/apply/verify/rollback governance.",
+  "redaction_version": "tau-redaction.v1",
+  "required_actor": "human",
+  "risks": [
+    "incorrect persistent mutation"
+  ],
+  "schema": "tau.refinement_proposal.v1",
+  "scope": "project",
+  "source": {
+    "attempt": 1,
+    "node_id": "conformance",
+    "run_id": "20260830T184008Z",
+    "turn": 1
+  },
+  "superseded_by": null,
+  "supersedes": [],
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_conflict"
+  },
+  "validation_plan": {
+    "checks": [
+      "schema",
+      "hash",
+      "policy"
+    ],
+    "declared": true
+  },
+  "validity_window": {
+    "not_after": "2099-01-01T00:00:00Z",
+    "not_before": "2026-01-01T00:00:00Z"
+  },
+  "verification_plan": {
+    "checks": [
+      "readback_hash"
+    ],
+    "declared": true
+  }
+}

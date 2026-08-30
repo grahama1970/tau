@@ -1,0 +1,65 @@
+{
+  "alerts": [
+    {
+      "code": "proposal_expired",
+      "details": {},
+      "level": "BLOCK",
+      "message": "validity window is expired."
+    },
+    {
+      "code": "decision_expired",
+      "details": {},
+      "level": "BLOCK",
+      "message": "Decision validity window is expired."
+    },
+    {
+      "code": "idempotency_key_reused_different_proposal",
+      "details": {},
+      "level": "BLOCK",
+      "message": "The idempotency key is already bound to a different proposal hash."
+    },
+    {
+      "code": "target_hash_conflict_requires_reconciliation",
+      "details": {
+        "current_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+        "proposal_before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c"
+      },
+      "level": "BLOCK",
+      "message": "Current target hash differs from proposal before_hash."
+    }
+  ],
+  "before_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "decision": "/tmp/issue319-main-work/bad-validity_window-decision.json",
+  "decision_sha256": "sha256:68e5bb2ff74847f7221996be099928f8c9f5711c901a7fe2d81332430aea8add",
+  "expected_after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "idempotency_key": "idem-prompt-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "supplemental_prompt",
+  "lifecycle_state": "BLOCKED",
+  "live": true,
+  "memory_url": null,
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/bad-validity_window-proposal.json",
+  "proposal_id": "prompt-20260830T184008Z",
+  "proposal_sha256": "sha256:feb786f4a2407b38cf125132a5500780bf8063319144ed8e8383e0a94f862d19",
+  "readback_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "receipt_path": "/tmp/issue319-main-work/bad-validity_window-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.440905Z"
+}

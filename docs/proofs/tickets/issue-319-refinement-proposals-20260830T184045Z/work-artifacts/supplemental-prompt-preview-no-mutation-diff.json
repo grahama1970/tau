@@ -1,0 +1,32 @@
+{
+  "after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+  "approval_class": "human_exact",
+  "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+  "proposal_id": "prompt-20260830T184008Z",
+  "risk": [
+    "incorrect persistent mutation"
+  ],
+  "rollback": "restore recorded before_content by adapter CAS",
+  "schema": "tau.refinement_diff.v1",
+  "scope": "project",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+  },
+  "unified_diff": [
+    "--- before",
+    "+++ after",
+    "@@ -1,4 +1,4 @@",
+    " {",
+    "-  \"content\": \"baseline\",",
+    "+  \"content\": \"accepted supplemental prompt\",",
+    "   \"schema\": \"tau.supplemental_prompt_resource.v1\"",
+    " }"
+  ],
+  "verification_plan": {
+    "checks": [
+      "readback_hash"
+    ],
+    "declared": true
+  }
+}

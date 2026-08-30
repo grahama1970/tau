@@ -1,0 +1,48 @@
+{
+  "alerts": [
+    {
+      "code": "target_hash_conflict_requires_reconciliation",
+      "details": {
+        "current_hash": "sha256:c2fb32f6f593b888f21383d2f9b5e57d50066c38f86c3b061ea7427d526bcda8",
+        "proposal_before_hash": "sha256:4aed2d354685edbf641409a13cb412c52c2b738161fd04afe933f6381ed8b226"
+      },
+      "level": "BLOCK",
+      "message": "Current target hash differs from proposal before_hash."
+    }
+  ],
+  "before_hash": "sha256:c2fb32f6f593b888f21383d2f9b5e57d50066c38f86c3b061ea7427d526bcda8",
+  "decision": "/tmp/issue319-main-work/conflict-decision.json",
+  "decision_sha256": "sha256:b7d3d7749d06816b5e04b616535c435c20f10d85b330aed0554c0b097793d5b6",
+  "expected_after_hash": "sha256:03bff032cae0946f71bf5c47de07f4e05e44dd61debf22402e65671fb3d20572",
+  "idempotency_key": "idem-conflict-20260830T184008Z",
+  "idempotent_replay": false,
+  "kind": "memory_document",
+  "lifecycle_state": "BLOCKED",
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "mutation_performed": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human identity proof beyond decision record fields."
+    ],
+    "proves": [
+      "Exact approval, target before hash, and adapter readback gated mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/conflict-proposal.json",
+  "proposal_id": "conflict-20260830T184008Z",
+  "proposal_sha256": "sha256:f41dce38cf6905b5d46f8dadddee6fe68ef8623679412770aedff94f06c66327",
+  "readback_hash": "sha256:c2fb32f6f593b888f21383d2f9b5e57d50066c38f86c3b061ea7427d526bcda8",
+  "receipt_path": "/tmp/issue319-main-work/conflict-apply.json",
+  "schema": "tau.refinement_apply_receipt.v1",
+  "scope": "project",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_conflict"
+  },
+  "timestamp": "2026-08-30T18:40:09.818842Z"
+}

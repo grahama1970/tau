@@ -1,0 +1,442 @@
+{
+  "effects": {
+    "idem-mem-20260830T184008Z": {
+      "after_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+      "applied_at": "2026-08-30T18:40:09.399905Z",
+      "before_content": {
+        "_key": "issue319_20260830T184008Z_target",
+        "kind": "tau_refinement_proof",
+        "provenance": {
+          "source": "tau_refinement_conformance"
+        },
+        "retrieval_text": "Tau issue 319 refinement proof 20260830T184008Z issue319_20260830T184008Z_target baseline",
+        "run_id": "20260830T184008Z",
+        "scope": "tau",
+        "value": "baseline"
+      },
+      "before_hash": "sha256:9a4f6617bb42ef7448582b70d263c0ac04efd179a8ca82b30f2dea60e148689f",
+      "kind": "memory_document",
+      "mutation_performed": true,
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "target_ref": {
+        "adapter": "memory",
+        "collection": "tau_refinement_proof",
+        "key": "issue319_20260830T184008Z_target"
+      }
+    },
+    "idem-prompt-20260830T184008Z": {
+      "after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+      "applied_at": "2026-08-30T18:40:09.434153Z",
+      "before_content": {
+        "content": "baseline",
+        "schema": "tau.supplemental_prompt_resource.v1"
+      },
+      "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+      "kind": "supplemental_prompt",
+      "mutation_performed": true,
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "target_ref": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+      }
+    },
+    "idem-rollback-20260830T184008Z": {
+      "after_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+      "applied_at": "2026-08-30T18:40:09.820800Z",
+      "before_content": null,
+      "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "supplemental_prompt",
+      "mutation_performed": true,
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "target_ref": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/rollback-prompt.json"
+      }
+    }
+  },
+  "journal": [
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "PROPOSED",
+      "timestamp": "2026-08-30T18:40:09.215908Z",
+      "transition_id": "sha256:0584b1c41f85c3ef6e2124ebb8ba0255a0dc63525500fc43deff311fa80bf71e"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "DIFF_RENDERED",
+      "timestamp": "2026-08-30T18:40:09.215932Z",
+      "transition_id": "sha256:53e4e8b04d55933804f7aaea90dfebd40e2ca04c2f26369db2c323fe7611aba1"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "VALIDATED",
+      "timestamp": "2026-08-30T18:40:09.215943Z",
+      "transition_id": "sha256:4d45acec74105765e0251f3c37e71bb4da0affba10e1fb4271e3a045e86c9b21"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "PROPOSED",
+      "timestamp": "2026-08-30T18:40:09.228388Z",
+      "transition_id": "sha256:a36069dda7d6f05cee059867b834e0b30f183dc56d50c3830ffd197565e5db8f"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "DIFF_RENDERED",
+      "timestamp": "2026-08-30T18:40:09.228408Z",
+      "transition_id": "sha256:52d543f72d9c54a106bcf2fa05a9d2cc51326951c8f2adfa38675f907d73cdf2"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "VALIDATED",
+      "timestamp": "2026-08-30T18:40:09.228419Z",
+      "transition_id": "sha256:d64c54f4d9856be0a3dea92b9af995654f5b44281efb4ec67b354c4ee3f0250e"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "APPROVED",
+      "timestamp": "2026-08-30T18:40:09.241540Z",
+      "transition_id": "sha256:e8e322956ff2323183b4f2d7204420c43e87dfe3dbec3ed343acbb58a579917f"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "APPLIED",
+      "timestamp": "2026-08-30T18:40:09.399951Z",
+      "transition_id": "sha256:a8a42584501f053e3bddd6f8be478747019415343aeb92b3a6c681dd1389ce9b"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "VERIFIED",
+      "timestamp": "2026-08-30T18:40:09.416090Z",
+      "transition_id": "sha256:3c0bb1dceeb9005fc4f71d8eb02138bd31d2d9ca082944cc1e2c537c638d6c6e"
+    },
+    {
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "state": "ACCEPTED",
+      "timestamp": "2026-08-30T18:40:09.416120Z",
+      "transition_id": "sha256:1c45c037a6e0ab2aa0190b1fb2aa0d0999afb2c8e61eb824422524738afecb67"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "APPROVED",
+      "timestamp": "2026-08-30T18:40:09.433848Z",
+      "transition_id": "sha256:6508de7b0e03271e9360873ac87733abf25e2207035da49a54d775828dfd0fa5"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "APPLIED",
+      "timestamp": "2026-08-30T18:40:09.434179Z",
+      "transition_id": "sha256:adb012551a58815333d36615953e7507ea37f39b4f0488db6f8e992b263fd2be"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "VERIFIED",
+      "timestamp": "2026-08-30T18:40:09.435111Z",
+      "transition_id": "sha256:1436e3dedb880248248abae9c0a26fa4f3bfb9f7c88e47ed06e55faf4c0314ab"
+    },
+    {
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "state": "ACCEPTED",
+      "timestamp": "2026-08-30T18:40:09.435129Z",
+      "transition_id": "sha256:9fbcf4590da46160ddb32276af259823c832fd189c2e69ac189aeafee48b8ab0"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "PROPOSED",
+      "timestamp": "2026-08-30T18:40:09.819738Z",
+      "transition_id": "sha256:6462ebbab6d73ff7283741d2a6476fd89545863a24e8f3922919500c5f681fe8"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "DIFF_RENDERED",
+      "timestamp": "2026-08-30T18:40:09.819755Z",
+      "transition_id": "sha256:19b66a00d912da703421151a48becebe9df352bd8d2105bd722d99a774154551"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "VALIDATED",
+      "timestamp": "2026-08-30T18:40:09.819767Z",
+      "transition_id": "sha256:756cce8e67cdd61ffb232ded844acecb4cf8f23bb4c607d75e8eaeb55e108cff"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "APPROVED",
+      "timestamp": "2026-08-30T18:40:09.820648Z",
+      "transition_id": "sha256:53cb15dfe86c5d9e92a34fc3ed914dc5ba2488707530ba8a726b3545be4af016"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "APPLIED",
+      "timestamp": "2026-08-30T18:40:09.820818Z",
+      "transition_id": "sha256:2f02e48bdd0d372f4a8d45dc734505cdee8bf1fd5a144dde8b6fdded8d911214"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "VERIFICATION_FAILED",
+      "timestamp": "2026-08-30T18:40:09.821705Z",
+      "transition_id": "sha256:e4da6ddf5c1ce0c27307e5553828cb9e5c07b7e6d1a3684ea0d0353142acb8f8"
+    },
+    {
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "state": "ROLLED_BACK",
+      "timestamp": "2026-08-30T18:40:09.822562Z",
+      "transition_id": "sha256:999d56efc394867306d8285a500445e3c92ebb0f301306549851f3552c90b3c2"
+    }
+  ],
+  "proposals": {
+    "mem-20260830T184008Z": {
+      "accepted_evidence_hashes": [
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "after_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+      "approval_class": "human_exact",
+      "before_hash": "sha256:9a4f6617bb42ef7448582b70d263c0ac04efd179a8ca82b30f2dea60e148689f",
+      "conflicts": [],
+      "data_boundary_version": "public-boundary.v1",
+      "diff_state": "rendered",
+      "expected_outcome": "Target readback matches after_hash only after approval.",
+      "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "idempotency_key": "idem-mem-20260830T184008Z",
+      "kind": "memory_document",
+      "model_confidence": 0.1,
+      "observation": {
+        "schema": "tau.refinement_observation.v1",
+        "text": "observed refinement need"
+      },
+      "policy_version": "zero-trust-policy.v1",
+      "problem_statement": "Current target needs a governed refinement proof update.",
+      "proposal_id": "mem-20260830T184008Z",
+      "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+      "proposed_content": {
+        "_key": "issue319_20260830T184008Z_target",
+        "kind": "tau_refinement_proof",
+        "provenance": {
+          "source": "tau_refinement_conformance"
+        },
+        "retrieval_text": "Tau issue 319 refinement proof 20260830T184008Z issue319_20260830T184008Z_target accepted-memory",
+        "run_id": "20260830T184008Z",
+        "scope": "tau",
+        "value": "accepted-memory"
+      },
+      "rationale": "Exercise preview/apply/verify/rollback governance.",
+      "redaction_version": "tau-redaction.v1",
+      "required_actor": "human",
+      "risks": [
+        "incorrect persistent mutation"
+      ],
+      "schema": "tau.refinement_proposal.v1",
+      "scope": "project",
+      "source": {
+        "attempt": 1,
+        "node_id": "conformance",
+        "run_id": "20260830T184008Z",
+        "turn": 1
+      },
+      "state": "ACCEPTED",
+      "superseded_by": null,
+      "supersedes": [],
+      "target_ref": {
+        "adapter": "memory",
+        "collection": "tau_refinement_proof",
+        "key": "issue319_20260830T184008Z_target"
+      },
+      "validation_plan": {
+        "checks": [
+          "schema",
+          "hash",
+          "policy"
+        ],
+        "declared": true
+      },
+      "validity_window": {
+        "not_after": "2099-01-01T00:00:00Z",
+        "not_before": "2026-01-01T00:00:00Z"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    },
+    "prompt-20260830T184008Z": {
+      "accepted_evidence_hashes": [
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "after_hash": "sha256:ab344af38b8099c8945b0f3a0b6bf3aa84ca974767e389a319febc2d01fb5c90",
+      "approval_class": "human_exact",
+      "before_hash": "sha256:e03e20fce6eee3d39c68d30477ea0ce666b95df9d9196e55be7cac1be022d37c",
+      "conflicts": [],
+      "data_boundary_version": "public-boundary.v1",
+      "diff_state": "rendered",
+      "expected_outcome": "Target readback matches after_hash only after approval.",
+      "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "idempotency_key": "idem-prompt-20260830T184008Z",
+      "kind": "supplemental_prompt",
+      "model_confidence": 0.1,
+      "observation": {
+        "schema": "tau.refinement_observation.v1",
+        "text": "observed refinement need"
+      },
+      "policy_version": "zero-trust-policy.v1",
+      "problem_statement": "Current target needs a governed refinement proof update.",
+      "proposal_id": "prompt-20260830T184008Z",
+      "proposal_sha256": "sha256:03b9b18e9fbea055a53c1be60e1c86a8539f8e02bb0d5e9ba5cdf7e89135b986",
+      "proposed_content": {
+        "content": "accepted supplemental prompt",
+        "schema": "tau.supplemental_prompt_resource.v1"
+      },
+      "rationale": "Exercise preview/apply/verify/rollback governance.",
+      "redaction_version": "tau-redaction.v1",
+      "required_actor": "human",
+      "risks": [
+        "incorrect persistent mutation"
+      ],
+      "schema": "tau.refinement_proposal.v1",
+      "scope": "project",
+      "source": {
+        "attempt": 1,
+        "node_id": "conformance",
+        "run_id": "20260830T184008Z",
+        "turn": 1
+      },
+      "state": "ACCEPTED",
+      "superseded_by": null,
+      "supersedes": [],
+      "target_ref": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/prompts/project/tau-supplemental.json"
+      },
+      "validation_plan": {
+        "checks": [
+          "schema",
+          "hash",
+          "policy"
+        ],
+        "declared": true
+      },
+      "validity_window": {
+        "not_after": "2099-01-01T00:00:00Z",
+        "not_before": "2026-01-01T00:00:00Z"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    },
+    "rollback-20260830T184008Z": {
+      "accepted_evidence_hashes": [
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "after_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+      "approval_class": "human_exact",
+      "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "conflicts": [],
+      "data_boundary_version": "public-boundary.v1",
+      "diff_state": "rendered",
+      "expected_outcome": "Target readback matches after_hash only after approval.",
+      "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "idempotency_key": "idem-rollback-20260830T184008Z",
+      "kind": "supplemental_prompt",
+      "model_confidence": 0.1,
+      "observation": {
+        "schema": "tau.refinement_observation.v1",
+        "text": "observed refinement need"
+      },
+      "policy_version": "zero-trust-policy.v1",
+      "problem_statement": "Current target needs a governed refinement proof update.",
+      "proposal_id": "rollback-20260830T184008Z",
+      "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+      "proposed_content": {
+        "content": "apply then fail",
+        "schema": "tau.supplemental_prompt_resource.v1"
+      },
+      "rationale": "Exercise preview/apply/verify/rollback governance.",
+      "redaction_version": "tau-redaction.v1",
+      "required_actor": "human",
+      "risks": [
+        "incorrect persistent mutation"
+      ],
+      "schema": "tau.refinement_proposal.v1",
+      "scope": "project",
+      "source": {
+        "attempt": 1,
+        "node_id": "conformance",
+        "run_id": "20260830T184008Z",
+        "turn": 1
+      },
+      "state": "ROLLED_BACK",
+      "superseded_by": null,
+      "supersedes": [],
+      "target_ref": {
+        "adapter": "supplemental_prompt",
+        "path": "/tmp/issue319-main-work/rollback-prompt.json"
+      },
+      "validation_plan": {
+        "checks": [
+          "schema",
+          "hash",
+          "policy"
+        ],
+        "declared": true
+      },
+      "validity_window": {
+        "not_after": "2099-01-01T00:00:00Z",
+        "not_before": "2026-01-01T00:00:00Z"
+      },
+      "verification_plan": {
+        "checks": [
+          "readback_hash"
+        ],
+        "declared": true
+      }
+    }
+  },
+  "schema": "tau.refinement_ledger.v1"
+}

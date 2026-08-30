@@ -1,0 +1,29 @@
+{
+  "alerts": [],
+  "expected_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "lifecycle_state": "ACCEPTED",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Applied refinement quality beyond its declared verifier."
+    ],
+    "proves": [
+      "Declared verifier read back the real target and compared the exact hash."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/memory-proposal.json",
+  "proposal_id": "mem-20260830T184008Z",
+  "proposal_sha256": "sha256:0a0d6eb815aa0e8b574ea84700adee0589518516dfd28da074c1b962a86dd143",
+  "readback_hash": "sha256:46e2713a7ca9dde4ba29a70b87f716345d6cf67ff6560fc3bc3ef47b8a9036da",
+  "receipt_path": "/tmp/issue319-main-work/memory-apply-verify-accepted-verify.json",
+  "schema": "tau.refinement_verification_receipt.v1",
+  "status": "PASS",
+  "target_ref": {
+    "adapter": "memory",
+    "collection": "tau_refinement_proof",
+    "key": "issue319_20260830T184008Z_target"
+  },
+  "timestamp": "2026-08-30T18:40:09.416601Z"
+}

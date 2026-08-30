@@ -1,0 +1,38 @@
+{
+  "alerts": [
+    {
+      "code": "verification_hash_mismatch",
+      "details": {
+        "proposal_after_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+        "readback_hash": "sha256:f0aa6c6a70ef98d93ecfec92219409af704317f7c43d801a6398e4600c9d2ce9"
+      },
+      "level": "BLOCK",
+      "message": "Target readback hash does not match the proposal after_hash."
+    }
+  ],
+  "expected_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+  "lifecycle_state": "VERIFICATION_FAILED",
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Applied refinement quality beyond its declared verifier."
+    ],
+    "proves": [
+      "Declared verifier read back the real target and compared the exact hash."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/rollback-proposal.json",
+  "proposal_id": "rollback-20260830T184008Z",
+  "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+  "readback_hash": "sha256:f0aa6c6a70ef98d93ecfec92219409af704317f7c43d801a6398e4600c9d2ce9",
+  "receipt_path": "/tmp/issue319-main-work/rollback-failed-verify.json",
+  "schema": "tau.refinement_verification_receipt.v1",
+  "status": "BLOCKED",
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/rollback-prompt.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.822012Z"
+}

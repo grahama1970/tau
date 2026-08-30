@@ -1,0 +1,69 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 319,
+  "title": "Add preview-first continual-harness refinement proposals with verification and rollback",
+  "main_commit": "3ee598452f2112e53b3c1bfa0f5f17e440f1ef5e",
+  "proof_boundary": {
+    "proves": [
+      "Preview rendered Memory and prompt diffs without mutation.",
+      "Approved proposals applied, verified, and reached ACCEPTED.",
+      "Repeated apply was idempotent.",
+      "Mutated proposal, approval, policy, and boundary inputs failed closed.",
+      "Conflicting Memory state required reconciliation instead of overwrite.",
+      "Post-apply verification failure rolled back to the recorded hash.",
+      "Memory outage left the proposal pending/degraded.",
+      "Immutable and unsupported target kinds could not apply.",
+      "Malicious recalled instructions could not mint approval.",
+      "Read-only viewer rendered refinement state."
+    ],
+    "does_not_prove": [
+      "Semantic improvement quality.",
+      "Executable-skill adapters.",
+      "provider semantic quality",
+      "GOAL.md completion",
+      "human acceptance"
+    ]
+  },
+  "commands": [
+    {
+      "command": "uv run pytest tests/test_refinement.py -q",
+      "result": "5 passed"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/refinement.py src/tau_coding/refinement_conformance.py",
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run tau refinement-conformance --out /tmp/issue319-main-proof-final.json --work-dir /tmp/issue319-main-work --memory-url http://127.0.0.1:8601",
+      "result": "status=PASS; ok=True; live=True; mocked=False; case_count=23"
+    },
+    {
+      "command": "agentic-evals/run.sh run fixtures/agentic_eval.json --case refinement-preview-apply-verify-rollback-live-memory --output /tmp/issue319-main-agentic-evals-report.json",
+      "result": "readiness=READY; outcome_counts={'PASS': 1, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=2; repo={'sha': '3ee598452f2112e53b3c1bfa0f5f17e440f1ef5e', 'ref': 'main'}"
+    }
+  ],
+  "conformance_readback": {
+    "schema": "tau.refinement_conformance_receipt.v1",
+    "status": "PASS",
+    "ok": true,
+    "live": true,
+    "mocked": false,
+    "case_count": 23,
+    "failed": []
+  },
+  "agentic_eval_readback": {
+    "readiness": "READY",
+    "outcome_counts": {
+      "PASS": 1,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "trial_count": 2,
+    "repo": {
+      "sha": "3ee598452f2112e53b3c1bfa0f5f17e440f1ef5e",
+      "ref": "main"
+    }
+  },
+  "status": "PASS"
+}

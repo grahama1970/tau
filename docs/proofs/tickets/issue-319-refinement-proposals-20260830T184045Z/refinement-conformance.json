@@ -1,0 +1,224 @@
+{
+  "artifact_paths": [
+    "/tmp/issue319-main-work/bad-approval-apply.json",
+    "/tmp/issue319-main-work/bad-approval-decision.json",
+    "/tmp/issue319-main-work/bad-approval-proposal.json",
+    "/tmp/issue319-main-work/bad-before_hash-apply.json",
+    "/tmp/issue319-main-work/bad-before_hash-decision.json",
+    "/tmp/issue319-main-work/bad-before_hash-proposal.json",
+    "/tmp/issue319-main-work/bad-data_boundary_version-apply.json",
+    "/tmp/issue319-main-work/bad-data_boundary_version-decision.json",
+    "/tmp/issue319-main-work/bad-data_boundary_version-proposal.json",
+    "/tmp/issue319-main-work/bad-goal_hash-apply.json",
+    "/tmp/issue319-main-work/bad-goal_hash-decision.json",
+    "/tmp/issue319-main-work/bad-goal_hash-proposal.json",
+    "/tmp/issue319-main-work/bad-policy_version-apply.json",
+    "/tmp/issue319-main-work/bad-policy_version-decision.json",
+    "/tmp/issue319-main-work/bad-policy_version-proposal.json",
+    "/tmp/issue319-main-work/bad-proposed_content-apply.json",
+    "/tmp/issue319-main-work/bad-proposed_content-decision.json",
+    "/tmp/issue319-main-work/bad-proposed_content-proposal.json",
+    "/tmp/issue319-main-work/bad-target_ref-apply.json",
+    "/tmp/issue319-main-work/bad-target_ref-decision.json",
+    "/tmp/issue319-main-work/bad-target_ref-proposal.json",
+    "/tmp/issue319-main-work/bad-validity_window-apply.json",
+    "/tmp/issue319-main-work/bad-validity_window-decision.json",
+    "/tmp/issue319-main-work/bad-validity_window-proposal.json",
+    "/tmp/issue319-main-work/base_prompt-apply.json",
+    "/tmp/issue319-main-work/base_prompt-decision.json",
+    "/tmp/issue319-main-work/base_prompt-proposal.json",
+    "/tmp/issue319-main-work/conflict-apply.json",
+    "/tmp/issue319-main-work/conflict-decision.json",
+    "/tmp/issue319-main-work/conflict-proposal.json",
+    "/tmp/issue319-main-work/evidence_requirement-apply.json",
+    "/tmp/issue319-main-work/evidence_requirement-decision.json",
+    "/tmp/issue319-main-work/evidence_requirement-proposal.json",
+    "/tmp/issue319-main-work/executable_skill-apply.json",
+    "/tmp/issue319-main-work/executable_skill-decision.json",
+    "/tmp/issue319-main-work/executable_skill-proposal.json",
+    "/tmp/issue319-main-work/immutable_goal-apply.json",
+    "/tmp/issue319-main-work/immutable_goal-decision.json",
+    "/tmp/issue319-main-work/immutable_goal-proposal.json",
+    "/tmp/issue319-main-work/malicious-apply.json",
+    "/tmp/issue319-main-work/malicious-decision.json",
+    "/tmp/issue319-main-work/malicious-proposal.json",
+    "/tmp/issue319-main-work/memory-apply-verify-accepted-apply-second.json",
+    "/tmp/issue319-main-work/memory-apply-verify-accepted-apply.json",
+    "/tmp/issue319-main-work/memory-apply-verify-accepted-decision.json",
+    "/tmp/issue319-main-work/memory-apply-verify-accepted-verify.json",
+    "/tmp/issue319-main-work/memory-document-preview-no-mutation-diff.json",
+    "/tmp/issue319-main-work/memory-document-preview-no-mutation.json",
+    "/tmp/issue319-main-work/memory-offline-apply.json",
+    "/tmp/issue319-main-work/memory-proposal.json",
+    "/tmp/issue319-main-work/offline-decision.json",
+    "/tmp/issue319-main-work/prompt-apply-verify-accepted-apply-second.json",
+    "/tmp/issue319-main-work/prompt-apply-verify-accepted-apply.json",
+    "/tmp/issue319-main-work/prompt-apply-verify-accepted-decision.json",
+    "/tmp/issue319-main-work/prompt-apply-verify-accepted-verify.json",
+    "/tmp/issue319-main-work/prompt-proposal.json",
+    "/tmp/issue319-main-work/provider_profile-apply.json",
+    "/tmp/issue319-main-work/provider_profile-decision.json",
+    "/tmp/issue319-main-work/provider_profile-proposal.json",
+    "/tmp/issue319-main-work/refinement-view.json",
+    "/tmp/issue319-main-work/rollback-apply.json",
+    "/tmp/issue319-main-work/rollback-decision.json",
+    "/tmp/issue319-main-work/rollback-failed-verify.json",
+    "/tmp/issue319-main-work/rollback-preview.json",
+    "/tmp/issue319-main-work/rollback-proposal.json",
+    "/tmp/issue319-main-work/rollback-receipt.json",
+    "/tmp/issue319-main-work/route-apply.json",
+    "/tmp/issue319-main-work/route-decision.json",
+    "/tmp/issue319-main-work/route-proposal.json",
+    "/tmp/issue319-main-work/source-run-truth.json",
+    "/tmp/issue319-main-work/supplemental-prompt-preview-no-mutation-diff.json",
+    "/tmp/issue319-main-work/supplemental-prompt-preview-no-mutation.json"
+  ],
+  "case_count": 23,
+  "cases": [
+    {
+      "artifact": "/tmp/issue319-main-work/memory-document-preview-no-mutation.json",
+      "name": "memory-document-preview-no-mutation",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/supplemental-prompt-preview-no-mutation.json",
+      "name": "supplemental-prompt-preview-no-mutation",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/memory-apply-verify-accepted-verify.json",
+      "name": "memory-apply-verify-accepted",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/prompt-apply-verify-accepted-verify.json",
+      "name": "prompt-apply-verify-accepted",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-proposed_content-apply.json",
+      "name": "fail-closed-mutated-proposed_content",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-target_ref-apply.json",
+      "name": "fail-closed-mutated-target_ref",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-before_hash-apply.json",
+      "name": "fail-closed-mutated-before_hash",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-approval-apply.json",
+      "name": "fail-closed-mutated-approval",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-validity_window-apply.json",
+      "name": "fail-closed-mutated-validity_window",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-goal_hash-apply.json",
+      "name": "fail-closed-mutated-goal_hash",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-policy_version-apply.json",
+      "name": "fail-closed-mutated-policy_version",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/bad-data_boundary_version-apply.json",
+      "name": "fail-closed-mutated-data_boundary_version",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/conflict-apply.json",
+      "name": "memory-conflict-requires-reconciliation",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/rollback-receipt.json",
+      "name": "verification-failure-rolls-back-exact-hash",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/memory-offline-apply.json",
+      "name": "memory-offline-pending-degraded-source-truth-unchanged",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/immutable_goal-apply.json",
+      "name": "non-targetable-immutable_goal-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/base_prompt-apply.json",
+      "name": "non-targetable-base_prompt-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/evidence_requirement-apply.json",
+      "name": "non-targetable-evidence_requirement-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/executable_skill-apply.json",
+      "name": "non-targetable-executable_skill-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/route-apply.json",
+      "name": "non-targetable-route-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/provider_profile-apply.json",
+      "name": "non-targetable-provider_profile-cannot-apply",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/malicious-apply.json",
+      "name": "malicious-recalled-instructions-cannot-mint-approval",
+      "ok": true
+    },
+    {
+      "artifact": "/tmp/issue319-main-work/refinement-view.json",
+      "name": "read-only-cli-viewer-renders-state",
+      "ok": true
+    }
+  ],
+  "ledger": "/tmp/issue319-main-work/ledger/refinement-ledger.json",
+  "live": true,
+  "memory_collection": "tau_refinement_proof",
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Semantic improvement quality.",
+      "Executable-skill adapters."
+    ],
+    "proves": [
+      "Preview rendered Memory and prompt diffs without mutation.",
+      "Approved proposals applied, verified, and reached ACCEPTED.",
+      "Repeated apply was idempotent.",
+      "Mutated proposal, approval, policy, and boundary inputs failed closed.",
+      "Conflicting Memory state required reconciliation instead of overwrite.",
+      "Post-apply verification failure rolled back to the recorded hash.",
+      "Memory outage left the proposal pending/degraded.",
+      "Immutable and unsupported target kinds could not apply.",
+      "Malicious recalled instructions could not mint approval.",
+      "Read-only viewer rendered refinement state."
+    ]
+  },
+  "schema": "tau.refinement_conformance_receipt.v1",
+  "source_truth_hash_after": "sha256:31140aeda4ebeb58a76c95931d766b15deb2071540dbc05f4dcdfd60fedb941c",
+  "source_truth_hash_before": "sha256:31140aeda4ebeb58a76c95931d766b15deb2071540dbc05f4dcdfd60fedb941c",
+  "status": "PASS",
+  "timestamp": "2026-08-30T18:40:09.837021Z",
+  "work_dir": "/tmp/issue319-main-work"
+}

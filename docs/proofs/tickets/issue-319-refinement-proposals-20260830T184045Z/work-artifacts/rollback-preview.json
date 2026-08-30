@@ -1,0 +1,67 @@
+{
+  "after_preview_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "alerts": [],
+  "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "diff": {
+    "after_hash": "sha256:71800544f3d9920fcae4ef90ec47dd4630cf8abd652fb7e8e789cfd446f8575c",
+    "approval_class": "human_exact",
+    "before_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "proposal_id": "rollback-20260830T184008Z",
+    "risk": [
+      "incorrect persistent mutation"
+    ],
+    "rollback": "restore recorded before_content by adapter CAS",
+    "schema": "tau.refinement_diff.v1",
+    "scope": "project",
+    "target_ref": {
+      "adapter": "supplemental_prompt",
+      "path": "/tmp/issue319-main-work/rollback-prompt.json"
+    },
+    "unified_diff": [
+      "--- before",
+      "+++ after",
+      "@@ -0,0 +1,4 @@",
+      "+{",
+      "+  \"content\": \"apply then fail\",",
+      "+  \"schema\": \"tau.supplemental_prompt_resource.v1\"",
+      "+}"
+    ],
+    "verification_plan": {
+      "checks": [
+        "readback_hash"
+      ],
+      "declared": true
+    }
+  },
+  "diff_path": null,
+  "idempotency_key": "idem-rollback-20260830T184008Z",
+  "kind": "supplemental_prompt",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "Future improvement quality.",
+      "Human approval."
+    ],
+    "proves": [
+      "Proposal schema and governance fields were inspected.",
+      "A read-only diff was rendered.",
+      "Target state was read before and after preview to prove no mutation."
+    ]
+  },
+  "proposal": "/tmp/issue319-main-work/rollback-proposal.json",
+  "proposal_id": "rollback-20260830T184008Z",
+  "proposal_sha256": "sha256:367c6214f94997e89c787e1ff86bd28e19a945ea0438eb58a0949571374e6132",
+  "receipt_path": "/tmp/issue319-main-work/rollback-preview.json",
+  "schema": "tau.refinement_preview_receipt.v1",
+  "scope": "project",
+  "status": "PASS",
+  "target_mutated": false,
+  "target_ref": {
+    "adapter": "supplemental_prompt",
+    "path": "/tmp/issue319-main-work/rollback-prompt.json"
+  },
+  "timestamp": "2026-08-30T18:40:09.820146Z"
+}

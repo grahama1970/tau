@@ -1,0 +1,24 @@
+{
+  "actor": {
+    "id": "local-operator",
+    "type": "human"
+  },
+  "after_hash": "sha256:03bff032cae0946f71bf5c47de07f4e05e44dd61debf22402e65671fb3d20572",
+  "approval_class": "human_exact",
+  "approved_at": "2026-08-30T18:40:09.607599Z",
+  "before_hash": "sha256:4aed2d354685edbf641409a13cb412c52c2b738161fd04afe933f6381ed8b226",
+  "data_boundary_version": "public-boundary.v1",
+  "decision": "APPROVED",
+  "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "idempotency_key": "idem-conflict-20260830T184008Z",
+  "policy_version": "zero-trust-policy.v1",
+  "proposal_id": "conflict-20260830T184008Z",
+  "proposal_sha256": "sha256:f41dce38cf6905b5d46f8dadddee6fe68ef8623679412770aedff94f06c66327",
+  "redaction_version": "tau-redaction.v1",
+  "schema": "tau.refinement_decision.v1",
+  "target_ref_hash": "sha256:49b2554227dbabb9bddfd1ab359fd15de67e5399c29918a83a382c0ad740491a",
+  "validity_window": {
+    "not_after": "2099-01-01T00:00:00Z",
+    "not_before": "2026-01-01T00:00:00Z"
+  }
+}
