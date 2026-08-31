@@ -119,6 +119,13 @@ NODE_SANITY_CHECK_TYPES = frozenset(
         "create_svg_required_svg_artifact",
         "create_svg_variant_candidate_live",
         "create_svg_artifact_origin",
+        "model_claim_receipt_required",
+        "artifact_path_exists",
+        "artifact_sha256_matches",
+        "proof_command_receipt_verified",
+        "join_admitted_evidence_only",
+        "recovery_requires_failed_path_rerun",
+        "human_acceptance_receipt_required",
     }
 )
 NODE_SANITY_CHECK_ALLOWED_KEYS = frozenset(
@@ -130,6 +137,8 @@ NODE_SANITY_CHECK_ALLOWED_KEYS = frozenset(
         "evidence_kind",
         "artifact_field",
         "attempt_field",
+        "receipt_schema",
+        "admitted_nodes",
     }
 )
 
@@ -230,6 +239,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_verdict_schema",
     },
+    "missing_reviewer_verdict": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_verdict_presence",
+    },
     "reviewer_verdict_invalid": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_verdict_schema",
@@ -281,6 +294,42 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "create_svg_artifact_origin_invalid": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.create_svg_artifact_origin",
+    },
+    "tau_dag_verification_contract_incomplete": {
+        "severity": "NEEDS_INTERVIEW",
+        "implemented_by": "tau.validators.dag.verification_contract",
+    },
+    "tau_dag_self_verification_forbidden": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.self_verification",
+    },
+    "tau_model_claim_without_receipt": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.model_claim_receipts",
+    },
+    "tau_model_artifact_path_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.artifact_path_readback",
+    },
+    "tau_model_artifact_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.artifact_hash_readback",
+    },
+    "tau_model_proof_command_unverified": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.proof_command_receipt",
+    },
+    "tau_join_unadmitted_evidence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.join_admitted_evidence",
+    },
+    "tau_recovery_without_failed_path_rerun": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.recovery_rerun_receipt",
+    },
+    "tau_human_acceptance_receipt_missing": {
+        "severity": "NEEDS_INTERVIEW",
+        "implemented_by": "tau.validators.dag.human_acceptance_receipt",
     },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
@@ -521,6 +570,34 @@ def run_project_dag_contract(
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=None,
             security_context_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
+    verification_contract_alerts = _verification_contract_alerts(contract)
+    if verification_contract_alerts:
+        verification_status = (
+            "NEEDS_INTERVIEW"
+            if verification_contract_alerts[0].get("severity") == "NEEDS_INTERVIEW"
+            else "BLOCKED"
+        )
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=(
+                "NEEDS_INTERVIEW"
+                if verification_status == "NEEDS_INTERVIEW"
+                else str(verification_contract_alerts[0]["code"]).upper()
+            ),
+            alerts=verification_contract_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+            security_context_receipt=None,
+            receipt_status=verification_status,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -1906,7 +1983,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -2180,6 +2257,7 @@ def _pre_dispatch_blocked_receipt(
     containment_gate_receipts: dict[str, dict[str, Any]] | None = None,
     security_context_receipt: dict[str, Any] | None = None,
     capability_decision_receipt: dict[str, Any] | None = None,
+    receipt_status: str = "BLOCKED",
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
     containment_gate_receipts = containment_gate_receipts or {}
@@ -2219,7 +2297,7 @@ def _pre_dispatch_blocked_receipt(
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": False,
-        "status": "BLOCKED",
+        "status": receipt_status,
         "verdict": verdict,
         "mocked": False,
         "live": True,
@@ -2321,7 +2399,7 @@ def _pre_dispatch_blocked_receipt(
         contract=contract,
         receipt_dir=receipt_dir,
         scheduler=scheduler,
-        status="BLOCKED",
+        status=receipt_status,
         verdict=verdict,
         alerts=alerts,
         errors=receipt["errors"],
@@ -3011,6 +3089,92 @@ def _handler_node_id(handler: str) -> str:
     return f"handler-{normalized}"
 
 
+def _verification_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    """Fail closed before dispatch when a human/verifier contract is incomplete."""
+
+    verification_contract = contract.context.get("verification_contract")
+    requires_interview = contract.context.get("requires_interview") is True
+    requires_human_acceptance = contract.context.get("requires_human_acceptance") is True
+    if verification_contract is None:
+        if requires_interview or requires_human_acceptance:
+            return [
+                _alert(
+                    "NEEDS_INTERVIEW",
+                    "tau_dag_verification_contract_incomplete",
+                    "DAG declares human verification or acceptance but omits a typed "
+                    "verification_contract; route to $interview before dispatch.",
+                    {
+                        "requires_interview": requires_interview,
+                        "requires_human_acceptance": requires_human_acceptance,
+                        "next_command": "$interview",
+                    },
+                )
+            ]
+        return []
+    if not isinstance(verification_contract, Mapping):
+        return [
+            _alert(
+                "NEEDS_INTERVIEW",
+                "tau_dag_verification_contract_incomplete",
+                "DAG verification_contract must be an object; route to $interview before dispatch.",
+                {
+                    "observed_type": type(verification_contract).__name__,
+                    "next_command": "$interview",
+                },
+            )
+        ]
+    schema = verification_contract.get("schema")
+    verifier_nodes_raw = verification_contract.get("verifier_nodes")
+    required_receipts_raw = verification_contract.get("required_receipts")
+    problems: list[str] = []
+    if schema != "tau.verification_contract.v1":
+        problems.append("schema")
+    if not isinstance(verifier_nodes_raw, list) or not verifier_nodes_raw:
+        problems.append("verifier_nodes")
+        verifier_nodes: list[str] = []
+    else:
+        verifier_nodes = [item for item in verifier_nodes_raw if isinstance(item, str) and item]
+        if len(verifier_nodes) != len(verifier_nodes_raw):
+            problems.append("verifier_nodes")
+    if (
+        not isinstance(required_receipts_raw, list)
+        or not required_receipts_raw
+        or not all(isinstance(item, str) and item for item in required_receipts_raw)
+    ):
+        problems.append("required_receipts")
+    unknown_verifiers = [node_id for node_id in verifier_nodes if node_id not in contract.nodes]
+    if unknown_verifiers:
+        problems.append("unknown_verifier_nodes")
+    for node_id in verifier_nodes:
+        node = contract.nodes.get(node_id)
+        if node is None:
+            continue
+        verifies_node = node.context.get("verifies_node") or node.context.get("reviewed_node_id")
+        if verifies_node == node.node_id:
+            return [
+                _alert(
+                    "BLOCK",
+                    "tau_dag_self_verification_forbidden",
+                    "DAG verifier node attempts to verify its own output.",
+                    {"node_id": node.node_id, "verifies_node": verifies_node},
+                )
+            ]
+    if problems:
+        return [
+            _alert(
+                "NEEDS_INTERVIEW",
+                "tau_dag_verification_contract_incomplete",
+                "DAG verification contract is incomplete; route to $interview before dispatch.",
+                {
+                    "problems": sorted(set(problems)),
+                    "unknown_verifier_nodes": unknown_verifiers,
+                    "next_command": "$interview",
+                },
+            )
+        ]
+    return []
+
+
 def _reviewer_alerts(
     contract: ProjectDagContract,
     node: ProjectDagNode,
@@ -3162,6 +3326,20 @@ def _node_sanity_check_alerts(
             alerts.extend(_create_svg_candidate_receipt_alerts(node, check, response))
         elif check_type == "create_svg_artifact_origin":
             alerts.extend(_create_svg_artifact_origin_alerts(node, check, response))
+        elif check_type == "model_claim_receipt_required":
+            alerts.extend(_model_claim_receipt_alerts(node, check, response))
+        elif check_type == "artifact_path_exists":
+            alerts.extend(_artifact_path_exists_alerts(node, check, response))
+        elif check_type == "artifact_sha256_matches":
+            alerts.extend(_artifact_sha256_match_alerts(node, check, response))
+        elif check_type == "proof_command_receipt_verified":
+            alerts.extend(_proof_command_receipt_alerts(node, check, response))
+        elif check_type == "join_admitted_evidence_only":
+            alerts.extend(_join_admitted_evidence_alerts(contract, node, check, response))
+        elif check_type == "recovery_requires_failed_path_rerun":
+            alerts.extend(_recovery_rerun_alerts(node, check, response))
+        elif check_type == "human_acceptance_receipt_required":
+            alerts.extend(_human_acceptance_receipt_alerts(node, check, response))
         elif check_type:
             alerts.append(
                 _node_sanity_contract_alert(
@@ -3377,6 +3555,270 @@ def _create_svg_artifact_binding_errors(candidate: Mapping[str, Any]) -> list[st
         if sha != actual:
             problems.append("svg_sha256_mismatch")
     return problems
+
+
+def _evidence_for_check(
+    response: dict[str, Any],
+    check: Mapping[str, Any],
+    default_kind: str,
+) -> dict[str, Any] | None:
+    evidence_kind = str(check.get("evidence_kind") or default_kind)
+    return _first_evidence_by_kind(response, evidence_kind)
+
+
+def _model_claim_receipt_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    evidence = _evidence_for_check(response, check, "model_claim")
+    if not isinstance(evidence, dict):
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_claim_without_receipt",
+                "Model completion claim is missing machine-readable claim evidence.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    receipt_path = evidence.get("receipt_path") or evidence.get("path")
+    receipt_kind = evidence.get("receipt_kind") or evidence.get("receipt_schema")
+    if not isinstance(receipt_path, str) or not receipt_path.strip() or not receipt_kind:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_claim_without_receipt",
+                "Model made a completion claim without a bound receipt path and schema.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "claim_kind": evidence.get("kind"),
+                },
+            )
+        ]
+    try:
+        _read_json_object(Path(receipt_path).expanduser(), label="model claim receipt")
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_claim_without_receipt",
+                "Model claim receipt path could not be read back.",
+                {"node_id": node.node_id, "check_id": check.get("id"), "error": str(exc)},
+            )
+        ]
+    return []
+
+
+def _artifact_path_exists_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    evidence = _evidence_for_check(response, check, "creator_artifact")
+    path_value = evidence.get("path") if isinstance(evidence, dict) else None
+    if not isinstance(path_value, str) or not path_value.strip():
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_artifact_path_missing",
+                "Model claimed an artifact without a path-backed artifact receipt.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    path = Path(path_value).expanduser()
+    if not path.is_file():
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_artifact_path_missing",
+                "Model artifact path could not be read back from disk.",
+                {"node_id": node.node_id, "check_id": check.get("id"), "path": str(path)},
+            )
+        ]
+    return []
+
+
+def _artifact_sha256_match_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    path_alerts = _artifact_path_exists_alerts(node, check, response)
+    if path_alerts:
+        return path_alerts
+    evidence = _evidence_for_check(response, check, "creator_artifact")
+    assert isinstance(evidence, dict)
+    path = Path(str(evidence["path"])).expanduser()
+    observed = evidence.get("sha256") or evidence.get("artifact_sha256")
+    actual = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    if observed != actual:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_artifact_hash_mismatch",
+                "Model artifact hash did not match the bytes read back from disk.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "path": str(path),
+                    "observed_sha256": observed,
+                    "actual_sha256": actual,
+                },
+            )
+        ]
+    return []
+
+
+def _proof_command_receipt_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    receipt = _receipt_for_check(response, check, "proof_command_receipt")
+    if not isinstance(receipt, dict):
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_proof_command_unverified",
+                "Model claimed proof command success without a readable command receipt.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    expected_schema = check.get("receipt_schema") or "tau.proof_command_receipt.v1"
+    if (
+        receipt.get("schema") != expected_schema
+        or receipt.get("status") != "PASS"
+        or receipt.get("exit_code") != 0
+        or not isinstance(receipt.get("command"), str)
+        or not isinstance(receipt.get("stdout_sha256"), str)
+    ):
+        return [
+            _alert(
+                "BLOCK",
+                "tau_model_proof_command_unverified",
+                "Proof command receipt is missing PASS, exit_code 0, command, or stdout hash.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "receipt_schema": receipt.get("schema"),
+                    "receipt_status": receipt.get("status"),
+                    "exit_code": receipt.get("exit_code"),
+                },
+            )
+        ]
+    return []
+
+
+def _receipt_for_check(
+    response: dict[str, Any],
+    check: Mapping[str, Any],
+    default_kind: str,
+) -> dict[str, Any] | None:
+    evidence = _evidence_for_check(response, check, default_kind)
+    if not isinstance(evidence, dict):
+        return None
+    path_value = evidence.get("path")
+    if isinstance(path_value, str) and path_value.strip():
+        try:
+            return _read_json_object(Path(path_value).expanduser(), label=f"{default_kind} receipt")
+        except RuntimeError:
+            return None
+    return evidence
+
+
+def _join_admitted_evidence_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    admitted_raw = check.get("admitted_nodes")
+    if isinstance(admitted_raw, list):
+        admitted = {str(item) for item in admitted_raw if isinstance(item, str) and item}
+    else:
+        admitted = {edge.source for edge in contract.edges if edge.target == node.node_id}
+    unadmitted: list[dict[str, Any]] = []
+    for evidence in _result_evidence(response):
+        if not isinstance(evidence, dict):
+            continue
+        source_node = evidence.get("source_node_id") or evidence.get("reviewed_node_id")
+        if isinstance(source_node, str) and source_node and source_node not in admitted:
+            unadmitted.append({"kind": evidence.get("kind"), "source_node_id": source_node})
+    if unadmitted:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_join_unadmitted_evidence",
+                "Join node cited evidence from nodes not admitted by the DAG join contract.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "admitted_nodes": sorted(admitted),
+                    "unadmitted": unadmitted,
+                },
+            )
+        ]
+    return []
+
+
+def _recovery_rerun_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    receipt = _receipt_for_check(response, check, "recovery_receipt")
+    if not isinstance(receipt, dict):
+        return []
+    failed_node = receipt.get("failed_node_id") or receipt.get("failed_path_node_id")
+    rerun_nodes = receipt.get("rerun_node_ids") or receipt.get("rerun_path_node_ids")
+    rerun_set = {str(item) for item in rerun_nodes} if isinstance(rerun_nodes, list) else set()
+    if not isinstance(failed_node, str) or failed_node not in rerun_set:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_recovery_without_failed_path_rerun",
+                "Recovery receipt did not prove the failed path was rerun before continuation.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "failed_node_id": failed_node,
+                    "rerun_node_ids": sorted(rerun_set),
+                },
+            )
+        ]
+    return []
+
+
+def _human_acceptance_receipt_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    receipt = _receipt_for_check(response, check, "human_acceptance_receipt")
+    if not isinstance(receipt, dict):
+        return [
+            _alert(
+                "NEEDS_INTERVIEW",
+                "tau_human_acceptance_receipt_missing",
+                "Human acceptance requires a first-class receipt; route to $interview.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "next_command": "$interview",
+                },
+            )
+        ]
+    if receipt.get("schema") != "tau.human_acceptance_receipt.v1" or not receipt.get("accepted_by"):
+        return [
+            _alert(
+                "NEEDS_INTERVIEW",
+                "tau_human_acceptance_receipt_missing",
+                "Human acceptance receipt is missing schema or signer identity.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    return []
 
 
 def _node_sanity_contract_alert(
@@ -8418,7 +8860,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 

@@ -4167,6 +4167,171 @@ def test_project_dag_blocks_create_svg_artifact_outside_tau_origin(tmp_path: Pat
     assert receipt["dag_error"]["failure_code"] == "create_svg_artifact_origin_invalid"
 
 
+def test_project_dag_routes_incomplete_verification_contract_to_interview(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["context"] = {"requires_human_acceptance": True}
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "NEEDS_INTERVIEW"
+    assert receipt["dag_error"]["failure_code"] == "tau_dag_verification_contract_incomplete"
+    assert receipt["dag_error"]["severity"] == "NEEDS_INTERVIEW"
+    assert receipt["command_executed"] is False
+
+
+def test_project_dag_blocks_self_verification_before_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["context"] = {
+        "verification_contract": {
+            "schema": "tau.verification_contract.v1",
+            "verifier_nodes": ["coder"],
+            "required_receipts": ["proof_command_receipt"],
+        }
+    }
+    contract["nodes"][0]["context"] = {"verifies_node": "coder"}
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "tau_dag_self_verification_forbidden"
+    assert receipt["command_executed"] is False
+
+
+def test_project_dag_blocks_model_artifact_hash_mismatch(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "artifact-hash",
+            "check_type": "artifact_sha256_matches",
+            "severity": "BLOCK",
+            "evidence_kind": "creator_artifact",
+        }
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    artifact = tmp_path / "creator-artifact.txt"
+    artifact.write_text("actual artifact bytes\n", encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "creator_artifact",
+                    "path": str(artifact),
+                    "sha256": "sha256:wrong",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "tau_model_artifact_hash_mismatch"
+
+
+def test_project_dag_blocks_unverified_proof_command_receipt(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = ["proof_command_receipt"]
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "proof-command",
+            "check_type": "proof_command_receipt_verified",
+            "severity": "BLOCK",
+        }
+    ]
+    contract["required_evidence"] = ["proof_command_receipt", "reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    proof_receipt = tmp_path / "proof-command-receipt.json"
+    proof_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.proof_command_receipt.v1",
+                "status": "FAIL",
+                "exit_code": 1,
+                "command": "uv run pytest -q",
+                "stdout_sha256": "sha256:abc",
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [{"kind": "proof_command_receipt", "path": str(proof_receipt)}],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "tau_model_proof_command_unverified"
+
+
+def test_project_dag_blocks_missing_human_acceptance_receipt(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = []
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "human-acceptance",
+            "check_type": "human_acceptance_receipt_required",
+            "severity": "BLOCK",
+        }
+    ]
+    contract["required_evidence"] = ["reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", []))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "tau_human_acceptance_receipt_missing"
+    assert receipt["dag_error"]["severity"] == "NEEDS_INTERVIEW"
+
+
 def _write_browser_handler_contract(tmp_path: Path, *, browser_oracle_status: str) -> Path:
     (tmp_path / "agents").mkdir(exist_ok=True)
     spec_root = tmp_path / "specs"
