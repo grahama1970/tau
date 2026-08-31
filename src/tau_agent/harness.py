@@ -185,6 +185,12 @@ class AgentHarness:
             return None
         return self._follow_up_queue.pop()
 
+    def pop_next_follow_up(self) -> AgentMessage | None:
+        """Remove and return the oldest queued follow-up message."""
+        if not self._follow_up_queue:
+            return None
+        return self._follow_up_queue.popleft()
+
     def queue_update_event(self) -> QueueUpdateEvent:
         """Return the current queue state as a portable agent event."""
         return QueueUpdateEvent(

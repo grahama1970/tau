@@ -80,6 +80,21 @@ async def run_agent_loop(
             tools=tools,
             signal=signal,
         ):
+            if signal is not None and signal.is_cancelled():
+                if isinstance(provider_event, ProviderTextDeltaEvent | ProviderThinkingDeltaEvent):
+                    yield ErrorEvent(
+                        message="Late provider output ignored after cancellation",
+                        recoverable=True,
+                        data={"provider_event_type": provider_event.type},
+                    )
+                    continue
+                if isinstance(provider_event, ProviderResponseEndEvent):
+                    yield ErrorEvent(
+                        message="Late provider response ignored after cancellation",
+                        recoverable=True,
+                        data={"provider_event_type": provider_event.type},
+                    )
+                    continue
             if isinstance(provider_event, ProviderResponseStartEvent):
                 yield MessageStartEvent()
             elif isinstance(provider_event, ProviderTextDeltaEvent):
@@ -123,6 +138,9 @@ async def run_agent_loop(
 
         if not assistant_message.tool_calls:
             yield TurnEndEvent(turn=turn)
+            if signal is not None and signal.is_cancelled():
+                yield ErrorEvent(message="Agent run cancelled", recoverable=True)
+                break
             queue_events = _drain_queued_messages(
                 messages,
                 get_steering_messages,
@@ -154,6 +172,9 @@ async def run_agent_loop(
             yield tool_event
 
         yield TurnEndEvent(turn=turn)
+        if signal is not None and signal.is_cancelled():
+            yield ErrorEvent(message="Agent run cancelled", recoverable=True)
+            break
         for queue_event in _drain_queued_messages(
             messages,
             get_steering_messages,
@@ -258,6 +279,8 @@ async def _execute_tool_with_updates(
         result = await task
         while not updates.empty():
             yield updates.get_nowait()
+        if signal is not None and signal.is_cancelled():
+            result = _cancelled_tool_result(tool_call)
         yield ToolExecutionEndEvent(result=result)
     except asyncio.CancelledError:
         task.cancel()
