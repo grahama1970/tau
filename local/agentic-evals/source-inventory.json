@@ -2709,10 +2709,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-31T10:57:48Z",
+  "generated_at": "2026-08-31T11:19:03Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:416b2dc116e9e9abde5a21899b08435de09522e195b69a3abaae7a331cf0aa17"
+  "source_sha256": "sha256:4038f22fd8d3c8e4af447c06c3a4a6d490a37d73597022e54d9602c832b71647"
 }

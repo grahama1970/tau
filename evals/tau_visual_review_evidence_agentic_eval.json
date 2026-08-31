@@ -5,7 +5,7 @@
   "capability_claims": [
     {
       "id": "tau.visual_reviewer_evidence_gate",
-      "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable screenshot path, exact sha256, and mocked/live proof boundary.",
+      "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable PNG screenshot path, exact sha256, mocked/live proof boundary, and a separate path-backed visual_review_receipt validated by Tau.",
       "criticality": "critical",
       "evidence_required": {
         "live_e2e": 1,
@@ -14,7 +14,7 @@
     }
   ],
   "claims": {
-    "proves": "Tau blocks fake visual reviewer PASS receipts that claim represents_goal/attractive without screenshot-bound evidence, and accepts the equivalent reviewer verdict when the screenshot path, sha256, mocked, and live fields are present and readable.",
+    "proves": "Tau blocks fake visual reviewer PASS receipts that claim represents_goal/attractive without screenshot-bound evidence, blocks screenshot-only reviewer JSON without a separate path-backed visual_review_receipt, and accepts the equivalent reviewer verdict when the PNG screenshot path, screenshot sha256, mocked/live fields, and visual_review_receipt are present and validated.",
     "does_not_prove": "Human aesthetic acceptance, provider semantic quality, React Flow rendering, or GOAL.md completion."
   },
   "trials": 2,
@@ -36,7 +36,8 @@
         "stdout_contains": [
           "\"schema\": \"tau.visual_reviewer_evidence_proof.v1\"",
           "\"status\": \"PASS\"",
-          "\"failure_code\": \"reviewer_visual_evidence_missing\""
+          "\"failure_code\": \"reviewer_visual_evidence_missing\"",
+          "\"failure_code\": \"visual_review_receipt_missing\""
         ],
         "artifacts": [
           {
@@ -53,6 +54,16 @@
             "path": "../local/agentic-evals/tau-visual-review-evidence-proof.json",
             "json_pointer": "/fake_visual_reviewer/dag_error/failure_code",
             "equals": "reviewer_visual_evidence_missing"
+          },
+          {
+            "path": "../local/agentic-evals/tau-visual-review-evidence-proof.json",
+            "json_pointer": "/screenshot_only_reviewer/receipt_status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-visual-review-evidence-proof.json",
+            "json_pointer": "/screenshot_only_reviewer/dag_error/failure_code",
+            "equals": "visual_review_receipt_missing"
           },
           {
             "path": "../local/agentic-evals/tau-visual-review-evidence-proof.json",
@@ -81,12 +92,12 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence tests/test_project_dag.py::test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot -q"
+        "cd .. && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_with_screenshot_but_no_receipt tests/test_project_dag.py::test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot -q"
       ],
       "timeout_seconds": 120,
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["2 passed"]
+        "stdout_contains": ["3 passed"]
       }
     }
   ]

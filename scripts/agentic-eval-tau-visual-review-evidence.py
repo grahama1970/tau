@@ -178,9 +178,9 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
             "attractive": True,
         },
     )
-    screenshot_bound = _run_case(
+    screenshot_only = _run_case(
         work,
-        name="screenshot-bound-reviewer",
+        name="screenshot-only-reviewer",
         reviewer_evidence={
             "kind": "reviewer_verdict",
             "reviewed_node_id": "creator",
@@ -193,12 +193,47 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
             "live": True,
         },
     )
+    visual_receipt = work / "positive" / "visual-review-receipt.json"
+    visual_receipt_payload = {
+        "schema": "tau.visual_review_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS",
+        "goal_hash": "sha256:issue-336-goal",
+        "reviewed_node_id": "creator",
+        "reviewer_node_id": "reviewer",
+        "verification_method": "browser_screenshot_readback",
+        "reviewed_screenshot": {"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
+        "mocked": False,
+        "live": True,
+    }
+    visual_receipt.write_text(json.dumps(visual_receipt_payload, sort_keys=True), encoding="utf-8")
+    visual_receipt_sha256 = _sha256(visual_receipt)
+    screenshot_bound = _run_case(
+        work,
+        name="screenshot-bound-reviewer",
+        reviewer_evidence={
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "creator",
+            "goal_hash": "sha256:issue-336-goal",
+            "verdict": "PASS",
+            "represents_goal": True,
+            "attractive": True,
+            "screenshot": {"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
+            "visual_review_receipt": {"path": str(visual_receipt), "sha256": visual_receipt_sha256},
+            "visual_review_receipt_sha256": visual_receipt_sha256,
+            "mocked": False,
+            "live": True,
+        },
+    )
     fake_failure_code = (fake_visual.get("dag_error") or {}).get("failure_code")
+    screenshot_only_failure_code = (screenshot_only.get("dag_error") or {}).get("failure_code")
     positive_verdict = (screenshot_bound.get("reviewer_verdicts") or [{}])[0]
     positive_screenshot = positive_verdict.get("screenshot") if isinstance(positive_verdict, dict) else None
     errors = []
     if fake_visual.get("receipt_status") != "BLOCKED" or fake_failure_code != "reviewer_visual_evidence_missing":
         errors.append("fake_visual_reviewer_not_blocked")
+    if screenshot_only.get("receipt_status") != "BLOCKED" or screenshot_only_failure_code != "visual_review_receipt_missing":
+        errors.append("screenshot_only_reviewer_not_blocked")
     if screenshot_bound.get("receipt_status") != "PASS" or screenshot_bound.get("receipt_ok") is not True:
         errors.append("screenshot_bound_visual_reviewer_not_accepted")
     if not isinstance(positive_screenshot, dict) or positive_screenshot.get("sha256") != _sha256(visual_screenshot):
@@ -214,6 +249,7 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
         "live": True,
         "provider_live": False,
         "fake_visual_reviewer": fake_visual,
+        "screenshot_only_reviewer": screenshot_only,
         "screenshot_bound_reviewer": screenshot_bound,
         "proof_boundary": {
             "proves": "Tau blocks visual-quality reviewer PASS claims unless the reviewer verdict carries readable screenshot evidence with an exact sha256 and mocked/live boundaries.",

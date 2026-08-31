@@ -1,0 +1,44 @@
+{
+  "commit": "f3b7ac5a1ce370309eb6119f39b730a13838df75",
+  "evidence_paths": [
+    "local/agentic-evals/tau-visual-review-evidence-proof.json",
+    "local/agentic-evals/tau-visual-review-evidence-agentic-evals-report.json",
+    "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json"
+  ],
+  "issue": 336,
+  "live": true,
+  "mocked": false,
+  "not_done": [
+    "Broader zero-trust work remains outside issue 336: other evidence kinds may need similar receipt-specific validators."
+  ],
+  "proof_boundary": {
+    "does_not_prove": "Human aesthetic acceptance, provider semantic quality, or every possible non-visual fake-verification class.",
+    "proves": "Tau does not accept agent JSON alone as visual verification: no screenshot blocks; screenshot-only blocks; only screenshot plus a path-backed tau.visual_review_receipt.v1 that Tau reads and validates against PNG bytes, sha256, goal hash, reviewer node, reviewed node, method, and mocked/live boundary can pass."
+  },
+  "provider_live": false,
+  "schema": "tau.ticket_closure_evidence.v1",
+  "status": "PASS",
+  "title": "Tau must not trust visual reviewer agent output as verification",
+  "validation_commands": [
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_with_screenshot_but_no_receipt tests/test_project_dag.py::test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot -q",
+      "result": "3 passed in 1.33s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && TAU_LIVE_E2E_READBACK=1 uv run python scripts/agentic-eval-tau-visual-review-evidence.py --work local/agentic-evals/tau-visual-review-evidence/work --out local/agentic-evals/tau-visual-review-evidence-proof.json",
+      "result": "PASS; no-screenshot fake reviewer BLOCKED with reviewer_visual_evidence_missing; screenshot-only reviewer BLOCKED with visual_review_receipt_missing; screenshot plus visual_review_receipt reviewer PASS"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run --with typer --with rich --with python-dotenv python /home/graham/.pi/agent/skills/agentic-evals/src/runner.py run evals/tau_visual_review_evidence_agentic_eval.json -o local/agentic-evals/tau-visual-review-evidence-agentic-evals-report.json --timeout-seconds 180",
+      "result": "readiness=READY; PASS=2; trial_count=4"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest -q",
+      "result": "256 passed, 29 skipped, 3463 deselected in 26.11s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run --with typer --with rich --with python-dotenv python /home/graham/.pi/agent/skills/agentic-evals/src/runner.py run evals/tau_feature_coverage_agentic_eval.json -o local/agentic-evals/tau-feature-coverage-agentic-evals-report.json --timeout-seconds 240",
+      "result": "readiness=READY; PASS=7; trial_count=14"
+    }
+  ]
+}

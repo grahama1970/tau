@@ -147,7 +147,7 @@ def test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence(
     assert receipt["alerts"][0]["code"] == "reviewer_visual_evidence_missing"
 
 
-def test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot(
+def test_project_dag_blocks_visual_reviewer_verdict_with_screenshot_but_no_receipt(
     tmp_path: Path,
 ) -> None:
     contract_path = _write_contract(tmp_path)
@@ -169,10 +169,79 @@ def test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot(
                     "verdict": "PASS",
                     "represents_goal": True,
                     "attractive": True,
+                    "screenshot": {"path": str(screenshot), "sha256": screenshot_sha256},
+                    "mocked": False,
+                    "live": True,
+                }
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "visual_review_receipt_missing"
+
+
+def test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    screenshot = tmp_path / "rendered-page.png"
+    screenshot.write_bytes(_PNG_1X1_BYTES)
+    screenshot_sha256 = f"sha256:{hashlib.sha256(screenshot.read_bytes()).hexdigest()}"
+    visual_receipt = tmp_path / "visual-review-receipt.json"
+    visual_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.visual_review_receipt.v1",
+                "status": "PASS",
+                "verdict": "PASS",
+                "goal_hash": "sha256:active-goal",
+                "reviewed_node_id": "coder",
+                "reviewer_node_id": "reviewer",
+                "verification_method": "browser_screenshot_readback",
+                "reviewed_screenshot": {
+                    "path": str(screenshot),
+                    "sha256": screenshot_sha256,
+                },
+                "mocked": False,
+                "live": True,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    visual_receipt_sha256 = f"sha256:{hashlib.sha256(visual_receipt.read_bytes()).hexdigest()}"
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _handoff(
+            "reviewer",
+            "human",
+            [
+                {
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                    "represents_goal": True,
+                    "attractive": True,
                     "screenshot": {
                         "path": str(screenshot),
                         "sha256": screenshot_sha256,
                     },
+                    "visual_review_receipt": {
+                        "path": str(visual_receipt),
+                        "sha256": visual_receipt_sha256,
+                    },
+                    "visual_review_receipt_sha256": visual_receipt_sha256,
                     "mocked": False,
                     "live": True,
                 }

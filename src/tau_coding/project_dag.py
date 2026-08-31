@@ -180,6 +180,22 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
     },
+    "visual_review_receipt_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "visual_review_receipt_unreadable": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "visual_review_receipt_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "visual_review_receipt_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.downstream_skill_blocker",
@@ -2663,13 +2679,15 @@ def _reviewer_alerts(
                     },
                 )
             )
-        alerts.extend(_reviewer_visual_evidence_alerts(node, verdict))
+        alerts.extend(_reviewer_visual_evidence_alerts(contract, node, verdict, response))
     return alerts
 
 
 def _reviewer_visual_evidence_alerts(
+    contract: ProjectDagContract,
     node: ProjectDagNode,
     verdict: dict[str, Any],
+    response: dict[str, Any],
 ) -> list[dict[str, Any]]:
     if not _reviewer_verdict_makes_visual_claim(verdict):
         return []
@@ -2764,7 +2782,104 @@ def _reviewer_visual_evidence_alerts(
                 {"node_id": node.node_id, "path": str(screenshot_path)},
             )
         )
+    alerts.extend(
+        _visual_review_receipt_alerts(
+            contract,
+            node,
+            verdict,
+            response,
+            screenshot_path=screenshot_path,
+            screenshot_sha256=actual_sha256,
+        )
+    )
     return alerts
+
+
+def _visual_review_receipt_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    verdict: dict[str, Any],
+    response: dict[str, Any],
+    *,
+    screenshot_path: Path,
+    screenshot_sha256: str,
+) -> list[dict[str, Any]]:
+    receipt_ref = _visual_review_receipt_ref(verdict, response)
+    if receipt_ref is None:
+        return [
+            _alert(
+                "BLOCK",
+                "visual_review_receipt_missing",
+                "Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.",
+                {"node_id": node.node_id, "screenshot_sha256": screenshot_sha256},
+            )
+        ]
+    receipt_path_value = receipt_ref.get("path")
+    if not isinstance(receipt_path_value, str) or not receipt_path_value:
+        return [
+            _alert(
+                "BLOCK",
+                "visual_review_receipt_missing",
+                "visual_review_receipt evidence omitted path.",
+                {"node_id": node.node_id},
+            )
+        ]
+    receipt_path = Path(receipt_path_value).expanduser()
+    try:
+        receipt = _read_json_object(receipt_path, label="visual review receipt")
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "visual_review_receipt_unreadable",
+                "visual_review_receipt could not be read from disk.",
+                {"node_id": node.node_id, "path": str(receipt_path), "error": str(exc)},
+            )
+        ]
+    problems: list[str] = []
+    if receipt.get("schema") != "tau.visual_review_receipt.v1":
+        problems.append("schema")
+    if receipt.get("status") != "PASS" or receipt.get("verdict") != "PASS":
+        problems.append("status_verdict")
+    if receipt.get("goal_hash") != contract.goal["goal_hash"]:
+        problems.append("goal_hash")
+    if receipt.get("reviewed_node_id") != verdict.get("reviewed_node_id"):
+        problems.append("reviewed_node_id")
+    if receipt.get("reviewer_node_id") != node.node_id:
+        problems.append("reviewer_node_id")
+    if receipt.get("mocked") is not False or not isinstance(receipt.get("live"), bool):
+        problems.append("proof_boundary")
+    if receipt.get("verification_method") not in {
+        "browser_screenshot_readback",
+        "vlm_visual_review",
+        "human_visual_review",
+    }:
+        problems.append("verification_method")
+    reviewed_screenshot = receipt.get("reviewed_screenshot")
+    if not isinstance(reviewed_screenshot, dict):
+        problems.append("reviewed_screenshot")
+    else:
+        if Path(str(reviewed_screenshot.get("path") or "")).expanduser() != screenshot_path:
+            problems.append("reviewed_screenshot.path")
+        if reviewed_screenshot.get("sha256") != screenshot_sha256:
+            problems.append("reviewed_screenshot.sha256")
+    receipt_sha256 = f"sha256:{hashlib.sha256(receipt_path.read_bytes()).hexdigest()}"
+    verdict_receipt_sha256 = verdict.get("visual_review_receipt_sha256")
+    if isinstance(verdict_receipt_sha256, str) and verdict_receipt_sha256 != receipt_sha256:
+        problems.append("visual_review_receipt_sha256")
+    ref_sha256 = receipt_ref.get("sha256")
+    if isinstance(ref_sha256, str) and ref_sha256 != receipt_sha256:
+        problems.append("evidence.sha256")
+    if problems:
+        return [
+            _alert(
+                "BLOCK",
+                "visual_review_receipt_invalid",
+                "visual_review_receipt failed Tau validation.",
+                {"node_id": node.node_id, "path": str(receipt_path), "problems": problems},
+            )
+        ]
+    return []
 
 
 def _reviewer_verdict_makes_visual_claim(verdict: dict[str, Any]) -> bool:
@@ -2783,6 +2898,19 @@ def _reviewer_visual_screenshot_ref(verdict: dict[str, Any]) -> dict[str, Any] |
     sha256 = verdict.get("screenshot_sha256") or verdict.get("rendered_screenshot_sha256")
     if path is not None or sha256 is not None:
         return {"path": path, "sha256": sha256}
+    return None
+
+
+def _visual_review_receipt_ref(
+    verdict: dict[str, Any],
+    response: dict[str, Any],
+) -> dict[str, Any] | None:
+    verdict_ref = verdict.get("visual_review_receipt")
+    if isinstance(verdict_ref, dict):
+        return verdict_ref
+    for evidence in _result_evidence(response):
+        if isinstance(evidence, dict) and evidence.get("kind") == "visual_review_receipt":
+            return evidence
     return None
 
 

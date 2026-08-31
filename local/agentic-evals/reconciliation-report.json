@@ -5289,7 +5289,7 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-31T10:57:48Z",
+  "generated_at": "2026-08-31T11:19:03Z",
   "inventory_feature_count": 273,
   "live": true,
   "manifest_count": 24,
@@ -5778,7 +5778,7 @@
       "claims": [
         {
           "criticality": "critical",
-          "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable screenshot path, exact sha256, and mocked/live proof boundary.",
+          "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable PNG screenshot path, exact sha256, mocked/live proof boundary, and a separate path-backed visual_review_receipt validated by Tau.",
           "evidence_required": {
             "fault_injected_deterministic": 1,
             "live_e2e": 1
@@ -5894,6 +5894,6 @@
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:d70bee783df304c9950c2c1deb1b479acf113b11c7805c8a732c63eaa027dc30",
+  "source_inventory_sha256": "sha256:64786dad52d5b73058ab287a1bc0bedfc93cc54b7486c559c4be405f745678b4",
   "status": "PASS"
 }
