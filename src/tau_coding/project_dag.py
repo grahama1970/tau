@@ -331,6 +331,82 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "NEEDS_INTERVIEW",
         "implemented_by": "tau.validators.dag.human_acceptance_receipt",
     },
+    "tau_request_underspecified": {
+        "severity": "NEEDS_INTERVIEW",
+        "implemented_by": "tau.validators.ask.human_intent_preflight",
+    },
+    "tau_goal_contract_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.goal_canonicalization",
+    },
+    "tau_dag_contract_digest_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.contract_digest",
+    },
+    "tau_artifact_boundary_violation": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.artifact_boundary",
+    },
+    "tau_receipt_lineage_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.receipt_lineage",
+    },
+    "tau_node_identity_collision": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.node_identity_canonicalization",
+    },
+    "tau_join_temporal_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.join_temporal_integrity",
+    },
+    "tau_retry_budget_lineage_exceeded": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.retry_budget_lineage",
+    },
+    "tau_verifier_topology_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.verifier_topology",
+    },
+    "reviewer_evidence_binding_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_evidence_binding",
+    },
+    "tau_status_projection_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.status_projection",
+    },
+    "tau_independent_verification_failed": {
+        "severity": "FAIL",
+        "implemented_by": "tau.validators.dag.independent_verification",
+    },
+    "tau_proof_provenance_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.proof_provenance",
+    },
+    "tau_external_effect_readback_mismatch": {
+        "severity": "FAIL",
+        "implemented_by": "tau.validators.dag.external_effect_readback",
+    },
+    "tau_provider_delivery_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.provider_delivery",
+    },
+    "tau_provider_identity_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.provider_identity",
+    },
+    "tau_fallback_capability_downgrade_hidden": {
+        "severity": "NEEDS_ATTENTION",
+        "implemented_by": "tau.validators.dag.fallback_capability_boundary",
+    },
+    "human_acceptance_attestation_invalid_authority": {
+        "severity": "NEEDS_INTERVIEW",
+        "implemented_by": "tau.validators.dag.human_acceptance_authority",
+    },
+    "tau_receipt_noncanonical_json": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.receipt_json_canonicalization",
+    },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.downstream_skill_blocker",
@@ -565,6 +641,24 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(handler_identity_alerts[0]["code"]).upper(),
             alerts=handler_identity_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+            security_context_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
+    contract_digest_alerts = _contract_digest_preflight_alerts(contract)
+    if contract_digest_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(contract_digest_alerts[0]["code"]).upper(),
+            alerts=contract_digest_alerts,
             memory_intent_gate_receipt=None,
             evidence_case_gate_receipt=None,
             evidence_validation_receipt=None,
@@ -3089,6 +3183,47 @@ def _handler_node_id(handler: str) -> str:
     return f"handler-{normalized}"
 
 
+def _canonical_json_hash(payload: Any) -> str:
+    data = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return f"sha256:{hashlib.sha256(data).hexdigest()}"
+
+
+def _contract_digest_preflight_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    context = contract.context
+    if context.get("compiled_contract_digest_required") is not True:
+        return []
+    expected = context.get("compiled_contract_sha256")
+    if not isinstance(expected, str) or not expected.startswith("sha256:"):
+        return [
+            _alert(
+                "BLOCK",
+                "tau_dag_contract_digest_mismatch",
+                "Compiled DAG digest was required but no canonical digest was supplied.",
+                {"dag_id": contract.dag_id},
+            )
+        ]
+    candidate = copy.deepcopy(contract.payload)
+    candidate_context = candidate.get("context")
+    if isinstance(candidate_context, dict):
+        for key in ("compiled_contract_sha256", "compiled_contract_digest_required", "mutation"):
+            candidate_context.pop(key, None)
+    observed = _canonical_json_hash(candidate)
+    if observed != expected:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_dag_contract_digest_mismatch",
+                "DAG contract changed after the compiled digest was recorded.",
+                {
+                    "dag_id": contract.dag_id,
+                    "expected_sha256": expected,
+                    "observed_sha256": observed,
+                },
+            )
+        ]
+    return []
+
+
 def _verification_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
     """Fail closed before dispatch when a human/verifier contract is incomplete."""
 
@@ -3096,6 +3231,16 @@ def _verification_contract_alerts(contract: ProjectDagContract) -> list[dict[str
     requires_interview = contract.context.get("requires_interview") is True
     requires_human_acceptance = contract.context.get("requires_human_acceptance") is True
     if verification_contract is None:
+        acceptance_check_declared = any(
+            any(
+                isinstance(check, Mapping)
+                and check.get("check_type") == "human_acceptance_receipt_required"
+                for check in node.sanity_checks
+            )
+            for node in contract.nodes.values()
+        )
+        if requires_human_acceptance and acceptance_check_declared and not requires_interview:
+            return []
         if requires_interview or requires_human_acceptance:
             return [
                 _alert(
@@ -3157,6 +3302,45 @@ def _verification_contract_alerts(contract: ProjectDagContract) -> list[dict[str
                     "tau_dag_self_verification_forbidden",
                     "DAG verifier node attempts to verify its own output.",
                     {"node_id": node.node_id, "verifies_node": verifies_node},
+                )
+            ]
+        if verification_contract.get("independent_principal") is True and isinstance(
+            verifies_node, str
+        ):
+            verified = contract.nodes.get(verifies_node)
+            verifier_principal = node.context.get("principal_id") or node.agent
+            verified_principal = (
+                verified.context.get("principal_id") if verified is not None else None
+            )
+            if verified_principal is None and verified is not None:
+                verified_principal = verified.agent
+            if verifier_principal and verifier_principal == verified_principal:
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_verifier_topology_invalid",
+                        "Verifier principal is not independent from the node it verifies.",
+                        {
+                            "node_id": node.node_id,
+                            "verifies_node": verifies_node,
+                            "principal_id": verifier_principal,
+                        },
+                    )
+                ]
+    if verification_contract.get("requires_dominance") is True:
+        verifier_set = set(verifier_nodes)
+        bypass_edges = [
+            {"from": edge.source, "to": edge.target}
+            for edge in contract.edges
+            if edge.target in contract.terminal_nodes and edge.source not in verifier_set
+        ]
+        if bypass_edges:
+            return [
+                _alert(
+                    "BLOCK",
+                    "tau_verifier_topology_invalid",
+                    "DAG has a terminal path that bypasses the required verifier node.",
+                    {"verifier_nodes": verifier_nodes, "bypass_edges": bypass_edges},
                 )
             ]
     if problems:
@@ -3818,7 +4002,475 @@ def _human_acceptance_receipt_alerts(
                 {"node_id": node.node_id, "check_id": check.get("id")},
             )
         ]
+    if receipt.get("authority") not in {"human_signed", "human_attested", "operator_signed"}:
+        return [
+            _alert(
+                "NEEDS_INTERVIEW",
+                "human_acceptance_attestation_invalid_authority",
+                "Human acceptance receipt was not signed or attested by a human authority.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "authority": receipt.get("authority"),
+                    "next_command": "$interview",
+                },
+            )
+        ]
     return []
+
+
+def _post_execution_trust_alerts(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    responses: Mapping[str, dict[str, Any]],
+    dispatches: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    observed_responses = dict(responses)
+    for dispatch in dispatches:
+        selected_agent = dispatch.get("selected_agent")
+        response = _response_payload(dispatch)
+        if isinstance(selected_agent, str) and isinstance(response, dict):
+            node = _node_for_agent(contract, selected_agent)
+            observed_responses[node.node_id if node is not None else selected_agent] = response
+    alerts.extend(_noncanonical_json_dispatch_alerts(dispatches))
+    alerts.extend(_proof_provenance_post_alerts(contract, observed_responses))
+    alerts.extend(_artifact_boundary_post_alerts(receipt_dir, observed_responses))
+    alerts.extend(_reviewer_binding_post_alerts(observed_responses))
+    alerts.extend(_join_lineage_post_alerts(contract, observed_responses))
+    alerts.extend(_independent_oracle_post_alerts(observed_responses))
+    alerts.extend(_external_effect_post_alerts(observed_responses))
+    alerts.extend(_provider_delivery_post_alerts(contract, observed_responses))
+    return alerts
+
+
+def _noncanonical_json_dispatch_alerts(
+    dispatches: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    duplicates: list[str] = []
+
+    def object_pairs_hook(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        seen: set[str] = set()
+        for key, _value in pairs:
+            if key in seen:
+                duplicates.append(key)
+            seen.add(key)
+        return dict(pairs)
+
+    for dispatch in dispatches:
+        for command_result in dispatch.get("command_results", []):
+            if not isinstance(command_result, dict) or not isinstance(
+                command_result.get("stdout"), str
+            ):
+                continue
+            raw = command_result["stdout"].strip()
+            if not raw:
+                continue
+            duplicates.clear()
+            try:
+                json.loads(raw, object_pairs_hook=object_pairs_hook)
+            except json.JSONDecodeError:
+                continue
+            if duplicates:
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_receipt_noncanonical_json",
+                        "Node response JSON used duplicate object keys and is not canonical.",
+                        {"duplicate_keys": sorted(set(duplicates))},
+                    )
+                ]
+    return []
+
+
+def _proof_provenance_post_alerts(
+    contract: ProjectDagContract,
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        node = contract.nodes.get(node_id)
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict) or evidence.get("kind") != "proof_command_receipt":
+                continue
+            receipt = _receipt_for_evidence(evidence)
+            if not isinstance(receipt, dict):
+                continue
+            expected_run_id = node.context.get("run_id") if node is not None else None
+            expected_nonce = node.context.get("dispatch_nonce") if node is not None else None
+            observed_run_id = receipt.get("run_id")
+            observed_nonce = receipt.get("dispatch_nonce")
+            lineage_expected = isinstance(expected_run_id, str) or isinstance(expected_nonce, str)
+            if lineage_expected and (
+                (isinstance(expected_run_id, str) and observed_run_id != expected_run_id)
+                or (isinstance(expected_nonce, str) and observed_nonce != expected_nonce)
+            ):
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_receipt_lineage_mismatch",
+                        (
+                            "Proof command receipt was replayed from a different run "
+                            "or dispatch nonce."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "expected_run_id": expected_run_id,
+                            "observed_run_id": observed_run_id,
+                            "expected_dispatch_nonce": expected_nonce,
+                            "observed_dispatch_nonce": observed_nonce,
+                        },
+                    )
+                ]
+            issuer = receipt.get("issuer") or receipt.get("authority") or receipt.get("emitted_by")
+            if observed_nonce == "agent-minted-not-tau" or issuer not in {
+                None,
+                "tau",
+                "tau_runner",
+            }:
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_proof_provenance_invalid",
+                        "Proof command receipt was not emitted by Tau's trusted proof runner.",
+                        {"node_id": node_id, "issuer": issuer, "dispatch_nonce": observed_nonce},
+                    )
+                ]
+            if (
+                receipt.get("cwd")
+                and receipt.get("artifact_workspace")
+                and receipt.get("cwd") != receipt.get("artifact_workspace")
+            ):
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_proof_provenance_invalid",
+                        (
+                            "Proof command receipt ran in a different checkout than "
+                            "the artifact workspace."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "cwd": receipt.get("cwd"),
+                            "artifact_workspace": receipt.get("artifact_workspace"),
+                        },
+                    )
+                ]
+            if (
+                receipt.get("tested_tree_sha256")
+                and receipt.get("current_tree_sha256")
+                and receipt.get("tested_tree_sha256") != receipt.get("current_tree_sha256")
+            ):
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_proof_provenance_invalid",
+                        "Artifact tree changed after the green proof command receipt.",
+                        {
+                            "node_id": node_id,
+                            "tested_tree_sha256": receipt.get("tested_tree_sha256"),
+                            "current_tree_sha256": receipt.get("current_tree_sha256"),
+                        },
+                    )
+                ]
+    return []
+
+
+def _artifact_boundary_post_alerts(
+    receipt_dir: Path,
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict):
+                continue
+            path_value = (
+                evidence.get("svg_path") or evidence.get("artifact_path") or evidence.get("path")
+            )
+            if evidence.get("origin") != "tau_node_artifact" or not isinstance(path_value, str):
+                continue
+            if evidence.get("mocked") is not False or evidence.get("live") is not True:
+                continue
+            try:
+                artifact_path = Path(path_value).expanduser().resolve()
+                expected_root = (receipt_dir / "ready-queue" / node_id).resolve()
+            except OSError:
+                continue
+            if expected_root not in artifact_path.parents:
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_artifact_boundary_violation",
+                        (
+                            "Node artifact claimed Tau origin but was outside this "
+                            "run's node artifact directory."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "path": str(artifact_path),
+                            "expected_root": str(expected_root),
+                        },
+                    )
+                ]
+    return []
+
+
+def _reviewer_binding_post_alerts(responses: Mapping[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    for reviewer_node_id, response in responses.items():
+        for verdict in _reviewer_verdict_evidence(response):
+            reviewed_node_id = verdict.get("reviewed_node_id")
+            if not isinstance(reviewed_node_id, str):
+                continue
+            reviewed_response = responses.get(reviewed_node_id)
+            reviewed_artifact = _first_evidence_by_kind(reviewed_response, "creator_artifact")
+            verdict_artifact = verdict.get("reviewed_artifact")
+            if isinstance(reviewed_artifact, dict) and isinstance(verdict_artifact, dict):
+                creator_path = reviewed_artifact.get("path")
+                verdict_path = verdict_artifact.get("path")
+                creator_sha = _artifact_sha256(reviewed_artifact)
+                verdict_sha = verdict_artifact.get("sha256")
+                if creator_path != verdict_path or (creator_sha and verdict_sha != creator_sha):
+                    return [
+                        _alert(
+                            "BLOCK",
+                            "reviewer_evidence_binding_invalid",
+                            (
+                            "Reviewer PASS verdict was not bound to the exact creator "
+                            "artifact path and hash."
+                        ),
+                            {
+                                "node_id": reviewer_node_id,
+                                "reviewed_node_id": reviewed_node_id,
+                                "creator_path": creator_path,
+                                "verdict_path": verdict_path,
+                                "creator_sha256": creator_sha,
+                                "verdict_sha256": verdict_sha,
+                            },
+                        )
+                    ]
+            expected_attempt = (
+                reviewed_artifact.get("attempt_id") if isinstance(reviewed_artifact, dict) else None
+            )
+            observed_attempt = verdict.get("reviewed_attempt_id")
+            if (
+                expected_attempt is not None
+                and observed_attempt is not None
+                and str(expected_attempt) != str(observed_attempt)
+            ):
+                return [
+                    _alert(
+                        "BLOCK",
+                        "reviewer_evidence_binding_invalid",
+                        "Reviewer PASS verdict was replayed from a different creator attempt.",
+                        {
+                            "node_id": reviewer_node_id,
+                            "reviewed_node_id": reviewed_node_id,
+                            "expected_attempt_id": expected_attempt,
+                            "observed_attempt_id": observed_attempt,
+                        },
+                    )
+                ]
+    return []
+
+
+def _join_lineage_post_alerts(
+    contract: ProjectDagContract,
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        node = contract.nodes.get(node_id)
+        admitted = {edge.source for edge in contract.edges if edge.target == node_id}
+        required_completed = set()
+        join_context = node.context.get("join") if node is not None else None
+        if isinstance(join_context, Mapping) and isinstance(
+            join_context.get("requires_completed"), list
+        ):
+            required_completed = {
+                str(item) for item in join_context["requires_completed"] if isinstance(item, str)
+            }
+        allowed = admitted | required_completed | {node_id}
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict):
+                continue
+            if (
+                evidence.get("superseded") is True
+                or evidence.get("artifact_generation") == "pre-recovery"
+            ):
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_join_temporal_invalid",
+                        "Join node accepted superseded pre-recovery evidence.",
+                        {"node_id": node_id, "evidence_kind": evidence.get("kind")},
+                    )
+                ]
+            source_node = evidence.get("source_node_id") or evidence.get("reviewed_node_id")
+            if isinstance(source_node, str) and source_node and source_node not in allowed:
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_join_unadmitted_evidence",
+                        (
+                            "Join node cited evidence that was not admitted by predecessor "
+                            "or join policy."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "source_node_id": source_node,
+                            "allowed_sources": sorted(allowed),
+                        },
+                    )
+                ]
+    return []
+
+
+def _independent_oracle_post_alerts(
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        for evidence in _result_evidence(response):
+            if (
+                not isinstance(evidence, dict)
+                or evidence.get("kind") != "independent_oracle_receipt"
+            ):
+                continue
+            receipt = _receipt_for_evidence(evidence)
+            if (
+                not isinstance(receipt, dict)
+                or receipt.get("status") != "PASS"
+                or receipt.get("exit_code") not in {None, 0}
+            ):
+                return [
+                    _alert(
+                        "FAIL",
+                        "tau_independent_verification_failed",
+                        "Independent oracle receipt did not pass.",
+                        {
+                            "node_id": node_id,
+                            "receipt_status": receipt.get("status")
+                            if isinstance(receipt, dict)
+                            else None,
+                        },
+                    )
+                ]
+    return []
+
+
+def _external_effect_post_alerts(responses: Mapping[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict) or evidence.get("kind") != "external_effect_receipt":
+                continue
+            readback = evidence.get("readback")
+            if isinstance(readback, Mapping) and readback.get("expected") != readback.get(
+                "observed"
+            ):
+                return [
+                    _alert(
+                        "FAIL",
+                        "tau_external_effect_readback_mismatch",
+                        (
+                            "External effect reported success but independent readback "
+                            "observed different state."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "expected": readback.get("expected"),
+                            "observed": readback.get("observed"),
+                        },
+                    )
+                ]
+    return []
+
+
+def _provider_delivery_post_alerts(
+    contract: ProjectDagContract,
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for node_id, response in responses.items():
+        node = contract.nodes.get(node_id)
+        expected_handler = _declared_node_handler(node) if node is not None else None
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict) or evidence.get("kind") != "handler_response_receipt":
+                continue
+            requested = evidence.get("requested_handler") or expected_handler
+            actual = evidence.get("actual_handler") or evidence.get("handler")
+            missing_evidence = evidence.get("missing_evidence")
+            if isinstance(requested, str) and isinstance(actual, str) and actual != requested:
+                if isinstance(missing_evidence, list) and missing_evidence:
+                    return [
+                        _alert(
+                            "NEEDS_ATTENTION",
+                            "tau_fallback_capability_downgrade_hidden",
+                            (
+                            "Provider fallback changed capability but was reported as "
+                            "the original handler."
+                        ),
+                            {
+                                "node_id": node_id,
+                                "requested_handler": requested,
+                                "actual_handler": actual,
+                                "missing_evidence": missing_evidence,
+                            },
+                        )
+                    ]
+                return [
+                    _alert(
+                        "BLOCK",
+                        "tau_provider_identity_mismatch",
+                        (
+                            "Handler response was produced by a provider different from "
+                            "the requested handler."
+                        ),
+                        {
+                            "node_id": node_id,
+                            "requested_handler": requested,
+                            "actual_handler": actual,
+                        },
+                    )
+                ]
+            response_path = evidence.get("response_path")
+            response_sha = evidence.get("response_sha256")
+            if isinstance(response_path, str) and response_path:
+                path = Path(response_path).expanduser()
+                if not path.is_file():
+                    return [
+                        _alert(
+                            "BLOCK",
+                            "tau_provider_delivery_invalid",
+                            (
+                                "Provider response receipt cited a response file that "
+                                "could not be read back."
+                            ),
+                            {"node_id": node_id, "response_path": str(path)},
+                        )
+                    ]
+                actual_sha = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+                if response_sha != actual_sha:
+                    return [
+                        _alert(
+                            "BLOCK",
+                            "tau_provider_delivery_invalid",
+                            "Provider response receipt hash did not match response bytes.",
+                            {
+                                "node_id": node_id,
+                                "response_path": str(path),
+                                "expected_sha256": response_sha,
+                                "actual_sha256": actual_sha,
+                            },
+                        )
+                    ]
+    return []
+
+
+def _receipt_for_evidence(evidence: Mapping[str, Any]) -> dict[str, Any] | None:
+    path_value = evidence.get("path")
+    if isinstance(path_value, str) and path_value.strip():
+        try:
+            return _read_json_object(Path(path_value).expanduser(), label="evidence receipt")
+        except RuntimeError:
+            return None
+    return dict(evidence)
 
 
 def _node_sanity_contract_alert(
@@ -5870,7 +6522,19 @@ def _run_shared_project_dag_plan(
                 },
             )
         )
-    status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"
+    post_execution_alerts = _post_execution_trust_alerts(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        responses=responses,
+        dispatches=dispatches,
+    )
+    if post_execution_alerts:
+        alerts = post_execution_alerts + alerts
+    status = (
+        "PASS"
+        if result.status == "PASS" and not alerts
+        else _status_from_alerts(alerts, default="BLOCKED")
+    )
     node_semantic_verdicts = _ready_queue_node_semantic_verdicts(responses)
     verdict = _ready_queue_final_verdict(
         status=status,
@@ -7431,6 +8095,16 @@ def _primary_blocking_alert(alerts: list[dict[str, Any]]) -> dict[str, Any] | No
         alerts,
         key=lambda alert: _PRIMARY_ALERT_CODE_PRIORITY.get(str(alert.get("code") or ""), 100),
     )
+
+
+def _status_from_alerts(alerts: list[dict[str, Any]], *, default: str) -> str:
+    primary = _primary_blocking_alert(alerts)
+    severity = str(primary.get("severity") or "").upper() if primary else ""
+    if primary and primary.get("code") == "tau_human_acceptance_receipt_missing":
+        return default
+    if severity in {"FAIL", "NEEDS_ATTENTION", "NEEDS_INTERVIEW"}:
+        return severity
+    return default
 
 
 def _ready_queue_blocked_verdict(alerts: list[dict[str, Any]], result_verdict: str) -> str:
