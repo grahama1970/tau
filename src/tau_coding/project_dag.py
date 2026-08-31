@@ -106,6 +106,28 @@ DISCORD_HUMAN_QUESTION_SCHEMA = "tau.discord_human_question.v1"
 DISCORD_HUMAN_ANSWER_SCHEMA = "tau.discord_human_answer.v1"
 DISCORD_STATUS_RESPONSE_SCHEMA = "tau.discord_status_response_receipt.v1"
 OPS_DISCORD_NOTIFICATION_SCHEMA = "ops_discord.notification_receipt.v1"
+NODE_SANITY_CHECK_SCHEMA = "tau.node_sanity_check.v1"
+NODE_SANITY_CHECK_TYPES = frozenset(
+    {
+        "required_evidence_exact_kinds",
+        "reviewer_verdict_schema",
+        "reviewer_verdict_bound_to_artifact",
+        "reviewer_verdict_bound_to_attempt",
+        "visual_review_receipt_bound_to_screenshot",
+        "no_mocked_proof",
+    }
+)
+NODE_SANITY_CHECK_ALLOWED_KEYS = frozenset(
+    {
+        "schema",
+        "id",
+        "check_type",
+        "severity",
+        "evidence_kind",
+        "artifact_field",
+        "attempt_field",
+    }
+)
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "branch_goal_hash_divergence": {
@@ -219,6 +241,26 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "reviewer_topology_bypass": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.required_reviewer_topology",
+    },
+    "node_sanity_check_contract_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.node_sanity_check_contract",
+    },
+    "node_sanity_check_failed": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.node_sanity_check",
+    },
+    "reviewer_artifact_binding_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_artifact_binding",
+    },
+    "reviewer_artifact_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_artifact_binding",
+    },
+    "reviewer_attempt_binding_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_attempt_binding",
     },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
@@ -381,6 +423,7 @@ class ProjectDagNode:
     context: Mapping[str, Any]
     requested_capabilities: tuple[Mapping[str, Any], ...]
     route_mode: str | None
+    sanity_checks: tuple[Mapping[str, Any], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1825,7 +1868,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -2321,6 +2364,11 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
                 )
                 if isinstance(declaration, dict):
                     requested_capabilities.append(immutable_json(declaration))
+        sanity_checks = _parse_node_sanity_checks(
+            item.get("sanity_checks", []),
+            f"nodes[{index}].sanity_checks",
+            errors,
+        )
         _validate_persistent_subagent_declaration(
             item.get("persistent_subagent"),
             node_label=f"nodes[{index}]",
@@ -2346,8 +2394,41 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
                 and isinstance(item["route"].get("mode"), str)
                 else None
             ),
+            sanity_checks=tuple(sanity_checks),
         )
     return nodes
+
+
+def _parse_node_sanity_checks(value: object, label: str, errors: list[str]) -> list[Mapping[str, Any]]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        errors.append(f"{label} must be a list")
+        return []
+    checks: list[Mapping[str, Any]] = []
+    for index, item in enumerate(value):
+        item_label = f"{label}[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{item_label} must be an object")
+            continue
+        unknown = sorted(str(key) for key in item if key not in NODE_SANITY_CHECK_ALLOWED_KEYS)
+        if unknown:
+            errors.append(f"{item_label} has unknown keys: {', '.join(unknown)}")
+        if item.get("schema") != NODE_SANITY_CHECK_SCHEMA:
+            errors.append(f"{item_label}.schema must be {NODE_SANITY_CHECK_SCHEMA}")
+        check_id = item.get("id")
+        if not isinstance(check_id, str) or not check_id.strip():
+            errors.append(f"{item_label}.id must be a non-empty string")
+        check_type = item.get("check_type")
+        if not isinstance(check_type, str) or not check_type.strip():
+            errors.append(f"{item_label}.check_type must be a non-empty string")
+        elif check_type not in NODE_SANITY_CHECK_TYPES:
+            errors.append(f"{item_label}.check_type is not supported: {check_type}")
+        severity = item.get("severity", "BLOCK")
+        if severity != "BLOCK":
+            errors.append(f"{item_label}.severity must be BLOCK")
+        checks.append(immutable_json(item))
+    return checks
 
 
 def _validate_persistent_subagent_declaration(
@@ -2741,6 +2822,7 @@ def _evaluate_loop_against_contract(
                     {"node_id": node_id, "attempts": count, "max_attempts": max_attempts},
                 )
             )
+    responses_by_node = _responses_by_node(contract, dispatches)
     for dispatch in dispatches:
         node = _node_for_agent(contract, str(dispatch.get("selected_agent")))
         if node is None:
@@ -2767,16 +2849,33 @@ def _evaluate_loop_against_contract(
                     {"node_id": node.node_id, "missing": missing},
                 )
             )
+        alerts.extend(_node_sanity_check_alerts(contract, node, response, responses_by_node))
         if node.reviewer is not None:
-            reviewer_alerts = _reviewer_alerts(contract, node, response)
+            reviewer_alerts = _reviewer_alerts(contract, node, response, responses_by_node)
             alerts.extend(reviewer_alerts)
     return alerts
+
+
+def _responses_by_node(
+    contract: ProjectDagContract,
+    dispatches: Sequence[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    responses: dict[str, dict[str, Any]] = {}
+    for dispatch in dispatches:
+        node = _node_for_agent(contract, str(dispatch.get("selected_agent")))
+        if node is None:
+            continue
+        response = _response_payload(dispatch)
+        if response is not None:
+            responses[node.node_id] = response
+    return responses
 
 
 def _reviewer_alerts(
     contract: ProjectDagContract,
     node: ProjectDagNode,
     response: dict[str, Any],
+    responses_by_node: Mapping[str, dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     verdicts = _reviewer_verdict_evidence(response)
     if not verdicts:
@@ -2832,6 +2931,219 @@ def _reviewer_alerts(
             )
         alerts.extend(_reviewer_visual_evidence_alerts(contract, node, verdict, response))
     return alerts
+
+
+def _node_sanity_check_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    response: dict[str, Any],
+    responses_by_node: Mapping[str, dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if not node.sanity_checks:
+        return alerts
+    verdicts = _reviewer_verdict_evidence(response)
+    for check in node.sanity_checks:
+        check_type = str(check.get("check_type") or "")
+        if check_type == "required_evidence_exact_kinds":
+            missing = _missing_required_evidence(node.required_evidence, response)
+            if missing:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "missing_required_evidence",
+                        "Node sanity check found missing exact evidence kinds.",
+                        {"node_id": node.node_id, "check_id": check.get("id"), "missing": missing},
+                    )
+                )
+        elif check_type == "reviewer_verdict_schema":
+            if node.reviewer is None:
+                alerts.append(_node_sanity_contract_alert(node, check, "reviewer_verdict_schema requires a reviewer node"))
+            elif not verdicts:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "missing_reviewer_verdict",
+                        "Reviewer node sanity check found no reviewer_verdict evidence.",
+                        {"node_id": node.node_id, "check_id": check.get("id")},
+                    )
+                )
+            else:
+                for verdict in verdicts:
+                    alerts.extend(_reviewer_verdict_schema_alerts(contract, node, verdict))
+        elif check_type == "reviewer_verdict_bound_to_artifact":
+            alerts.extend(_reviewer_artifact_binding_alerts(contract, node, check, verdicts, responses_by_node or {}))
+        elif check_type == "reviewer_verdict_bound_to_attempt":
+            alerts.extend(_reviewer_attempt_binding_alerts(contract, node, check, verdicts, responses_by_node or {}))
+        elif check_type == "visual_review_receipt_bound_to_screenshot":
+            if node.reviewer is None:
+                alerts.append(_node_sanity_contract_alert(node, check, "visual receipt binding requires a reviewer node"))
+            for verdict in verdicts:
+                if _reviewer_verdict_makes_visual_claim(verdict):
+                    alerts.extend(_reviewer_visual_evidence_alerts(contract, node, verdict, response))
+        elif check_type == "no_mocked_proof":
+            mocked_values = [response.get("mocked")] + [
+                evidence.get("mocked") for evidence in _result_evidence(response) if isinstance(evidence, dict)
+            ]
+            if True in mocked_values:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "node_sanity_check_failed",
+                        "Node sanity check rejected mocked proof evidence.",
+                        {"node_id": node.node_id, "check_id": check.get("id")},
+                    )
+                )
+        elif check_type:
+            alerts.append(_node_sanity_contract_alert(node, check, f"unsupported node sanity check: {check_type}"))
+    return alerts
+
+
+def _node_sanity_contract_alert(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    problem: str,
+) -> dict[str, Any]:
+    return _alert(
+        "BLOCK",
+        "node_sanity_check_contract_invalid",
+        "Node sanity check declaration is invalid for this node.",
+        {"node_id": node.node_id, "check_id": check.get("id"), "problem": problem},
+    )
+
+
+def _reviewer_artifact_binding_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    verdicts: Sequence[dict[str, Any]],
+    responses_by_node: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    _ = contract
+    if node.reviewer is None:
+        return [_node_sanity_contract_alert(node, check, "artifact binding requires a reviewer node")]
+    if not verdicts:
+        return [
+            _alert(
+                "BLOCK",
+                "reviewer_artifact_binding_missing",
+                "Reviewer artifact binding check found no reviewer verdict.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    alerts: list[dict[str, Any]] = []
+    evidence_kind = str(check.get("evidence_kind") or "creator_artifact")
+    artifact_field = str(check.get("artifact_field") or "reviewed_artifact")
+    for verdict in verdicts:
+        reviewed_node_id = str(verdict.get("reviewed_node_id") or "")
+        reviewed_response = responses_by_node.get(reviewed_node_id)
+        reviewed_artifact = _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        verdict_artifact = verdict.get(artifact_field)
+        if not isinstance(reviewed_artifact, dict) or not isinstance(verdict_artifact, dict):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "reviewer_artifact_binding_missing",
+                    "Reviewer verdict did not bind to the reviewed node artifact evidence.",
+                    {
+                        "node_id": node.node_id,
+                        "check_id": check.get("id"),
+                        "reviewed_node_id": reviewed_node_id or None,
+                        "evidence_kind": evidence_kind,
+                    },
+                )
+            )
+            continue
+        expected_path = reviewed_artifact.get("path")
+        observed_path = verdict_artifact.get("path")
+        expected_sha = _artifact_sha256(reviewed_artifact)
+        observed_sha = verdict_artifact.get("sha256")
+        mismatch = False
+        if isinstance(expected_path, str) and isinstance(observed_path, str):
+            mismatch = Path(expected_path).expanduser() != Path(observed_path).expanduser()
+        if isinstance(expected_sha, str) and expected_sha:
+            mismatch = mismatch or observed_sha != expected_sha
+        if not isinstance(observed_sha, str) or not observed_sha.startswith("sha256:"):
+            mismatch = True
+        if mismatch:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "reviewer_artifact_hash_mismatch",
+                    "Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.",
+                    {
+                        "node_id": node.node_id,
+                        "check_id": check.get("id"),
+                        "reviewed_node_id": reviewed_node_id or None,
+                        "expected_path": expected_path,
+                        "observed_path": observed_path,
+                        "expected_sha256": expected_sha,
+                        "observed_sha256": observed_sha,
+                    },
+                )
+            )
+    return alerts
+
+
+def _reviewer_attempt_binding_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    verdicts: Sequence[dict[str, Any]],
+    responses_by_node: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    _ = contract
+    if node.reviewer is None:
+        return [_node_sanity_contract_alert(node, check, "attempt binding requires a reviewer node")]
+    evidence_kind = str(check.get("evidence_kind") or "creator_artifact")
+    attempt_field = str(check.get("attempt_field") or "reviewed_attempt_id")
+    alerts: list[dict[str, Any]] = []
+    for verdict in verdicts:
+        reviewed_node_id = str(verdict.get("reviewed_node_id") or "")
+        reviewed_response = responses_by_node.get(reviewed_node_id)
+        reviewed_artifact = _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        expected_attempt = None
+        if isinstance(reviewed_artifact, dict):
+            expected_attempt = reviewed_artifact.get("attempt_id", reviewed_artifact.get("attempt"))
+        observed_attempt = verdict.get(attempt_field)
+        if expected_attempt is None or str(observed_attempt or "") != str(expected_attempt):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "reviewer_attempt_binding_mismatch",
+                    "Reviewer verdict did not bind to the reviewed node attempt id.",
+                    {
+                        "node_id": node.node_id,
+                        "check_id": check.get("id"),
+                        "reviewed_node_id": reviewed_node_id or None,
+                        "expected_attempt_id": expected_attempt,
+                        "observed_attempt_id": observed_attempt,
+                    },
+                )
+            )
+    return alerts
+
+
+def _first_evidence_by_kind(response: dict[str, Any] | None, kind: str) -> dict[str, Any] | None:
+    if response is None:
+        return None
+    for evidence in _result_evidence(response):
+        if isinstance(evidence, dict) and evidence.get("kind") == kind:
+            return evidence
+    return None
+
+
+def _artifact_sha256(evidence: Mapping[str, Any]) -> str | None:
+    value = evidence.get("sha256")
+    if isinstance(value, str) and value.startswith("sha256:"):
+        return value
+    path_value = evidence.get("path")
+    if not isinstance(path_value, str) or not path_value:
+        return None
+    try:
+        return f"sha256:{hashlib.sha256(Path(path_value).expanduser().read_bytes()).hexdigest()}"
+    except OSError:
+        return None
 
 
 def _reviewer_verdict_schema_alerts(
@@ -3128,8 +3440,9 @@ def _node_response_alerts(
             )
         )
     alerts.extend(_referenced_receipt_alerts(node, response))
+    alerts.extend(_node_sanity_check_alerts(contract, node, response, {node.node_id: response}))
     if node.reviewer is not None:
-        alerts.extend(_reviewer_alerts(contract, node, response))
+        alerts.extend(_reviewer_alerts(contract, node, response, {node.node_id: response}))
     return alerts
 
 
@@ -3965,7 +4278,7 @@ def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
 def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
     try:
         provider = load_provider_settings().get_provider(provider_name)
-    except ProviderConfigError, OSError, json.JSONDecodeError:
+    except (ProviderConfigError, OSError, json.JSONDecodeError):
         return None
     return provider_model_knowledge_cutoff(provider, model=model)
 
@@ -5517,7 +5830,7 @@ def _existing_ops_discord_notification_for_category(
 def _read_json_object_optional(path: Path) -> dict[str, Any] | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, UnicodeError, json.JSONDecodeError:
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return None
     return payload if isinstance(payload, dict) else None
 
@@ -7537,7 +7850,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except OSError, RuntimeError, ValueError:
+        except (OSError, RuntimeError, ValueError):
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -7716,7 +8029,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return {"type": type(value).__name__, "value": str(value)}
     return value
 

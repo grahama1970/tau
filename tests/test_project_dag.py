@@ -3838,6 +3838,145 @@ def _write_contract(tmp_path: Path) -> Path:
     return path
 
 
+def test_project_dag_node_sanity_accepts_artifact_and_attempt_binding(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][1]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "artifact-binding",
+            "check_type": "reviewer_verdict_bound_to_artifact",
+            "severity": "BLOCK",
+        },
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "attempt-binding",
+            "check_type": "reviewer_verdict_bound_to_attempt",
+            "severity": "BLOCK",
+        },
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    artifact = tmp_path / "creator-artifact.svg"
+    artifact.write_text("<svg><title>Tau</title></svg>\n", encoding="utf-8")
+    artifact_sha = f"sha256:{hashlib.sha256(artifact.read_bytes()).hexdigest()}"
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "creator_artifact",
+                    "path": str(artifact),
+                    "sha256": artifact_sha,
+                    "attempt_id": "attempt-1",
+                    "goal_hash": "sha256:active-goal",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _handoff(
+            "reviewer",
+            "human",
+            [
+                {
+                    "schema": "tau.reviewer_verdict.v1",
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "reviewer_node_id": "reviewer",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                    "reviewed_artifact": {"path": str(artifact), "sha256": artifact_sha},
+                    "reviewed_attempt_id": "attempt-1",
+                }
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["ok"] is True
+
+
+def test_project_dag_node_sanity_blocks_missing_artifact_binding(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][1]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "artifact-binding",
+            "check_type": "reviewer_verdict_bound_to_artifact",
+            "severity": "BLOCK",
+        }
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    artifact = tmp_path / "creator-artifact.svg"
+    artifact.write_text("<svg><title>Tau</title></svg>\n", encoding="utf-8")
+    artifact_sha = f"sha256:{hashlib.sha256(artifact.read_bytes()).hexdigest()}"
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "creator_artifact",
+                    "path": str(artifact),
+                    "sha256": artifact_sha,
+                    "attempt_id": "attempt-1",
+                    "goal_hash": "sha256:active-goal",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _reviewer_handoff(goal_hash="sha256:active-goal"),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_artifact_binding_missing"
+
+
+def test_project_dag_node_sanity_rejects_regex_style_contract_keys(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][1]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "bad-regex-gate",
+            "check_type": "reviewer_verdict_schema",
+            "severity": "BLOCK",
+            "regex": ".*PASS.*",
+        }
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="unknown keys: regex"):
+        run_project_dag_contract(
+            contract_path=contract_path,
+            receipt_dir=tmp_path / "run",
+            agents_root=tmp_path / "agents",
+        )
+
+
 def _write_browser_handler_contract(tmp_path: Path, *, browser_oracle_status: str) -> Path:
     (tmp_path / "agents").mkdir(exist_ok=True)
     spec_root = tmp_path / "specs"

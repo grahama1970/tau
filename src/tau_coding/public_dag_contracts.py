@@ -94,6 +94,7 @@ PROJECT_DAG_NODE_KEYS = frozenset(
         "context",
         "requested_capabilities",
         "persistent_subagent",
+        "sanity_checks",
         "route",
         "join",
         "provider",

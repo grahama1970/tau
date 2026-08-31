@@ -1,0 +1,1902 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "/home/graham/workspace/experiments/tau/evals/tau_node_sanity_checks_agentic_eval.json",
+  "run_id": "31db6d9ac5f4",
+  "fixture_sha256": "sha256:442ca71c8b3af6ae8053788d5c9c564ceea0a788961be6908d1b35462e1bc019",
+  "repo": {
+    "sha": "c262ab3d14d9a697f2812adcf86c482a2e1f2826",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Adversarial Tau project-DAG node sanity-check contract enforcement for reviewer JSON, artifact provenance, attempt binding, visual screenshot receipts, and topology bypasses.",
+  "claims": {
+    "proves": "The retained matrix runs 30 Tau project-DAG cases through run_project_dag_contract and checks that typed failure codes, artifact hashes, attempt ids, visual receipts, and reviewer/topology rules are enforced by machine-readable receipts.",
+    "does_not_prove": "Provider semantic quality, human aesthetic acceptance, deployment, or GOAL.md completion."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.node_sanity_checks",
+        "description": "Tau project DAGs enforce typed node sanity checks and fail closed on prose-only, malformed, stale, unbound, mocked, visual-receipt, and topology-bypass evidence.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "prose_only_pass_missing_verdict",
+              "missing_json_schema",
+              "missing_kind",
+              "missing_reviewed_node_id",
+              "wrong_reviewed_node_id",
+              "missing_reviewer_node_id",
+              "wrong_reviewer_node_id",
+              "invalid_verdict_token",
+              "fail_verdict_blocks",
+              "blocked_verdict_blocks",
+              "required_evidence_substring_rejected",
+              "mocked_creator_proof_rejected",
+              "artifact_binding_missing",
+              "artifact_binding_wrong_path",
+              "artifact_binding_stale_hash",
+              "artifact_binding_missing_sha",
+              "attempt_binding_missing",
+              "attempt_binding_wrong",
+              "visual_missing_screenshot",
+              "visual_screenshot_bad_hash",
+              "visual_screenshot_not_png",
+              "visual_missing_boundary",
+              "visual_missing_receipt",
+              "visual_receipt_wrong_goal",
+              "sanity_check_unknown_type",
+              "sanity_check_unknown_key",
+              "direct_topology_bypass",
+              "optional_join_bypass",
+              "transitive_optional_join_bypass"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "valid_artifact_attempt_binding_positive"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "valid_artifact_attempt_binding_positive",
+          "prose_only_pass_missing_verdict",
+          "missing_json_schema",
+          "missing_kind",
+          "missing_reviewed_node_id",
+          "wrong_reviewed_node_id",
+          "missing_reviewer_node_id",
+          "wrong_reviewer_node_id",
+          "invalid_verdict_token",
+          "fail_verdict_blocks",
+          "blocked_verdict_blocks",
+          "required_evidence_substring_rejected",
+          "mocked_creator_proof_rejected",
+          "artifact_binding_missing",
+          "artifact_binding_wrong_path",
+          "artifact_binding_stale_hash",
+          "artifact_binding_missing_sha",
+          "attempt_binding_missing",
+          "attempt_binding_wrong",
+          "visual_missing_screenshot",
+          "visual_screenshot_bad_hash",
+          "visual_screenshot_not_png",
+          "visual_missing_boundary",
+          "visual_missing_receipt",
+          "visual_receipt_wrong_goal",
+          "sanity_check_unknown_type",
+          "sanity_check_unknown_key",
+          "direct_topology_bypass",
+          "optional_join_bypass",
+          "transitive_optional_join_bypass"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-31T14:47:32.807742+00:00",
+  "case_count": 30,
+  "required_case_count": 30,
+  "outcome_counts": {
+    "PASS": 30,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 60,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "valid_artifact_attempt_binding_positive",
+      "type": "positive",
+      "case_id": "31db6d9ac5f4-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case valid_artifact_attempt_binding_positive --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/valid_artifact_attempt_binding_positive.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 865.683,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"valid_artifact_attempt_binding_positive\",\n  \"expected_failure_code\": null,\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [],\n    \"failure_code\": null,\n    \"ok\": true,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/valid_artifact_attempt_binding_positive/run/dag-receipt.json\",\n    \"status\": \"PASS\",\n    \"verdict\": \"PASS\"\n  },\n  \"observed_failure_code\": \"pass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 867.201,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/valid_artifact_attempt_binding_positive.json": "sha256:e884ed3f81d597b9da944767a6dfca145ac16b49aa7ffacc3ac50e37678c7b36"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"valid_artifact_attempt_binding_positive\",\n  \"expected_failure_code\": null,\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [],\n    \"failure_code\": null,\n    \"ok\": true,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/valid_artifact_attempt_binding_positive/run/dag-receipt.json\",\n    \"status\": \"PASS\",\n    \"verdict\": \"PASS\"\n  },\n  \"observed_failure_code\": \"pass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 864.165,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/valid_artifact_attempt_binding_positive.json": "sha256:e884ed3f81d597b9da944767a6dfca145ac16b49aa7ffacc3ac50e37678c7b36"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "prose_only_pass_missing_verdict",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case prose_only_pass_missing_verdict --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/prose_only_pass_missing_verdict.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 822.341,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"prose_only_pass_missing_verdict\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"check_id\": \"check-2-reviewer_verdict_schema\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node sanity check found no reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer artifact binding check found no reviewer verdict.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node did not emit reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/prose_only_pass_missing_verdict/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 818.661,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/prose_only_pass_missing_verdict.json": "sha256:f55d361b752cd707071d1e172f1fe2e8401ce0cd7a25f50340af4cae0d1213e3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"prose_only_pass_missing_verdict\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"check_id\": \"check-2-reviewer_verdict_schema\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node sanity check found no reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer artifact binding check found no reviewer verdict.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node did not emit reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/prose_only_pass_missing_verdict/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 826.022,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/prose_only_pass_missing_verdict.json": "sha256:f55d361b752cd707071d1e172f1fe2e8401ce0cd7a25f50340af4cae0d1213e3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing_json_schema",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case missing_json_schema --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/missing_json_schema.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 828.195,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_json_schema\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_json_schema/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 824.335,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c002-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_json_schema.json": "sha256:2c44e51f0a2d381fb7815e84d0ea5f66ebb361d8e48325fb02a147ef315c3751"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_json_schema\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_json_schema/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 832.054,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c002-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_json_schema.json": "sha256:2c44e51f0a2d381fb7815e84d0ea5f66ebb361d8e48325fb02a147ef315c3751"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing_kind",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c003",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case missing_kind --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/missing_kind.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 808.881,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_kind\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"check_id\": \"check-2-reviewer_verdict_schema\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node sanity check found no reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer artifact binding check found no reviewer verdict.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node did not emit reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_kind/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 821.854,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c003-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_kind.json": "sha256:9b677a34611f7ede269e30cb46d8f967f2477d925fa60db2ea089c57525682dc"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_kind\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"reviewer_verdict\"\n          ],\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"check_id\": \"check-2-reviewer_verdict_schema\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node sanity check found no reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer artifact binding check found no reviewer verdict.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_reviewer_verdict\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\"\n        },\n        \"message\": \"Reviewer node did not emit reviewer_verdict evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_kind/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 795.908,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c003-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_kind.json": "sha256:9b677a34611f7ede269e30cb46d8f967f2477d925fa60db2ea089c57525682dc"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing_reviewed_node_id",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c004",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case missing_reviewed_node_id --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewed_node_id.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 833.565,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_reviewed_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewed_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": null\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": null\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewed_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_target_mismatch\",\n        \"evidence\": {\n          \"expected_reviewed_node\": \"creator\",\n          \"node_id\": \"reviewer\",\n          \"observed_reviewed_node\": null\n        },\n        \"message\": \"Reviewer verdict did not review the expected creator node.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_reviewed_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 845.459,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c004-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewed_node_id.json": "sha256:0a5618a715b24ca9736fcab0f96a426ad49283abd29402d8d351b97b202be685"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_reviewed_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewed_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": null\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": null\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewed_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_target_mismatch\",\n        \"evidence\": {\n          \"expected_reviewed_node\": \"creator\",\n          \"node_id\": \"reviewer\",\n          \"observed_reviewed_node\": null\n        },\n        \"message\": \"Reviewer verdict did not review the expected creator node.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_reviewed_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 821.672,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c004-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewed_node_id.json": "sha256:0a5618a715b24ca9736fcab0f96a426ad49283abd29402d8d351b97b202be685"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "wrong_reviewed_node_id",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c005",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case wrong_reviewed_node_id --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewed_node_id.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 815.08,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"wrong_reviewed_node_id\",\n  \"expected_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_target_mismatch\",\n        \"evidence\": {\n          \"expected_reviewed_node\": \"creator\",\n          \"node_id\": \"reviewer\",\n          \"observed_reviewed_node\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not review the expected creator node.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_binding_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/wrong_reviewed_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_BINDING_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 812.997,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c005-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewed_node_id.json": "sha256:a498b8d10393029957f7f85efa2e7116f8cf935bef5c146f11631a18a5c1b787"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"wrong_reviewed_node_id\",\n  \"expected_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_target_mismatch\",\n        \"evidence\": {\n          \"expected_reviewed_node\": \"creator\",\n          \"node_id\": \"reviewer\",\n          \"observed_reviewed_node\": \"other\"\n        },\n        \"message\": \"Reviewer verdict did not review the expected creator node.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_binding_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/wrong_reviewed_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_BINDING_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 817.162,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c005-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewed_node_id.json": "sha256:a498b8d10393029957f7f85efa2e7116f8cf935bef5c146f11631a18a5c1b787"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "missing_reviewer_node_id",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c006",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case missing_reviewer_node_id --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 804.548,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_reviewer_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_reviewer_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 809.423,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c006-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json": "sha256:7450f4a472afb5c71dc6607ff874e42c4ac1e4ded7b1407d2385f4d279a1721b"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"missing_reviewer_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/missing_reviewer_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 799.674,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c006-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json": "sha256:7450f4a472afb5c71dc6607ff874e42c4ac1e4ded7b1407d2385f4d279a1721b"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "wrong_reviewer_node_id",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c007",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case wrong_reviewer_node_id --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewer_node_id.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 803.361,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"wrong_reviewer_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/wrong_reviewer_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 789.361,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c007-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewer_node_id.json": "sha256:8200a9bad0028b560f0cb99b91246dfc1875247dbe527f8de7c5f5e67605a00e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"wrong_reviewer_node_id\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/wrong_reviewer_node_id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 817.362,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c007-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_reviewer_node_id.json": "sha256:8200a9bad0028b560f0cb99b91246dfc1875247dbe527f8de7c5f5e67605a00e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "invalid_verdict_token",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c008",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case invalid_verdict_token --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/invalid_verdict_token.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 802.394,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"invalid_verdict_token\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"verdict\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"verdict\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"SHIP_IT\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/invalid_verdict_token/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 801.116,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c008-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/invalid_verdict_token.json": "sha256:971d0ff43fdcc966b1a43b1c95f35af4e2b07d705e16d594ae406697b5d9a6c1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"invalid_verdict_token\",\n  \"expected_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"verdict\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"verdict\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"SHIP_IT\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/invalid_verdict_token/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_SCHEMA_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_schema_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 803.672,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c008-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/invalid_verdict_token.json": "sha256:971d0ff43fdcc966b1a43b1c95f35af4e2b07d705e16d594ae406697b5d9a6c1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "fail_verdict_blocks",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c009",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case fail_verdict_blocks --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/fail_verdict_blocks.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 816.947,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"fail_verdict_blocks\",\n  \"expected_failure_code\": \"reviewer_verdict_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"FAIL\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/fail_verdict_blocks/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 798.333,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c009-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/fail_verdict_blocks.json": "sha256:6edf7522ab6cffbf849848f955a3c642604acdb138476c8b2bec0fe91eb29982"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"fail_verdict_blocks\",\n  \"expected_failure_code\": \"reviewer_verdict_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"FAIL\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/fail_verdict_blocks/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 835.56,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c009-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/fail_verdict_blocks.json": "sha256:6edf7522ab6cffbf849848f955a3c642604acdb138476c8b2bec0fe91eb29982"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "blocked_verdict_blocks",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c010",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case blocked_verdict_blocks --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 813.558,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"blocked_verdict_blocks\",\n  \"expected_failure_code\": \"reviewer_verdict_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"BLOCKED\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/blocked_verdict_blocks/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 801.038,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c010-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json": "sha256:abd0221909f58d384014571729e3fce76cb723d4feefc0b896b8b4c0ab8c4516"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"blocked_verdict_blocks\",\n  \"expected_failure_code\": \"reviewer_verdict_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"BLOCKED\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/blocked_verdict_blocks/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"observed_failure_code\": \"reviewer_verdict_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 826.078,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c010-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json": "sha256:abd0221909f58d384014571729e3fce76cb723d4feefc0b896b8b4c0ab8c4516"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "required_evidence_substring_rejected",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c011",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case required_evidence_substring_rejected --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/required_evidence_substring_rejected.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 823.423,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"required_evidence_substring_rejected\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"creator_artifact\"\n          ],\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"creator_artifact\"\n          ],\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/required_evidence_substring_rejected/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 824.088,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c011-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/required_evidence_substring_rejected.json": "sha256:f9878ae7ca6853b3fb75c3bd0f60121f584f3c3fd6670cb37f40b482ecd6e10f"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"required_evidence_substring_rejected\",\n  \"expected_failure_code\": \"missing_required_evidence\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"missing\": [\n            \"creator_artifact\"\n          ],\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node response did not include required evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"missing_required_evidence\",\n        \"evidence\": {\n          \"check_id\": \"check-1-required_evidence_exact_kinds\",\n          \"missing\": [\n            \"creator_artifact\"\n          ],\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node sanity check found missing exact evidence kinds.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": null,\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-001\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"missing_required_evidence\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/required_evidence_substring_rejected/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"MISSING_REQUIRED_EVIDENCE\"\n  },\n  \"observed_failure_code\": \"missing_required_evidence\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 822.758,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c011-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/required_evidence_substring_rejected.json": "sha256:f9878ae7ca6853b3fb75c3bd0f60121f584f3c3fd6670cb37f40b482ecd6e10f"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "mocked_creator_proof_rejected",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c012",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case mocked_creator_proof_rejected --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/mocked_creator_proof_rejected.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 797.319,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"mocked_creator_proof_rejected\",\n  \"expected_failure_code\": \"node_sanity_check_failed\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"node_sanity_check_failed\",\n        \"evidence\": {\n          \"check_id\": \"check-2-no_mocked_proof\",\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node sanity check rejected mocked proof evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"node_sanity_check_failed\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/mocked_creator_proof_rejected/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"NODE_SANITY_CHECK_FAILED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_failed\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 776.139,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c012-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/mocked_creator_proof_rejected.json": "sha256:081456abbf0b0ab9d7e1244ece4dd6db80748c44a8048e6fc04a686263cbe4ae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"mocked_creator_proof_rejected\",\n  \"expected_failure_code\": \"node_sanity_check_failed\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"node_sanity_check_failed\",\n        \"evidence\": {\n          \"check_id\": \"check-2-no_mocked_proof\",\n          \"node_id\": \"creator\"\n        },\n        \"message\": \"Node sanity check rejected mocked proof evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"node_sanity_check_failed\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/mocked_creator_proof_rejected/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"NODE_SANITY_CHECK_FAILED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_failed\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 818.499,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c012-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/mocked_creator_proof_rejected.json": "sha256:081456abbf0b0ab9d7e1244ece4dd6db80748c44a8048e6fc04a686263cbe4ae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "artifact_binding_missing",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c013",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case artifact_binding_missing --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 806.664,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_missing\",\n  \"expected_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_binding_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_BINDING_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 803.409,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c013-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing.json": "sha256:b23b866789897976577ace610e805bc26ee222e0eb75be3d2c211c251c1afbf1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_missing\",\n  \"expected_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_binding_missing\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"evidence_kind\": \"creator_artifact\",\n          \"node_id\": \"reviewer\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node artifact evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_binding_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_BINDING_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_binding_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 809.919,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c013-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing.json": "sha256:b23b866789897976577ace610e805bc26ee222e0eb75be3d2c211c251c1afbf1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "artifact_binding_wrong_path",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c014",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case artifact_binding_wrong_path --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_wrong_path.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 800.553,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_wrong_path\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/other.svg\",\n          \"observed_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 807.189,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c014-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_wrong_path.json": "sha256:0bedfe16250a591f54e4e45afd447d550025ba83500a618dd977d16355cdec72"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_wrong_path\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/other.svg\",\n          \"observed_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_wrong_path/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 793.916,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c014-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_wrong_path.json": "sha256:0bedfe16250a591f54e4e45afd447d550025ba83500a618dd977d16355cdec72"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "artifact_binding_stale_hash",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c015",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case artifact_binding_stale_hash --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_stale_hash.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 801.315,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_stale_hash\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/creator-artifact.svg\",\n          \"observed_sha256\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 804.783,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c015-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_stale_hash.json": "sha256:ab06f7a1d43fa5c176e45bcd0fb6ecbe96a46022ef84ee21a85fcb99efed4856"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_stale_hash\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/creator-artifact.svg\",\n          \"observed_sha256\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_stale_hash/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 797.847,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c015-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_stale_hash.json": "sha256:ab06f7a1d43fa5c176e45bcd0fb6ecbe96a46022ef84ee21a85fcb99efed4856"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "artifact_binding_missing_sha",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c016",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case artifact_binding_missing_sha --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 838.898,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_missing_sha\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/creator-artifact.svg\",\n          \"observed_sha256\": null,\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 871.261,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c016-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json": "sha256:66f0296adb36079fbd788d8fdc6aeafa89f147bdadde9b47336c735375d99838"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"artifact_binding_missing_sha\",\n  \"expected_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_artifact_hash_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-3-reviewer_verdict_bound_to_artifact\",\n          \"expected_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/creator-artifact.svg\",\n          \"expected_sha256\": \"sha256:1dae37ec76b50681ffb1846a36bac4959681d23a13205e2675a2853987223cbb\",\n          \"node_id\": \"reviewer\",\n          \"observed_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/creator-artifact.svg\",\n          \"observed_sha256\": null,\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_artifact_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/artifact_binding_missing_sha/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ARTIFACT_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_artifact_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 806.535,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c016-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json": "sha256:66f0296adb36079fbd788d8fdc6aeafa89f147bdadde9b47336c735375d99838"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "attempt_binding_missing",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c017",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case attempt_binding_missing --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_missing.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 827.567,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"attempt_binding_missing\",\n  \"expected_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": \"creator-attempt-001\",\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": null,\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_attempt_binding_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/attempt_binding_missing/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ATTEMPT_BINDING_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 791.961,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c017-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_missing.json": "sha256:836ba775cdfe4eddffcf635be8c1e7e5a92258ea3afdf4544b33aeef74b01cae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"attempt_binding_missing\",\n  \"expected_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": \"creator-attempt-001\",\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": null,\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_attempt_binding_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/attempt_binding_missing/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ATTEMPT_BINDING_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 863.172,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c017-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_missing.json": "sha256:836ba775cdfe4eddffcf635be8c1e7e5a92258ea3afdf4544b33aeef74b01cae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "attempt_binding_wrong",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c018",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case attempt_binding_wrong --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_wrong.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 818.017,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"attempt_binding_wrong\",\n  \"expected_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": \"creator-attempt-001\",\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-999\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_attempt_binding_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/attempt_binding_wrong/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ATTEMPT_BINDING_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 797.407,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c018-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_wrong.json": "sha256:1d9cd084851aa40cff38dabc041dcb08aab1cab5ff8e70884418ac29d314d099"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"attempt_binding_wrong\",\n  \"expected_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_attempt_binding_mismatch\",\n        \"evidence\": {\n          \"check_id\": \"check-4-reviewer_verdict_bound_to_attempt\",\n          \"expected_attempt_id\": \"creator-attempt-001\",\n          \"node_id\": \"reviewer\",\n          \"observed_attempt_id\": \"creator-attempt-999\",\n          \"reviewed_node_id\": \"creator\"\n        },\n        \"message\": \"Reviewer verdict did not bind to the reviewed node attempt id.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_attempt_binding_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/attempt_binding_wrong/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_ATTEMPT_BINDING_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_attempt_binding_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 838.627,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c018-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/attempt_binding_wrong.json": "sha256:1d9cd084851aa40cff38dabc041dcb08aab1cab5ff8e70884418ac29d314d099"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_missing_screenshot",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c019",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_missing_screenshot --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_screenshot.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 814.744,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_screenshot\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"required\": [\n            \"screenshot.path\",\n            \"screenshot.sha256\"\n          ]\n        },\n        \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_screenshot/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 820.535,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c019-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_screenshot.json": "sha256:b36bea5b379474439f07e9e51ed43dae1f6e7ed17dc306478c44434ecc6f7dba"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_screenshot\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"required\": [\n            \"screenshot.path\",\n            \"screenshot.sha256\"\n          ]\n        },\n        \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_screenshot/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 808.952,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c019-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_screenshot.json": "sha256:b36bea5b379474439f07e9e51ed43dae1f6e7ed17dc306478c44434ecc6f7dba"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_screenshot_bad_hash",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c020",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_screenshot_bad_hash --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_bad_hash.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 801.571,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_screenshot_bad_hash\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_hash_mismatch\",\n        \"evidence\": {\n          \"actual_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\",\n          \"expected_sha256\": \"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence hash did not match the bytes on disk.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_evidence_hash_mismatch\",\n        \"evidence\": {\n          \"actual_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\",\n          \"expected_sha256\": \"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence hash did not match the bytes on disk.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 799.343,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c020-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_bad_hash.json": "sha256:44fdccf56d232f479a7f1060a0c8930c63feb0b6dd04d9ee31d87931e72e0bce"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_screenshot_bad_hash\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_hash_mismatch\",\n        \"evidence\": {\n          \"actual_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\",\n          \"expected_sha256\": \"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence hash did not match the bytes on disk.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_evidence_hash_mismatch\",\n        \"evidence\": {\n          \"actual_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\",\n          \"expected_sha256\": \"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence hash did not match the bytes on disk.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_bad_hash/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_HASH_MISMATCH\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_hash_mismatch\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 803.799,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c020-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_bad_hash.json": "sha256:44fdccf56d232f479a7f1060a0c8930c63feb0b6dd04d9ee31d87931e72e0bce"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_screenshot_not_png",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c021",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_screenshot_not_png --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_not_png.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 805.241,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_screenshot_not_png\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_not_png\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_not_png\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence was not a PNG screenshot artifact.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_evidence_not_png\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence was not a PNG screenshot artifact.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_not_png\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_NOT_PNG\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_not_png\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 808.805,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c021-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_not_png.json": "sha256:9b7851cec57ae45abb59cfc626e62ac77d210d6fd7f53cfdd1143524ebfcc05e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_screenshot_not_png\",\n  \"expected_failure_code\": \"reviewer_visual_evidence_not_png\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_not_png\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence was not a PNG screenshot artifact.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_evidence_not_png\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/screenshot.png\"\n        },\n        \"message\": \"Reviewer screenshot evidence was not a PNG screenshot artifact.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_evidence_not_png\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_screenshot_not_png/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_NOT_PNG\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_evidence_not_png\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 801.678,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c021-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_screenshot_not_png.json": "sha256:9b7851cec57ae45abb59cfc626e62ac77d210d6fd7f53cfdd1143524ebfcc05e"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_missing_boundary",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c022",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_missing_boundary --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 818.274,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_boundary\",\n  \"expected_failure_code\": \"reviewer_visual_boundary_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_boundary_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/screenshot.png\"\n        },\n        \"message\": \"Reviewer visual evidence did not declare mocked/live proof boundaries.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_boundary_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/screenshot.png\"\n        },\n        \"message\": \"Reviewer visual evidence did not declare mocked/live proof boundaries.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_boundary_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_BOUNDARY_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_boundary_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 830.135,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c022-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json": "sha256:383da9c228d91be54bc667d7659830b371700debd6877f3569e1d00e568db5c2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_boundary\",\n  \"expected_failure_code\": \"reviewer_visual_boundary_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_boundary_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/screenshot.png\"\n        },\n        \"message\": \"Reviewer visual evidence did not declare mocked/live proof boundaries.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"reviewer_visual_boundary_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/screenshot.png\"\n        },\n        \"message\": \"Reviewer visual evidence did not declare mocked/live proof boundaries.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_visual_boundary_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_boundary/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VISUAL_BOUNDARY_MISSING\"\n  },\n  \"observed_failure_code\": \"reviewer_visual_boundary_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 806.412,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c022-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json": "sha256:383da9c228d91be54bc667d7659830b371700debd6877f3569e1d00e568db5c2"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_missing_receipt",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c023",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_missing_receipt --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_receipt.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 810.517,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_receipt\",\n  \"expected_failure_code\": \"visual_review_receipt_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"visual_review_receipt_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"screenshot_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"message\": \"Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"visual_review_receipt_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"screenshot_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"message\": \"Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"visual_review_receipt_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_receipt/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"VISUAL_REVIEW_RECEIPT_MISSING\"\n  },\n  \"observed_failure_code\": \"visual_review_receipt_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 812.982,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c023-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_receipt.json": "sha256:f6eed6bd1796d23bd33b204fdc7b9a006b50c4b930c54f0a198c1995348ecab5"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_missing_receipt\",\n  \"expected_failure_code\": \"visual_review_receipt_missing\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"visual_review_receipt_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"screenshot_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"message\": \"Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"visual_review_receipt_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"screenshot_sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"message\": \"Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"visual_review_receipt_missing\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_missing_receipt/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"VISUAL_REVIEW_RECEIPT_MISSING\"\n  },\n  \"observed_failure_code\": \"visual_review_receipt_missing\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 808.053,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c023-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_receipt.json": "sha256:f6eed6bd1796d23bd33b204fdc7b9a006b50c4b930c54f0a198c1995348ecab5"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual_receipt_wrong_goal",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c024",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_receipt_wrong_goal --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 796.132,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_receipt_wrong_goal\",\n  \"expected_failure_code\": \"visual_review_receipt_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"visual_review_receipt_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/visual-review-receipt.json\",\n          \"problems\": [\n            \"goal_hash\",\n            \"reviewed_screenshot.sha256\"\n          ]\n        },\n        \"message\": \"visual_review_receipt failed Tau validation.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"visual_review_receipt_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/visual-review-receipt.json\",\n          \"problems\": [\n            \"goal_hash\",\n            \"reviewed_screenshot.sha256\"\n          ]\n        },\n        \"message\": \"visual_review_receipt failed Tau validation.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"visual_review_receipt_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"VISUAL_REVIEW_RECEIPT_INVALID\"\n  },\n  \"observed_failure_code\": \"visual_review_receipt_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 802.182,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c024-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json": "sha256:8ab96e0272eb3a54ab85937578edafee9634c800e5df3eee800cff86f9d0f48c"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"visual_receipt_wrong_goal\",\n  \"expected_failure_code\": \"visual_review_receipt_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"visual_review_receipt_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/visual-review-receipt.json\",\n          \"problems\": [\n            \"goal_hash\",\n            \"reviewed_screenshot.sha256\"\n          ]\n        },\n        \"message\": \"visual_review_receipt failed Tau validation.\",\n        \"severity\": \"BLOCK\"\n      },\n      {\n        \"code\": \"visual_review_receipt_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/visual-review-receipt.json\",\n          \"problems\": [\n            \"goal_hash\",\n            \"reviewed_screenshot.sha256\"\n          ]\n        },\n        \"message\": \"visual_review_receipt failed Tau validation.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"visual_review_receipt_invalid\",\n    \"ok\": false,\n    \"receipt_path\": \"local/agentic-evals/tau-node-sanity-checks/work/visual_receipt_wrong_goal/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"VISUAL_REVIEW_RECEIPT_INVALID\"\n  },\n  \"observed_failure_code\": \"visual_review_receipt_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 790.083,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c024-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json": "sha256:8ab96e0272eb3a54ab85937578edafee9634c800e5df3eee800cff86f9d0f48c"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "sanity_check_unknown_type",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c025",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case sanity_check_unknown_type --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 671.449,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"sanity_check_unknown_type\",\n  \"expected_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[1].sanity_checks[5].check_type is not supported: trust_me_bro\",\n    \"failure_code\": \"node_sanity_check_contract_invalid\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 644.371,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c025-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json": "sha256:8217b548df0d2976ad4da3cf8dd8966b83d061cdcbd7fda92691f5c62056e517"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"sanity_check_unknown_type\",\n  \"expected_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[1].sanity_checks[5].check_type is not supported: trust_me_bro\",\n    \"failure_code\": \"node_sanity_check_contract_invalid\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 698.527,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c025-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json": "sha256:8217b548df0d2976ad4da3cf8dd8966b83d061cdcbd7fda92691f5c62056e517"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "sanity_check_unknown_key",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c026",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case sanity_check_unknown_key --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_key.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 665.128,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"sanity_check_unknown_key\",\n  \"expected_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[1].sanity_checks[5] has unknown keys: regex\",\n    \"failure_code\": \"node_sanity_check_contract_invalid\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 656.313,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c026-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_key.json": "sha256:d4d4b0529a28daa36620b01784e922130b832e2e421d4c8889a0cbbf2141aae0"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"sanity_check_unknown_key\",\n  \"expected_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[1].sanity_checks[5] has unknown keys: regex\",\n    \"failure_code\": \"node_sanity_check_contract_invalid\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"node_sanity_check_contract_invalid\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 673.942,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c026-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_key.json": "sha256:d4d4b0529a28daa36620b01784e922130b832e2e421d4c8889a0cbbf2141aae0"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "direct_topology_bypass",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c027",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case direct_topology_bypass --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/direct_topology_bypass.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 663.947,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"direct_topology_bypass\",\n  \"expected_failure_code\": \"reviewer_topology_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[reviewer].reviewer can be bypassed on paths from creator to terminals: human\",\n    \"failure_code\": \"reviewer_topology_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"reviewer_topology_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 678.891,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c027-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/direct_topology_bypass.json": "sha256:480d6ebc01c1880fa99ed2bee834fbba12a76e3ad0dd9f149132efe21df875c4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"direct_topology_bypass\",\n  \"expected_failure_code\": \"reviewer_topology_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"error\": \"nodes[reviewer].reviewer can be bypassed on paths from creator to terminals: human\",\n    \"failure_code\": \"reviewer_topology_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\"\n  },\n  \"observed_failure_code\": \"reviewer_topology_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 649.003,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c027-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/direct_topology_bypass.json": "sha256:480d6ebc01c1880fa99ed2bee834fbba12a76e3ad0dd9f149132efe21df875c4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "optional_join_bypass",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c028",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case optional_join_bypass --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/optional_join_bypass.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 669.833,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"optional_join_bypass\",\n  \"expected_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"required_reviewer_join_policy_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"observed_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 664.576,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c028-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/optional_join_bypass.json": "sha256:5825429c2101549f65064777cb9ce2a4f3b3b71d07bc3da9fcdc2892b9ce23c9"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"optional_join_bypass\",\n  \"expected_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"required_reviewer_join_policy_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"observed_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 675.09,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c028-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/optional_join_bypass.json": "sha256:5825429c2101549f65064777cb9ce2a4f3b3b71d07bc3da9fcdc2892b9ce23c9"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "transitive_optional_join_bypass",
+      "type": "adversarial",
+      "case_id": "31db6d9ac5f4-c029",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case transitive_optional_join_bypass --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/transitive_optional_join_bypass.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 670.765,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"transitive_optional_join_bypass\",\n  \"expected_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"required_reviewer_join_policy_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"observed_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 670.758,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c029-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/transitive_optional_join_bypass.json": "sha256:2a1ac83516006b98981cb1111abdf2b0ac2b0150cbaa8f0aaf81af0b71457d7d"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"case\": \"transitive_optional_join_bypass\",\n  \"expected_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"live\": true,\n  \"mocked\": false,\n  \"observed\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"required_reviewer_join_policy_bypass\",\n    \"ok\": false,\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"observed_failure_code\": \"required_reviewer_join_policy_bypass\",\n  \"ok\": true,\n  \"schema\": \"tau.node_sanity_check_case_result.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 670.772,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "31db6d9ac5f4-c029-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-node-sanity-checks/cases/transitive_optional_join_bypass.json": "sha256:2a1ac83516006b98981cb1111abdf2b0ac2b0150cbaa8f0aaf81af0b71457d7d"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}
