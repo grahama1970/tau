@@ -115,6 +115,10 @@ NODE_SANITY_CHECK_TYPES = frozenset(
         "reviewer_verdict_bound_to_attempt",
         "visual_review_receipt_bound_to_screenshot",
         "no_mocked_proof",
+        "handler_identity_matches_node",
+        "create_svg_required_svg_artifact",
+        "create_svg_variant_candidate_live",
+        "create_svg_artifact_origin",
     }
 )
 NODE_SANITY_CHECK_ALLOWED_KEYS = frozenset(
@@ -261,6 +265,22 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "reviewer_attempt_binding_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_attempt_binding",
+    },
+    "tau_dag_requested_handler_substituted": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.exact_handler_identity",
+    },
+    "create_svg_required_payload_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.create_svg_required_svg_artifact",
+    },
+    "create_svg_candidate_receipt_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.create_svg_variant_candidate_live",
+    },
+    "create_svg_artifact_origin_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.create_svg_artifact_origin",
     },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
@@ -487,6 +507,24 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    handler_identity_alerts = _requested_handler_identity_alerts(contract)
+    if handler_identity_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(handler_identity_alerts[0]["code"]).upper(),
+            alerts=handler_identity_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+            security_context_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
     security_context_result = resolve_security_context(
         dag_contract=contract.payload,
         contract_path=resolved_contract_path,
@@ -2399,7 +2437,9 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
     return nodes
 
 
-def _parse_node_sanity_checks(value: object, label: str, errors: list[str]) -> list[Mapping[str, Any]]:
+def _parse_node_sanity_checks(
+    value: object, label: str, errors: list[str]
+) -> list[Mapping[str, Any]]:
     if value is None:
         return []
     if not isinstance(value, list):
@@ -2871,6 +2911,106 @@ def _responses_by_node(
     return responses
 
 
+def _requested_handler_identity_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    requested = _requested_handler_ids(contract.context)
+    if not requested:
+        return []
+    if contract.context.get("handler_fallback_authorized") is True:
+        return []
+    expected_nodes = {_handler_node_id(handler) for handler in requested}
+    handler_nodes = {
+        node.node_id
+        for node in contract.nodes.values()
+        if node.node_id.startswith("handler-") or node.agent.startswith("handler-")
+    }
+    problems: list[dict[str, Any]] = []
+    missing = sorted(expected_nodes - handler_nodes)
+    unexpected = sorted(handler_nodes - expected_nodes)
+    if missing or unexpected:
+        problems.append({"missing_handler_nodes": missing, "unexpected_handler_nodes": unexpected})
+    for node in contract.nodes.values():
+        if node.node_id not in handler_nodes:
+            continue
+        node_handler = _declared_node_handler(node)
+        if node_handler is None:
+            continue
+        expected_node_id = _handler_node_id(node_handler)
+        if node.node_id != expected_node_id or node.agent not in {node.node_id, expected_node_id}:
+            problems.append(
+                {
+                    "node_id": node.node_id,
+                    "agent": node.agent,
+                    "declared_handler": node_handler,
+                    "expected_node_id": expected_node_id,
+                }
+            )
+    if not problems:
+        return []
+    return [
+        _alert(
+            "BLOCK",
+            "tau_dag_requested_handler_substituted",
+            "DAG handler nodes do not match the exact requested handler identities "
+            "and fallback is not authorized.",
+            {
+                "requested_handlers": requested,
+                "expected_handler_nodes": sorted(expected_nodes),
+                "actual_handler_nodes": sorted(handler_nodes),
+                "problems": problems,
+                "fallback_authorized": False,
+            },
+        )
+    ]
+
+
+def _requested_handler_ids(context: Mapping[str, Any]) -> list[str]:
+    for key in ("requested_handlers", "handlers"):
+        value = context.get(key)
+        if isinstance(value, list) and all(
+            isinstance(item, str) and item.strip() for item in value
+        ):
+            return [str(item).strip() for item in value]
+    return []
+
+
+def _declared_node_handler(node: ProjectDagNode) -> str | None:
+    for value in (node.context.get("handler"),):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    policy = node.context.get("handler_policy")
+    if isinstance(policy, Mapping):
+        for key in ("id", "requested_model", "model"):
+            value = policy.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    prompt_contract = node.context.get("prompt_contract")
+    if isinstance(prompt_contract, Mapping):
+        value = prompt_contract.get("handler")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    if node.node_id.startswith("handler-"):
+        return node.node_id.removeprefix("handler-")
+    if node.agent.startswith("handler-"):
+        return node.agent.removeprefix("handler-")
+    return None
+
+
+def _handler_node_id(handler: str) -> str:
+    if handler.startswith("handler-"):
+        return handler
+    chars: list[str] = []
+    previous_dash = False
+    for char in handler.strip().lower():
+        if char.isalnum():
+            chars.append(char)
+            previous_dash = False
+        elif not previous_dash:
+            chars.append("-")
+            previous_dash = True
+    normalized = "".join(chars).strip("-")
+    return f"handler-{normalized}"
+
+
 def _reviewer_alerts(
     contract: ProjectDagContract,
     node: ProjectDagNode,
@@ -2958,7 +3098,11 @@ def _node_sanity_check_alerts(
                 )
         elif check_type == "reviewer_verdict_schema":
             if node.reviewer is None:
-                alerts.append(_node_sanity_contract_alert(node, check, "reviewer_verdict_schema requires a reviewer node"))
+                alerts.append(
+                    _node_sanity_contract_alert(
+                        node, check, "reviewer_verdict_schema requires a reviewer node"
+                    )
+                )
             elif not verdicts:
                 alerts.append(
                     _alert(
@@ -2972,18 +3116,34 @@ def _node_sanity_check_alerts(
                 for verdict in verdicts:
                     alerts.extend(_reviewer_verdict_schema_alerts(contract, node, verdict))
         elif check_type == "reviewer_verdict_bound_to_artifact":
-            alerts.extend(_reviewer_artifact_binding_alerts(contract, node, check, verdicts, responses_by_node or {}))
+            alerts.extend(
+                _reviewer_artifact_binding_alerts(
+                    contract, node, check, verdicts, responses_by_node or {}
+                )
+            )
         elif check_type == "reviewer_verdict_bound_to_attempt":
-            alerts.extend(_reviewer_attempt_binding_alerts(contract, node, check, verdicts, responses_by_node or {}))
+            alerts.extend(
+                _reviewer_attempt_binding_alerts(
+                    contract, node, check, verdicts, responses_by_node or {}
+                )
+            )
         elif check_type == "visual_review_receipt_bound_to_screenshot":
             if node.reviewer is None:
-                alerts.append(_node_sanity_contract_alert(node, check, "visual receipt binding requires a reviewer node"))
+                alerts.append(
+                    _node_sanity_contract_alert(
+                        node, check, "visual receipt binding requires a reviewer node"
+                    )
+                )
             for verdict in verdicts:
                 if _reviewer_verdict_makes_visual_claim(verdict):
-                    alerts.extend(_reviewer_visual_evidence_alerts(contract, node, verdict, response))
+                    alerts.extend(
+                        _reviewer_visual_evidence_alerts(contract, node, verdict, response)
+                    )
         elif check_type == "no_mocked_proof":
             mocked_values = [response.get("mocked")] + [
-                evidence.get("mocked") for evidence in _result_evidence(response) if isinstance(evidence, dict)
+                evidence.get("mocked")
+                for evidence in _result_evidence(response)
+                if isinstance(evidence, dict)
             ]
             if True in mocked_values:
                 alerts.append(
@@ -2994,9 +3154,229 @@ def _node_sanity_check_alerts(
                         {"node_id": node.node_id, "check_id": check.get("id")},
                     )
                 )
+        elif check_type == "handler_identity_matches_node":
+            alerts.extend(_handler_identity_response_alerts(node, check, response))
+        elif check_type == "create_svg_required_svg_artifact":
+            alerts.extend(_create_svg_required_artifact_alerts(node, check, response))
+        elif check_type == "create_svg_variant_candidate_live":
+            alerts.extend(_create_svg_candidate_receipt_alerts(node, check, response))
+        elif check_type == "create_svg_artifact_origin":
+            alerts.extend(_create_svg_artifact_origin_alerts(node, check, response))
         elif check_type:
-            alerts.append(_node_sanity_contract_alert(node, check, f"unsupported node sanity check: {check_type}"))
+            alerts.append(
+                _node_sanity_contract_alert(
+                    node, check, f"unsupported node sanity check: {check_type}"
+                )
+            )
     return alerts
+
+
+def _handler_identity_response_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    expected_handler = _declared_node_handler(node)
+    if expected_handler is None:
+        return [
+            _node_sanity_contract_alert(
+                node, check, "handler identity check requires a declared handler"
+            )
+        ]
+    observed_handlers: set[str] = set()
+    for evidence in _result_evidence(response):
+        if not isinstance(evidence, dict):
+            continue
+        for key in ("handler", "requested_handler"):
+            value = evidence.get(key)
+            if isinstance(value, str) and value.strip():
+                observed_handlers.add(value.strip())
+    if not observed_handlers:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_dag_requested_handler_substituted",
+                "Handler response evidence omitted the requested handler identity.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "expected_handler": expected_handler,
+                },
+            )
+        ]
+    if expected_handler not in observed_handlers and _handler_node_id(expected_handler) not in {
+        _handler_node_id(item) for item in observed_handlers
+    }:
+        return [
+            _alert(
+                "BLOCK",
+                "tau_dag_requested_handler_substituted",
+                "Handler response evidence does not match the exact requested handler identity.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "expected_handler": expected_handler,
+                    "observed_handlers": sorted(observed_handlers),
+                },
+            )
+        ]
+    return []
+
+
+def _create_svg_required_artifact_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    candidate = _create_svg_candidate_evidence(response)
+    if candidate is None:
+        return [
+            _alert(
+                "BLOCK",
+                "create_svg_required_payload_missing",
+                "Create-SVG creator node did not emit a path-backed SVG artifact "
+                "or create_svg.variant_candidate.v1 receipt.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    problems = _create_svg_artifact_binding_errors(candidate)
+    if problems:
+        return [
+            _alert(
+                "BLOCK",
+                "create_svg_required_payload_missing",
+                "Create-SVG candidate SVG artifact binding is incomplete or invalid.",
+                {"node_id": node.node_id, "check_id": check.get("id"), "problems": problems},
+            )
+        ]
+    return []
+
+
+def _create_svg_candidate_receipt_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    candidate = _create_svg_candidate_evidence(response)
+    if candidate is None:
+        return [
+            _alert(
+                "BLOCK",
+                "create_svg_candidate_receipt_invalid",
+                "Create-SVG creator node did not emit create_svg.variant_candidate.v1 evidence.",
+                {"node_id": node.node_id, "check_id": check.get("id")},
+            )
+        ]
+    problems: list[str] = []
+    if candidate.get("schema") != "create_svg.variant_candidate.v1":
+        problems.append("schema")
+    if candidate.get("mocked") is not False:
+        problems.append("mocked")
+    if candidate.get("live") is not True:
+        problems.append("live")
+    if candidate.get("failure_code"):
+        problems.append("failure_code")
+    problems.extend(_create_svg_artifact_binding_errors(candidate))
+    if problems:
+        return [
+            _alert(
+                "BLOCK",
+                "create_svg_candidate_receipt_invalid",
+                "Create-SVG candidate receipt cannot be accepted as live visual proof.",
+                {"node_id": node.node_id, "check_id": check.get("id"), "problems": problems},
+            )
+        ]
+    return []
+
+
+def _create_svg_artifact_origin_alerts(
+    node: ProjectDagNode,
+    check: Mapping[str, Any],
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    candidate = _create_svg_candidate_evidence(response)
+    if candidate is None:
+        return []
+    path = _create_svg_artifact_path(candidate)
+    if path is None:
+        return []
+    normalized = "/" + str(path.expanduser()).replace("\\", "/").strip("/")
+    expected_fragment = f"/ready-queue/{node.node_id}/"
+    origin_node = (
+        candidate.get("origin_node_id")
+        or candidate.get("node_id")
+        or candidate.get("creator_node_id")
+    )
+    explicit_origin_ok = (
+        origin_node == node.node_id and candidate.get("origin") == "tau_node_artifact"
+    )
+    if expected_fragment not in normalized and not explicit_origin_ok:
+        return [
+            _alert(
+                "BLOCK",
+                "create_svg_artifact_origin_invalid",
+                "Create-SVG artifact path is not in the Tau node artifact area "
+                "or explicitly origin-bound to the node.",
+                {
+                    "node_id": node.node_id,
+                    "check_id": check.get("id"),
+                    "path": str(path),
+                    "required_path_fragment": expected_fragment,
+                },
+            )
+        ]
+    return []
+
+
+def _create_svg_candidate_evidence(response: dict[str, Any]) -> dict[str, Any] | None:
+    for evidence in _result_evidence(response):
+        if not isinstance(evidence, dict):
+            continue
+        if evidence.get("schema") == "create_svg.variant_candidate.v1":
+            return evidence
+        if evidence.get("kind") in {"create_svg_variant_candidate", "variant_candidate"}:
+            return evidence
+        if evidence.get("kind") in {
+            "create_svg_variant_candidate_receipt",
+            "variant_candidate_receipt",
+        }:
+            path_value = evidence.get("path")
+            if isinstance(path_value, str) and path_value.strip():
+                try:
+                    receipt = _read_json_object(
+                        Path(path_value).expanduser(), label="create-svg candidate receipt"
+                    )
+                except RuntimeError:
+                    return evidence
+                if isinstance(receipt, dict):
+                    merged = {**receipt, "receipt_path": path_value}
+                    return merged
+    return None
+
+
+def _create_svg_artifact_path(candidate: Mapping[str, Any]) -> Path | None:
+    value = candidate.get("svg_path") or candidate.get("artifact_path") or candidate.get("path")
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return Path(value).expanduser()
+
+
+def _create_svg_artifact_binding_errors(candidate: Mapping[str, Any]) -> list[str]:
+    problems: list[str] = []
+    path = _create_svg_artifact_path(candidate)
+    if path is None:
+        problems.append("svg_path")
+        return problems
+    if path.suffix.lower() != ".svg":
+        problems.append("svg_path_suffix")
+    sha = candidate.get("svg_sha256") or candidate.get("artifact_sha256") or candidate.get("sha256")
+    if not isinstance(sha, str) or not sha.startswith("sha256:"):
+        problems.append("svg_sha256")
+    elif path.is_file():
+        actual = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+        if sha != actual:
+            problems.append("svg_sha256_mismatch")
+    return problems
 
 
 def _node_sanity_contract_alert(
@@ -3021,7 +3401,9 @@ def _reviewer_artifact_binding_alerts(
 ) -> list[dict[str, Any]]:
     _ = contract
     if node.reviewer is None:
-        return [_node_sanity_contract_alert(node, check, "artifact binding requires a reviewer node")]
+        return [
+            _node_sanity_contract_alert(node, check, "artifact binding requires a reviewer node")
+        ]
     if not verdicts:
         return [
             _alert(
@@ -3037,7 +3419,9 @@ def _reviewer_artifact_binding_alerts(
     for verdict in verdicts:
         reviewed_node_id = str(verdict.get("reviewed_node_id") or "")
         reviewed_response = responses_by_node.get(reviewed_node_id)
-        reviewed_artifact = _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        reviewed_artifact = (
+            _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        )
         verdict_artifact = verdict.get(artifact_field)
         if not isinstance(reviewed_artifact, dict) or not isinstance(verdict_artifact, dict):
             alerts.append(
@@ -3070,7 +3454,8 @@ def _reviewer_artifact_binding_alerts(
                 _alert(
                     "BLOCK",
                     "reviewer_artifact_hash_mismatch",
-                    "Reviewer verdict artifact binding did not match the reviewed node artifact path/hash.",
+                    "Reviewer verdict artifact binding did not match the reviewed node "
+                    "artifact path/hash.",
                     {
                         "node_id": node.node_id,
                         "check_id": check.get("id"),
@@ -3094,14 +3479,18 @@ def _reviewer_attempt_binding_alerts(
 ) -> list[dict[str, Any]]:
     _ = contract
     if node.reviewer is None:
-        return [_node_sanity_contract_alert(node, check, "attempt binding requires a reviewer node")]
+        return [
+            _node_sanity_contract_alert(node, check, "attempt binding requires a reviewer node")
+        ]
     evidence_kind = str(check.get("evidence_kind") or "creator_artifact")
     attempt_field = str(check.get("attempt_field") or "reviewed_attempt_id")
     alerts: list[dict[str, Any]] = []
     for verdict in verdicts:
         reviewed_node_id = str(verdict.get("reviewed_node_id") or "")
         reviewed_response = responses_by_node.get(reviewed_node_id)
-        reviewed_artifact = _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        reviewed_artifact = (
+            _first_evidence_by_kind(reviewed_response, evidence_kind) if reviewed_response else None
+        )
         expected_attempt = None
         if isinstance(reviewed_artifact, dict):
             expected_attempt = reviewed_artifact.get("attempt_id", reviewed_artifact.get("attempt"))
@@ -4278,7 +4667,7 @@ def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
 def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
     try:
         provider = load_provider_settings().get_provider(provider_name)
-    except (ProviderConfigError, OSError, json.JSONDecodeError):
+    except ProviderConfigError, OSError, json.JSONDecodeError:
         return None
     return provider_model_knowledge_cutoff(provider, model=model)
 
@@ -5830,7 +6219,7 @@ def _existing_ops_discord_notification_for_category(
 def _read_json_object_optional(path: Path) -> dict[str, Any] | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+    except OSError, UnicodeError, json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
 
@@ -7850,7 +8239,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except (OSError, RuntimeError, ValueError):
+        except OSError, RuntimeError, ValueError:
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (

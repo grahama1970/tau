@@ -3977,6 +3977,196 @@ def test_project_dag_node_sanity_rejects_regex_style_contract_keys(tmp_path: Pat
         )
 
 
+def test_project_dag_blocks_requested_handler_substitution_before_dispatch(tmp_path: Path) -> None:
+    (tmp_path / "agents").mkdir()
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "exact-handler-substitution-test",
+        "goal": {
+            "goal_id": "exact-handler-substitution-test",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {"repo": "grahama1970/tau", "target": "create-svg visual DAG"},
+        "entry_node": "handler-claude-opus-5-high",
+        "terminal_nodes": ["human"],
+        "limits": {"resume": True, "default_timeout_seconds": 30, "max_total_attempts": 3},
+        "context": {"handlers": ["webgpt", "webgemini", "webkimi"]},
+        "nodes": [
+            {
+                "id": "handler-claude-opus-5-high",
+                "agent": "handler-claude-opus-5-high",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(
+                    tmp_path / "specs" / "handler-claude-opus-5-high" / "tau-dispatch-command.json"
+                ),
+                "required_evidence": [],
+            },
+            {
+                "id": "handler-webgemini",
+                "agent": "handler-webgemini",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": [],
+            },
+            {
+                "id": "handler-webkimi",
+                "agent": "handler-webkimi",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": [],
+            },
+        ],
+        "edges": [
+            {"from": "handler-claude-opus-5-high", "to": "handler-webgemini"},
+            {"from": "handler-webgemini", "to": "handler-webkimi"},
+            {"from": "handler-webkimi", "to": "human"},
+        ],
+        "required_evidence": [],
+        "fail_closed_on": ["tau_dag_requested_handler_substituted"],
+    }
+    contract_path = tmp_path / "dag-contract.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "tau_dag_requested_handler_substituted"
+    assert receipt["command_executed"] is False
+
+
+def test_project_dag_blocks_mocked_create_svg_candidate_receipt(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = ["create_svg_variant_candidate"]
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "candidate-live",
+            "check_type": "create_svg_variant_candidate_live",
+            "severity": "BLOCK",
+        }
+    ]
+    contract["required_evidence"] = ["create_svg_variant_candidate", "reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    artifact = tmp_path / "creator-artifact.svg"
+    artifact.write_text("<svg><title>Tau</title></svg>\n", encoding="utf-8")
+    artifact_sha = f"sha256:{hashlib.sha256(artifact.read_bytes()).hexdigest()}"
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "schema": "create_svg.variant_candidate.v1",
+                    "kind": "create_svg_variant_candidate",
+                    "svg_path": str(artifact),
+                    "svg_sha256": artifact_sha,
+                    "mocked": True,
+                    "live": False,
+                    "failure_code": "create_svg_tau_compile_or_execute_failed",
+                    "origin": "tau_node_artifact",
+                    "origin_node_id": "coder",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "create_svg_candidate_receipt_invalid"
+
+
+def test_project_dag_blocks_create_svg_creator_prose_without_svg_payload(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = []
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "svg-payload",
+            "check_type": "create_svg_required_svg_artifact",
+            "severity": "BLOCK",
+        }
+    ]
+    contract["required_evidence"] = ["reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", []))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "create_svg_required_payload_missing"
+
+
+def test_project_dag_blocks_create_svg_artifact_outside_tau_origin(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = ["create_svg_variant_candidate"]
+    contract["nodes"][0]["sanity_checks"] = [
+        {
+            "schema": "tau.node_sanity_check.v1",
+            "id": "artifact-origin",
+            "check_type": "create_svg_artifact_origin",
+            "severity": "BLOCK",
+        }
+    ]
+    contract["required_evidence"] = ["create_svg_variant_candidate", "reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    artifact = tmp_path / "local-preview.svg"
+    artifact.write_text("<svg><title>local preview</title></svg>\n", encoding="utf-8")
+    artifact_sha = f"sha256:{hashlib.sha256(artifact.read_bytes()).hexdigest()}"
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "schema": "create_svg.variant_candidate.v1",
+                    "kind": "create_svg_variant_candidate",
+                    "svg_path": str(artifact),
+                    "svg_sha256": artifact_sha,
+                    "mocked": False,
+                    "live": True,
+                }
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "create_svg_artifact_origin_invalid"
+
+
 def _write_browser_handler_contract(tmp_path: Path, *, browser_oracle_status: str) -> Path:
     (tmp_path / "agents").mkdir(exist_ok=True)
     spec_root = tmp_path / "specs"

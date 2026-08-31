@@ -1,0 +1,377 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_create_svg_origin_gates_agentic_eval.json",
+  "run_id": "8e7642563e5d",
+  "fixture_sha256": "sha256:7d8bfbe92dd6c7ec0444a2b84748dfcbdc082faafa9f5e13b6e66f58f2fde9fb",
+  "repo": {
+    "sha": "f56760005a54d7a1c5fadbac649e1a4c5c591103",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau project-DAG fail-closed artifact-origin gates for create-svg handler outputs and exact requested browser handler identities.",
+  "claims": {
+    "proves": "The retained fixture runs live Tau project-DAG executions and reads dag-receipt.json failure codes for create-svg candidate, handler identity, and artifact-origin enforcement.",
+    "does_not_prove": "External browser provider quality, human visual acceptance, or that a create-svg Tau generation run completed successfully."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.create_svg_origin_gates",
+        "description": "Tau project DAGs reject substituted handler identities, prose-only SVG progress, mocked/no-live create-svg candidates, and local-preview SVG artifacts that are not Tau node-origin-bound.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "requested_handler_substitution_blocked",
+              "mocked_candidate_receipt_blocked",
+              "prose_only_without_svg_payload_blocked",
+              "local_preview_origin_blocked"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "valid_receipt_bound_svg_candidate_accepted"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "valid_receipt_bound_svg_candidate_accepted",
+          "requested_handler_substitution_blocked",
+          "mocked_candidate_receipt_blocked",
+          "prose_only_without_svg_payload_blocked",
+          "local_preview_origin_blocked"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-31T15:49:44.283927+00:00",
+  "case_count": 5,
+  "required_case_count": 5,
+  "outcome_counts": {
+    "PASS": 5,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 10,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "valid_receipt_bound_svg_candidate_accepted",
+      "type": "positive",
+      "case_id": "8e7642563e5d-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case valid_receipt_bound_svg_candidate_accepted --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 742.233,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"valid_receipt_bound_svg_candidate_accepted\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/valid_receipt_bound_svg_candidate_accepted/run/dag-receipt.json\", \"expected_failure_code\": null, \"observed\": {\"failure_code\": null, \"status\": \"PASS\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 746.571,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json": "sha256:beaebcf3e5c6aaeed0c01e103c041919b2873cccbaf59de5ca5174075f0256ab"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"valid_receipt_bound_svg_candidate_accepted\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/valid_receipt_bound_svg_candidate_accepted/run/dag-receipt.json\", \"expected_failure_code\": null, \"observed\": {\"failure_code\": null, \"status\": \"PASS\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 737.895,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json": "sha256:beaebcf3e5c6aaeed0c01e103c041919b2873cccbaf59de5ca5174075f0256ab"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "requested_handler_substitution_blocked",
+      "type": "adversarial",
+      "case_id": "8e7642563e5d-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case requested_handler_substitution_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 761.269,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"requested_handler_substitution_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/requested_handler_substitution_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"tau_dag_requested_handler_substituted\", \"observed\": {\"failure_code\": \"tau_dag_requested_handler_substituted\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 800.346,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json": "sha256:5604ceca67266a4b32f0ffbee14ec12be5a9c04eb2a40313e3d41c57604b2bf1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"requested_handler_substitution_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/requested_handler_substitution_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"tau_dag_requested_handler_substituted\", \"observed\": {\"failure_code\": \"tau_dag_requested_handler_substituted\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 722.191,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json": "sha256:5604ceca67266a4b32f0ffbee14ec12be5a9c04eb2a40313e3d41c57604b2bf1"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "mocked_candidate_receipt_blocked",
+      "type": "adversarial",
+      "case_id": "8e7642563e5d-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case mocked_candidate_receipt_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 813.345,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"mocked_candidate_receipt_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/mocked_candidate_receipt_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_candidate_receipt_invalid\", \"observed\": {\"failure_code\": \"create_svg_candidate_receipt_invalid\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 824.982,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c002-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json": "sha256:69cb4d3df5171e7068268bd9af8ac09be0bde7f99d52012466fee7d3ff13e2b3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"mocked_candidate_receipt_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/mocked_candidate_receipt_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_candidate_receipt_invalid\", \"observed\": {\"failure_code\": \"create_svg_candidate_receipt_invalid\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 801.709,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c002-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json": "sha256:69cb4d3df5171e7068268bd9af8ac09be0bde7f99d52012466fee7d3ff13e2b3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "prose_only_without_svg_payload_blocked",
+      "type": "adversarial",
+      "case_id": "8e7642563e5d-c003",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case prose_only_without_svg_payload_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 783.64,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"prose_only_without_svg_payload_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/prose_only_without_svg_payload_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_required_payload_missing\", \"observed\": {\"failure_code\": \"create_svg_required_payload_missing\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 781.228,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c003-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json": "sha256:71b443e324055b5803da949326a10783c1f22bb4ba110cc84a286639d2ab2672"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"prose_only_without_svg_payload_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/prose_only_without_svg_payload_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_required_payload_missing\", \"observed\": {\"failure_code\": \"create_svg_required_payload_missing\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 786.053,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c003-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json": "sha256:71b443e324055b5803da949326a10783c1f22bb4ba110cc84a286639d2ab2672"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "local_preview_origin_blocked",
+      "type": "adversarial",
+      "case_id": "8e7642563e5d-c004",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case local_preview_origin_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 801.921,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"local_preview_origin_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/local_preview_origin_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_artifact_origin_invalid\", \"observed\": {\"failure_code\": \"create_svg_artifact_origin_invalid\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 808.01,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c004-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json": "sha256:efecd320eddc5aaf63dab91e975708042466b8f03af0e1c07eebe0970e32edf8"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"case\": \"local_preview_origin_blocked\", \"dag_receipt_path\": \"local/agentic-evals/tau-create-svg-origin-gates/work/local_preview_origin_blocked/run/dag-receipt.json\", \"expected_failure_code\": \"create_svg_artifact_origin_invalid\", \"observed\": {\"failure_code\": \"create_svg_artifact_origin_invalid\", \"status\": \"BLOCKED\"}, \"schema\": \"tau.agentic_eval_case_receipt.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 795.832,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8e7642563e5d-c004-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json": "sha256:efecd320eddc5aaf63dab91e975708042466b8f03af0e1c07eebe0970e32edf8"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

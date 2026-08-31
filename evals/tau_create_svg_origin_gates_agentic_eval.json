@@ -1,0 +1,244 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau project-DAG fail-closed artifact-origin gates for create-svg handler outputs and exact requested browser handler identities.",
+  "capability_claims": [
+    {
+      "id": "tau.create_svg_origin_gates",
+      "description": "Tau project DAGs reject substituted handler identities, prose-only SVG progress, mocked/no-live create-svg candidates, and local-preview SVG artifacts that are not Tau node-origin-bound.",
+      "criticality": "critical",
+      "evidence_required": {
+        "fault_injected_deterministic": 1,
+        "live_e2e": 1
+      }
+    }
+  ],
+  "seams": [
+    {
+      "seam_id": "project_dag.create_svg_origin_gates",
+      "seam_type": "runtime_contract",
+      "criticality": "critical",
+      "required_evidence": [
+        "fault_injected_deterministic",
+        "live_e2e"
+      ]
+    }
+  ],
+  "claims": {
+    "proves": "The retained fixture runs live Tau project-DAG executions and reads dag-receipt.json failure codes for create-svg candidate, handler identity, and artifact-origin enforcement.",
+    "does_not_prove": "External browser provider quality, human visual acceptance, or that a create-svg Tau generation run completed successfully."
+  },
+  "cases": [
+    {
+      "name": "valid_receipt_bound_svg_candidate_accepted",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case valid_receipt_bound_svg_candidate_accepted --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"valid_receipt_bound_svg_candidate_accepted\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/valid_receipt_bound_svg_candidate_accepted.json",
+            "json_pointer": "/observed/status",
+            "equals": "PASS"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "requested_handler_substitution_blocked",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case requested_handler_substitution_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"requested_handler_substitution_blocked\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json",
+            "json_pointer": "/observed/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/requested_handler_substitution_blocked.json",
+            "json_pointer": "/observed/failure_code",
+            "equals": "tau_dag_requested_handler_substituted"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "mocked_candidate_receipt_blocked",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case mocked_candidate_receipt_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"mocked_candidate_receipt_blocked\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json",
+            "json_pointer": "/observed/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/mocked_candidate_receipt_blocked.json",
+            "json_pointer": "/observed/failure_code",
+            "equals": "create_svg_candidate_receipt_invalid"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "prose_only_without_svg_payload_blocked",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case prose_only_without_svg_payload_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"prose_only_without_svg_payload_blocked\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json",
+            "json_pointer": "/observed/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/prose_only_without_svg_payload_blocked.json",
+            "json_pointer": "/observed/failure_code",
+            "equals": "create_svg_required_payload_missing"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "local_preview_origin_blocked",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.create_svg_origin_gates"
+      ],
+      "seams": [
+        "project_dag.create_svg_origin_gates"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-create-svg-origin-gates.py --case local_preview_origin_blocked --work local/agentic-evals/tau-create-svg-origin-gates/work --out local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"local_preview_origin_blocked\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json",
+            "json_pointer": "/observed/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-create-svg-origin-gates/cases/local_preview_origin_blocked.json",
+            "json_pointer": "/observed/failure_code",
+            "equals": "create_svg_artifact_origin_invalid"
+          }
+        ]
+      },
+      "readback": true
+    }
+  ]
+}
