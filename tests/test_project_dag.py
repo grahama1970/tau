@@ -27,7 +27,6 @@ from tau_coding.project_dag import (
 )
 from tau_coding.run_status import build_run_status
 
-
 _PNG_1X1_BYTES = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGA"
     "WjR9awAAAABJRU5ErkJggg=="
@@ -105,6 +104,8 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
             "goal_hash": "sha256:active-goal",
             "kind": "reviewer_verdict",
             "reviewed_node_id": "coder",
+            "reviewer_node_id": "reviewer",
+            "schema": "tau.reviewer_verdict.v1",
             "verdict": "PASS",
         }
     ]
@@ -258,6 +259,301 @@ def test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot(
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["reviewer_verdicts"][0]["screenshot"]["sha256"] == screenshot_sha256
+
+
+def test_project_dag_blocks_reviewer_verdict_without_schema(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    reviewer_response = _handoff("reviewer", "human", [])
+    reviewer_response["result"]["evidence"] = [
+        {
+            "kind": "reviewer_verdict",
+            "reviewed_node_id": "coder",
+            "reviewer_node_id": "reviewer",
+            "goal_hash": "sha256:active-goal",
+            "verdict": "PASS",
+        }
+    ]
+    _write_response_spec(tmp_path, "reviewer", reviewer_response)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_verdict_schema_invalid"
+    assert receipt["alerts"][0]["evidence"]["problems"] == ["schema"]
+
+
+def test_project_dag_requires_reviewer_to_bind_reviewed_node(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    del contract["nodes"][1]["reviewer"]["reviews_node"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="reviewer.reviews_node"):
+        run_project_dag_contract(
+            contract_path=contract_path,
+            receipt_dir=tmp_path / "run",
+            agents_root=tmp_path / "agents",
+        )
+
+
+def test_project_dag_rejects_reviewer_that_reviews_reviewer_node(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"].append(
+        {
+            "id": "second-reviewer",
+            "agent": "second-reviewer",
+            "executor": "local",
+            "max_attempts": 1,
+            "command_spec": str(
+                tmp_path / "specs" / "second-reviewer" / "tau-dispatch-command.json"
+            ),
+            "required_evidence": ["reviewer_verdict"],
+            "reviewer": {"reviews_node": "reviewer", "requires_goal_hash": True},
+        }
+    )
+    contract["edges"] = [
+        {"from": "coder", "to": "reviewer"},
+        {"from": "reviewer", "to": "second-reviewer"},
+        {"from": "second-reviewer", "to": "human"},
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="must name a creator node"):
+        run_project_dag_contract(
+            contract_path=contract_path,
+            receipt_dir=tmp_path / "run",
+            agents_root=tmp_path / "agents",
+        )
+
+
+def test_project_dag_rejects_reviewer_topology_bypass(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["edges"].append({"from": "coder", "to": "human"})
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="reviewer can be bypassed"):
+        run_project_dag_contract(
+            contract_path=contract_path,
+            receipt_dir=tmp_path / "run",
+            agents_root=tmp_path / "agents",
+        )
+
+
+def test_project_dag_blocks_reviewer_verdict_without_reviewer_node_id(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    reviewer_response = _reviewer_handoff(goal_hash="sha256:active-goal")
+    del reviewer_response["result"]["evidence"][0]["reviewer_node_id"]  # type: ignore[index]
+    _write_response_spec(tmp_path, "reviewer", reviewer_response)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_verdict_schema_invalid"
+    assert receipt["alerts"][0]["evidence"]["problems"] == ["reviewer_node_id"]
+
+
+def test_project_dag_blocks_reviewer_fail_verdict_on_handoff_loop(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    reviewer_response = _reviewer_handoff(goal_hash="sha256:active-goal")
+    reviewer_response["result"]["evidence"][0]["verdict"] = "FAIL"  # type: ignore[index]
+    _write_response_spec(tmp_path, "reviewer", reviewer_response)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "REVIEWER_VERDICT_INVALID"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_verdict_invalid"
+
+
+def test_project_dag_required_evidence_requires_exact_kind(tmp_path: Path) -> None:
+    response = {"result": {"evidence": [{"kind": "note", "text": "creator_artifact"}]}}
+
+    assert project_dag._missing_required_evidence(("creator_artifact",), response) == [
+        "creator_artifact"
+    ]
+
+
+def test_ready_queue_blocks_required_reviewer_optional_join_policy(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    spec_root = tmp_path / "specs"
+    contract["limits"]["max_concurrency"] = 2
+    contract["nodes"].append(
+        {
+            "id": "join",
+            "agent": "join",
+            "executor": "scheduler",
+            "max_attempts": 1,
+            "required_evidence": [],
+            "join": {
+                "schema": "tau.dag_join_policy.v1",
+                "policy": "any_success",
+                "timeout_seconds": 5,
+            },
+        }
+    )
+    contract["nodes"].append(
+        {
+            "id": "alternate",
+            "agent": "alternate",
+            "executor": "local",
+            "max_attempts": 1,
+            "command_spec": str(spec_root / "alternate" / "tau-dispatch-command.json"),
+            "required_evidence": ["creator_artifact"],
+        }
+    )
+    contract["edges"] = [
+        {"from": "coder", "to": "reviewer"},
+        {"from": "reviewer", "to": "join"},
+        {"from": "alternate", "to": "join"},
+        {"from": "join", "to": "human"},
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "REQUIRED_REVIEWER_JOIN_POLICY_BYPASS"
+    assert receipt["command_executed"] is False
+
+
+def test_ready_queue_blocks_transitive_required_reviewer_optional_join_policy(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    spec_root = tmp_path / "specs"
+    contract["limits"]["max_concurrency"] = 2
+    contract["nodes"].extend(
+        [
+            {
+                "id": "adapter",
+                "agent": "adapter",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "adapter" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+            },
+            {
+                "id": "join",
+                "agent": "join",
+                "executor": "scheduler",
+                "max_attempts": 1,
+                "required_evidence": [],
+                "join": {
+                    "schema": "tau.dag_join_policy.v1",
+                    "policy": "any_success",
+                    "timeout_seconds": 5,
+                },
+            },
+            {
+                "id": "alternate",
+                "agent": "alternate",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "alternate" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+            },
+        ]
+    )
+    contract["edges"] = [
+        {"from": "coder", "to": "reviewer"},
+        {"from": "reviewer", "to": "adapter"},
+        {"from": "adapter", "to": "join"},
+        {"from": "alternate", "to": "join"},
+        {"from": "join", "to": "human"},
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "REQUIRED_REVIEWER_JOIN_POLICY_BYPASS"
+    assert receipt["command_executed"] is False
+    assert receipt["alerts"][0]["evidence"]["join_node_id"] == "join"
+
+
+def test_ready_queue_allows_required_reviewer_all_success_join_policy(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    spec_root = tmp_path / "specs"
+    contract["limits"]["max_concurrency"] = 2
+    contract["nodes"].append(
+        {
+            "id": "join",
+            "agent": "join",
+            "executor": "scheduler",
+            "max_attempts": 1,
+            "required_evidence": [],
+            "join": {
+                "schema": "tau.dag_join_policy.v1",
+                "policy": "all_success",
+                "timeout_seconds": 5,
+            },
+        }
+    )
+    contract["nodes"].append(
+        {
+            "id": "alternate",
+            "agent": "alternate",
+            "executor": "local",
+            "max_attempts": 1,
+            "command_spec": str(spec_root / "alternate" / "tau-dispatch-command.json"),
+            "required_evidence": ["creator_artifact"],
+        }
+    )
+    contract["edges"] = [
+        {"from": "coder", "to": "reviewer"},
+        {"from": "reviewer", "to": "join"},
+        {"from": "alternate", "to": "join"},
+        {"from": "join", "to": "human"},
+    ]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "alternate", _handoff("alternate", "join", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
 
 
 def test_ready_queue_blocks_failed_referenced_receipt_verdict(tmp_path: Path) -> None:
@@ -4662,12 +4958,14 @@ def _handoff(
 ) -> dict[str, object]:
     normalized_evidence: list[object] = []
     for item in evidence:
-        if (
-            isinstance(item, dict)
-            and item.get("kind") != "dag_contract"
-            and "goal_hash" not in item
-        ):
-            normalized_evidence.append({**item, "goal_hash": "sha256:active-goal"})
+        if isinstance(item, dict):
+            normalized = dict(item)
+            if normalized.get("kind") == "reviewer_verdict":
+                normalized.setdefault("schema", "tau.reviewer_verdict.v1")
+                normalized.setdefault("reviewer_node_id", previous_subagent)
+            if normalized.get("kind") != "dag_contract" and "goal_hash" not in normalized:
+                normalized["goal_hash"] = "sha256:active-goal"
+            normalized_evidence.append(normalized)
         else:
             normalized_evidence.append(item)
     return {

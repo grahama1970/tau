@@ -17,7 +17,6 @@ if str(REPO_ROOT / "src") not in sys.path:
 
 from tau_coding.project_dag import run_project_dag_contract  # noqa: E402
 
-
 PNG_1X1_BYTES = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGA"
     "WjR9awAAAABJRU5ErkJggg=="
@@ -28,7 +27,9 @@ def _sha256(path: Path) -> str:
     return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
-def _handoff(previous_subagent: str, next_agent: str, evidence: list[dict[str, Any]]) -> dict[str, Any]:
+def _handoff(
+    previous_subagent: str, next_agent: str, evidence: list[dict[str, Any]]
+) -> dict[str, Any]:
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {"repo": "grahama1970/tau", "target": "issue-336"},
@@ -53,6 +54,19 @@ def _handoff(previous_subagent: str, next_agent: str, evidence: list[dict[str, A
         "required_evidence": ["creator_artifact", "reviewer_verdict"],
         "stop_condition": "Stop at human.",
     }
+
+
+def _reviewer_verdict(**values: Any) -> dict[str, Any]:
+    payload = {
+        "schema": "tau.reviewer_verdict.v1",
+        "kind": "reviewer_verdict",
+        "reviewed_node_id": "creator",
+        "reviewer_node_id": "reviewer",
+        "goal_hash": "sha256:issue-336-goal",
+        "verdict": "PASS",
+    }
+    payload.update(values)
+    return payload
 
 
 def _write_response_spec(root: Path, agent: str, response: dict[str, Any]) -> None:
@@ -169,29 +183,21 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
     fake_visual = _run_case(
         work,
         name="fake-visual-reviewer",
-        reviewer_evidence={
-            "kind": "reviewer_verdict",
-            "reviewed_node_id": "creator",
-            "goal_hash": "sha256:issue-336-goal",
-            "verdict": "PASS",
-            "represents_goal": True,
-            "attractive": True,
-        },
+        reviewer_evidence=_reviewer_verdict(
+            represents_goal=True,
+            attractive=True,
+        ),
     )
     screenshot_only = _run_case(
         work,
         name="screenshot-only-reviewer",
-        reviewer_evidence={
-            "kind": "reviewer_verdict",
-            "reviewed_node_id": "creator",
-            "goal_hash": "sha256:issue-336-goal",
-            "verdict": "PASS",
-            "represents_goal": True,
-            "attractive": True,
-            "screenshot": {"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
-            "mocked": False,
-            "live": True,
-        },
+        reviewer_evidence=_reviewer_verdict(
+            represents_goal=True,
+            attractive=True,
+            screenshot={"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
+            mocked=False,
+            live=True,
+        ),
     )
     visual_receipt = work / "positive" / "visual-review-receipt.json"
     visual_receipt_payload = {
@@ -202,7 +208,10 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
         "reviewed_node_id": "creator",
         "reviewer_node_id": "reviewer",
         "verification_method": "browser_screenshot_readback",
-        "reviewed_screenshot": {"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
+        "reviewed_screenshot": {
+            "path": str(visual_screenshot),
+            "sha256": _sha256(visual_screenshot),
+        },
         "mocked": False,
         "live": True,
     }
@@ -211,32 +220,41 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
     screenshot_bound = _run_case(
         work,
         name="screenshot-bound-reviewer",
-        reviewer_evidence={
-            "kind": "reviewer_verdict",
-            "reviewed_node_id": "creator",
-            "goal_hash": "sha256:issue-336-goal",
-            "verdict": "PASS",
-            "represents_goal": True,
-            "attractive": True,
-            "screenshot": {"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
-            "visual_review_receipt": {"path": str(visual_receipt), "sha256": visual_receipt_sha256},
-            "visual_review_receipt_sha256": visual_receipt_sha256,
-            "mocked": False,
-            "live": True,
-        },
+        reviewer_evidence=_reviewer_verdict(
+            represents_goal=True,
+            attractive=True,
+            screenshot={"path": str(visual_screenshot), "sha256": _sha256(visual_screenshot)},
+            visual_review_receipt={"path": str(visual_receipt), "sha256": visual_receipt_sha256},
+            visual_review_receipt_sha256=visual_receipt_sha256,
+            mocked=False,
+            live=True,
+        ),
     )
     fake_failure_code = (fake_visual.get("dag_error") or {}).get("failure_code")
     screenshot_only_failure_code = (screenshot_only.get("dag_error") or {}).get("failure_code")
     positive_verdict = (screenshot_bound.get("reviewer_verdicts") or [{}])[0]
-    positive_screenshot = positive_verdict.get("screenshot") if isinstance(positive_verdict, dict) else None
+    positive_screenshot = (
+        positive_verdict.get("screenshot") if isinstance(positive_verdict, dict) else None
+    )
     errors = []
-    if fake_visual.get("receipt_status") != "BLOCKED" or fake_failure_code != "reviewer_visual_evidence_missing":
+    if (
+        fake_visual.get("receipt_status") != "BLOCKED"
+        or fake_failure_code != "reviewer_visual_evidence_missing"
+    ):
         errors.append("fake_visual_reviewer_not_blocked")
-    if screenshot_only.get("receipt_status") != "BLOCKED" or screenshot_only_failure_code != "visual_review_receipt_missing":
+    if (
+        screenshot_only.get("receipt_status") != "BLOCKED"
+        or screenshot_only_failure_code != "visual_review_receipt_missing"
+    ):
         errors.append("screenshot_only_reviewer_not_blocked")
-    if screenshot_bound.get("receipt_status") != "PASS" or screenshot_bound.get("receipt_ok") is not True:
+    if (
+        screenshot_bound.get("receipt_status") != "PASS"
+        or screenshot_bound.get("receipt_ok") is not True
+    ):
         errors.append("screenshot_bound_visual_reviewer_not_accepted")
-    if not isinstance(positive_screenshot, dict) or positive_screenshot.get("sha256") != _sha256(visual_screenshot):
+    if not isinstance(positive_screenshot, dict) or positive_screenshot.get("sha256") != _sha256(
+        visual_screenshot
+    ):
         errors.append("positive_screenshot_hash_not_bound")
     if positive_verdict.get("mocked") is not False or positive_verdict.get("live") is not True:
         errors.append("positive_visual_boundary_missing")
@@ -252,8 +270,15 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
         "screenshot_only_reviewer": screenshot_only,
         "screenshot_bound_reviewer": screenshot_bound,
         "proof_boundary": {
-            "proves": "Tau blocks visual-quality reviewer PASS claims unless the reviewer verdict carries readable screenshot evidence with an exact sha256 and mocked/live boundaries.",
-            "does_not_prove": "Human aesthetic acceptance, browser rendering quality, provider semantic quality, or GOAL.md completion.",
+            "proves": (
+                "Tau blocks visual-quality reviewer PASS claims unless the reviewer "
+                "verdict carries readable screenshot evidence with an exact sha256 "
+                "and mocked/live boundaries."
+            ),
+            "does_not_prove": (
+                "Human aesthetic acceptance, browser rendering quality, provider semantic "
+                "quality, or GOAL.md completion."
+            ),
         },
     }
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -263,8 +288,16 @@ def run_proof(work: Path, out: Path) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--work", type=Path, default=REPO_ROOT / "local/agentic-evals/tau-visual-review-evidence/work")
-    parser.add_argument("--out", type=Path, default=REPO_ROOT / "local/agentic-evals/tau-visual-review-evidence-proof.json")
+    parser.add_argument(
+        "--work",
+        type=Path,
+        default=REPO_ROOT / "local/agentic-evals/tau-visual-review-evidence/work",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=REPO_ROOT / "local/agentic-evals/tau-visual-review-evidence-proof.json",
+    )
     args = parser.parse_args()
     payload = run_proof(args.work, args.out)
     print(json.dumps(payload, indent=2, sort_keys=True))

@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path, PureWindowsPath
@@ -195,6 +195,30 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "visual_review_receipt_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "reviewer_contract_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_contract",
+    },
+    "reviewer_verdict_schema_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_verdict_schema",
+    },
+    "reviewer_verdict_invalid": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_verdict_schema",
+    },
+    "required_reviewer_join_policy_bypass": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.required_reviewer_topology",
+    },
+    "reviewer_not_reachable_from_reviewed_node": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.required_reviewer_topology",
+    },
+    "reviewer_topology_bypass": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.required_reviewer_topology",
     },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
@@ -1247,6 +1271,8 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
             errors.append(f"edge.to is not a declared node or terminal node: {edge.target}")
     if terminal_nodes and not any(edge.target in terminal_nodes for edge in edges):
         errors.append("at least one edge must route to a terminal node")
+    _validate_reviewer_contract_declarations(nodes, errors)
+    _validate_reviewer_topology_declarations(nodes, edges, tuple(terminal_nodes), errors)
     if errors:
         raise RuntimeError("; ".join(errors))
     return ProjectDagContract(
@@ -2384,6 +2410,120 @@ def _validate_persistent_subagent_declaration(
         )
 
 
+def _validate_reviewer_contract_declarations(
+    nodes: Mapping[str, ProjectDagNode],
+    errors: list[str],
+) -> None:
+    for node_id, node in nodes.items():
+        reviewer = node.reviewer
+        if reviewer is None:
+            continue
+        reviews_node = reviewer.get("reviews_node") if isinstance(reviewer, dict) else None
+        if not isinstance(reviews_node, str) or not reviews_node.strip():
+            errors.append(
+                f"nodes[{node_id}].reviewer.reviews_node must name a declared creator node"
+            )
+            continue
+        if reviews_node not in nodes:
+            errors.append(
+                f"nodes[{node_id}].reviewer.reviews_node is not a declared node: {reviews_node}"
+            )
+        elif nodes[reviews_node].reviewer is not None:
+            errors.append(
+                f"nodes[{node_id}].reviewer.reviews_node must name a creator node, "
+                f"not reviewer node {reviews_node}"
+            )
+        if reviews_node == node_id:
+            errors.append(f"nodes[{node_id}].reviewer.reviews_node cannot be the reviewer node")
+        if "reviewer_verdict" not in node.required_evidence:
+            errors.append(
+                f"nodes[{node_id}].required_evidence must include reviewer_verdict "
+                "when reviewer is declared"
+            )
+
+
+def _validate_reviewer_topology_declarations(
+    nodes: Mapping[str, ProjectDagNode],
+    edges: Sequence[ProjectDagEdge],
+    terminal_nodes: Sequence[str],
+    errors: list[str],
+) -> None:
+    outgoing = _outgoing_targets(nodes, edges)
+    for node_id, node in nodes.items():
+        reviewer = node.reviewer
+        if reviewer is None:
+            continue
+        reviews_node = reviewer.get("reviews_node") if isinstance(reviewer, dict) else None
+        if (
+            not isinstance(reviews_node, str)
+            or reviews_node not in nodes
+            or reviews_node == node_id
+        ):
+            continue
+        if not _path_exists(outgoing, reviews_node, node_id):
+            errors.append(
+                f"nodes[{node_id}].reviewer is not reachable from reviewed node {reviews_node}"
+            )
+        bypass_terminals = [
+            terminal
+            for terminal in terminal_nodes
+            if _path_exists(outgoing, reviews_node, terminal, avoid={node_id})
+        ]
+        if bypass_terminals:
+            errors.append(
+                f"nodes[{node_id}].reviewer can be bypassed on paths from "
+                f"{reviews_node} to terminals: {', '.join(sorted(bypass_terminals))}"
+            )
+
+
+def _outgoing_targets(
+    nodes: Mapping[str, ProjectDagNode], edges: Sequence[ProjectDagEdge]
+) -> dict[str, list[str]]:
+    outgoing = {node_id: [] for node_id in nodes}
+    for edge in edges:
+        outgoing.setdefault(edge.source, []).append(edge.target)
+    return outgoing
+
+
+def _path_exists(
+    outgoing: Mapping[str, Sequence[str]],
+    source: str,
+    target: str,
+    *,
+    avoid: set[str] | None = None,
+) -> bool:
+    avoided = avoid or set()
+    stack = [source]
+    seen: set[str] = set()
+    while stack:
+        current = stack.pop()
+        if current == target:
+            return True
+        if current in seen:
+            continue
+        seen.add(current)
+        for next_node in outgoing.get(current, []):
+            if next_node in avoided:
+                continue
+            stack.append(next_node)
+    return False
+
+
+def _reachable_from(
+    outgoing: Mapping[str, Sequence[str]],
+    source: str,
+) -> set[str]:
+    reachable: set[str] = set()
+    stack = list(outgoing.get(source, []))
+    while stack:
+        current = stack.pop()
+        if current in reachable:
+            continue
+        reachable.add(current)
+        stack.extend(outgoing.get(current, []))
+    return reachable
+
+
 def _parse_edges(value: object, errors: list[str]) -> list[ProjectDagEdge]:
     if not isinstance(value, list) or not value:
         errors.append("edges must be a non-empty list")
@@ -2653,6 +2793,7 @@ def _reviewer_alerts(
         node.reviewer.get("reviews_node") if isinstance(node.reviewer, dict) else None
     )
     for verdict in verdicts:
+        alerts.extend(_reviewer_verdict_schema_alerts(contract, node, verdict))
         if verdict.get("goal_hash") != contract.goal["goal_hash"]:
             alerts.append(
                 _alert(
@@ -2679,8 +2820,49 @@ def _reviewer_alerts(
                     },
                 )
             )
+        observed_verdict = str(verdict.get("verdict") or "").upper()
+        if observed_verdict != "PASS":
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "reviewer_verdict_invalid",
+                    "Reviewer verdict did not pass.",
+                    {"node_id": node.node_id, "verdict": observed_verdict or None},
+                )
+            )
         alerts.extend(_reviewer_visual_evidence_alerts(contract, node, verdict, response))
     return alerts
+
+
+def _reviewer_verdict_schema_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    verdict: dict[str, Any],
+) -> list[dict[str, Any]]:
+    problems: list[str] = []
+    if verdict.get("schema") != "tau.reviewer_verdict.v1":
+        problems.append("schema")
+    if verdict.get("kind") != "reviewer_verdict":
+        problems.append("kind")
+    reviewed_node_id = verdict.get("reviewed_node_id")
+    if not isinstance(reviewed_node_id, str) or not reviewed_node_id.strip():
+        problems.append("reviewed_node_id")
+    reviewer_node_id = verdict.get("reviewer_node_id")
+    if not isinstance(reviewer_node_id, str) or reviewer_node_id != node.node_id:
+        problems.append("reviewer_node_id")
+    observed_verdict = str(verdict.get("verdict") or "").upper()
+    if observed_verdict not in {"PASS", "FAIL", "BLOCKED", "NEEDS_ATTENTION", "REVISE"}:
+        problems.append("verdict")
+    if not problems:
+        return []
+    return [
+        _alert(
+            "BLOCK",
+            "reviewer_verdict_schema_invalid",
+            "Reviewer verdict did not satisfy tau.reviewer_verdict.v1.",
+            {"node_id": node.node_id, "problems": problems},
+        )
+    ]
 
 
 def _reviewer_visual_evidence_alerts(
@@ -2810,7 +2992,8 @@ def _visual_review_receipt_alerts(
             _alert(
                 "BLOCK",
                 "visual_review_receipt_missing",
-                "Reviewer visual PASS requires a path-backed visual_review_receipt, not only reviewer JSON fields.",
+                "Reviewer visual PASS requires a path-backed visual_review_receipt, "
+                "not only reviewer JSON fields.",
                 {"node_id": node.node_id, "screenshot_sha256": screenshot_sha256},
             )
         ]
@@ -3368,6 +3551,26 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
                 {"node_ids": mutating_nodes},
             )
         )
+    outgoing_targets = _outgoing_targets(contract.nodes, contract.edges)
+    for node in contract.nodes.values():
+        if node.reviewer is None:
+            continue
+        reachable_joins = sorted(_reachable_from(outgoing_targets, node.node_id) & valid_join_nodes)
+        for join_id in reachable_joins:
+            join_policy = _node_payload(contract, join_id).get("join")
+            if not isinstance(join_policy, dict) or join_policy.get("policy") != "all_success":
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "required_reviewer_join_policy_bypass",
+                        "A required reviewer branch may only enter an all_success join.",
+                        {
+                            "reviewer_node_id": node.node_id,
+                            "join_node_id": join_id,
+                            "join_policy": _json_safe_alert_value(join_policy),
+                        },
+                    )
+                )
     return alerts
 
 
@@ -7288,8 +7491,14 @@ def _reviewer_verdict_evidence(response: dict[str, Any]) -> list[dict[str, Any]]
 def _missing_required_evidence(required: tuple[str, ...], response: dict[str, Any]) -> list[str]:
     if not required:
         return []
-    haystack = json.dumps(_result_evidence(response), sort_keys=True)
-    return [item for item in required if item not in haystack]
+    observed = {
+        str(evidence["kind"])
+        for evidence in _result_evidence(response)
+        if isinstance(evidence, dict)
+        and isinstance(evidence.get("kind"), str)
+        and evidence["kind"].strip()
+    }
+    return [item for item in required if item not in observed]
 
 
 def _result_evidence(response: dict[str, Any]) -> list[Any]:

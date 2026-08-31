@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "proof_scope": "Reviewer trust boundaries for Tau project DAGs",
+  "capability_claims": [
+    {
+      "id": "tau.reviewer_trust_boundaries",
+      "description": "Tau project DAGs reject malformed reviewer verdict evidence, require reviewer declarations to bind and dominate the reviewed creator node, match required_evidence by exact evidence kind, block reviewer FAIL verdicts, and block required reviewer branches from direct or transitive permissive join bypass.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "claims": {
+    "proves": "Tau rejects a reviewer_verdict missing tau.reviewer_verdict.v1 schema, rejects reviewer verdicts without reviewer_node_id, blocks reviewer FAIL verdicts, rejects reviewer nodes without reviewer.reviews_node, rejects reviewed-node paths that bypass the reviewer, treats required_evidence as exact evidence kinds instead of JSON substrings, blocks required reviewer branches entering direct or transitive any_success joins, and allows required reviewer branches through all_success joins.",
+    "does_not_prove": "Provider semantic quality, human acceptance, every non-reviewer evidence class, React Flow rendering, or GOAL.md completion."
+  },
+  "trials": 2,
+  "cases": [
+    {
+      "name": "reviewer-trust-boundary-proof-script",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.reviewer_trust_boundaries"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-reviewer-trust-boundaries/work && uv run python scripts/agentic-eval-tau-reviewer-trust-boundaries.py --work local/agentic-evals/tau-reviewer-trust-boundaries/work --out local/agentic-evals/tau-reviewer-trust-boundaries-proof.json"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.reviewer_trust_boundaries_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "\"failure_code\": \"reviewer_verdict_schema_invalid\"",
+          "\"failure_code\": \"reviewer_contract_invalid\"",
+          "\"failure_code\": \"reviewer_topology_bypass\"",
+          "\"failure_code\": \"reviewer_verdict_invalid\"",
+          "\"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/schema_negative/failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/contract_negative/failure_code",
+            "equals": "reviewer_contract_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/topology_bypass_negative/failure_code",
+            "equals": "reviewer_topology_bypass"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/missing_reviewer_node_id_negative/failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/reviewer_fail_negative/failure_code",
+            "equals": "reviewer_verdict_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/exact_evidence_negative/missing/0",
+            "equals": "creator_artifact"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/join_bypass_negative/verdict",
+            "equals": "REQUIRED_REVIEWER_JOIN_POLICY_BYPASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/transitive_join_bypass_negative/verdict",
+            "equals": "REQUIRED_REVIEWER_JOIN_POLICY_BYPASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json",
+            "json_pointer": "/all_success_positive/status",
+            "equals": "PASS"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reviewer-trust-boundary-regression-tests",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.reviewer_trust_boundaries"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_reviewer_verdict_without_schema tests/test_project_dag.py::test_project_dag_blocks_reviewer_verdict_without_reviewer_node_id tests/test_project_dag.py::test_project_dag_blocks_reviewer_fail_verdict_on_handoff_loop tests/test_project_dag.py::test_project_dag_requires_reviewer_to_bind_reviewed_node tests/test_project_dag.py::test_project_dag_rejects_reviewer_that_reviews_reviewer_node tests/test_project_dag.py::test_project_dag_rejects_reviewer_topology_bypass tests/test_project_dag.py::test_project_dag_required_evidence_requires_exact_kind tests/test_project_dag.py::test_ready_queue_blocks_required_reviewer_optional_join_policy tests/test_project_dag.py::test_ready_queue_blocks_transitive_required_reviewer_optional_join_policy tests/test_project_dag.py::test_ready_queue_allows_required_reviewer_all_success_join_policy -q"
+      ],
+      "timeout_seconds": 120,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "10 passed"
+        ]
+      }
+    }
+  ]
+}

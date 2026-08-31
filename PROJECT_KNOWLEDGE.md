@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-08-30 12:05 by agent
+**Last updated:** 2026-08-31 12:32 by agent
 **Status:** Active development
 
 <!-- BEGIN AUTHORITATIVE STATUS LINK (#224) -->
@@ -14,6 +14,42 @@
 <!-- END AUTHORITATIVE STATUS LINK -->
 
 ## Current Understanding
+
+- 2026-08-31 reviewer-trust hardening: project DAG reviewer nodes now fail
+  contract validation unless `reviewer.reviews_node` names a declared creator
+  node, the reviewer node is reachable from the reviewed node, and every path
+  from the reviewed node to a terminal passes through the reviewer. Reviewer
+  nodes must declare `required_evidence` containing `reviewer_verdict`; reviewer
+  nodes cannot review another reviewer node. Runtime reviewer verdict evidence
+  now requires `schema: tau.reviewer_verdict.v1`, `kind: reviewer_verdict`,
+  `reviewed_node_id`, `reviewer_node_id`, `goal_hash`, and a valid `verdict`,
+  and non-`PASS` reviewer verdicts emit `reviewer_verdict_invalid` in the
+  handoff-loop path. `required_evidence` checks now match exact evidence `kind`
+  values rather than JSON substring text, and bounded-ready-queue scheduling
+  blocks required reviewer branches from entering non-`all_success` joins,
+  including transitive downstream joins. Local proof: `uv run ruff check
+  src/tau_coding/project_dag.py tests/test_project_dag.py
+  scripts/agentic-eval-tau-visual-review-evidence.py
+  scripts/agentic-eval-tau-reviewer-trust-boundaries.py` -> `All checks
+  passed!`; `uv run pytest --tau-suite=all tests/test_project_dag.py -q` ->
+  `108 passed`; `uv run pytest -q` -> `266 passed, 29 skipped, 3463
+  deselected`. Agentic-eval proof: `skills/agentic-evals/run.sh run
+  /home/graham/workspace/experiments/tau/evals/tau_reviewer_trust_boundaries_agentic_eval.json
+  --output
+  /home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries-agentic-evals-report.json`
+  -> `readiness: READY`, `PASS=2`, `trial_count=4`. WebGPT final review
+  receipt
+  `/home/graham/workspace/experiments/agent-skills/.ask_artifacts/tau-dag-runs/tau-reviewer-trust-hardening-final-webgpt-20260831T1220Z/node-artifacts/handler-webgpt/response.md`
+  returned `verdict: PASS` with `missing_evidence: []` for the bounded claim
+  that the final patch addresses the roundtable-identified reviewer-trust gaps.
+
+- 2026-08-31 Loop2 status note: memory recall for the current skip message
+  returned Loop2 alignment history, and local code scan still finds Loop2
+  compatibility modules, CLI feature records, and skipped tests. Treat the
+  current `Loop2 contracts are not available` skips as legacy compatibility
+  coverage rather than evidence for new reviewer-trust behavior; a separate
+  deprecation/removal decision should be ticketed if Tau no longer consumes
+  Loop2 compatibility artifacts.
 
 - 2026-07-29 immutable-goal acceptance readback generated for current main
   `58507c63c343f0a78ba500e55d8d5f8433691195`. The bundle at
@@ -6606,6 +6642,7 @@
 - 2026-08-29 post-commit milestone review: `$ask one-shot` against pushed commit `d520c61539ea1d3b2694cdc4b914ffe7f2457637` returned READY responses from `webgpt` and `claude-fable-low`; both characterized Tau as a real conditional proof-boundary milestone, not production/GOAL.md completion. Follow-up work was duplicate-pruned into GitHub issues #329 evidence-to-SHA index, #330 source-derived feature inventory, #331 canonical DAG ladder/rung-1 clean-checkout proof, #332 React Flow transition-to-ledger correlation, #333 compliance-officer ledger audit projection; provider-live provenance was merged into existing #304 and human adjudication/acceptance state into existing #305.
 - 2026-08-29 rung-1 ladder proof: Tau now has `docs/proofs/acceptance/canonical-dag-ladder-manifest.json`, naming the five packaged workflow rungs and their topology/acceptance boundaries. `evals/tau_dag_ladder_rung1_agentic_eval.json` plus retained report `local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json` prove `tau.dag_ladder.rung1_clean_checkout` with readiness READY, `live=true`, `mocked=false`: rung 1 `repository-readiness` runs from a separate clean clone, writes a `tau.repository_readiness_report.v1`, preserves the goal hash through node execution, verifies artifact digests by readback, and detects mutated/missing artifact references. Non-claims remain: rungs 2-5 clean-checkout completion, provider-live execution, dynamic React Flow progress, and human acceptance.
 - 2026-08-30 project-state refresh: PROJECT-STATE.md and docs/status/PROJECT_STATE.raw.json were generated with PROJECT_STATE_ROOT=/home/graham/workspace/experiments/tau PROJECT_STATE_NAME=tau skills/project-state/run.sh report. The report shows Tau is a generic-profile project with 3702 collected tests, 51 doc-drift items, 18 best-practice findings including 11 project-state-classified possible hardcoded-secret findings, and 2 gap-analysis items. Separate Brave searches on Tau/coding-agent status, agent audit trails, and terminal coding-agent benchmarks support prioritizing evidence-to-SHA binding (#329), source-derived inventory (#330), compliance/audit projection (#333), React Flow-to-ledger correlation (#332), and the existing provider-live/human-acceptance gates (#304/#305). New tickets filed from this status pass: #334 security triage for possible secrets and #335 project-knowledge stale-reference pruning; agent-skills#1551 tracks adding a one-command project-state current-state packet so this chain does not need to be typed manually.
+- 2026-08-31 reviewer-trust hardening: project DAG reviewer nodes now fail contract validation unless reviewer.reviews_node names a declared creator node and required_evidence includes reviewer_verdict. Runtime reviewer_verdict evidence now requires schema tau.reviewer_verdict.v1 plus reviewed_node_id and valid verdict, required_evidence matching uses exact evidence kind rather than JSON substring search, and bounded-ready-queue blocks required reviewer branches from entering non-all_success joins that could bypass reviewer failure. Local proof: uv run ruff check src/tau_coding/project_dag.py tests/test_project_dag.py; uv run pytest --tau-suite=all tests/test_project_dag.py -q; uv run pytest -q.
 
 ## Recent Decisions
 

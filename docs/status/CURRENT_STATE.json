@@ -1,4 +1,27 @@
 {
+  "agentic_eval_evidence_index": {
+    "artifact_count": 21,
+    "failure_codes": [
+      "artifact_digest_mismatch",
+      "artifact_reported_digest_mismatch",
+      "report_digest_mismatch",
+      "report_identity_mismatch",
+      "report_repo_sha_mismatch"
+    ],
+    "ok": false,
+    "present": true,
+    "report_count": 15,
+    "retained_reports_live_readback": {
+      "all_unmocked": true,
+      "count": 15,
+      "live": true,
+      "mocked": false,
+      "ready": true
+    },
+    "sha256": "sha256:f306e269ccafc0b36a728e82395faa531fa4668bb2bcd00afb7544a452eba2ad",
+    "source": "local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "status": "FAIL"
+  },
   "capabilities": {
     "all_present": true,
     "present": {
@@ -10,225 +33,44 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-08-30T14:07:51.182759+00:00",
+  "generated_at": "2026-08-31T12:39:14.362364+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "7c2ea87b4e274bd1870b1fee470496b9dd142844"
+    "commit": "9ed328fb3b682ee075a7e6eca266faa44c774f4b"
   },
   "github": {
-    "branch_protection": {
-      "enforce_admins": false,
-      "required_status_checks": false
-    },
-    "freshness": "FRESH",
-    "open_critical_issues": [
-      {
-        "number": 321,
-        "title": "Extend the Memory outbox to project accepted Tau turn/tool/orchestration episodes"
-      },
-      {
-        "number": 320,
-        "title": "Package a project-memory-dream DAG with bounded OpenCode synthesis"
-      },
-      {
-        "number": 319,
-        "title": "Add preview-first continual-harness refinement proposals with verification and rollback"
-      },
-      {
-        "number": 318,
-        "title": "Add tau.project_dream_receipt.v1 and project-memory promotion policy gates"
-      },
-      {
-        "number": 317,
-        "title": "Add an optional sandboxed persistent Python workspace for Tau-native agent nodes"
-      },
-      {
-        "number": 316,
-        "title": "Add model-facing child-agent requests compiled into bounded Tau child DAGs"
-      },
-      {
-        "number": 315,
-        "title": "Run Tau-native agent nodes through the adoptable Herdr runtime backend"
-      },
-      {
-        "number": 314,
-        "title": "Make Tau operator actions durable, idempotent, and applicable across process boundaries"
-      },
-      {
-        "number": 305,
-        "title": "Bind human acceptance attestation to the exact tested baseline digest"
-      },
-      {
-        "number": 304,
-        "title": "Add one-command provider-live acceptance proof for all five packaged workflows"
-      },
-      {
-        "number": 303,
-        "title": "Project status snapshot drifts from checked-in proof evidence"
-      }
-    ],
-    "recently_completed": [
-      {
-        "closedAt": "2026-08-13T14:52:59Z",
-        "number": 325,
-        "title": "Run ingest-code through Tau endpoint leases and accepted-effect reconciliation"
-      },
-      {
-        "closedAt": "2026-08-13T15:20:43Z",
-        "number": 324,
-        "title": "Python workspace: add generation-bound typed host calls with Tau receipts"
-      },
-      {
-        "closedAt": "2026-08-13T15:10:50Z",
-        "number": 323,
-        "title": "Python workspace: add an attempt-scoped serialized kernel worker and execution receipts"
-      },
-      {
-        "closedAt": "2026-08-06T13:03:55Z",
-        "number": 313,
-        "title": "Persist Tau-native agent turn/tool events in the canonical DAG journal with resumable cursors"
-      },
-      {
-        "closedAt": "2026-08-06T01:11:32Z",
-        "number": 312,
-        "title": "Expose the live React Flow DAG viewer for programmatic scheduler runs from run start"
-      },
-      {
-        "closedAt": "2026-08-05T18:52:59Z",
-        "number": 311,
-        "title": "Expose source-grounding and response_format options on the model-turn transport"
-      },
-      {
-        "closedAt": "2026-08-05T14:16:45Z",
-        "number": 310,
-        "title": "Make Tau the default provider-neutral agent harness for /ask model and subagent calls"
-      },
-      {
-        "closedAt": "2026-08-05T14:09:41Z",
-        "number": 309,
-        "title": "Expose Tau-agent run projections and operator-action contracts for Herdr"
-      },
-      {
-        "closedAt": "2026-08-05T14:09:36Z",
-        "number": 308,
-        "title": "Add role/capability requirements and deterministic SciLLM transport-profile selection receipts"
-      },
-      {
-        "closedAt": "2026-08-06T12:51:43Z",
-        "number": 307,
-        "title": "Emit a stable read-only worker lifecycle projection for Herdr and other supervisors"
-      },
-      {
-        "closedAt": "2026-08-06T12:51:24Z",
-        "number": 306,
-        "title": "Add role/capability worker requirements and deterministic SciLLM profile-selection receipts to Tau DAGs"
-      },
-      {
-        "closedAt": "2026-08-02T20:13:29Z",
-        "number": 298,
-        "title": "P2: add an adversarial contract-mutation conformance gate for Tau DAG authority"
-      },
-      {
-        "closedAt": "2026-08-02T19:53:59Z",
-        "number": 297,
-        "title": "P1: make validated Tau contract and DAG domain objects deeply immutable"
-      },
-      {
-        "closedAt": "2026-08-02T19:31:35Z",
-        "number": 296,
-        "title": "P1: remove coercive parsing from public project and generic DAG contracts"
-      },
-      {
-        "closedAt": "2026-08-02T18:46:43Z",
-        "number": 295,
-        "title": "P1: verify full artifact-reference provenance at dereference time"
-      },
-      {
-        "closedAt": "2026-08-02T18:24:25Z",
-        "number": 294,
-        "title": "P1: fail closed on malformed DAG transition batches and replay effects"
-      },
-      {
-        "closedAt": "2026-08-02T17:42:15Z",
-        "number": 293,
-        "title": "P1: validate a strict typed DAG attempt result before staging or settlement"
-      },
-      {
-        "closedAt": "2026-08-02T16:40:03Z",
-        "number": 292,
-        "title": "P0: bind each DAG context input to its exact controlling edge and computed hash"
-      },
-      {
-        "closedAt": "2026-08-02T15:52:50Z",
-        "number": 291,
-        "title": "P0: validate canonical DagPlan before scheduler, store, or replay admission"
-      },
-      {
-        "closedAt": "2026-08-02T20:33:10Z",
-        "number": 288,
-        "title": "Define `tau.voice_render_request.v2` with response lineage and delivery-decision receipts"
-      },
-      {
-        "closedAt": "2026-07-31T05:17:37Z",
-        "number": 277,
-        "title": "Add a read-only selected-node evidence inspector for inputs, boundaries, reviews, workers, and stale-read state"
-      },
-      {
-        "closedAt": "2026-07-31T04:45:57Z",
-        "number": 276,
-        "title": "Convert admitted evidence gaps into bounded DAG expansion proposals without broadening the immutable goal"
-      },
-      {
-        "closedAt": "2026-07-31T04:00:15Z",
-        "number": 275,
-        "title": "Add explicit interactive, standard, and assurance execution profiles over the canonical scheduler"
-      },
-      {
-        "closedAt": "2026-07-31T03:01:13Z",
-        "number": 274,
-        "title": "Reuse capability-compatible SciLLM worker sessions with reset, health, and cleanup proof"
-      },
-      {
-        "closedAt": "2026-07-31T02:10:43Z",
-        "number": 273,
-        "title": "Add deterministic worker capability matching and assignment receipts on top of resource leases"
-      },
-      {
-        "closedAt": "2026-07-31T01:32:59Z",
-        "number": 272,
-        "title": "Detect and reconcile stale file reads across concurrent coding DAG nodes"
-      },
-      {
-        "closedAt": "2026-07-31T00:49:01Z",
-        "number": 271,
-        "title": "Add hash-addressed by-reference artifact inputs for DAG context bindings"
-      },
-      {
-        "closedAt": "2026-07-31T00:11:42Z",
-        "number": 270,
-        "title": "Enforce typed DAG context projections and persist a replayable node input manifest"
-      },
-      {
-        "closedAt": "2026-07-30T23:23:21Z",
-        "number": 269,
-        "title": "Add a typed node completion boundary for checked scope, omissions, assumptions, and evidence gaps"
-      },
-      {
-        "closedAt": "2026-07-30T22:45:16Z",
-        "number": 268,
-        "title": "Bind reviewer findings to the exact DAG plan, attempts, and artifact hashes reviewed"
-      }
-    ],
-    "required_checks": [],
-    "snapshot_sha256": "sha256:34db1d1728f9bea9a879b648568effb6a0b4121c1d96c1eb2ea677b1ef0191d0"
+    "branch_protection": "UNKNOWN",
+    "freshness": "STALE",
+    "note": "No GitHub snapshot supplied; offline/installed build. Live refresh is an explicit maintainer action.",
+    "open_critical_issues": "UNKNOWN",
+    "recently_completed": "UNKNOWN",
+    "required_checks": "UNKNOWN"
   },
   "human_acceptance": {
+    "attestation_present": false,
+    "attestation_sha256": null,
+    "attestation_source": "docs/proofs/acceptance/human-acceptance-attestation.json",
     "baseline_present": true,
     "sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
     "signature_present": false,
     "source": "docs/proofs/acceptance/rungs-evidence-receipt.json",
-    "state": "PENDING_HUMAN_SIGNATURE"
+    "state": "PENDING_HUMAN_SIGNATURE",
+    "verification": {
+      "attestation_path": "docs/proofs/acceptance/human-acceptance-attestation.json",
+      "attestation_present": false,
+      "attestation_sha256": null,
+      "baseline_receipt_path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+      "baseline_receipt_sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+      "failure_codes": [
+        "human_acceptance_attestation_missing"
+      ],
+      "ok": false,
+      "schema": "tau.human_acceptance_attestation_verification.v1",
+      "source_commit": "9ed328fb3b682ee075a7e6eca266faa44c774f4b",
+      "state": "PENDING_HUMAN_SIGNATURE",
+      "status": "PENDING_HUMAN_SIGNATURE"
+    }
   },
   "immutable_goal": {
     "sha256": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
@@ -247,21 +89,21 @@
       "package version/description from pyproject.toml",
       "immutable-goal status from GOAL.md",
       "checked-in closure-evidence proof index digest",
-      "clean-wheel acceptance baseline presence and signature presence",
-      "GitHub branch-protection, required checks, and open/closed critical issues"
+      "checked-in retained agentic-eval evidence index digest and verifier status",
+      "clean-wheel acceptance baseline presence and verified signature binding"
     ],
-    "live": true,
+    "live": false,
     "mocked": false,
     "not_checked": [
-      "human acceptance signature validity (distinct from presence)",
       "provider semantic correctness",
-      "runtime settlement authority (this artifact has none)"
+      "runtime settlement authority (this artifact has none)",
+      "GitHub CI/issue/protection state (no snapshot; reported STALE/UNKNOWN)"
     ],
     "provider_live": false
   },
   "proof_index": {
-    "count": 31,
-    "digest": "sha256:d2bfbc213dfc3283e6cd5ba67a2dd2ceafe1a5851ca37936cd9a1a0c50579541",
+    "count": 44,
+    "digest": "sha256:90065684beb89c923165411a50008727f7dfb26153b24da8ef0a4c91b0d59d89",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -360,12 +202,64 @@
         "sha256": "sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd"
       },
       {
+        "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/closure-evidence.json",
+        "sha256": "sha256:397ce58b75aa4de88c26aad5da32bd41f59bb6c5856136bbeec51dd44d0fe418"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-305-acceptance-attestation-20260830T192020Z/closure-evidence.json",
+        "sha256": "sha256:555677a199483bb84c7a6ab11b5240d7c873df6555bb900fc5cc249d1611edbe"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json",
+        "sha256": "sha256:508ffdd16fb4cce96306c44d50bbb2c54059125f8189750c1558971b902409c8"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-315-herdr-runtime-agent-nodes-20260830T204841Z/closure-evidence.json",
+        "sha256": "sha256:c09692c4506975d60e99df7defb3b5f0ec978b870eb85c78dc92bbd201e70818"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json",
+        "sha256": "sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json",
+        "sha256": "sha256:61c40efc5300d2c63af4672ff7d34c2b68d8d77a16a9a921f02c0804be83b48c"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/closure-evidence.json",
+        "sha256": "sha256:58f69633bdbb00806cbd2948a0c5e3e4ebacb8222b823be6f1e391255d246808"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json",
+        "sha256": "sha256:147d8e70bcc37a9486fe8ec68dccd00cf5b95b3e0d1b3fef9096546b1fcc57c1"
+      },
+      {
         "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
         "sha256": "sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639"
       },
       {
+        "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/closure-evidence.json",
+        "sha256": "sha256:f3c8e5e2c998c8ca4ccdc7ee370e72e86aece1a6910fbe036e77483c211eeeda"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-333-ledger-audit-projection-20260830T164658Z/closure-evidence.json",
+        "sha256": "sha256:9e714105c31141379679d6befe8c4d0ba19b640564b2a9f324194ddeba3467af"
+      },
+      {
         "path": "docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/closure-evidence.json",
-        "sha256": "sha256:050c2f5a52b98547ac37a24f5c99ef83c099f43c32a3f6aec51203568894800e"
+        "sha256": "sha256:ce7a4548d1ceee596e8bca8b32f2ef325bc611be8c18d2b751683b4c48278dfb"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/closure-evidence.json",
+        "sha256": "sha256:3948762a00ad14c133a0a4cf1991519f132716ddf5f92402907e8857815e0534"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-336-visual-review-evidence-20260831T105945Z/closure-evidence.json",
+        "sha256": "sha256:006cd9fe89063e274b4b551ffb7cca4ecde3e86f1bcd2005356ab7273d393e62"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-336-visual-review-receipt-enforcement-20260831T111946Z/closure-evidence.json",
+        "sha256": "sha256:24c93263c5cc8fbb7cf4c95bab194dc24831e21c5cf2d3f8730b2b52bf6d51c6"
       },
       {
         "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
@@ -390,12 +284,13 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:7ee8b14bacd2aa6f8a4e4a8065535b992e3ee745ab96f9d74a38b6536b04cd46",
+  "semantic_content_digest": "sha256:08a53b1834bd04cfc8efe44f83f3e6b15ac4f41808b69adf44a0ab01bb0352fc",
   "source_digests": {
     "GOAL.md": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "github_snapshot": "sha256:34db1d1728f9bea9a879b648568effb6a0b4121c1d96c1eb2ea677b1ef0191d0",
-    "proof_index": "sha256:d2bfbc213dfc3283e6cd5ba67a2dd2ceafe1a5851ca37936cd9a1a0c50579541",
+    "agentic_eval_evidence_index": "sha256:f306e269ccafc0b36a728e82395faa531fa4668bb2bcd00afb7544a452eba2ad",
+    "human_acceptance_attestation": null,
+    "proof_index": "sha256:90065684beb89c923165411a50008727f7dfb26153b24da8ef0a4c91b0d59d89",
     "pyproject.toml": "sha256:0129dd918978c3760bd29ca736f5f6e01e5402d2dfa840a7df5538fd11fe854f"
   },
   "workflows": {

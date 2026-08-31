@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "/home/graham/workspace/experiments/tau/evals/tau_reviewer_trust_boundaries_agentic_eval.json",
+  "run_id": "e6ca64753ae7",
+  "fixture_sha256": "sha256:7982a6c021cb3a03251e97e843406b98c007569bfab1191d9110022db4b1c6e5",
+  "repo": {
+    "sha": "9ed328fb3b682ee075a7e6eca266faa44c774f4b",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Reviewer trust boundaries for Tau project DAGs",
+  "claims": {
+    "proves": "Tau rejects a reviewer_verdict missing tau.reviewer_verdict.v1 schema, rejects reviewer verdicts without reviewer_node_id, blocks reviewer FAIL verdicts, rejects reviewer nodes without reviewer.reviews_node, rejects reviewed-node paths that bypass the reviewer, treats required_evidence as exact evidence kinds instead of JSON substrings, blocks required reviewer branches entering direct or transitive any_success joins, and allows required reviewer branches through all_success joins.",
+    "does_not_prove": "Provider semantic quality, human acceptance, every non-reviewer evidence class, React Flow rendering, or GOAL.md completion."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.reviewer_trust_boundaries",
+        "description": "Tau project DAGs reject malformed reviewer verdict evidence, require reviewer declarations to bind and dominate the reviewed creator node, match required_evidence by exact evidence kind, block reviewer FAIL verdicts, and block required reviewer branches from direct or transitive permissive join bypass.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "reviewer-trust-boundary-regression-tests"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "reviewer-trust-boundary-proof-script"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "reviewer-trust-boundary-proof-script",
+          "reviewer-trust-boundary-regression-tests"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-31T12:17:45.683991+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "reviewer-trust-boundary-proof-script",
+      "type": "adversarial",
+      "case_id": "e6ca64753ae7-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-reviewer-trust-boundaries/work && uv run python scripts/agentic-eval-tau-reviewer-trust-boundaries.py --work local/agentic-evals/tau-reviewer-trust-boundaries/work --out local/agentic-evals/tau-reviewer-trust-boundaries-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.reviewer_trust_boundaries"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1415.389,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"all_success_positive\": {\n    \"alerts\": [],\n    \"ok\": true,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-all-success-join/run/dag-receipt.json\",\n    \"status\": \"PASS\",\n    \"verdict\": \"PASS\"\n  },\n  \"contract_negative\": {\n    \"error\": \"nodes[reviewer].reviewer.reviews_node must name a declared creator node\",\n    \"failure_code\": \"reviewer_contract_invalid\",\n    \"status\": \"BLOCKED\"\n  },\n  \"errors\": [],\n  \"exact_evidence_negative\": {\n    \"missing\": [\n      \"creator_artifact\"\n    ],\n    \"status\": \"PASS\"\n  },\n  \"join_bypass_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"command_executed\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-optional-join/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"live\": true,\n  \"missing_reviewer_node_id_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/missing-reviewer-node-id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\"\n  },\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Provider semantic quality, human acceptance, every non-reviewer evidence kind, or GOAL.md completion.\",\n    \"proves\": \"Tau rejects malformed project-DAG reviewer verdict evidence, rejects reviewer FAIL verdicts, requires reviewer declarations to bind a reviewed node, matches required evidence by exact kind, and refuses direct or transitive permissive joins that make required reviewer branches optional.\"\n  },\n  \"provider_live\": false,\n  \"reviewer_fail_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"FAIL\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-fail-verdict/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"schema\": \"tau.reviewer_trust_boundaries_proof.v1\",\n  \"schema_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/missing-reviewer-verdict-schema/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\"\n  },\n  \"status\": \"PASS\",\n  \"topology_bypass_negative\": {\n    \"error\": \"nodes[reviewer].reviewer can be bypassed on paths from creator to terminals: human\",\n    \"failure_code\": \"reviewer_topology_bypass\",\n    \"status\": \"BLOCKED\"\n  },\n  \"transitive_join_bypass_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"command_executed\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-transitive-optional-join/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  }\n}\n",
+          "stderr": "",
+          "duration_ms": 1406.939,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e6ca64753ae7-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json": "sha256:e0036b67df2bac42740d9b17762a859f5fc57169525a14975bf8e17605edf4d4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"all_success_positive\": {\n    \"alerts\": [],\n    \"ok\": true,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-all-success-join/run/dag-receipt.json\",\n    \"status\": \"PASS\",\n    \"verdict\": \"PASS\"\n  },\n  \"contract_negative\": {\n    \"error\": \"nodes[reviewer].reviewer.reviews_node must name a declared creator node\",\n    \"failure_code\": \"reviewer_contract_invalid\",\n    \"status\": \"BLOCKED\"\n  },\n  \"errors\": [],\n  \"exact_evidence_negative\": {\n    \"missing\": [\n      \"creator_artifact\"\n    ],\n    \"status\": \"PASS\"\n  },\n  \"join_bypass_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"command_executed\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-optional-join/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  },\n  \"live\": true,\n  \"missing_reviewer_node_id_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"reviewer_node_id\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/missing-reviewer-node-id/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\"\n  },\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Provider semantic quality, human acceptance, every non-reviewer evidence kind, or GOAL.md completion.\",\n    \"proves\": \"Tau rejects malformed project-DAG reviewer verdict evidence, rejects reviewer FAIL verdicts, requires reviewer declarations to bind a reviewed node, matches required evidence by exact kind, and refuses direct or transitive permissive joins that make required reviewer branches optional.\"\n  },\n  \"provider_live\": false,\n  \"reviewer_fail_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"verdict\": \"FAIL\"\n        },\n        \"message\": \"Reviewer verdict did not pass.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-fail-verdict/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REVIEWER_VERDICT_INVALID\"\n  },\n  \"schema\": \"tau.reviewer_trust_boundaries_proof.v1\",\n  \"schema_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_verdict_schema_invalid\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"problems\": [\n            \"schema\"\n          ]\n        },\n        \"message\": \"Reviewer verdict did not satisfy tau.reviewer_verdict.v1.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"failure_code\": \"reviewer_verdict_schema_invalid\",\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/missing-reviewer-verdict-schema/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\"\n  },\n  \"status\": \"PASS\",\n  \"topology_bypass_negative\": {\n    \"error\": \"nodes[reviewer].reviewer can be bypassed on paths from creator to terminals: human\",\n    \"failure_code\": \"reviewer_topology_bypass\",\n    \"status\": \"BLOCKED\"\n  },\n  \"transitive_join_bypass_negative\": {\n    \"alerts\": [\n      {\n        \"code\": \"required_reviewer_join_policy_bypass\",\n        \"evidence\": {\n          \"join_node_id\": \"join\",\n          \"join_policy\": {\n            \"policy\": \"any_success\",\n            \"schema\": \"tau.dag_join_policy.v1\",\n            \"timeout_seconds\": 5\n          },\n          \"reviewer_node_id\": \"reviewer\"\n        },\n        \"message\": \"A required reviewer branch may only enter an all_success join.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"command_executed\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-reviewer-trust-boundaries/work/reviewer-transitive-optional-join/run/dag-receipt.json\",\n    \"status\": \"BLOCKED\",\n    \"verdict\": \"REQUIRED_REVIEWER_JOIN_POLICY_BYPASS\"\n  }\n}\n",
+          "stderr": "",
+          "duration_ms": 1423.839,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e6ca64753ae7-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-reviewer-trust-boundaries-proof.json": "sha256:e0036b67df2bac42740d9b17762a859f5fc57169525a14975bf8e17605edf4d4"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "reviewer-trust-boundary-regression-tests",
+      "type": "adversarial",
+      "case_id": "e6ca64753ae7-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_reviewer_verdict_without_schema tests/test_project_dag.py::test_project_dag_blocks_reviewer_verdict_without_reviewer_node_id tests/test_project_dag.py::test_project_dag_blocks_reviewer_fail_verdict_on_handoff_loop tests/test_project_dag.py::test_project_dag_requires_reviewer_to_bind_reviewed_node tests/test_project_dag.py::test_project_dag_rejects_reviewer_that_reviews_reviewer_node tests/test_project_dag.py::test_project_dag_rejects_reviewer_topology_bypass tests/test_project_dag.py::test_project_dag_required_evidence_requires_exact_kind tests/test_project_dag.py::test_ready_queue_blocks_required_reviewer_optional_join_policy tests/test_project_dag.py::test_ready_queue_blocks_transitive_required_reviewer_optional_join_policy tests/test_project_dag.py::test_ready_queue_allows_required_reviewer_all_success_join_policy -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.reviewer_trust_boundaries"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2093.137,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..........                                                               [100%]\n10 passed in 1.48s\n",
+          "stderr": "",
+          "duration_ms": 2099.165,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e6ca64753ae7-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..........                                                               [100%]\n10 passed in 1.47s\n",
+          "stderr": "",
+          "duration_ms": 2087.108,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "e6ca64753ae7-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

@@ -90,6 +90,8 @@
         "kind": "reviewer_verdict",
         "represents_goal": true,
         "reviewed_node_id": "creator",
+        "reviewer_node_id": "reviewer",
+        "schema": "tau.reviewer_verdict.v1",
         "verdict": "PASS"
       }
     ]
@@ -120,6 +122,8 @@
         "mocked": false,
         "represents_goal": true,
         "reviewed_node_id": "creator",
+        "reviewer_node_id": "reviewer",
+        "schema": "tau.reviewer_verdict.v1",
         "screenshot": {
           "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/positive/rendered-screenshot.png",
           "sha256": "sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0"
@@ -219,6 +223,8 @@
         "mocked": false,
         "represents_goal": true,
         "reviewed_node_id": "creator",
+        "reviewer_node_id": "reviewer",
+        "schema": "tau.reviewer_verdict.v1",
         "screenshot": {
           "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/positive/rendered-screenshot.png",
           "sha256": "sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0"
