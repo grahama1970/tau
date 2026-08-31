@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_visual_review_evidence_agentic_eval.json",
+  "run_id": "4fe2d5688a64",
+  "fixture_sha256": "sha256:03050acdd6261dff4e3dbd6bb393a16b31ed64ffb51da9c262b47abff515d1fb",
+  "repo": {
+    "sha": "f935b3dcff52ce90087fccb32cb436c845f62431",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Visual reviewer evidence gate for Tau creator-reviewer DAGs",
+  "claims": {
+    "proves": "Tau blocks fake visual reviewer PASS receipts that claim represents_goal/attractive without screenshot-bound evidence, and accepts the equivalent reviewer verdict when the screenshot path, sha256, mocked, and live fields are present and readable.",
+    "does_not_prove": "Human aesthetic acceptance, provider semantic quality, React Flow rendering, or GOAL.md completion."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.visual_reviewer_evidence_gate",
+        "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable screenshot path, exact sha256, and mocked/live proof boundary.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "visual-reviewer-hash-boundary-regression-tests"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "visual-reviewer-fake-pass-blocked-and-screenshot-bound-pass-accepted"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "visual-reviewer-fake-pass-blocked-and-screenshot-bound-pass-accepted",
+          "visual-reviewer-hash-boundary-regression-tests"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-31T10:53:56.029190+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual-reviewer-fake-pass-blocked-and-screenshot-bound-pass-accepted",
+      "type": "adversarial",
+      "case_id": "4fe2d5688a64-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-visual-review-evidence/work && uv run python scripts/agentic-eval-tau-visual-review-evidence.py --work local/agentic-evals/tau-visual-review-evidence/work --out local/agentic-evals/tau-visual-review-evidence-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.visual_reviewer_evidence_gate"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 956.903,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"errors\": [],\n  \"fake_visual_reviewer\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"required\": [\n            \"screenshot.path\",\n            \"screenshot.sha256\"\n          ]\n        },\n        \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"contract_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/issue-336-fake-visual-reviewer.json\",\n    \"dag_error\": {\n      \"active_goal_hash\": \"sha256:issue-336-goal\",\n      \"active_goal_version\": 1,\n      \"attempts\": 1,\n      \"dag_id\": \"issue-336-fake-visual-reviewer\",\n      \"evidence\": {\n        \"alert_codes\": [\n          \"reviewer_visual_evidence_missing\"\n        ],\n        \"alert_count\": 1,\n        \"errors\": [],\n        \"primary_alert\": {\n          \"code\": \"reviewer_visual_evidence_missing\",\n          \"evidence\": {\n            \"node_id\": \"reviewer\",\n            \"required\": [\n              \"screenshot.path\",\n              \"screenshot.sha256\"\n            ]\n          },\n          \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n          \"severity\": \"BLOCK\"\n        }\n      },\n      \"failed_agent\": \"reviewer\",\n      \"failed_node\": \"reviewer\",\n      \"failure_code\": \"reviewer_visual_evidence_missing\",\n      \"goal_identity\": {\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"goal_id\": \"issue-336-visual-review-evidence\",\n        \"goal_version\": 1\n      },\n      \"max_attempts\": 1,\n      \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n      \"proof_scope\": {\n        \"does_not_prove\": [\n          \"The recommended action has been executed.\",\n          \"The project agent accepted or applied the course correction.\",\n          \"Provider/model semantic quality.\"\n        ],\n        \"proves\": [\n          \"Tau detected a blocked DAG execution.\",\n          \"Tau packaged the primary failure as a project-agent course-correction payload.\",\n          \"No DAG route, goal, target, or handoff was mutated by this error contract.\"\n        ]\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json\",\n      \"recommended_action\": {\n        \"next_agent\": \"human\",\n        \"reason\": \"Unhandled DAG failure requires human or orchestrator review.\",\n        \"type\": \"wait_for_human\"\n      },\n      \"run_dir\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run\",\n      \"scheduler\": \"handoff-loop\",\n      \"schema\": \"tau.dag_error.v1\",\n      \"severity\": \"BLOCK\",\n      \"status\": \"BLOCKED\",\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"issue-336\"\n      },\n      \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_MISSING\"\n    },\n    \"name\": \"fake-visual-reviewer\",\n    \"receipt_ok\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json\",\n    \"receipt_status\": \"BLOCKED\",\n    \"reviewer_verdicts\": [\n      {\n        \"attractive\": true,\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"kind\": \"reviewer_verdict\",\n        \"represents_goal\": true,\n        \"reviewed_node_id\": \"creator\",\n        \"verdict\": \"PASS\"\n      }\n    ]\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Human aesthetic acceptance, browser rendering quality, provider semantic quality, or GOAL.md completion.\",\n    \"proves\": \"Tau blocks visual-quality reviewer PASS claims unless the reviewer verdict carries readable screenshot evidence with an exact sha256 and mocked/live boundaries.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.visual_reviewer_evidence_proof.v1\",\n  \"screenshot_bound_reviewer\": {\n    \"alerts\": [],\n    \"contract_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/issue-336-screenshot-bound-reviewer.json\",\n    \"dag_error\": null,\n    \"name\": \"screenshot-bound-reviewer\",\n    \"receipt_ok\": true,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/run/dag-receipt.json\",\n    \"receipt_status\": \"PASS\",\n    \"reviewer_verdicts\": [\n      {\n        \"attractive\": true,\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"kind\": \"reviewer_verdict\",\n        \"live\": true,\n        \"mocked\": false,\n        \"represents_goal\": true,\n        \"reviewed_node_id\": \"creator\",\n        \"screenshot\": {\n          \"path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/positive/rendered-screenshot.png\",\n          \"sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"verdict\": \"PASS\"\n      }\n    ]\n  },\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 953.262,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4fe2d5688a64-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-visual-review-evidence-proof.json": "sha256:92672f1e78cac9ab8339d301a91aef9a7257e2e5082f3f6332ce1ca3281482a3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"errors\": [],\n  \"fake_visual_reviewer\": {\n    \"alerts\": [\n      {\n        \"code\": \"reviewer_visual_evidence_missing\",\n        \"evidence\": {\n          \"node_id\": \"reviewer\",\n          \"required\": [\n            \"screenshot.path\",\n            \"screenshot.sha256\"\n          ]\n        },\n        \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n        \"severity\": \"BLOCK\"\n      }\n    ],\n    \"contract_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/issue-336-fake-visual-reviewer.json\",\n    \"dag_error\": {\n      \"active_goal_hash\": \"sha256:issue-336-goal\",\n      \"active_goal_version\": 1,\n      \"attempts\": 1,\n      \"dag_id\": \"issue-336-fake-visual-reviewer\",\n      \"evidence\": {\n        \"alert_codes\": [\n          \"reviewer_visual_evidence_missing\"\n        ],\n        \"alert_count\": 1,\n        \"errors\": [],\n        \"primary_alert\": {\n          \"code\": \"reviewer_visual_evidence_missing\",\n          \"evidence\": {\n            \"node_id\": \"reviewer\",\n            \"required\": [\n              \"screenshot.path\",\n              \"screenshot.sha256\"\n            ]\n          },\n          \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n          \"severity\": \"BLOCK\"\n        }\n      },\n      \"failed_agent\": \"reviewer\",\n      \"failed_node\": \"reviewer\",\n      \"failure_code\": \"reviewer_visual_evidence_missing\",\n      \"goal_identity\": {\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"goal_id\": \"issue-336-visual-review-evidence\",\n        \"goal_version\": 1\n      },\n      \"max_attempts\": 1,\n      \"message\": \"Reviewer verdict made a visual-quality claim without screenshot-bound evidence.\",\n      \"proof_scope\": {\n        \"does_not_prove\": [\n          \"The recommended action has been executed.\",\n          \"The project agent accepted or applied the course correction.\",\n          \"Provider/model semantic quality.\"\n        ],\n        \"proves\": [\n          \"Tau detected a blocked DAG execution.\",\n          \"Tau packaged the primary failure as a project-agent course-correction payload.\",\n          \"No DAG route, goal, target, or handoff was mutated by this error contract.\"\n        ]\n      },\n      \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json\",\n      \"recommended_action\": {\n        \"next_agent\": \"human\",\n        \"reason\": \"Unhandled DAG failure requires human or orchestrator review.\",\n        \"type\": \"wait_for_human\"\n      },\n      \"run_dir\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run\",\n      \"scheduler\": \"handoff-loop\",\n      \"schema\": \"tau.dag_error.v1\",\n      \"severity\": \"BLOCK\",\n      \"status\": \"BLOCKED\",\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"issue-336\"\n      },\n      \"verdict\": \"REVIEWER_VISUAL_EVIDENCE_MISSING\"\n    },\n    \"name\": \"fake-visual-reviewer\",\n    \"receipt_ok\": false,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json\",\n    \"receipt_status\": \"BLOCKED\",\n    \"reviewer_verdicts\": [\n      {\n        \"attractive\": true,\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"kind\": \"reviewer_verdict\",\n        \"represents_goal\": true,\n        \"reviewed_node_id\": \"creator\",\n        \"verdict\": \"PASS\"\n      }\n    ]\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Human aesthetic acceptance, browser rendering quality, provider semantic quality, or GOAL.md completion.\",\n    \"proves\": \"Tau blocks visual-quality reviewer PASS claims unless the reviewer verdict carries readable screenshot evidence with an exact sha256 and mocked/live boundaries.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.visual_reviewer_evidence_proof.v1\",\n  \"screenshot_bound_reviewer\": {\n    \"alerts\": [],\n    \"contract_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/issue-336-screenshot-bound-reviewer.json\",\n    \"dag_error\": null,\n    \"name\": \"screenshot-bound-reviewer\",\n    \"receipt_ok\": true,\n    \"receipt_path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/run/dag-receipt.json\",\n    \"receipt_status\": \"PASS\",\n    \"reviewer_verdicts\": [\n      {\n        \"attractive\": true,\n        \"goal_hash\": \"sha256:issue-336-goal\",\n        \"kind\": \"reviewer_verdict\",\n        \"live\": true,\n        \"mocked\": false,\n        \"represents_goal\": true,\n        \"reviewed_node_id\": \"creator\",\n        \"screenshot\": {\n          \"path\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/positive/rendered-screenshot.png\",\n          \"sha256\": \"sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0\"\n        },\n        \"verdict\": \"PASS\"\n      }\n    ]\n  },\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 960.545,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4fe2d5688a64-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-visual-review-evidence-proof.json": "sha256:92672f1e78cac9ab8339d301a91aef9a7257e2e5082f3f6332ce1ca3281482a3"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "visual-reviewer-hash-boundary-regression-tests",
+      "type": "adversarial",
+      "case_id": "4fe2d5688a64-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all tests/test_project_dag.py::test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence tests/test_project_dag.py::test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot -q"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.visual_reviewer_evidence_gate"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1409.141,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.89s\n",
+          "stderr": "",
+          "duration_ms": 1429.532,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4fe2d5688a64-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n2 passed in 0.88s\n",
+          "stderr": "",
+          "duration_ms": 1388.751,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4fe2d5688a64-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

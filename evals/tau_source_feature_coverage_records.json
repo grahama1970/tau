@@ -1512,6 +1512,11 @@
       "status": "CLAIMED"
     },
     {
+      "claim_id": "tau.visual_reviewer_evidence_gate",
+      "feature_id": "evaluator-script:agentic-eval-tau-visual-review-evidence",
+      "status": "CLAIMED"
+    },
+    {
       "claim_id": "tau.ledger_trace.default",
       "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
       "status": "CLAIMED"

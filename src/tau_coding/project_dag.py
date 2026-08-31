@@ -160,6 +160,26 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.path_backed_receipt_evidence",
     },
+    "reviewer_visual_evidence_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "reviewer_visual_evidence_unreadable": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "reviewer_visual_evidence_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "reviewer_visual_evidence_not_png": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
+    "reviewer_visual_boundary_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_visual_evidence",
+    },
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.downstream_skill_blocker",
@@ -2643,7 +2663,136 @@ def _reviewer_alerts(
                     },
                 )
             )
+        alerts.extend(_reviewer_visual_evidence_alerts(node, verdict))
     return alerts
+
+
+def _reviewer_visual_evidence_alerts(
+    node: ProjectDagNode,
+    verdict: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if not _reviewer_verdict_makes_visual_claim(verdict):
+        return []
+    alerts: list[dict[str, Any]] = []
+    screenshot = _reviewer_visual_screenshot_ref(verdict)
+    if screenshot is None:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_missing",
+                "Reviewer verdict made a visual-quality claim without screenshot-bound evidence.",
+                {"node_id": node.node_id, "required": ["screenshot.path", "screenshot.sha256"]},
+            )
+        )
+        return alerts
+    path_value = screenshot.get("path")
+    sha256_value = screenshot.get("sha256")
+    if not isinstance(path_value, str) or not path_value:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_missing",
+                "Reviewer visual evidence omitted screenshot.path.",
+                {"node_id": node.node_id},
+            )
+        )
+        return alerts
+    if not isinstance(sha256_value, str) or not sha256_value.startswith("sha256:"):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_missing",
+                "Reviewer visual evidence omitted sha256-prefixed screenshot.sha256.",
+                {"node_id": node.node_id, "path": path_value},
+            )
+        )
+        return alerts
+    screenshot_path = Path(path_value).expanduser()
+    try:
+        actual_bytes = screenshot_path.read_bytes()
+    except OSError as exc:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_unreadable",
+                "Reviewer screenshot evidence could not be read from disk.",
+                {"node_id": node.node_id, "path": str(screenshot_path), "error": str(exc)},
+            )
+        )
+        return alerts
+    if not actual_bytes:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_unreadable",
+                "Reviewer screenshot evidence was empty.",
+                {"node_id": node.node_id, "path": str(screenshot_path)},
+            )
+        )
+        return alerts
+    if not actual_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_not_png",
+                "Reviewer screenshot evidence was not a PNG screenshot artifact.",
+                {"node_id": node.node_id, "path": str(screenshot_path)},
+            )
+        )
+        return alerts
+    actual_sha256 = f"sha256:{hashlib.sha256(actual_bytes).hexdigest()}"
+    if actual_sha256 != sha256_value:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_evidence_hash_mismatch",
+                "Reviewer screenshot evidence hash did not match the bytes on disk.",
+                {
+                    "node_id": node.node_id,
+                    "path": str(screenshot_path),
+                    "expected_sha256": sha256_value,
+                    "actual_sha256": actual_sha256,
+                },
+            )
+        )
+    if not _reviewer_visual_boundary_declared(verdict, screenshot):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "reviewer_visual_boundary_missing",
+                "Reviewer visual evidence did not declare mocked/live proof boundaries.",
+                {"node_id": node.node_id, "path": str(screenshot_path)},
+            )
+        )
+    return alerts
+
+
+def _reviewer_verdict_makes_visual_claim(verdict: dict[str, Any]) -> bool:
+    if "attractive" in verdict:
+        return True
+    visual_markers = ("visual", "screenshot", "rendered")
+    return any(any(marker in str(key) for marker in visual_markers) for key in verdict)
+
+
+def _reviewer_visual_screenshot_ref(verdict: dict[str, Any]) -> dict[str, Any] | None:
+    for key in ("screenshot", "rendered_screenshot", "reviewed_screenshot", "visual_screenshot"):
+        value = verdict.get(key)
+        if isinstance(value, dict):
+            return value
+    path = verdict.get("screenshot_path") or verdict.get("rendered_screenshot_path")
+    sha256 = verdict.get("screenshot_sha256") or verdict.get("rendered_screenshot_sha256")
+    if path is not None or sha256 is not None:
+        return {"path": path, "sha256": sha256}
+    return None
+
+
+def _reviewer_visual_boundary_declared(
+    verdict: dict[str, Any],
+    screenshot: dict[str, Any],
+) -> bool:
+    mocked = verdict.get("mocked", screenshot.get("mocked"))
+    live = verdict.get("live", screenshot.get("live"))
+    return isinstance(mocked, bool) and isinstance(live, bool)
 
 
 def _node_response_alerts(

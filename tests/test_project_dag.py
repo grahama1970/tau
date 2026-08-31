@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 import os
@@ -25,6 +26,12 @@ from tau_coding.project_dag import (
     write_fail_closed_registry_receipt,
 )
 from tau_coding.run_status import build_run_status
+
+
+_PNG_1X1_BYTES = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGA"
+    "WjR9awAAAABJRU5ErkJggg=="
+)
 
 
 def test_transition_receipt_classification_accepts_windows_paths() -> None:
@@ -102,6 +109,86 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
         }
     ]
     assert Path(str(receipt["command_loop_receipt"])).exists()
+
+
+def test_project_dag_blocks_visual_reviewer_verdict_without_screenshot_evidence(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _handoff(
+            "reviewer",
+            "human",
+            [
+                {
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                    "represents_goal": True,
+                    "attractive": True,
+                }
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_visual_evidence_missing"
+    assert receipt["alerts"][0]["code"] == "reviewer_visual_evidence_missing"
+
+
+def test_project_dag_accepts_visual_reviewer_verdict_with_hash_bound_screenshot(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    screenshot = tmp_path / "rendered-page.png"
+    screenshot.write_bytes(_PNG_1X1_BYTES)
+    screenshot_sha256 = f"sha256:{hashlib.sha256(screenshot.read_bytes()).hexdigest()}"
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _handoff(
+            "reviewer",
+            "human",
+            [
+                {
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                    "represents_goal": True,
+                    "attractive": True,
+                    "screenshot": {
+                        "path": str(screenshot),
+                        "sha256": screenshot_sha256,
+                    },
+                    "mocked": False,
+                    "live": True,
+                }
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["reviewer_verdicts"][0]["screenshot"]["sha256"] == screenshot_sha256
 
 
 def test_ready_queue_blocks_failed_referenced_receipt_verdict(tmp_path: Path) -> None:

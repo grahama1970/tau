@@ -1,7 +1,7 @@
 {
-  "claim_count": 23,
-  "coverage_records_sha256": "sha256:62373bc275d0d4fe6e4d939be1de5148dca7739f449fc8720e4035c015722c41",
-  "covered_claim_count": 23,
+  "claim_count": 24,
+  "coverage_records_sha256": "sha256:fd8ebb1cd5703e8301d818e0b98cc6640f69355ed455dce4a9652351659641bc",
+  "covered_claim_count": 24,
   "features": [
     {
       "coverage": [
@@ -4436,6 +4436,22 @@
     {
       "coverage": [
         {
+          "claim_id": "tau.visual_reviewer_evidence_gate",
+          "feature_id": "evaluator-script:agentic-eval-tau-visual-review-evidence",
+          "status": "CLAIMED"
+        }
+      ],
+      "coverage_status": "CLAIMED",
+      "feature_id": "evaluator-script:agentic-eval-tau-visual-review-evidence",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-visual-review-evidence",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-visual-review-evidence.py"
+    },
+    {
+      "coverage": [
+        {
           "claim_id": "tau.ledger_trace.default",
           "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
           "status": "CLAIMED"
@@ -5273,10 +5289,10 @@
     }
   ],
   "findings": [],
-  "generated_at": "2026-08-30T20:47:00Z",
-  "inventory_feature_count": 272,
+  "generated_at": "2026-08-31T10:57:48Z",
+  "inventory_feature_count": 273,
   "live": true,
-  "manifest_count": 23,
+  "manifest_count": 24,
   "manifests": [
     {
       "case_count": 2,
@@ -5757,6 +5773,27 @@
     {
       "case_count": 2,
       "claim_ids": [
+        "tau.visual_reviewer_evidence_gate"
+      ],
+      "claims": [
+        {
+          "criticality": "critical",
+          "description": "Tau creator-reviewer DAGs reject visual-quality reviewer PASS claims unless the reviewer verdict is bound to a readable screenshot path, exact sha256, and mocked/live proof boundary.",
+          "evidence_required": {
+            "fault_injected_deterministic": 1,
+            "live_e2e": 1
+          },
+          "id": "tau.visual_reviewer_evidence_gate"
+        }
+      ],
+      "has_negative_or_adversarial": true,
+      "has_real_world_case": true,
+      "path": "evals/tau_visual_review_evidence_agentic_eval.json",
+      "skill": "tau"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
         "tau.workflow_provider_live_acceptance"
       ],
       "claims": [
@@ -5848,12 +5885,15 @@
     "evals/tau_timeline_viewer_agentic_eval.json": {
       "path": "local/agentic-evals/tau-timeline-viewer-agentic-evals-report.json"
     },
+    "evals/tau_visual_review_evidence_agentic_eval.json": {
+      "path": "local/agentic-evals/tau-visual-review-evidence-agentic-evals-report.json"
+    },
     "evals/tau_workflow_provider_live_acceptance_agentic_eval.json": {
       "path": "local/agentic-evals/tau-workflow-provider-live-acceptance-agentic-evals-report.json"
     }
   },
   "schema": "tau.source_feature_reconciliation.v1",
   "self_covered_claim_count": 1,
-  "source_inventory_sha256": "sha256:89b74b738cf66a4b6dac1453af71fdc12d8546975ab4f7823ef46b2988ff2cdd",
+  "source_inventory_sha256": "sha256:d70bee783df304c9950c2c1deb1b479acf113b11c7805c8a732c63eaa027dc30",
   "status": "PASS"
 }

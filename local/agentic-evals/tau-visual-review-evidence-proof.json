@@ -1,0 +1,132 @@
+{
+  "errors": [],
+  "fake_visual_reviewer": {
+    "alerts": [
+      {
+        "code": "reviewer_visual_evidence_missing",
+        "evidence": {
+          "node_id": "reviewer",
+          "required": [
+            "screenshot.path",
+            "screenshot.sha256"
+          ]
+        },
+        "message": "Reviewer verdict made a visual-quality claim without screenshot-bound evidence.",
+        "severity": "BLOCK"
+      }
+    ],
+    "contract_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/issue-336-fake-visual-reviewer.json",
+    "dag_error": {
+      "active_goal_hash": "sha256:issue-336-goal",
+      "active_goal_version": 1,
+      "attempts": 1,
+      "dag_id": "issue-336-fake-visual-reviewer",
+      "evidence": {
+        "alert_codes": [
+          "reviewer_visual_evidence_missing"
+        ],
+        "alert_count": 1,
+        "errors": [],
+        "primary_alert": {
+          "code": "reviewer_visual_evidence_missing",
+          "evidence": {
+            "node_id": "reviewer",
+            "required": [
+              "screenshot.path",
+              "screenshot.sha256"
+            ]
+          },
+          "message": "Reviewer verdict made a visual-quality claim without screenshot-bound evidence.",
+          "severity": "BLOCK"
+        }
+      },
+      "failed_agent": "reviewer",
+      "failed_node": "reviewer",
+      "failure_code": "reviewer_visual_evidence_missing",
+      "goal_identity": {
+        "goal_hash": "sha256:issue-336-goal",
+        "goal_id": "issue-336-visual-review-evidence",
+        "goal_version": 1
+      },
+      "max_attempts": 1,
+      "message": "Reviewer verdict made a visual-quality claim without screenshot-bound evidence.",
+      "proof_scope": {
+        "does_not_prove": [
+          "The recommended action has been executed.",
+          "The project agent accepted or applied the course correction.",
+          "Provider/model semantic quality."
+        ],
+        "proves": [
+          "Tau detected a blocked DAG execution.",
+          "Tau packaged the primary failure as a project-agent course-correction payload.",
+          "No DAG route, goal, target, or handoff was mutated by this error contract."
+        ]
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json",
+      "recommended_action": {
+        "next_agent": "human",
+        "reason": "Unhandled DAG failure requires human or orchestrator review.",
+        "type": "wait_for_human"
+      },
+      "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run",
+      "scheduler": "handoff-loop",
+      "schema": "tau.dag_error.v1",
+      "severity": "BLOCK",
+      "status": "BLOCKED",
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "issue-336"
+      },
+      "verdict": "REVIEWER_VISUAL_EVIDENCE_MISSING"
+    },
+    "name": "fake-visual-reviewer",
+    "receipt_ok": false,
+    "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/fake-visual-reviewer/run/dag-receipt.json",
+    "receipt_status": "BLOCKED",
+    "reviewer_verdicts": [
+      {
+        "attractive": true,
+        "goal_hash": "sha256:issue-336-goal",
+        "kind": "reviewer_verdict",
+        "represents_goal": true,
+        "reviewed_node_id": "creator",
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": "Human aesthetic acceptance, browser rendering quality, provider semantic quality, or GOAL.md completion.",
+    "proves": "Tau blocks visual-quality reviewer PASS claims unless the reviewer verdict carries readable screenshot evidence with an exact sha256 and mocked/live boundaries."
+  },
+  "provider_live": false,
+  "schema": "tau.visual_reviewer_evidence_proof.v1",
+  "screenshot_bound_reviewer": {
+    "alerts": [],
+    "contract_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/issue-336-screenshot-bound-reviewer.json",
+    "dag_error": null,
+    "name": "screenshot-bound-reviewer",
+    "receipt_ok": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/screenshot-bound-reviewer/run/dag-receipt.json",
+    "receipt_status": "PASS",
+    "reviewer_verdicts": [
+      {
+        "attractive": true,
+        "goal_hash": "sha256:issue-336-goal",
+        "kind": "reviewer_verdict",
+        "live": true,
+        "mocked": false,
+        "represents_goal": true,
+        "reviewed_node_id": "creator",
+        "screenshot": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-visual-review-evidence/work/positive/rendered-screenshot.png",
+          "sha256": "sha256:6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0"
+        },
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "status": "PASS"
+}

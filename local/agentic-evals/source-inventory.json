@@ -2,13 +2,13 @@
   "counts_by_kind": {
     "capability-module": 11,
     "cli-command": 201,
-    "evaluator-script": 15,
+    "evaluator-script": 16,
     "ledger-path": 10,
     "skill-capability": 10,
     "viewer-surface": 20,
     "workflow-definition": 5
   },
-  "feature_count": 272,
+  "feature_count": 273,
   "features": [
     {
       "feature_id": "capability-module:src/tau_coding/acceptance_attestation.py",
@@ -2251,6 +2251,14 @@
       "source_path": "scripts/agentic-eval-tau-terminal-dag-watch.py"
     },
     {
+      "feature_id": "evaluator-script:agentic-eval-tau-visual-review-evidence",
+      "kind": "evaluator-script",
+      "metadata": {},
+      "name": "agentic-eval-tau-visual-review-evidence",
+      "source_line": null,
+      "source_path": "scripts/agentic-eval-tau-visual-review-evidence.py"
+    },
+    {
       "feature_id": "ledger-path:src/tau_coding/cli.py:_run_ledger_cli",
       "kind": "ledger-path",
       "metadata": {},
@@ -2701,10 +2709,10 @@
       "source_path": "src/tau_coding/workflows/definitions/tau-operator-reference.json"
     }
   ],
-  "generated_at": "2026-08-30T20:47:00Z",
+  "generated_at": "2026-08-31T10:57:48Z",
   "live": true,
   "mocked": false,
   "schema": "tau.source_feature_inventory.v1",
   "source_root": "/home/graham/workspace/experiments/tau",
-  "source_sha256": "sha256:df77f1bd9e7a1bb2617ed351361e2665df30572bcc7ff02ffc51ec4ebc7dd2b7"
+  "source_sha256": "sha256:416b2dc116e9e9abde5a21899b08435de09522e195b69a3abaae7a331cf0aa17"
 }
