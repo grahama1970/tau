@@ -17,4 +17,4 @@ Proof boundary:
 
 Commit:
 - Tau main: e1305957c0df35e6a506a818255fe1784b807a8a
-- Agent-skills triage-error catalog main: f0ca46c7273ceefdb7be4b35864f3dcc5e1ff068
+- Agent-skills triage-error catalog main: 815e40fee29cc7f894ca04ef02e2192e1323efcd
