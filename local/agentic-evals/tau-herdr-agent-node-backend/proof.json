@@ -1,12 +1,31 @@
 {
+  "cleanup_ownership": {
+    "unrelated_pane_id": "wCT:p2",
+    "unrelated_pane_survived_cleanup": true,
+    "unrelated_workspace_differs": true,
+    "unrelated_workspace_id": "wCT",
+    "wrong_authorization_error": "RuntimeError:herdr_runtime_cleanup_unauthorized:run_id,scope_id,endpoint_id,endpoint_lease_sha256",
+    "wrong_authorization_refused": true
+  },
   "confirmed_dead_retry": {
-    "dead_liveness": "DEAD",
+    "decision": {
+      "endpoint_id": "wCS:p2",
+      "endpoint_lease_sha256": "sha256:095530e1cbf7cafdee71451e93673e252b42613f8c42029ed51a23047e41a2a0",
+      "observation_confidence": "NATIVE",
+      "observed_liveness": "DEAD",
+      "observed_state": "CRASHED",
+      "reason": "confirmed_dead_endpoint_may_retry_with_new_lineage",
+      "replacement_allowed": true,
+      "schema": "tau.herdr_endpoint_replacement_decision.v1",
+      "status": "PASS"
+    },
+    "retry_endpoint_id": "wCS:p4",
     "retry_lineage_new": true
   },
   "endpoint_ids": [
-    "wCA:p2",
-    "wCA:p3",
-    "wCA:p4"
+    "wCS:p2",
+    "wCS:p3",
+    "wCS:p4"
   ],
   "errors": [],
   "installed_wheel_probe": {
@@ -18,8 +37,65 @@
     "wheel": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/dist/tau-0.1.0-py3-none-any.whl"
   },
   "live": true,
-  "local_vs_herdr_equivalence": true,
-  "marker": "issue315_tau_herdr_worker_1788122793462",
+  "local_vs_herdr_equivalence": {
+    "accepted_output_final_text_equal": true,
+    "equivalent": true,
+    "evidence_equal": true,
+    "handshake_policy_hash": "sha256:4ccf85c8c2e4482143fa4e374fbdc23f2ec3a39f572854462683425039d2c57d",
+    "handshake_prompt_sha256_matches_prompt": true,
+    "handshake_schema": "tau.agent_node_worker_handshake.v1",
+    "handshake_worker_runtime_version": "tau-herdr-headless-agent-worker.v1",
+    "herdr_result_errors": [],
+    "herdr_result_status": "PASS",
+    "herdr_result_verdict": "PASS",
+    "journal_head_sha256_equal": true,
+    "local_result_status": "PASS",
+    "settlement_compared_fields": [
+      "attempt",
+      "blockers",
+      "evidence",
+      "goal_hash",
+      "grounding",
+      "harness",
+      "journal_head_sha256",
+      "journal_length",
+      "node_id",
+      "plan_sha256",
+      "proof_boundary",
+      "rejected_tool_requests",
+      "run_id",
+      "schema",
+      "state",
+      "tool_effect_receipt_sha256s",
+      "turn_receipt_sha256s",
+      "turns"
+    ],
+    "settlement_diff_fields": [],
+    "settlement_excluded_fields": [
+      "attempt_id",
+      "sha256"
+    ],
+    "settlement_transport_fields": [
+      "final_text"
+    ],
+    "tool_effect_receipt_sha256s_equal": true,
+    "turn_receipt_sha256s_equal": true,
+    "work_order_compared_fields": [
+      "attempt",
+      "goal_hash",
+      "harness",
+      "model",
+      "node_id",
+      "plan_sha256",
+      "required_evidence",
+      "role",
+      "run_id",
+      "schema",
+      "transport_profile_selection"
+    ],
+    "work_order_diff_fields": []
+  },
+  "marker": "issue315_tau_herdr_worker_1788637749918",
   "mocked": false,
   "operator_action": {
     "completed_status": "APPLIED",
@@ -32,24 +108,11 @@
     "submit_delivery_status": "CONFIRMED"
   },
   "proof_boundary": {
-    "does_not_prove": "provider semantic quality, paid-provider execution, React Flow rendering, or GOAL.md completion",
-    "proves": "HerdrRuntimeBackend can host Tau-owned headless agent-node worker commands in one live Herdr workspace, compile explicit Herdr runtime requirements, read Tau SQLite runtime projections, adopt an existing endpoint after scheduler lease takeover, keep pane text/status diagnostic-only for settlement, route an operator action through the Tau inbox and Herdr submit path, retry confirmed-dead endpoints with new lineage, compare local and Herdr settlement fields, and verify installed-wheel import outside the source checkout."
+    "does_not_prove": "provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or that the shipped adapter itself persists endpoint leases for restart adoption (this harness persists the lease record the scheduler would need; see local_vs_herdr_equivalence and scheduler_process_loss for the exact boundary).",
+    "fixture_provider": "FakeProvider in both local and Herdr workers; FakeProvider is the model, Herdr and the scheduler are live",
+    "proves": "A real Tau scheduler process was SIGKILLed while a Herdr-hosted agent worker was in flight and a restarted scheduler adopted the same endpoint from the durable lease with one settlement and no duplicate endpoint; replacement_decision blocked on a live induced UNKNOWN observation and created zero endpoints; the same fixture work order produced field-equal settlements (all fields except attempt_id/sha256) through the local in-process path and the adapter's Herdr worker path; pane text is diagnostic only; an operator action round-tripped through the Tau inbox; confirmed-dead retry produced new lineage; cleanup refused a foreign authorization and left an unrelated workspace pane intact; the installed wheel imports the adapter and backend without the source checkout."
   },
   "provider_live": false,
-  "restart_adoption": {
-    "adopted_without_duplicate_endpoint": true,
-    "owned_after_adoption_count": 1,
-    "projection": {
-      "confidence": "NATIVE",
-      "endpoint_lease_sha256": "sha256:27d3b08aca9929fd94a9a5736efc07bdc1dbdbba3c231f4a5a005e64c01b145d",
-      "event_count": 2,
-      "last_event_id": "herdr:0cfb006954ddb85e1357def12ea0b775bc87a3de28299c2816f9a71a158941d7",
-      "liveness": "ALIVE",
-      "run_id": "issue315_tau_herdr_worker_1788122793462",
-      "schema": "tau.runtime_state_projection.v1",
-      "state": "UNKNOWN"
-    }
-  },
   "runtime_requirements": {
     "agent-a": {
       "backend": "herdr",
@@ -90,110 +153,165 @@
       "session_scope": "node_attempt"
     }
   },
-  "schema": "tau.herdr_agent_node_backend_proof.v1",
+  "scheduler_process_loss": {
+    "adopted_endpoint_id": "wCS:p2",
+    "adopted_endpoint_lease_sha256": "sha256:095530e1cbf7cafdee71451e93673e252b42613f8c42029ed51a23047e41a2a0",
+    "after_loss_owner_id": "scheduler-after-loss-pid3004005",
+    "before_loss_owner_id": "scheduler-before-loss-pid3004093",
+    "child_returncode": -9,
+    "kill_at": "2026-09-05T19:49:10.539029+00:00",
+    "kill_signal": "SIGKILL",
+    "killed_pid": 3004093,
+    "lease_epoch_after_takeover": 2,
+    "owned_after_adoption_count": 1,
+    "projection_endpoint_lease_sha256": "sha256:095530e1cbf7cafdee71451e93673e252b42613f8c42029ed51a23047e41a2a0",
+    "projection_event_count": 2,
+    "reserved_attempt_id": "attempt-fa69ecaba0da7a7d52a4785f7ba8d155",
+    "settled_at": "2026-09-05T19:49:11.632454+00:00",
+    "settlement_attempt_id": "attempt-fa69ecaba0da7a7d52a4785f7ba8d155",
+    "settlement_files": [
+      "settlement.json"
+    ],
+    "settlement_present_before_kill": false,
+    "settlement_work_order_sha256_matches": true,
+    "worker_delay_seconds": 6.0
+  },
+  "schema": "tau.herdr_agent_node_backend_proof.v2",
   "scope": {
     "backend": "herdr",
     "backend_session_id": "default",
     "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work",
-    "label": "tau-issue315-herdr-e6d4b4ed0ac8",
+    "label": "tau-issue315-herdr-5b24ab6a9529",
     "owner": "tau",
-    "pane_id": "wCA:p2",
-    "run_id": "issue315_tau_herdr_worker_1788122793462",
-    "scope_id": "wCA",
-    "tab_id": "wCA:t2",
-    "workspace_id": "wCA"
+    "pane_id": "wCS:p2",
+    "run_id": "issue315_tau_herdr_worker_1788637749918",
+    "scope_id": "wCS",
+    "tab_id": "wCS:t2",
+    "workspace_id": "wCS"
   },
-  "settlement_receipts": [
-    {
+  "settlement_receipts": {
+    "agent-a-herdr": {
       "attempt": 1,
-      "attempt_id": "attempt-124c21f5efed836b2f32c5bfc7017cdf",
+      "attempt_id": "attempt-fa69ecaba0da7a7d52a4785f7ba8d155",
       "blockers": [],
       "evidence": {
-        "worker_receipt": "sha256:fefd1ba6ee31a860b86e60beb1aca3be472ea5e21301895fe51be034403b883f"
+        "tool_effect_receipt": "sha256:8760446fd0935cf4b4c3982acabdf7de0ccee821b1e340853bc4de26799d8993"
       },
+      "final_text": "fixture worker wrote the note",
       "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
       "grounding": null,
       "harness": "tau_native_agent_loop",
-      "journal_head_sha256": "sha256:5bf575b68364279ee9ad3a131a5dab831e115720b00c0f02606a72e1ba6df0e4",
-      "journal_length": 4,
-      "marker": "issue315_tau_herdr_worker_1788122793462",
+      "journal_head_sha256": "sha256:f9682dc64ef05b63164c5b4a150c105eea448d2cf8b19b1f4d1722c83ede7963",
+      "journal_length": 7,
       "node_id": "agent-a",
-      "plan_sha256": "sha256:a5a519b9437ae4ee9e1e611a451956bd1f7c19133649cbb423bd84011648c15b",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "proof_boundary": {
         "model_done_claim_is_not_settlement": true,
         "provider_completion_is_not_settlement": true,
         "settlement_requires_required_evidence": true
       },
       "rejected_tool_requests": 0,
-      "run_id": "issue315_tau_herdr_worker_1788122793462",
+      "run_id": "issue315_tau_herdr_worker_1788637749918",
       "schema": "tau.agent_node_settlement.v1",
-      "sha256": "sha256:e87614054df5fc38c3d39578e4815df54b1ea4a1cdfc7aa7c35c19f0a44dbe3d",
+      "sha256": "sha256:e0695694b20e68622c662096530c5181fb9090b2cee35d0f1fa7b3034dfe3ae7",
       "state": "completed",
       "tool_effect_receipt_sha256s": [
-        "sha256:f4b453c1bb95905eac840b3c0d968b62988f1255f83750f12e2f49d76b9dcb0b"
+        "sha256:06089eaa6a2ac03852ae16009529da49fae55c0523ab9ddce53121c9144494a2"
       ],
       "turn_receipt_sha256s": [
-        "sha256:da0ab6d30664baeb9412042ea17bedd4e725ac8ab795f71d916187638d4103b6"
+        "sha256:f684dcec75b4315145faa40364da277a84daae82f033392a1b52f13eec66e05d",
+        "sha256:62ec5ab1e4304123f70aa375e0df448fd06309878eb9f1b5eae11b8c00bea45c"
       ],
-      "turns": 1,
-      "work_order_sha256": "sha256:466ca6ace43f2e5af7d9f1827b009e35ca27a42afb2583a3c4ec0b5f7d137e3b"
+      "turns": 2
     },
-    {
+    "agent-b-herdr": {
       "attempt": 1,
-      "attempt_id": "attempt-54d91aa838b5581215882b8d1fc016ce",
+      "attempt_id": "attempt-32c386e72f9f2e821944b0c009259c18",
       "blockers": [],
       "evidence": {
-        "worker_receipt": "sha256:c2b7f6aad23ecf8ff420f3d70be1ebfbe91cded301587937307091838a4233a8"
+        "tool_effect_receipt": "sha256:532c610eb9588da691eeab97defdbb378bc8105cfa837664f5a418f11970c8a8"
+      },
+      "final_text": "fixture worker wrote the note",
+      "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
+      "grounding": null,
+      "harness": "tau_native_agent_loop",
+      "journal_head_sha256": "sha256:bf42604c7b3874f748f6c2abef9ee55938bd71f80ee0da084c5ed208124ed72b",
+      "journal_length": 7,
+      "node_id": "agent-b",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "proof_boundary": {
+        "model_done_claim_is_not_settlement": true,
+        "provider_completion_is_not_settlement": true,
+        "settlement_requires_required_evidence": true
+      },
+      "rejected_tool_requests": 0,
+      "run_id": "issue315_tau_herdr_worker_1788637749918",
+      "schema": "tau.agent_node_settlement.v1",
+      "sha256": "sha256:0f50c99b4158cc898f5f120260652d6cdb45dc40c5fd778d2cb27fab50e8a298",
+      "state": "completed",
+      "tool_effect_receipt_sha256s": [
+        "sha256:3c39807e1d55f6d9a37dd709c7ecad360dee1e8ddef7ef11479cf13a56167d6b"
+      ],
+      "turn_receipt_sha256s": [
+        "sha256:e657836c6fa9398f24a59ce90b0fd302f5f7cbe1786aa37f87e849e0093b7cab",
+        "sha256:279b7c2c23f3fc218e2ed362f416612287302bf298613c2324cfcedd7ce40e40"
+      ],
+      "turns": 2
+    },
+    "agent-b-local": {
+      "attempt": 1,
+      "attempt_id": "attempt-1f6cb8c584dc8b436458767999b96367",
+      "blockers": [],
+      "evidence": {
+        "tool_effect_receipt": "sha256:532c610eb9588da691eeab97defdbb378bc8105cfa837664f5a418f11970c8a8"
       },
       "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
       "grounding": null,
       "harness": "tau_native_agent_loop",
-      "journal_head_sha256": "sha256:b94e143e64fcc1091c597ae3c54c036a47f85c19542028f30c1692215ba0173e",
-      "journal_length": 4,
-      "marker": "issue315_tau_herdr_worker_1788122793462",
+      "journal_head_sha256": "sha256:bf42604c7b3874f748f6c2abef9ee55938bd71f80ee0da084c5ed208124ed72b",
+      "journal_length": 7,
       "node_id": "agent-b",
-      "plan_sha256": "sha256:a5a519b9437ae4ee9e1e611a451956bd1f7c19133649cbb423bd84011648c15b",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "proof_boundary": {
         "model_done_claim_is_not_settlement": true,
         "provider_completion_is_not_settlement": true,
         "settlement_requires_required_evidence": true
       },
       "rejected_tool_requests": 0,
-      "run_id": "issue315_tau_herdr_worker_1788122793462",
+      "run_id": "issue315_tau_herdr_worker_1788637749918",
       "schema": "tau.agent_node_settlement.v1",
-      "sha256": "sha256:0b0698fff1a2ddbdd2a45c2f993ac87d0e0364c4ca26129e8bad6a0c0b45fb44",
+      "sha256": "sha256:53c1a0658b4fa32a17d345bf46ceabb674c0f65c13bf9264663dcba6a0bb7db8",
       "state": "completed",
       "tool_effect_receipt_sha256s": [
-        "sha256:7368629666853bb165b7d5a0f38f6f78b5bfedc27c2b59bcaee43119e1312a1f"
+        "sha256:3c39807e1d55f6d9a37dd709c7ecad360dee1e8ddef7ef11479cf13a56167d6b"
       ],
       "turn_receipt_sha256s": [
-        "sha256:65d41dda6ce57938210a1aeb61e954208f3f54195e35f4c1485407fe9ef5d932"
+        "sha256:e657836c6fa9398f24a59ce90b0fd302f5f7cbe1786aa37f87e849e0093b7cab",
+        "sha256:279b7c2c23f3fc218e2ed362f416612287302bf298613c2324cfcedd7ce40e40"
       ],
-      "turns": 1,
-      "work_order_sha256": "sha256:3efc49676bd788a3650cd2ad703f1bec1bb1defedd481ce75d50a14583970d36"
+      "turns": 2
     }
-  ],
+  },
   "sqlite_run_store": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-herdr-agent-node-backend/work/dag-run.sqlite3",
   "status": "PASS",
-  "tau_sqlite_projection_count": 2,
   "tau_sqlite_projection_readback": [
     {
       "confidence": "NATIVE",
-      "endpoint_lease_sha256": "sha256:27d3b08aca9929fd94a9a5736efc07bdc1dbdbba3c231f4a5a005e64c01b145d",
+      "endpoint_lease_sha256": "sha256:095530e1cbf7cafdee71451e93673e252b42613f8c42029ed51a23047e41a2a0",
       "event_count": 2,
-      "last_event_id": "herdr:0cfb006954ddb85e1357def12ea0b775bc87a3de28299c2816f9a71a158941d7",
+      "last_event_id": "herdr:4ec7789514291de7a4ac38f091def6d3b81d1160ffda79fda1ce1e714d67acaf",
       "liveness": "ALIVE",
-      "run_id": "issue315_tau_herdr_worker_1788122793462",
+      "run_id": "issue315_tau_herdr_worker_1788637749918",
       "schema": "tau.runtime_state_projection.v1",
       "state": "UNKNOWN"
     },
     {
       "confidence": "NATIVE",
-      "endpoint_lease_sha256": "sha256:30d81dc93187818e364291d799403bb2a2a3c8dbe55d5844f4016db31e9291ca",
+      "endpoint_lease_sha256": "sha256:c33db7febe649dec7564f039e5a3e71fef5164ca62dabfc906261f00ca4c02fd",
       "event_count": 1,
-      "last_event_id": "herdr:35ef0d2aae910c92d35a126402e3b3694ffb129ae077bf8c4097dfd57db5a38e",
+      "last_event_id": "herdr:42ac80a3ab0841b9c0741bd55d54c9fec7a3a8718f9085c32afad6003deb1d7d",
       "liveness": "ALIVE",
-      "run_id": "issue315_tau_herdr_worker_1788122793462",
+      "run_id": "issue315_tau_herdr_worker_1788637749918",
       "schema": "tau.runtime_state_projection.v1",
       "state": "UNKNOWN"
     }
@@ -202,7 +320,7 @@
     {
       "action": "endpoint_close",
       "close_returncode": 0,
-      "endpoint_id": "wCA:p2",
+      "endpoint_id": "wCS:p2",
       "post_verified_absent": true,
       "post_verify_error_code": "pane_not_found",
       "post_verify_returncode": 1,
@@ -211,7 +329,7 @@
     {
       "action": "endpoint_close",
       "close_returncode": 0,
-      "endpoint_id": "wCA:p3",
+      "endpoint_id": "wCS:p3",
       "post_verified_absent": true,
       "post_verify_error_code": "pane_not_found",
       "post_verify_returncode": 1,
@@ -220,7 +338,16 @@
     {
       "action": "endpoint_close",
       "close_returncode": 0,
-      "endpoint_id": "wCA:p4",
+      "endpoint_id": "wCS:p4",
+      "post_verified_absent": true,
+      "post_verify_error_code": "pane_not_found",
+      "post_verify_returncode": 1,
+      "status": "PASS"
+    },
+    {
+      "action": "endpoint_close",
+      "close_returncode": 0,
+      "endpoint_id": "wCT:p2",
       "post_verified_absent": true,
       "post_verify_error_code": "pane_not_found",
       "post_verify_returncode": 1,
@@ -228,13 +355,24 @@
     }
   ],
   "unknown_liveness_policy": {
-    "no_replacement_endpoint_created": true,
-    "owned_after": 2,
-    "owned_before": 2
+    "decision": {
+      "endpoint_id": "wCS:p2",
+      "endpoint_lease_sha256": "sha256:095530e1cbf7cafdee71451e93673e252b42613f8c42029ed51a23047e41a2a0",
+      "observation_confidence": "UNKNOWN",
+      "observed_liveness": "UNKNOWN",
+      "observed_state": "UNKNOWN",
+      "reason": "unknown_liveness_blocks_replacement",
+      "replacement_allowed": false,
+      "schema": "tau.herdr_endpoint_replacement_decision.v1",
+      "status": "BLOCKED"
+    },
+    "induced_pane_get_calls": 1,
+    "liveness_after_recovery": "ALIVE",
+    "owned_after": 1,
+    "owned_before": 1,
+    "replacement_spawned": false
   },
   "workspace_ids": [
-    "wCA",
-    "wCA",
-    "wCA"
+    "wCS"
   ]
 }

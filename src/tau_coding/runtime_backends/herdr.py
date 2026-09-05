@@ -68,6 +68,33 @@ class _HerdrEndpointState:
     lock: threading.Lock = field(default_factory=threading.Lock)
 
 
+@dataclass(frozen=True, slots=True)
+class HerdrReplacementDecision:
+    """Tau-owned retry guard for replacing a Herdr endpoint after observation."""
+
+    status: str
+    replacement_allowed: bool
+    endpoint_lease_sha256: str
+    endpoint_id: str
+    observed_liveness: RuntimeLiveness
+    observed_state: RuntimeState
+    observation_confidence: str
+    reason: str
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "schema": "tau.herdr_endpoint_replacement_decision.v1",
+            "status": self.status,
+            "replacement_allowed": self.replacement_allowed,
+            "endpoint_lease_sha256": self.endpoint_lease_sha256,
+            "endpoint_id": self.endpoint_id,
+            "observed_liveness": self.observed_liveness,
+            "observed_state": self.observed_state,
+            "observation_confidence": self.observation_confidence,
+            "reason": self.reason,
+        }
+
+
 class HerdrRuntimeBackend:
     """Manage Tau-owned interactive endpoints through an explicit Herdr session."""
 
@@ -250,6 +277,7 @@ class HerdrRuntimeBackend:
                 "scope_id": scope_id,
             }
         )
+        command_sha256 = canonical_sha256({"command": list(command)})
         with self._lock:
             if attempt_identity in self._attempt_ids:
                 raise RuntimeError("herdr_runtime_attempt_already_spawned")
@@ -354,6 +382,25 @@ class HerdrRuntimeBackend:
                     "terminal_id": terminal_id,
                     "agent_name": endpoint_label,
                     "cwd": str(cwd),
+                    "tau_binding": {
+                        "schema": "tau.herdr_endpoint_tau_binding.v1",
+                        "run_id": run_id,
+                        "plan_revision": plan_revision,
+                        "dag_id": dag_id,
+                        "node_id": node_id,
+                        "attempt_id": attempt_id,
+                        "attempt_number": attempt_number,
+                        "execution_token_sha256": canonical_sha256(execution_token),
+                        "work_order_sha256": work_order_sha256,
+                        "goal_hash": goal_hash,
+                        "owner": owner,
+                        "scope_id": scope.workspace_id,
+                        "endpoint_id": pane_id,
+                        "terminal_id": terminal_id,
+                        "command_sha256": command_sha256,
+                        "attempt_identity_sha256": attempt_identity,
+                        "worker_runtime": "tau-herdr-headless-agent-worker.v1",
+                    },
                 }
             ),
         )
@@ -390,7 +437,10 @@ class HerdrRuntimeBackend:
             ]
             pane_in_use = pane_id in self._endpoint_ids
         root_check = self._run_json("pane", "get", pane_id, check=False)
-        root_absent = root_check["returncode"] != 0 and _herdr_error_code(root_check) == "pane_not_found"
+        root_absent = (
+            root_check["returncode"] != 0
+            and _herdr_error_code(root_check) == "pane_not_found"
+        )
         if pane_in_use or root_absent:
             split_source = next((item for item in live_scope_endpoints if item != pane_id), pane_id)
             split = self._run_json(
@@ -513,6 +563,43 @@ class HerdrRuntimeBackend:
 
     def observe(self, endpoint: RuntimeEndpointLease) -> RuntimeEvent:
         return self._observe(endpoint)
+
+    def replacement_decision(
+        self, endpoint: RuntimeEndpointLease
+    ) -> HerdrReplacementDecision:
+        """Return Tau's retry decision for replacing one Herdr endpoint.
+
+        Replacement is allowed only after Herdr gives a confirmed ``DEAD``
+        liveness observation. ``UNKNOWN`` is a hard block because the scheduler
+        cannot prove whether the first worker is still able to produce effects.
+        """
+
+        event = self.observe(endpoint)
+        if event.liveness == "DEAD":
+            return HerdrReplacementDecision(
+                status="PASS",
+                replacement_allowed=True,
+                endpoint_lease_sha256=endpoint.sha256,
+                endpoint_id=endpoint.endpoint_id,
+                observed_liveness=event.liveness,
+                observed_state=event.state,
+                observation_confidence=event.confidence,
+                reason="confirmed_dead_endpoint_may_retry_with_new_lineage",
+            )
+        return HerdrReplacementDecision(
+            status="BLOCKED",
+            replacement_allowed=False,
+            endpoint_lease_sha256=endpoint.sha256,
+            endpoint_id=endpoint.endpoint_id,
+            observed_liveness=event.liveness,
+            observed_state=event.state,
+            observation_confidence=event.confidence,
+            reason=(
+                "unknown_liveness_blocks_replacement"
+                if event.liveness == "UNKNOWN"
+                else "live_endpoint_blocks_replacement"
+            ),
+        )
 
     def _observe(
         self, endpoint: RuntimeEndpointLease, *, deadline: datetime | None = None
@@ -770,6 +857,7 @@ class HerdrRuntimeBackend:
             raise RuntimeError("herdr_runtime_endpoint_scope_mismatch")
         if backend_ids.get("pane_id") != endpoint.endpoint_id:
             raise RuntimeError("herdr_runtime_endpoint_unknown")
+        _validate_tau_binding(backend_ids.get("tau_binding"), endpoint)
         agent_name = backend_ids.get("agent_name")
         if not isinstance(agent_name, str) or not agent_name.startswith("tau-"):
             raise RuntimeError("herdr_runtime_endpoint_not_tau_owned")
@@ -786,6 +874,9 @@ class HerdrRuntimeBackend:
                 None,
             }:
                 raise RuntimeError("herdr_runtime_endpoint_terminal_mismatch")
+            observed_agent = pane.get("agent") or pane.get("name")
+            if observed_agent not in {agent_name, None}:
+                raise RuntimeError("herdr_runtime_endpoint_agent_mismatch")
         elif _herdr_error_code(pane_result) != "pane_not_found":
             raise RuntimeError("herdr_runtime_endpoint_adoption_unverified")
         scope = HerdrRuntimeScope(
@@ -1044,6 +1135,33 @@ def _validate_cleanup_authorization(
         raise RuntimeError("herdr_runtime_cleanup_unauthorized:" + ",".join(mismatches))
 
 
+def _validate_tau_binding(value: Any, endpoint: RuntimeEndpointLease) -> None:
+    if not isinstance(value, dict):
+        raise RuntimeError("herdr_runtime_endpoint_binding_missing")
+    expected = {
+        "schema": "tau.herdr_endpoint_tau_binding.v1",
+        "run_id": endpoint.run_id,
+        "plan_revision": endpoint.plan_revision,
+        "dag_id": endpoint.dag_id,
+        "node_id": endpoint.node_id,
+        "attempt_id": endpoint.attempt_id,
+        "attempt_number": endpoint.attempt_number,
+        "work_order_sha256": endpoint.work_order_sha256,
+        "goal_hash": endpoint.goal_hash,
+        "owner": endpoint.owner,
+        "scope_id": endpoint.scope_id,
+        "endpoint_id": endpoint.endpoint_id,
+    }
+    mismatches = [
+        key for key, expected_value in expected.items() if value.get(key) != expected_value
+    ]
+    if mismatches:
+        raise RuntimeError("herdr_runtime_endpoint_binding_mismatch:" + ",".join(mismatches))
+    token_sha256 = value.get("execution_token_sha256")
+    if token_sha256 != canonical_sha256(endpoint.execution_token):
+        raise RuntimeError("herdr_runtime_endpoint_binding_mismatch:execution_token_sha256")
+
+
 def _herdr_error_code(result: Mapping[str, Any]) -> str | None:
     for source in (result.get("payload"), result.get("stdout"), result.get("stderr")):
         payload = source
@@ -1201,6 +1319,7 @@ def _find_agent(payload: Any, expected_name: str) -> dict[str, Any]:
 
 __all__ = [
     "HERDR_CLEANUP_AUTHORIZATION_SCHEMA",
+    "HerdrReplacementDecision",
     "HerdrRuntimeBackend",
     "HerdrRuntimeScope",
     "herdr_cleanup_authorization",

@@ -19,6 +19,12 @@
       ],
       "evidence_class": "live_e2e",
       "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.herdr_agent_node_backend_proof.v2\"",
+          "\"status\": \"PASS\"",
+          "\"kill_signal\": \"SIGKILL\""
+        ],
         "artifacts": [
           {
             "equals": "PASS",
@@ -26,13 +32,90 @@
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
-            "equals": 2,
-            "json_pointer": "/tau_sqlite_projection_count",
+            "equals": "SIGKILL",
+            "json_pointer": "/scheduler_process_loss/kill_signal",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": -9,
+            "json_pointer": "/scheduler_process_loss/child_returncode",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": false,
+            "json_pointer": "/scheduler_process_loss/settlement_present_before_kill",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
             "equals": 1,
-            "json_pointer": "/restart_adoption/owned_after_adoption_count",
+            "json_pointer": "/scheduler_process_loss/owned_after_adoption_count",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": [
+              "settlement.json"
+            ],
+            "json_pointer": "/scheduler_process_loss/settlement_files",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": 2,
+            "json_pointer": "/scheduler_process_loss/lease_epoch_after_takeover",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "BLOCKED",
+            "json_pointer": "/unknown_liveness_policy/decision/status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "UNKNOWN",
+            "json_pointer": "/unknown_liveness_policy/decision/observed_liveness",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "unknown_liveness_blocks_replacement",
+            "json_pointer": "/unknown_liveness_policy/decision/reason",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": false,
+            "json_pointer": "/unknown_liveness_policy/replacement_spawned",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": 1,
+            "json_pointer": "/unknown_liveness_policy/induced_pane_get_calls",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/local_vs_herdr_equivalence/equivalent",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": [],
+            "json_pointer": "/local_vs_herdr_equivalence/settlement_diff_fields",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": [],
+            "json_pointer": "/local_vs_herdr_equivalence/work_order_diff_fields",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/local_vs_herdr_equivalence/journal_head_sha256_equal",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "PASS",
+            "json_pointer": "/local_vs_herdr_equivalence/herdr_result_status",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/local_vs_herdr_equivalence/handshake_prompt_sha256_matches_prompt",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
@@ -42,7 +125,7 @@
           },
           {
             "equals": true,
-            "json_pointer": "/confirmed_dead_retry/retry_lineage_new",
+            "json_pointer": "/pane_text_status_only/settlement_sha256_unchanged",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
@@ -52,7 +135,27 @@
           },
           {
             "equals": true,
-            "json_pointer": "/local_vs_herdr_equivalence",
+            "json_pointer": "/confirmed_dead_retry/retry_lineage_new",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "DEAD",
+            "json_pointer": "/confirmed_dead_retry/decision/observed_liveness",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/cleanup_ownership/wrong_authorization_refused",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/cleanup_ownership/unrelated_pane_survived_cleanup",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/cleanup_ownership/unrelated_workspace_differs",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
@@ -61,29 +164,28 @@
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
-            "equals": "completed",
-            "json_pointer": "/settlement_receipts/0/state",
+            "equals": false,
+            "json_pointer": "/installed_wheel_probe/source_checkout_import",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
-            "equals": "PASS",
-            "json_pointer": "/terminations/1/status",
+            "equals": false,
+            "json_pointer": "/mocked",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/live",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           }
-        ],
-        "exit_code": 0,
-        "stdout_contains": [
-          "\"schema\": \"tau.herdr_agent_node_backend_proof.v1\"",
-          "\"status\": \"PASS\"",
-          "\"tau_sqlite_projection_count\": 2"
         ]
       },
-      "name": "live-herdr-hosts-two-tau-headless-agent-node-workers",
+      "name": "live-herdr-scheduler-kill-unknown-liveness-and-local-equivalence",
       "real_world": true,
       "supports_claims": [
         "tau.herdr_agent_nodes.live_headless_backend"
       ],
-      "timeout_seconds": 180,
+      "timeout_seconds": 300,
       "type": "positive"
     },
     {
@@ -109,8 +211,8 @@
     }
   ],
   "claims": {
-    "does_not_prove": "Provider semantic quality, paid-provider execution, React Flow rendering, or GOAL.md completion.",
-    "proves": "Tau can compile explicit Herdr runtime requirements for tau_native_agent_loop nodes, run live Herdr-hosted headless worker endpoints, keep exact workspace/pane leases, read Tau SQLite runtime projections, adopt an existing endpoint after scheduler lease takeover, keep pane text/status diagnostic-only for settlement, route an operator action through Tau's inbox and Herdr submit path, retry confirmed-dead endpoints with new lineage, compare local and Herdr settlement fields, and verify installed-wheel import outside the source checkout."
+    "does_not_prove": "Provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or that the shipped adapter persists endpoint leases itself for restart adoption (the harness persists the lease record the scheduler needs; FakeProvider is the model in both workers).",
+    "proves": "A real Tau scheduler process is SIGKILLed while a Herdr-hosted worker is in flight and a restarted scheduler adopts the same endpoint from the durable lease record with one settlement and no duplicate endpoint or attempt; replacement_decision blocks on a live induced UNKNOWN observation and creates zero endpoints; the same fixture work order yields field-equal work orders and settlements (all fields except attempt_id/sha256, including turn/tool receipt digests, evidence, and journal head) through the local in-process path and the adapter's Herdr worker path; pane text is diagnostic only; an operator action round-trips through Tau's inbox; confirmed-dead retry gets new lineage; cleanup refuses foreign authorization and leaves an unrelated workspace pane intact; the installed wheel imports the adapter and backend without the source checkout."
   },
   "proof_scope": "Herdr runtime backend support for Tau-owned headless agent-node worker endpoints",
   "skill": "tau",
