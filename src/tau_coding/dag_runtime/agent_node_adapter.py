@@ -10,6 +10,7 @@ adapter itself never talks to a provider SDK.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -42,8 +43,16 @@ def execute_tau_agent_node(
     lease: Any | None = None,
     runtime_backend: Any | None = None,
     runtime_cwd: Path | None = None,
+    cancel_event: Any | None = None,
+    plan_sha256: str | None = None,
 ) -> dict[str, Any]:
-    """Execute one Tau-native agent node and map its settlement to the scheduler."""
+    """Execute one Tau-native agent node and map its settlement to the scheduler.
+
+    ``cancel_event`` (a ``threading.Event`` from the scheduler attempt) cancels
+    the in-process ``AgentNodeRun`` when set; the node then settles ``cancelled``
+    instead of completing. ``plan_sha256`` binds the work order to the compiled
+    plan when the caller has it; ``DagPlanNode`` itself does not carry it.
+    """
     config = dict(plan_node.adapter_config.to_value() or {})
     runtime_requirement = RuntimeRequirement.from_payload(
         plan_node.runtime_requirement.to_value()
@@ -65,7 +74,7 @@ def execute_tau_agent_node(
         "attempt_id": execution.attempt_id,
         "attempt": execution.attempt,
         "goal_hash": goal_hash,
-        "plan_sha256": getattr(plan_node, "plan_sha256", None) or "0" * 64,
+        "plan_sha256": plan_sha256 or getattr(plan_node, "plan_sha256", None) or "0" * 64,
         "model": str(config.get("model", "profile-owned")),
         "harness": str(config.get("harness", "tau_native_agent_loop")),
         "role": config.get("role"),
@@ -132,6 +141,10 @@ def execute_tau_agent_node(
         finally:
             reader.close()
     try:
+        if cancel_event is not None and cancel_event.is_set():
+            return _result(
+                plan_node, "BLOCKED", "CANCELLED", errors=["cancel requested before dispatch"]
+            )
         run = AgentNodeRun(
             work_order=work_order,
             policy=policy,
@@ -141,7 +154,7 @@ def execute_tau_agent_node(
             event_sink=event_sink,
             prior_tool_effects=prior_effects,
         )
-        asyncio.run(run.run(prompt))
+        asyncio.run(_run_with_cancellation(run, prompt, cancel_event))
         if run.tool_effect_receipts and all(r["ok"] for r in run.tool_effect_receipts):
             run.add_evidence(
                 "tool_effect_receipt",
@@ -346,6 +359,23 @@ def _execute_tau_agent_node_with_herdr(
         ),
         errors=list(settlement.get("blockers") or []),
     )
+
+
+async def _run_with_cancellation(
+    run: AgentNodeRun, prompt: str, cancel_event: Any | None
+) -> None:
+    """Run the node; propagate a scheduler cancel_event into AgentNodeRun.cancel()."""
+    if cancel_event is None:
+        await run.run(prompt)
+        return
+    task = asyncio.ensure_future(run.run(prompt))
+    while not task.done():
+        if cancel_event.is_set():
+            run.cancel("scheduler_cancel_event")
+            break
+        await asyncio.sleep(0.05)
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
 
 
 def _worker_handshake(

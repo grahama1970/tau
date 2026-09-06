@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "proof_scope": "tau#340: tau run dispatches tau_agent nodes through the native adapter over SciLLM",
+  "trials": 2,
+  "capability_claims": [
+    {
+      "id": "tau.native_cli_dispatch.live_scillm_reviewer",
+      "criticality": "critical",
+      "description": "The documented tau run CLI executes a tau_agent node as a tool-capable Tau-native reviewer over a live SciLLM transport profile, settles only from Tau-admitted evidence, and blocks malformed/unsupported/unavailable native nodes before any provider or tool execution.",
+      "evidence_required": {"live_e2e": 1, "fault_injected_deterministic": 1}
+    }
+  ],
+  "cases": [
+    {
+      "name": "live-tau-run-scillm-reviewer-reads-random-nonce",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "timeout_seconds": 900,
+      "supports_claims": ["tau.native_cli_dispatch.live_scillm_reviewer"],
+      "command": ["bash", "-lc", "cd .. && rm -rf local/agentic-evals/tau-340-native-cli/work && uv run python scripts/agentic-eval-tau-native-cli-dispatch.py --work local/agentic-evals/tau-340-native-cli/work --out local/agentic-evals/tau-340-native-cli/proof.json"],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"schema\": \"tau.native_cli_dispatch_proof.v1\"", "\"status\": \"PASS\"", "\"entrypoint\": \"uv run tau run <spec.json> (subprocess)\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/provider_live", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/node_status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/provider_invoked", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/nonce_in_final_text", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/nonce_in_tool_effect_payload", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/settlement_state", "equals": "completed"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/live_reviewer/receipt_settlement_sha256_matches", "equals": true},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/disallowed-path/verdict", "equals": "NATIVE_PATH_POLICY_INVALID"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/disallowed-path/provider_invoked", "equals": false},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/unsupported-tool/verdict", "equals": "NATIVE_TOOL_UNSUPPORTED"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/unsupported-tool/provider_invoked", "equals": false},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/missing-profile/verdict", "equals": "TRANSPORT_PROFILE_UNAVAILABLE"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/missing-profile/provider_invoked", "equals": false},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/malformed-node/verdict", "equals": "NATIVE_NODE_INVALID"},
+          {"path": "../local/agentic-evals/tau-340-native-cli/proof.json", "json_pointer": "/negative_cases/malformed-node/provider_invoked", "equals": false}
+        ]
+      }
+    },
+    {
+      "name": "native-dispatch-unit-guards-and-command-path-regression",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "timeout_seconds": 300,
+      "supports_claims": ["tau.native_cli_dispatch.live_scillm_reviewer"],
+      "command": ["bash", "-lc", "cd .. && uv run pytest --tau-suite=all -q -p no:cacheprovider tests/test_generic_dag_tau_agent_dispatch.py tests/test_agent_node_scheduler_adapter.py tests/test_generic_dag.py"],
+      "expected": {"exit_code": 0, "stdout_contains": ["passed"], "stdout_not_contains": ["failed"]}
+    }
+  ],
+  "claims": {
+    "proves": "tau run compiles and dispatches tau_agent nodes through execute_tau_agent_node with a ScillmTransportProvider selected by tau.agent_requirement.v1 against live SciLLM discovery; native read-only tools run under ToolPolicy; a live reviewer read back a random nonce through the real CLI with tool-effect receipts, settlement, node receipt, and SQLite agent events; preflight rejects disallowed paths, unsupported tools, unavailable profiles, and malformed nodes with provider_invoked=false; existing command/skill CLI dispatch still passes its suite.",
+    "does_not_prove": "provider semantic quality beyond nonce recall, write-capable native workers, Herdr-hosted native nodes (tau#315), or GOAL.md completion."
+  }
+}

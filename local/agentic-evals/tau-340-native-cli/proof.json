@@ -1,0 +1,98 @@
+{
+  "entrypoint": "uv run tau run <spec.json> (subprocess)",
+  "errors": [],
+  "live": true,
+  "live_reviewer": {
+    "cli_ok": true,
+    "exit_code": 0,
+    "final_text": "NONCE=nonce-d69579e968dcf147",
+    "node_status": "PASS",
+    "node_verdict": "PASS",
+    "nonce": "nonce-d69579e968dcf147",
+    "nonce_in_final_text": true,
+    "nonce_in_tool_effect_payload": true,
+    "provider_invoked": true,
+    "receipt_settlement_sha256_matches": true,
+    "settlement_state": "completed",
+    "settlement_turns": 2,
+    "sqlite_event_types": [
+      "agent_node_started",
+      "tool_request_admitted",
+      "tool_effect_recorded",
+      "agent_turn_recorded",
+      "agent_turn_recorded",
+      "agent_loop_finished",
+      "evidence_recorded",
+      "agent_node_settled"
+    ],
+    "tool_effect_receipt_sha256s": [
+      "sha256:c141d05f9a32a757dd4603a6cf42b1f5bd5bc25c4bced8660439870109dabab4"
+    ],
+    "transport_ids": [
+      "tr_c2e78e88041c48ce"
+    ],
+    "transport_profile": {
+      "capabilities": [
+        "cancellation",
+        "streaming",
+        "structured_events",
+        "structured_output",
+        "tool_calling",
+        "vision"
+      ],
+      "mode": "model_turn",
+      "model": "claude-sonnet-4-6",
+      "profile_id": "claude-model-turn",
+      "profile_sha256": "sha256:5c066cc1ccb0ec07457c3fe62e1e0f6dbbe2bd2fa77a35439d40d76844e7bc5d",
+      "provider": "anthropic-oauth",
+      "readiness": "transport_live_ready"
+    }
+  },
+  "mocked": false,
+  "negative_cases": {
+    "disallowed-path": {
+      "errors": [
+        "allowed_paths pattern escapes cwd: ../**"
+      ],
+      "exit_code": 1,
+      "provider_invoked": false,
+      "status": "BLOCKED",
+      "verdict": "NATIVE_PATH_POLICY_INVALID"
+    },
+    "malformed-node": {
+      "errors": [
+        "max_turns must be a positive integer"
+      ],
+      "exit_code": 1,
+      "provider_invoked": false,
+      "status": "BLOCKED",
+      "verdict": "NATIVE_NODE_INVALID"
+    },
+    "missing-profile": {
+      "errors": [
+        "no_eligible_transport_profile:no-such-profile:PROFILE_UNKNOWN"
+      ],
+      "exit_code": 1,
+      "provider_invoked": false,
+      "status": "BLOCKED",
+      "verdict": "TRANSPORT_PROFILE_UNAVAILABLE"
+    },
+    "unsupported-tool": {
+      "errors": [
+        "tools ['bash'] are not native read-only tools ['read', 'ls', 'grep', 'find']"
+      ],
+      "exit_code": 1,
+      "provider_invoked": false,
+      "status": "BLOCKED",
+      "verdict": "NATIVE_TOOL_UNSUPPORTED"
+    }
+  },
+  "proof_boundary": {
+    "does_not_prove": "provider semantic quality beyond nonce recall, write-capable workers, Herdr hosting, GOAL.md completion",
+    "proves": "The documented `tau run` CLI dispatches a tau_agent node through the tau#310 adapter over a live SciLLM transport profile; a read-only reviewer read a fresh random nonce with Tau's native read tool and the nonce was read back from final text, the SQLite tool-effect payload, the settlement, and the node receipt; four malformed/unsupported/unavailable specs were blocked by preflight through the same CLI with provider_invoked=false."
+  },
+  "provider_live": true,
+  "schema": "tau.native_cli_dispatch_proof.v1",
+  "status": "PASS",
+  "work": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-340-native-cli/work"
+}

@@ -1,0 +1,184 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_native_cli_dispatch_agentic_eval.json",
+  "run_id": "5f0963544d76",
+  "fixture_sha256": "sha256:99c5e7c9527bbd024ce1ec060ebd2eb43235a0808ae75cff16b66b291b4c8fcd",
+  "repo": {
+    "sha": "a4bea6c31b44e692b4cab7eb874d0c9b4b1af016",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "tau#340: tau run dispatches tau_agent nodes through the native adapter over SciLLM",
+  "claims": {
+    "proves": "tau run compiles and dispatches tau_agent nodes through execute_tau_agent_node with a ScillmTransportProvider selected by tau.agent_requirement.v1 against live SciLLM discovery; native read-only tools run under ToolPolicy; a live reviewer read back a random nonce through the real CLI with tool-effect receipts, settlement, node receipt, and SQLite agent events; preflight rejects disallowed paths, unsupported tools, unavailable profiles, and malformed nodes with provider_invoked=false; existing command/skill CLI dispatch still passes its suite.",
+    "does_not_prove": "provider semantic quality beyond nonce recall, write-capable native workers, Herdr-hosted native nodes (tau#315), or GOAL.md completion."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.native_cli_dispatch.live_scillm_reviewer",
+        "description": "The documented tau run CLI executes a tau_agent node as a tool-capable Tau-native reviewer over a live SciLLM transport profile, settles only from Tau-admitted evidence, and blocks malformed/unsupported/unavailable native nodes before any provider or tool execution.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "native-dispatch-unit-guards-and-command-path-regression"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-tau-run-scillm-reviewer-reads-random-nonce"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-tau-run-scillm-reviewer-reads-random-nonce",
+          "native-dispatch-unit-guards-and-command-path-regression"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-09-06T17:38:40.312449+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-tau-run-scillm-reviewer-reads-random-nonce",
+      "type": "positive",
+      "case_id": "5f0963544d76-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-340-native-cli/work && uv run python scripts/agentic-eval-tau-native-cli-dispatch.py --work local/agentic-evals/tau-340-native-cli/work --out local/agentic-evals/tau-340-native-cli/proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.native_cli_dispatch.live_scillm_reviewer"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 40187.929,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"entrypoint\": \"uv run tau run <spec.json> (subprocess)\",\n  \"errors\": [],\n  \"live\": true,\n  \"live_reviewer\": {\n    \"cli_ok\": true,\n    \"exit_code\": 0,\n    \"final_text\": \"NONCE=nonce-1070b0babda77984\",\n    \"node_status\": \"PASS\",\n    \"node_verdict\": \"PASS\",\n    \"nonce\": \"nonce-1070b0babda77984\",\n    \"nonce_in_final_text\": true,\n    \"nonce_in_tool_effect_payload\": true,\n    \"provider_invoked\": true,\n    \"receipt_settlement_sha256_matches\": true,\n    \"settlement_state\": \"completed\",\n    \"settlement_turns\": 2,\n    \"sqlite_event_types\": [\n      \"agent_node_started\",\n      \"tool_request_admitted\",\n      \"tool_effect_recorded\",\n      \"agent_turn_recorded\",\n      \"agent_turn_recorded\",\n      \"agent_loop_finished\",\n      \"evidence_recorded\",\n      \"agent_node_settled\"\n    ],\n    \"tool_effect_receipt_sha256s\": [\n      \"sha256:8baff774324231f641d769c03bf5b8b560d3c71affd5f179888b654054bd6a02\"\n    ],\n    \"transport_ids\": [\n      \"tr_bab1a4e1cbe34a9b\"\n    ],\n    \"transport_profile\": {\n      \"capabilities\": [\n        \"cancellation\",\n        \"streaming\",\n        \"structured_events\",\n        \"structured_output\",\n        \"tool_calling\",\n        \"vision\"\n      ],\n      \"mode\": \"model_turn\",\n      \"model\": \"claude-sonnet-4-6\",\n      \"profile_id\": \"claude-model-turn\",\n      \"profile_sha256\": \"sha256:5c066cc1ccb0ec07457c3fe62e1e0f6dbbe2bd2fa77a35439d40d76844e7bc5d\",\n      \"provider\": \"anthropic-oauth\",\n      \"readiness\": \"transport_live_ready\"\n    }\n  },\n  \"mocked\": false,\n  \"negative_cases\": {\n    \"disallowed-path\": {\n      \"errors\": [\n        \"allowed_paths pattern escapes cwd: ../**\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_PATH_POLICY_INVALID\"\n    },\n    \"malformed-node\": {\n      \"errors\": [\n        \"max_turns must be a positive integer\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_NODE_INVALID\"\n    },\n    \"missing-profile\": {\n      \"errors\": [\n        \"no_eligible_transport_profile:no-such-profile:PROFILE_UNKNOWN\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"TRANSPORT_PROFILE_UNAVAILABLE\"\n    },\n    \"unsupported-tool\": {\n      \"errors\": [\n        \"tools ['bash'] are not native read-only tools ['read', 'ls', 'grep', 'find']\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_TOOL_UNSUPPORTED\"\n    }\n  },\n  \"proof_boundary\": {\n    \"does_not_prove\": \"provider semantic quality beyond nonce recall, write-capable workers, Herdr hosting, GOAL.md completion\",\n    \"proves\": \"The documented `tau run` CLI dispatches a tau_agent node through the tau#310 adapter over a live SciLLM transport profile; a read-only reviewer read a fresh random nonce with Tau's native read tool and the nonce was read back from final text, the SQLite tool-effect payload, the settlement, and the node receipt; four malformed/unsupported/unavailable specs were blocked by preflight through the same CLI with provider_invoked=false.\"\n  },\n  \"provider_live\": true,\n  \"schema\": \"tau.native_cli_dispatch_proof.v1\",\n  \"status\": \"PASS\",\n  \"work\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-340-native-cli/work\"\n}\n",
+          "stderr": "",
+          "duration_ms": 41544.262,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "5f0963544d76-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-340-native-cli/proof.json": "sha256:0121dabb6bb21ec1fd553626d3cd3e30288e0873f0dee9e9e2ba64efeaa7bf99"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"entrypoint\": \"uv run tau run <spec.json> (subprocess)\",\n  \"errors\": [],\n  \"live\": true,\n  \"live_reviewer\": {\n    \"cli_ok\": true,\n    \"exit_code\": 0,\n    \"final_text\": \"NONCE=nonce-d69579e968dcf147\",\n    \"node_status\": \"PASS\",\n    \"node_verdict\": \"PASS\",\n    \"nonce\": \"nonce-d69579e968dcf147\",\n    \"nonce_in_final_text\": true,\n    \"nonce_in_tool_effect_payload\": true,\n    \"provider_invoked\": true,\n    \"receipt_settlement_sha256_matches\": true,\n    \"settlement_state\": \"completed\",\n    \"settlement_turns\": 2,\n    \"sqlite_event_types\": [\n      \"agent_node_started\",\n      \"tool_request_admitted\",\n      \"tool_effect_recorded\",\n      \"agent_turn_recorded\",\n      \"agent_turn_recorded\",\n      \"agent_loop_finished\",\n      \"evidence_recorded\",\n      \"agent_node_settled\"\n    ],\n    \"tool_effect_receipt_sha256s\": [\n      \"sha256:c141d05f9a32a757dd4603a6cf42b1f5bd5bc25c4bced8660439870109dabab4\"\n    ],\n    \"transport_ids\": [\n      \"tr_c2e78e88041c48ce\"\n    ],\n    \"transport_profile\": {\n      \"capabilities\": [\n        \"cancellation\",\n        \"streaming\",\n        \"structured_events\",\n        \"structured_output\",\n        \"tool_calling\",\n        \"vision\"\n      ],\n      \"mode\": \"model_turn\",\n      \"model\": \"claude-sonnet-4-6\",\n      \"profile_id\": \"claude-model-turn\",\n      \"profile_sha256\": \"sha256:5c066cc1ccb0ec07457c3fe62e1e0f6dbbe2bd2fa77a35439d40d76844e7bc5d\",\n      \"provider\": \"anthropic-oauth\",\n      \"readiness\": \"transport_live_ready\"\n    }\n  },\n  \"mocked\": false,\n  \"negative_cases\": {\n    \"disallowed-path\": {\n      \"errors\": [\n        \"allowed_paths pattern escapes cwd: ../**\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_PATH_POLICY_INVALID\"\n    },\n    \"malformed-node\": {\n      \"errors\": [\n        \"max_turns must be a positive integer\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_NODE_INVALID\"\n    },\n    \"missing-profile\": {\n      \"errors\": [\n        \"no_eligible_transport_profile:no-such-profile:PROFILE_UNKNOWN\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"TRANSPORT_PROFILE_UNAVAILABLE\"\n    },\n    \"unsupported-tool\": {\n      \"errors\": [\n        \"tools ['bash'] are not native read-only tools ['read', 'ls', 'grep', 'find']\"\n      ],\n      \"exit_code\": 1,\n      \"provider_invoked\": false,\n      \"status\": \"BLOCKED\",\n      \"verdict\": \"NATIVE_TOOL_UNSUPPORTED\"\n    }\n  },\n  \"proof_boundary\": {\n    \"does_not_prove\": \"provider semantic quality beyond nonce recall, write-capable workers, Herdr hosting, GOAL.md completion\",\n    \"proves\": \"The documented `tau run` CLI dispatches a tau_agent node through the tau#310 adapter over a live SciLLM transport profile; a read-only reviewer read a fresh random nonce with Tau's native read tool and the nonce was read back from final text, the SQLite tool-effect payload, the settlement, and the node receipt; four malformed/unsupported/unavailable specs were blocked by preflight through the same CLI with provider_invoked=false.\"\n  },\n  \"provider_live\": true,\n  \"schema\": \"tau.native_cli_dispatch_proof.v1\",\n  \"status\": \"PASS\",\n  \"work\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-340-native-cli/work\"\n}\n",
+          "stderr": "",
+          "duration_ms": 38831.596,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "5f0963544d76-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-340-native-cli/proof.json": "sha256:8101950d374d5ea9a03c33abe71217582afc50e1745428e5ac61dc92b7296d2f"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "native-dispatch-unit-guards-and-command-path-regression",
+      "type": "adversarial",
+      "case_id": "5f0963544d76-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest --tau-suite=all -q -p no:cacheprovider tests/test_generic_dag_tau_agent_dispatch.py tests/test_agent_node_scheduler_adapter.py tests/test_generic_dag.py"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.native_cli_dispatch.live_scillm_reviewer"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 8010.953,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..........................................                               [100%]\n42 passed in 7.47s\n",
+          "stderr": "",
+          "duration_ms": 8034.961,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "5f0963544d76-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..........................................                               [100%]\n42 passed in 7.41s\n",
+          "stderr": "",
+          "duration_ms": 7986.945,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "5f0963544d76-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

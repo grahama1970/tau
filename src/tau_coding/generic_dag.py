@@ -228,6 +228,38 @@ def run_generic_dag(
             receipt_path=str(node.receipt_path),
         )
         node_log.info("generic_dag_node_started")
+        if plan_node.adapter_kind == "tau_native_agent_loop":
+            # tau#340: native agent nodes never fall into the legacy command
+            # runner; they dispatch through the tau#310 adapter over SciLLM.
+            _write_checkpoint(
+                path=checkpoint_path,
+                current_state_path=current_state_path,
+                run_id=run_id,
+                spec_path=resolved_spec_path,
+                run_dir=run_dir,
+                events_path=events_path,
+                nodes=nodes,
+                node_results=node_results,
+                completed=completed,
+                status="RUNNING",
+                verdict="RUNNING",
+                active_node_id=plan_node.node_id,
+            )
+            result = _run_native_agent_node(
+                node,
+                plan_node,
+                accepted_inputs=accepted_inputs,
+                execution=execution,
+                goal_hash=goal_hash or plan.runtime_goal_hash,
+                plan_sha256=plan.plan_sha256,
+                run_store=run_store,
+                lease=active_lease,
+            )
+            result["cost_accounting"] = _node_cost_accounting(result)
+            node_log.info(
+                "generic_dag_node_finished", status=result["status"], verdict=result["verdict"]
+            )
+            return result
         legacy_context: tuple[Path, str] | None = None
         if (
             node.skill is None
@@ -925,6 +957,84 @@ def _run_node(
         cancel_event=cancel_event,
         dispatch_recorded=dispatch_recorded,
     )
+
+
+def _run_native_agent_node(
+    node: DagNode,
+    plan_node: DagPlanNode,
+    *,
+    accepted_inputs: tuple[dict[str, Any], ...],
+    execution: DagNodeAttempt,
+    goal_hash: str,
+    plan_sha256: str,
+    run_store: Any,
+    lease: Any,
+) -> dict[str, Any]:
+    from tau_coding.dag_runtime.native_agent_dispatch import execute_native_agent_node
+
+    started = time.monotonic()
+    started_at = _utc_stamp()
+    result = execute_native_agent_node(
+        plan_node,
+        accepted_inputs,
+        execution,
+        goal_hash=goal_hash,
+        plan_sha256=plan_sha256,
+        run_store=run_store,
+        lease=lease,
+    )
+    accepted_output = result.get("accepted_output")
+    settlement = (
+        accepted_output.get("settlement") if isinstance(accepted_output, dict) else None
+    )
+    receipt = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": node.node_id,
+        "status": result["status"],
+        "verdict": result["verdict"],
+        "goal_hash": goal_hash,
+        "attempt": execution.attempt,
+        "attempt_id": execution.attempt_id,
+        "adapter_kind": plan_node.adapter_kind,
+        "harness": "tau_native_agent_loop",
+        "transport_profile": result.get("transport_profile"),
+        "policy_hash": result.get("policy_hash"),
+        "provider_invoked": result.get("provider_invoked", False),
+        "settlement": settlement,
+        "transport_turn_results": result.get("transport_turn_results"),
+        "errors": list(result.get("errors") or []),
+        "mocked": False,
+        "live": bool(result.get("provider_invoked")),
+        "provider_live": bool(result.get("provider_invoked")),
+    }
+    write_durable_json(node.receipt_path, receipt)
+    return {
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": result["status"],
+        "verdict": result["verdict"],
+        "mocked": False,
+        "live": receipt["live"],
+        "provider_live": receipt["provider_live"],
+        "harness": "tau_native_agent_loop",
+        "transport_profile": result.get("transport_profile"),
+        "policy_hash": result.get("policy_hash"),
+        "provider_invoked": receipt["provider_invoked"],
+        "attempt_count": execution.attempt,
+        "started_at": started_at,
+        "finished_at": _utc_stamp(),
+        "duration_seconds": round(time.monotonic() - started, 3),
+        "receipt_path": str(node.receipt_path),
+        "work_order_path": None,
+        "work_order_sha256": None,
+        "usage": None,
+        "cost_estimate": None,
+        "resumed": False,
+        "command_results": [],
+        "artifacts": [],
+        "accepted_output": accepted_output if result["status"] == "PASS" else None,
+        "errors": list(result.get("errors") or []),
+    }
 
 
 def _run_skill_node(
