@@ -1,0 +1,24 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 340,
+  "repo": "grahama1970/tau",
+  "commit": "5f7d3de10",
+  "unit": {
+    "command": "uv run pytest --tau-suite=all -q -p no:cacheprovider tests/test_generic_dag_tau_agent_dispatch.py tests/test_generic_dag.py tests/test_agent_node_scheduler_adapter.py",
+    "exit_code": 0,
+    "summary": "see ticket-340-verify.md: passed, fail-before-fix 10/11 fail with src stashed"
+  },
+  "e2e": {
+    "command": "skills/agentic-evals/run.sh run evals/tau_native_cli_dispatch_agentic_eval.json (live_e2e case: subprocess uv run tau run with claude-model-turn, random-nonce readback receipt)",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-340-native-cli/proof.json",
+    "report": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-340-native-cli/agentic-evals-report-20260906T1737Z.json",
+    "readiness": "READY",
+    "trial_count": 4,
+    "transport_profile": "claude-model-turn",
+    "nonce": "nonce-d69579e968dcf147",
+    "final_text": "NONCE=nonce-d69579e968dcf147"
+  }
+}
