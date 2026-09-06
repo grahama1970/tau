@@ -128,7 +128,7 @@ class _FixtureProviderFactory:
 @pytest.fixture
 def fixture_transport(monkeypatch: pytest.MonkeyPatch) -> _FixtureProviderFactory:
     factory = _FixtureProviderFactory()
-    monkeypatch.setattr(dispatch, "discover_transport_profiles", lambda: DISCOVERY)
+    monkeypatch.setattr(dispatch, "discover_transport_profiles", lambda requirement=None: DISCOVERY)
     monkeypatch.setattr(dispatch, "build_transport_provider", factory)
     return factory
 
@@ -142,6 +142,77 @@ def _run_cli(spec_path: Path) -> tuple[int, dict[str, Any]]:
 
 def _node(receipt: dict[str, Any]) -> dict[str, Any]:
     return next(item for item in receipt["nodes"] if item["node_id"] == "reviewer")
+
+
+def test_discovery_scopes_live_readiness_to_requirement_fallback_chain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Response:
+        def __init__(self, payload: dict[str, Any]) -> None:
+            self._payload = payload
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, Any]:
+            return self._payload
+
+    class _Client:
+        calls: list[dict[str, Any]] = []
+
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            return None
+
+        def __enter__(self) -> _Client:
+            return self
+
+        def __exit__(self, *args: Any) -> None:
+            return None
+
+        def get(self, url: str, **kwargs: Any) -> _Response:
+            self.calls.append({"url": url, "params": kwargs.get("params")})
+            if url.endswith("/profiles"):
+                return _Response(
+                    {
+                        "profiles": [
+                            {
+                                **DISCOVERY["profiles"][0],
+                                "id": "preferred-model-turn",
+                                "fallbacks": ["fallback-model-turn"],
+                            },
+                            {**DISCOVERY["profiles"][0], "id": "fallback-model-turn"},
+                            {**DISCOVERY["profiles"][0], "id": "unrelated-vlm"},
+                        ]
+                    }
+                )
+            profile = kwargs["params"]["profile"]
+            return _Response(
+                {
+                    "schema": "scillm.transport_readiness.v1",
+                    "live": True,
+                    "readiness": [{"profile": profile, "state": "transport_live_ready"}],
+                }
+            )
+
+    _Client.calls = []
+    monkeypatch.setattr(dispatch, "scillm_api_key", lambda: "test-key")
+    monkeypatch.setattr(dispatch, "scillm_base_url", lambda: "http://scillm.test")
+    monkeypatch.setattr("httpx.Client", _Client)
+
+    discovery = dispatch.discover_transport_profiles(
+        requirement=_requirement(preferences=["preferred-model-turn"])
+    )
+
+    readiness_params = [item["params"] for item in _Client.calls if item["params"]]
+    assert readiness_params == [
+        {"live": "true", "profile": "preferred-model-turn"},
+        {"live": "true", "profile": "fallback-model-turn"},
+    ]
+    assert discovery["readiness"] == {
+        "preferred-model-turn": "transport_live_ready",
+        "fallback-model-turn": "transport_live_ready",
+    }
+    assert "unrelated-vlm" not in discovery["readiness"]
 
 
 def test_tau_run_dispatches_tau_agent_node_through_native_adapter(

@@ -24,6 +24,7 @@ from tau_coding.dag_runtime.agent_node_adapter import execute_tau_agent_node
 from tau_coding.dag_runtime.agent_requirement import (
     AgentRequirementError,
     select_transport_profile,
+    validate_agent_requirement,
     validate_selection_receipt,
 )
 from tau_coding.dag_runtime.model import DagPlanNode, FrozenJson, canonical_sha256
@@ -63,24 +64,64 @@ def scillm_api_key() -> str:
     return key
 
 
-def discover_transport_profiles() -> dict[str, Any]:
-    """Live scillm#27 discovery: profiles plus live readiness states."""
+def _string_list(value: object) -> tuple[str, ...]:
+    if isinstance(value, str):
+        return (value,) if value else ()
+    if not isinstance(value, list):
+        return ()
+    return tuple(item for item in value if isinstance(item, str) and item)
+
+
+def _target_profile_ids(
+    requirement: Mapping[str, Any] | None, profiles: list[Mapping[str, Any]]
+) -> list[str]:
+    """Profiles that need authoritative live readiness for this node.
+
+    SciLLM's all-profile live-readiness endpoint probes every provider profile
+    sequentially. A slow or rate-limited unrelated provider can then block a Tau
+    node that only needs one profile. Tau still requires live readiness; it just
+    asks SciLLM for the node's preference/fallback chain instead of the whole
+    catalog.
+    """
+    if requirement is None:
+        return [str(item.get("id")) for item in profiles if item.get("id")]
+    normalized = validate_agent_requirement(requirement)
+    by_id = {str(item.get("id")): item for item in profiles if item.get("id")}
+    targets: list[str] = []
+    for preference in normalized["profile_preferences"]:
+        if preference not in targets:
+            targets.append(preference)
+        if not normalized["fallback_policy"]["allowed"]:
+            continue
+        for fallback_id in _string_list(by_id.get(preference, {}).get("fallbacks")):
+            if fallback_id not in targets:
+                targets.append(fallback_id)
+    return targets
+
+
+def discover_transport_profiles(requirement: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Live scillm#27 discovery: profiles plus scoped live readiness states."""
     import httpx
 
     headers = {"Authorization": f"Bearer {scillm_api_key()}", "X-Caller-Skill": CALLER_SKILL}
     base = scillm_base_url()
-    with httpx.Client(timeout=180) as client:
-        profiles = client.get(f"{base}/v1/scillm/profiles", headers=headers)
-        profiles.raise_for_status()
-        readiness = client.get(
-            f"{base}/v1/scillm/profiles/readiness", headers=headers, params={"live": "true"}
-        )
-        readiness.raise_for_status()
-    readiness_payload = readiness.json()
-    return {
-        "profiles": profiles.json()["profiles"],
-        "readiness": {item["profile"]: item["state"] for item in readiness_payload["readiness"]},
-    }
+    timeout = httpx.Timeout(90.0, connect=10.0)
+    with httpx.Client(timeout=timeout) as client:
+        profiles_response = client.get(f"{base}/v1/scillm/profiles", headers=headers)
+        profiles_response.raise_for_status()
+        profiles = profiles_response.json()["profiles"]
+        readiness: dict[str, str] = {}
+        for profile_id in _target_profile_ids(requirement, profiles):
+            readiness_response = client.get(
+                f"{base}/v1/scillm/profiles/readiness",
+                headers=headers,
+                params={"live": "true", "profile": profile_id},
+            )
+            readiness_response.raise_for_status()
+            readiness_payload = readiness_response.json()
+            for item in readiness_payload.get("readiness", []):
+                readiness[str(item["profile"])] = str(item["state"])
+    return {"profiles": profiles, "readiness": readiness}
 
 
 def build_transport_provider(selection: dict[str, Any], correlation: dict[str, Any]) -> Any:
@@ -163,7 +204,7 @@ def preflight_native_node(
             "NATIVE_NODE_INVALID", "agent_requirement (tau.agent_requirement.v1) is required"
         )
     try:
-        discovery = discover_transport_profiles()
+        discovery = discover_transport_profiles(requirement=requirement)
         selection = select_transport_profile(requirement=requirement, discovery=discovery)
     except AgentRequirementError as exc:
         verdict = (
