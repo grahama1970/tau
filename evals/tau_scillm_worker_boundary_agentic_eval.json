@@ -1,0 +1,103 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "tau#341 SciLLM worker work-order boundary through the real Tau CLI",
+  "claims": {
+    "proves": "The actual `uv run tau scillm-worker-launch` CLI blocks missing, mistyped, and undeclared tau.executor.scillm_worker.v1 fields before request construction or HTTP, and still accepts a valid dry-run work order.",
+    "does_not_prove": "SciLLM/OpenCode provider execution, worker-authored code correctness, or live provider readiness."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.scillm_worker.strict_work_order_boundary",
+      "description": "SciLLM worker launch validates work-order shape, identity, types, and undeclared fields before executable request construction or HTTP.",
+      "criticality": "critical",
+      "evidence_required": {
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "scillm-worker-work-order-boundary",
+      "type": "adversarial",
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.scillm_worker.strict_work_order_boundary"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals/tau-341-work-order-boundary && rm -rf local/agentic-evals/tau-341-work-order-boundary/work && uv run python scripts/agentic-eval-tau-scillm-work-order-boundary.py --work local/agentic-evals/tau-341-work-order-boundary/work --out local/agentic-evals/tau-341-work-order-boundary/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.scillm_work_order_boundary_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "watchdog-missing-identity",
+          "watchdog-malformed-identity",
+          "valid-dry-run"
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-missing-identity/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-missing-identity/http_executed",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-missing-identity/request_constructed",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-malformed-identity/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-malformed-identity/http_executed",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/watchdog-malformed-identity/request_constructed",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/valid-dry-run/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/valid-dry-run/http_executed",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/apply-invalid-unroutable/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-341-work-order-boundary/proof.json",
+            "json_pointer": "/cases/apply-invalid-unroutable/http_executed",
+            "equals": false
+          }
+        ]
+      },
+      "real_world": true
+    }
+  ]
+}

@@ -24,6 +24,11 @@ from tau_coding.policy_profile import (
     validate_data_boundary,
     validate_policy_profile,
 )
+from tau_coding.scillm_work_order import (
+    format_work_order_errors,
+    legacy_alert_codes,
+    work_order_validation_errors,
+)
 
 GITHUB_APPLY_POLICY_RECEIPT_SCHEMA = "tau.github_apply_policy_receipt.v1"
 RESEARCH_QUERY_SAFETY_RECEIPT_SCHEMA = "tau.research_query_safety_receipt.v1"
@@ -306,6 +311,30 @@ def write_scillm_worker_launch_receipt(
     resolved_output = output_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    work_order_errors = work_order_validation_errors(work_order) if work_order else []
+    if work_order_errors:
+        # tau#341: strict typed boundary. No request payload, no route, no HTTP.
+        alerts.append(
+            _alert(
+                "invalid_work_order",
+                "SciLLM work order failed strict tau.executor.scillm_worker.v1 validation",
+                errors=format_work_order_errors(work_order_errors),
+            )
+        )
+        for code in legacy_alert_codes(work_order_errors):
+            alerts.append(_alert(code, f"see invalid_work_order diagnostics ({code})"))
+        return _write_rejected_scillm_launch_receipt(
+            resolved_work_order=resolved_work_order,
+            output_path=output_path,
+            resolved_output=resolved_output,
+            work_order=work_order,
+            work_order_errors=work_order_errors,
+            alerts=alerts,
+            scillm_base_url=scillm_base_url,
+            caller_skill=caller_skill,
+            apply=apply,
+            request_timeout_s=request_timeout_s,
+        )
     work_order["work_order_path"] = str(resolved_work_order)
     if work_order.get("schema") != SCILLM_WORK_ORDER_SCHEMA:
         alerts.append(
@@ -480,6 +509,97 @@ def write_scillm_worker_launch_receipt(
     return payload
 
 
+def _write_rejected_scillm_launch_receipt(
+    *,
+    resolved_work_order: Path,
+    output_path: Path,
+    resolved_output: Path,
+    work_order: Mapping[str, Any],
+    work_order_errors: list[dict[str, Any]],
+    alerts: list[dict[str, Any]],
+    scillm_base_url: str,
+    caller_skill: str,
+    apply: bool,
+    request_timeout_s: int,
+) -> dict[str, Any]:
+    """BLOCKED launch receipt for a work order rejected by the strict boundary.
+
+    Deliberately carries no ``request_payload``/``url``: nothing executable was
+    built. ``work_order_validation`` lists pydantic ``loc``/``type``/``msg``.
+    """
+
+    work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
+    course_correction_path, course_correction = _worker_launch_course_correction_artifact(
+        output_path=resolved_output,
+        worker_kind="scillm",
+        work_order=work_order,
+        alert_codes=[alert["code"] for alert in alerts],
+        launch_result={
+            "http_executed": False,
+            "launch_skipped": True,
+            "response_path": None,
+            "error_path": None,
+        },
+    )
+    payload = {
+        "schema": SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
+        "ok": False,
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dry_run": not apply,
+        "apply_requested": apply,
+        "http_executed": False,
+        "launch_skipped": True,
+        "http_status": None,
+        "timed_out": False,
+        "request_timeout_s": request_timeout_s,
+        "worker_kind": "scillm",
+        "work_order_path": str(resolved_work_order),
+        "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
+        "work_order_bytes": _artifact_size(resolved_work_order),
+        "work_order_artifact": work_order_artifacts[0] if work_order_artifacts else None,
+        "work_order_schema": work_order.get("schema"),
+        "work_order_validation": {
+            "schema": "tau.scillm_work_order_validation.v1",
+            "model": "tau_coding.scillm_work_order.ScillmWorkerWorkOrder",
+            "valid": False,
+            "errors": work_order_errors,
+        },
+        "dag_id": None,
+        "node_id": None,
+        "agent": None,
+        "attempt": None,
+        "goal_hash": None,
+        "scillm_base_url": scillm_base_url.rstrip("/"),
+        "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
+        "url": None,
+        "headers": {"x_caller_skill": caller_skill},
+        "model_provider_route": {},
+        "request_constructed": False,
+        "request_payload": {},
+        "course_correction_path": str(course_correction_path) if course_correction_path else None,
+        "course_correction_artifacts": (
+            [str(course_correction_path)] if course_correction_path else []
+        ),
+        "course_correction": course_correction,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau rejected the work order at the strict typed boundary before building "
+                "any executable request or contacting SciLLM.",
+            ],
+            "does_not_prove": ["Anything about the worker, provider, or code."],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    payload["receipt_path"] = str(resolved_output)
+    _write_json(output_path, payload)
+    return payload
+
+
 def _write_worker_receipt(
     *,
     work_order_path: Path,
@@ -495,6 +615,16 @@ def _write_worker_receipt(
     resolved_result = result_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    if worker_kind == "scillm" and work_order:
+        scillm_errors = work_order_validation_errors(work_order)
+        if scillm_errors:
+            alerts.append(
+                _alert(
+                    "invalid_work_order",
+                    "SciLLM work order failed strict tau.executor.scillm_worker.v1 validation",
+                    errors=format_work_order_errors(scillm_errors),
+                )
+            )
     work_order["work_order_path"] = str(resolved_work_order)
     repo = _repo_root(work_order)
     result_path_admissible = _append_worker_result_argument_alerts(

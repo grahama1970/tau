@@ -955,10 +955,13 @@ For SciLLM coding delegates, Tau uses the SciLLM proxy service, normally
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
 `scillm-debugger`, not chat completions, raw OpenCode ports, direct provider
 APIs, or `opencode-go/*` model strings as the `agent`. By default,
-`scillm-worker-launch` is a dry-run launcher receipt: it builds the exact
-`POST /v1/scillm/opencode/runs` payload, redacts the required auth header,
-records `x_caller_skill`, and blocks wrong surfaces/endpoints before any
-external call. The default adapter request timeout is 600 seconds, but Tau does
+`scillm-worker-launch` is a dry-run launcher receipt: it first applies the
+strict `tau.executor.scillm_worker.v1` work-order boundary, so missing identity
+fields, mistyped fields, and undeclared fields block with `invalid_work_order`
+before Tau constructs an executable request or contacts SciLLM. Valid work
+orders then build the exact `POST /v1/scillm/opencode/runs` payload, redact the
+required auth header, record `x_caller_skill`, and block wrong
+surfaces/endpoints before any external call. The default adapter request timeout is 600 seconds, but Tau does
 not inject an OpenCode worker `timeout_s` into the SciLLM payload unless the
 work order explicitly specifies `timeout_s` as a positive integer. Malformed
 base URLs are blocked before apply, and known raw local OpenCode ports such as
