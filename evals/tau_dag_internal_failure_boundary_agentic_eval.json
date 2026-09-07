@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau DAG internal node failures cross a strict Pydantic result boundary and surface triage-error self-heal data instead of raw prose or regex-only validation.",
+  "claims": {
+    "proves": "Malformed DAG node output is rejected by the actual Tau scheduler through Pydantic attempt-result admission, converted to a tau.internal_failure.v1 result carrying triage-error classification data, and lower-case minted triage codes are admissible verdicts without regex validation in attempt_result.py.",
+    "does_not_prove": "Live provider recovery, GitHub ticket mutation, or universal Pydantic coverage for every older public DAG dataclass contract."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.dag_node.internal_failure_triage_boundary",
+      "description": "DAG node adapter/admission failures are shaped by Pydantic and carry triage-error classification plus next_command self-heal data when ambiguous.",
+      "criticality": "critical",
+      "evidence_required": {
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "dag-internal-failure-boundary",
+      "type": "adversarial",
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.dag_node.internal_failure_triage_boundary"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p local/agentic-evals/tau-dag-internal-failure-boundary && uv run python scripts/agentic-eval-tau-dag-internal-failure-boundary.py --work local/agentic-evals/tau-dag-internal-failure-boundary/work --out local/agentic-evals/tau-dag-internal-failure-boundary/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"schema\": \"tau.dag_internal_failure_boundary_proof.v1\"",
+          "\"status\": \"PASS\"",
+          "tau.internal_failure.v1",
+          "tau_unclassified_eval0001"
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-dag-internal-failure-boundary/proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-dag-internal-failure-boundary/proof.json",
+            "json_pointer": "/checks/pydantic_model_present",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-dag-internal-failure-boundary/proof.json",
+            "json_pointer": "/checks/regex_compile_absent",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-dag-internal-failure-boundary/proof.json",
+            "json_pointer": "/checks/triage_next_command_present",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-dag-internal-failure-boundary/proof.json",
+            "json_pointer": "/result_verdict",
+            "equals": "tau_unclassified_eval0001"
+          }
+        ]
+      },
+      "real_world": true
+    }
+  ]
+}

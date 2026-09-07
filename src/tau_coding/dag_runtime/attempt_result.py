@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from tau_coding.dag_runtime.model import canonical_sha256
 
 DAG_ATTEMPT_RESULT_SCHEMA = "tau.dag_attempt_result.v1"
 DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA = "tau.dag_attempt_result_validation.v1"
 ATTEMPT_RESULT_STATUSES = frozenset({"PASS", "FAIL", "BLOCKED", "CANCELLED"})
-VERDICT_RE = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
 IDENTITY_CLAIM_FIELDS = ("run_id", "plan_sha256", "attempt_id")
 
 
@@ -31,6 +31,73 @@ class DagAttemptResultAdmissionError(ValueError):
         self.path = path
 
 
+class DagAttemptResultModel(BaseModel):
+    """Strict node-to-scheduler attempt result boundary."""
+
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    schema_: str | None = Field(default=None, alias="schema")
+    run_id: str | None = None
+    plan_sha256: str | None = None
+    node_id: str | None = None
+    attempt_id: str | None = None
+    attempt: int | None = None
+    status: str = Field(min_length=1)
+    verdict: str = Field(min_length=1)
+    retryable: bool | None = None
+    accepted_output: dict[str, Any] | None = None
+    errors: list[str] = Field(default_factory=list)
+    alert_codes: list[str] = Field(default_factory=list)
+
+    @field_validator("schema_")
+    @classmethod
+    def _schema_string(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("dag_attempt_result_schema_invalid")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def _status_known(cls, value: str) -> str:
+        if value not in ATTEMPT_RESULT_STATUSES:
+            raise ValueError("dag_attempt_result_status_invalid")
+        return value
+
+    @field_validator("verdict")
+    @classmethod
+    def _verdict_machine_code(cls, value: str) -> str:
+        if not _machine_token(value):
+            raise ValueError("dag_attempt_result_verdict_invalid")
+        return value
+
+    @field_validator("run_id", "plan_sha256", "node_id", "attempt_id")
+    @classmethod
+    def _optional_non_empty_string(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("dag_attempt_result_string_invalid")
+        return value
+
+    @field_validator("errors", "alert_codes")
+    @classmethod
+    def _string_array(cls, value: list[str]) -> list[str]:
+        for item in value:
+            if not item:
+                raise ValueError("dag_attempt_result_string_array_invalid")
+        return value
+
+    @model_validator(mode="after")
+    def _status_contract(self) -> DagAttemptResultModel:
+        if self.status == "PASS" and self.verdict != "PASS":
+            raise ValueError("dag_attempt_result_pass_verdict_mismatch")
+        if self.status != "PASS" and self.verdict == "PASS":
+            raise ValueError("dag_attempt_result_non_pass_verdict_mismatch")
+        if self.status == "CANCELLED" and self.retryable is not False:
+            raise ValueError("dag_attempt_result_cancelled_retryable")
+        if self.status != "PASS" and self.accepted_output is not None:
+            raise ValueError("dag_attempt_result_non_pass_accepted_output")
+        return self
+
+
 def admit_dag_attempt_result(
     *,
     plan_sha256: str,
@@ -43,13 +110,16 @@ def admit_dag_attempt_result(
     if not isinstance(result, Mapping):
         raise DagAttemptResultAdmissionError("dag_attempt_result_not_object", "$")
     raw = dict(result)
-    claimed_schema = raw.get("schema")
+    try:
+        parsed = DagAttemptResultModel.model_validate(raw)
+    except ValidationError as exc:
+        raise _admission_error_from_validation(exc) from exc
+
+    claimed_schema = parsed.schema_
     claims_identity = claimed_schema == DAG_ATTEMPT_RESULT_SCHEMA or any(
         field in raw for field in IDENTITY_CLAIM_FIELDS
     )
-    if claimed_schema is not None and not isinstance(claimed_schema, str):
-        raise DagAttemptResultAdmissionError("dag_attempt_result_schema_invalid", "$.schema")
-    claimed_node = raw.get("node_id")
+    claimed_node = parsed.node_id
     if claimed_node is not None and claimed_node != node_id:
         raise DagAttemptResultAdmissionError("dag_attempt_result_node_mismatch", "$.node_id")
     if claims_identity:
@@ -59,47 +129,9 @@ def admit_dag_attempt_result(
         _require_claim(raw, "attempt_id", identity.attempt_id)
         _require_claim(raw, "attempt", identity.attempt)
 
-    status = _required_string(raw, "status")
-    if status not in ATTEMPT_RESULT_STATUSES:
-        raise DagAttemptResultAdmissionError("dag_attempt_result_status_invalid", "$.status")
-    verdict = _required_string(raw, "verdict")
-    if not VERDICT_RE.fullmatch(verdict):
-        raise DagAttemptResultAdmissionError("dag_attempt_result_verdict_invalid", "$.verdict")
-    if status == "PASS" and verdict != "PASS":
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_pass_verdict_mismatch",
-            "$.verdict",
-        )
-    if status != "PASS" and verdict == "PASS":
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_non_pass_verdict_mismatch",
-            "$.verdict",
-        )
-
-    retryable = raw.get("retryable")
+    retryable = parsed.retryable
     if retryable is None:
-        retryable = status not in {"PASS", "CANCELLED"}
-    elif not isinstance(retryable, bool):
-        raise DagAttemptResultAdmissionError("dag_attempt_result_retryable_invalid", "$.retryable")
-    if status == "CANCELLED" and retryable is not False:
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_cancelled_retryable",
-            "$.retryable",
-        )
-
-    accepted_output = raw.get("accepted_output")
-    if status != "PASS" and accepted_output is not None:
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_non_pass_accepted_output",
-            "$.accepted_output",
-        )
-    if accepted_output is not None and not isinstance(accepted_output, Mapping):
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_accepted_output_invalid",
-            "$.accepted_output",
-        )
-    errors = _string_array(raw.get("errors", ()), "$.errors")
-    alert_codes = _string_array(raw.get("alert_codes", ()), "$.alert_codes")
+        retryable = parsed.status not in {"PASS", "CANCELLED"}
 
     reserved = {
         "schema",
@@ -125,12 +157,12 @@ def admit_dag_attempt_result(
         "node_id": node_id,
         "attempt_id": identity.attempt_id,
         "attempt": identity.attempt,
-        "status": status,
-        "verdict": verdict,
+        "status": parsed.status,
+        "verdict": parsed.verdict,
         "retryable": retryable,
-        "accepted_output": dict(accepted_output) if isinstance(accepted_output, Mapping) else None,
-        "errors": errors,
-        "alert_codes": alert_codes,
+        "accepted_output": parsed.accepted_output,
+        "errors": parsed.errors,
+        "alert_codes": parsed.alert_codes,
         **extras,
     }
     try:
@@ -155,14 +187,54 @@ def admit_dag_attempt_result(
     )
 
 
-def _required_string(raw: Mapping[str, Any], field: str) -> str:
-    value = raw.get(field)
-    if not isinstance(value, str) or not value.strip():
-        raise DagAttemptResultAdmissionError(
-            f"dag_attempt_result_{field}_invalid",
-            f"$.{field}",
-        )
-    return value
+def _machine_token(value: str) -> bool:
+    allowed = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_:-.")
+    return bool(value) and all(char in allowed for char in value) and (
+        value == value.upper() or any(separator in value for separator in ("_", ":", "-", "."))
+    )
+
+
+def _admission_error_from_validation(exc: ValidationError) -> DagAttemptResultAdmissionError:
+    first = exc.errors()[0]
+    location = tuple(first.get("loc", ()))
+    message = str(first.get("msg") or "")
+    code = _validation_error_code(location, message)
+    return DagAttemptResultAdmissionError(code, _validation_error_path(location, code))
+
+
+def _validation_error_code(location: tuple[Any, ...], message: str) -> str:
+    for candidate in _MODEL_ERROR_PATHS:
+        if candidate in message:
+            return candidate
+    if not location:
+        return "dag_attempt_result_invalid"
+    field = str(location[0])
+    if field in {"status", "retryable", "accepted_output"}:
+        return f"dag_attempt_result_{field}_invalid"
+    if field in {"errors", "alert_codes"}:
+        return "dag_attempt_result_string_array_invalid"
+    if field in {"schema", "schema_"}:
+        return "dag_attempt_result_schema_invalid"
+    return "dag_attempt_result_invalid"
+
+
+def _validation_error_path(location: tuple[Any, ...], code: str) -> str:
+    if code in _MODEL_ERROR_PATHS:
+        return _MODEL_ERROR_PATHS[code]
+    return "$" + "".join(
+        f".{part}" if isinstance(part, str) else f"[{part}]" for part in location
+    )
+
+
+_MODEL_ERROR_PATHS = {
+    "dag_attempt_result_schema_invalid": "$.schema",
+    "dag_attempt_result_status_invalid": "$.status",
+    "dag_attempt_result_verdict_invalid": "$.verdict",
+    "dag_attempt_result_pass_verdict_mismatch": "$.verdict",
+    "dag_attempt_result_non_pass_verdict_mismatch": "$.verdict",
+    "dag_attempt_result_cancelled_retryable": "$.retryable",
+    "dag_attempt_result_non_pass_accepted_output": "$.accepted_output",
+}
 
 
 def _require_claim(raw: Mapping[str, Any], field: str, expected: object) -> None:
@@ -176,17 +248,3 @@ def _require_claim(raw: Mapping[str, Any], field: str, expected: object) -> None
             f"dag_attempt_result_{field}_mismatch",
             f"$.{field}",
         )
-
-
-def _string_array(value: object, path: str) -> list[str]:
-    if not isinstance(value, (list, tuple)):
-        raise DagAttemptResultAdmissionError("dag_attempt_result_string_array_invalid", path)
-    values: list[str] = []
-    for index, item in enumerate(value):
-        if not isinstance(item, str) or not item:
-            raise DagAttemptResultAdmissionError(
-                "dag_attempt_result_string_array_invalid",
-                f"{path}[{index}]",
-            )
-        values.append(item)
-    return values

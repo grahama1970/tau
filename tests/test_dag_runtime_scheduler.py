@@ -129,7 +129,10 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     assert called == ["producer"]
 
 
-def test_scheduler_blocks_downstream_after_malformed_attempt_result(tmp_path: Path) -> None:
+def test_scheduler_blocks_downstream_after_malformed_attempt_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     plan = compile_generic_dag_plan(
         _generic_spec(
             tmp_path,
@@ -141,6 +144,19 @@ def test_scheduler_blocks_downstream_after_malformed_attempt_result(tmp_path: Pa
         source_path=tmp_path / "dag.json",
     )
     called: list[str] = []
+
+    def classify(signal: str, *, layer: str) -> dict[str, Any]:
+        assert layer == "tau"
+        assert signal == "dag_attempt_result_pass_verdict_mismatch:$.verdict"
+        return {
+            "code": "tau_unclassified_11111111",
+            "layer": "tau",
+            "cause": "malformed DAG node result",
+            "next_command": "file a repair ticket",
+            "ambiguous": True,
+        }
+
+    monkeypatch.setattr("tau_coding.dag_runtime.scheduler.classify_tau_failure", classify)
 
     def execute(
         node: DagPlanNode,
@@ -160,10 +176,64 @@ def test_scheduler_blocks_downstream_after_malformed_attempt_result(tmp_path: Pa
 
     assert called == ["producer"]
     assert result.status == "BLOCKED"
-    assert result.verdict == "DAG_ATTEMPT_RESULT_INVALID"
+    assert result.verdict == "tau_unclassified_11111111"
     assert result.completed_node_ids == ()
     assert result.node_results[0]["status"] == "BLOCKED"
-    assert result.node_results[0]["errors"] == ["dag_attempt_result_pass_verdict_mismatch"]
+    assert result.node_results[0]["errors"] == ["malformed DAG node result"]
+    assert result.node_results[0]["alert_codes"] == [
+        "tau_unclassified_11111111",
+        "dag_attempt_result_pass_verdict_mismatch",
+    ]
+    assert result.node_results[0]["failure"] == {
+        "schema": "tau.internal_failure.v1",
+        "original_code": "dag_attempt_result_pass_verdict_mismatch",
+        "path": "$.verdict",
+        "triage": {
+            "code": "tau_unclassified_11111111",
+            "layer": "tau",
+            "cause": "malformed DAG node result",
+            "next_command": "file a repair ticket",
+            "ambiguous": True,
+        },
+    }
+
+
+def test_scheduler_triages_adapter_exception(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "producer")]),
+        source_path=tmp_path / "dag.json",
+    )
+
+    def classify(signal: str, *, layer: str) -> dict[str, Any]:
+        assert layer == "tau"
+        assert signal == "dag_node_future_exception:RuntimeError:adapter exploded"
+        return {
+            "code": "tau_unclassified_22222222",
+            "layer": "tau",
+            "cause": "adapter exploded",
+            "next_command": "run debugger",
+            "ambiguous": True,
+        }
+
+    monkeypatch.setattr("tau_coding.dag_runtime.scheduler.classify_tau_failure", classify)
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del node, accepted_inputs, execution
+        raise RuntimeError("adapter exploded")
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "tau_unclassified_22222222"
+    assert result.node_results[0]["failure"]["original_code"] == "ADAPTER_EXECUTION_FAILED"
+    assert result.node_results[0]["failure"]["triage"]["next_command"] == "run debugger"
 
 
 def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path) -> None:

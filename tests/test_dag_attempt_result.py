@@ -82,6 +82,24 @@ def test_admit_dag_attempt_result_normalizes_terminal_non_pass_payloads(
     assert admission.normalized["accepted_output"] is None
 
 
+def test_admit_dag_attempt_result_accepts_triage_error_code_verdict() -> None:
+    admission = admit_dag_attempt_result(
+        plan_sha256="sha256:" + "4" * 64,
+        identity=_identity(),
+        node_id="producer",
+        result={
+            "node_id": "producer",
+            "status": "BLOCKED",
+            "verdict": "tau_unclassified_11111111",
+            "errors": ["classified by triage-error"],
+            "alert_codes": ["tau_unclassified_11111111"],
+        },
+    )
+
+    assert admission.normalized["verdict"] == "tau_unclassified_11111111"
+    assert admission.normalized["retryable"] is True
+
+
 @pytest.mark.parametrize(
     ("payload", "code", "path"),
     [

@@ -58,6 +58,7 @@ from tau_coding.dag_runtime.transition import (
     transition_batch_to_payload,
     validate_transition_batch,
 )
+from tau_coding.dag_runtime.triage_error_bridge import classify_tau_failure
 from tau_coding.dag_runtime.worker_assignment import (
     WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
     WorkerAssignment,
@@ -946,12 +947,11 @@ def run_dag_plan(
                             attempt_id=identity.attempt_id,
                             idempotency_key=identity.idempotency_key,
                         ).exception("dag_node_future_exception")
-                        result = {
-                            "node_id": node_id,
-                            "status": "BLOCKED",
-                            "verdict": "ADAPTER_EXECUTION_FAILED",
-                            "errors": [str(exc)],
-                        }
+                        result = _triaged_blocked_attempt_result(
+                            node_id=node_id,
+                            signal=f"dag_node_future_exception:{type(exc).__name__}:{exc}",
+                            original_code="ADAPTER_EXECUTION_FAILED",
+                        )
                     if worker_binding is not None and run_store is not None and lease is not None:
                         try:
                             result = _complete_worker_for_attempt(
@@ -1011,15 +1011,12 @@ def run_dag_plan(
                             result=result,
                         )
                     except DagAttemptResultAdmissionError as exc:
-                        result = {
-                            "node_id": node_id,
-                            "status": "BLOCKED",
-                            "verdict": "DAG_ATTEMPT_RESULT_INVALID",
-                            "errors": [exc.code],
-                            "alert_codes": [exc.code],
-                            "dag_attempt_result_error_path": exc.path,
-                            "retryable": False,
-                        }
+                        result = _triaged_blocked_attempt_result(
+                            node_id=node_id,
+                            signal=f"{exc.code}:{exc.path}",
+                            original_code=exc.code,
+                            error_path=exc.path,
+                        )
                         result, validation = _validate_attempt_result(
                             plan_sha256=plan.plan_sha256,
                             identity=identity,
@@ -2219,6 +2216,33 @@ def _validate_attempt_result(
     return admission.normalized, admission.validation
 
 
+def _triaged_blocked_attempt_result(
+    *,
+    node_id: str,
+    signal: str,
+    original_code: str,
+    error_path: str | None = None,
+) -> dict[str, Any]:
+    triage = classify_tau_failure(signal, layer="tau")
+    triage_code = str(triage.get("code") or "tau_unclassified_internal_error")
+    result = {
+        "node_id": node_id,
+        "status": "BLOCKED",
+        "verdict": triage_code,
+        "errors": [str(triage.get("cause") or signal)],
+        "alert_codes": [triage_code, original_code],
+        "retryable": False,
+        "failure": {
+            "schema": "tau.internal_failure.v1",
+            "original_code": original_code,
+            "triage": triage,
+        },
+    }
+    if error_path is not None:
+        result["failure"]["path"] = error_path
+    return result
+
+
 def _apply_workspace_stale_read_observations(
     *,
     plan: DagPlan,
@@ -2600,12 +2624,11 @@ def _cancel_and_collect_futures(
                 "errors": ["cancelled before adapter execution"],
             }
         except Exception as exc:  # pragma: no cover - defensive boundary.
-            cancelled_result = {
-                "node_id": pending_node_id,
-                "status": "BLOCKED",
-                "verdict": "CANCELLED",
-                "errors": [str(exc)],
-            }
+            cancelled_result = _triaged_blocked_attempt_result(
+                node_id=pending_node_id,
+                signal=f"dag_cancelled_future_exception:{type(exc).__name__}:{exc}",
+                original_code="CANCELLED_FUTURE_EXCEPTION",
+            )
         if run_store is not None and lease is not None:
             try:
                 cancelled_result, validation = _validate_attempt_result(
@@ -2619,15 +2642,12 @@ def _cancel_and_collect_futures(
                     plan_sha256=plan.plan_sha256,
                     identity=identity,
                     node_id=pending_node_id,
-                    result={
-                        "node_id": pending_node_id,
-                        "status": "BLOCKED",
-                        "verdict": "DAG_ATTEMPT_RESULT_INVALID",
-                        "errors": [exc.code],
-                        "alert_codes": [exc.code],
-                        "dag_attempt_result_error_path": exc.path,
-                        "retryable": False,
-                    },
+                    result=_triaged_blocked_attempt_result(
+                        node_id=pending_node_id,
+                        signal=f"{exc.code}:{exc.path}",
+                        original_code=exc.code,
+                        error_path=exc.path,
+                    ),
                 )
             cancelled_result = run_store.stage_result(lease, identity.attempt_id, cancelled_result)
             _, validation = _validate_attempt_result(
