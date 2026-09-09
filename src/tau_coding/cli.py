@@ -228,6 +228,7 @@ from tau_coding.project_dag import (
     DAG_CONTRACT_SCHEMA,
     dag_contract_error_payload,
     load_dag_contract_payload,
+    resume_project_dag_command_spec_nodes,
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
@@ -3342,6 +3343,16 @@ def main(
     if not print_requested and command == "discord-receipt":
         try:
             payload = _discord_receipt_cli_command(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-command-spec-resume":
+        try:
+            payload = _run_dag_command_spec_resume_cli_command(positional_args[1:])
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -6913,6 +6924,84 @@ def _parse_key_value_options(args: list[str]) -> dict[str, str]:
         options[key[2:]] = args[index]
         index += 1
     return options
+
+
+def _run_dag_command_spec_resume_cli_command(args: list[str]) -> dict[str, object]:
+    if args and args[0] in {"--help", "-h", "help"}:
+        return _command_help_payload(
+            command_name="dag-command-spec-resume",
+            usage=(
+                "tau dag-command-spec-resume <dag.json> --receipt-dir <dir> "
+                "--agents-root <dir> --command-spec-root <dir> --preserve-node <id> "
+                "--rerun-node <id> [--rerun-dependent <id>] [--watchdog-journal <path>] "
+                "[--execute] [--json]"
+            ),
+        )
+    positional: list[str] = []
+    options: dict[str, list[str] | bool] = {
+        "preserve-node": [],
+        "rerun-node": [],
+        "rerun-dependent": [],
+        "execute": False,
+    }
+    index = 0
+    while index < len(args):
+        item = args[index]
+        index += 1
+        if item == "--json":
+            continue
+        if item == "--execute":
+            options["execute"] = True
+            continue
+        if item.startswith("--"):
+            key = item[2:]
+            if key not in {
+                "receipt-dir",
+                "agents-root",
+                "command-spec-root",
+                "preserve-node",
+                "rerun-node",
+                "rerun-dependent",
+                "watchdog-journal",
+            }:
+                raise RuntimeError(f"unknown option: {item}")
+            if index >= len(args):
+                raise RuntimeError(f"missing value for {item}")
+            value = args[index]
+            index += 1
+            if key in {"preserve-node", "rerun-node", "rerun-dependent"}:
+                selected = options[key]
+                assert isinstance(selected, list)
+                selected.append(value)
+            else:
+                options[key] = [value]
+            continue
+        positional.append(item)
+    if len(positional) != 1:
+        raise RuntimeError("missing DAG contract path")
+
+    def one(key: str) -> str:
+        value = options.get(key)
+        if not isinstance(value, list) or not value:
+            raise RuntimeError(f"missing required --{key}")
+        return value[-1]
+
+    watchdog_value = options.get("watchdog-journal")
+    return resume_project_dag_command_spec_nodes(
+        contract_path=Path(positional[0]),
+        receipt_dir=Path(one("receipt-dir")),
+        agents_root=Path(one("agents-root")),
+        command_spec_root=Path(one("command-spec-root")),
+        preserve_nodes=tuple(options["preserve-node"]),  # type: ignore[arg-type]
+        rerun_nodes=tuple(options["rerun-node"]),  # type: ignore[arg-type]
+        rerun_dependents=tuple(options["rerun-dependent"]),  # type: ignore[arg-type]
+        watchdog_journal=(
+            Path(watchdog_value[-1])
+            if isinstance(watchdog_value, list) and watchdog_value
+            else None
+        ),
+        execute=bool(options["execute"]),
+    )
 
 
 def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, object]:

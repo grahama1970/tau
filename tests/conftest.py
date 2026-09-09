@@ -31,6 +31,7 @@ _CONTRACT_TEST_FILES = frozenset(
         "tests/test_loop_receipt.py",
         "tests/test_loop_sanity.py",
         "tests/test_project_dag.py",
+        "tests/test_project_dag_command_spec_resume.py",
         "tests/test_prompt_templates.py",
         "tests/test_refinement.py",
         "tests/test_resources.py",

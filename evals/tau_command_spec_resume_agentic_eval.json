@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "skill": "tau-command-spec-resume",
+  "trials": 2,
+  "proof_scope": "Tau project DAG command-spec same-run recovery preserves accepted creator output while rerunning failed reviewer nodes through Tau-owned command specs.",
+  "claims": {
+    "proves": "A blocked command-spec DAG can be resumed from the same receipt directory by archiving the old run store/source artifacts, replaying accepted creator output through a generated local command spec without relaunching the creator provider, and rerunning only the failed reviewer command spec to terminal PASS.",
+    "does_not_prove": "Provider availability, real Anthropic/OAuth capacity, Ask-side runs_control wiring, project-watchdog reservation mutation, or GitHub issue closure."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.project_dag.command_spec_resume",
+      "description": "Tau exposes a native command-spec resume seam for retained reviewer-only DAG recovery.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "preserve-creator-rerun-reviewer-command-spec",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.project_dag.command_spec_resume"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-command-spec-resume.py --out local/agentic-evals/tau-command-spec-resume/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"final_status\": \"PASS\"",
+          "\"creator_not_relaunched\": true",
+          "\"reviewer_rerun_only\": true",
+          "\"run_store_archived\": true"
+        ],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/final_status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/creator_not_relaunched", "equals": true},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/reviewer_rerun_only", "equals": true},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/run_store_archived", "equals": true},
+          {"path": "../local/agentic-evals/tau-command-spec-resume/proof.json", "json_pointer": "/safe_admission/run_store_archived_before_mutation", "equals": true}
+        ]
+      }
+    }
+  ]
+}

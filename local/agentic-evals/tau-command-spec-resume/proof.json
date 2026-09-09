@@ -1,0 +1,26 @@
+{
+  "creator_not_relaunched": true,
+  "final_status": "PASS",
+  "final_verdict": "PASS",
+  "first_status": "BLOCKED",
+  "first_verdict": "INVALID_AGENT_RESPONSE",
+  "live": true,
+  "mocked": false,
+  "node_attempts": {
+    "coder": 1,
+    "reviewer": 1
+  },
+  "ok": true,
+  "provider_live": false,
+  "resume_contract_path": "/tmp/tau-command-spec-resume-ysacdx74/run/command-spec-resume/dag.json",
+  "reviewer_rerun_only": true,
+  "run_store_archived": true,
+  "safe_admission": {
+    "preserve_requires_pass": true,
+    "reset_requires_non_pass_or_pending": true,
+    "run_store_archived_before_mutation": true,
+    "schema": "tau.project_dag_command_spec_resume_admission.v1",
+    "watchdog_journal_checked": false
+  },
+  "schema": "tau.command_spec_resume_agentic_proof.v1"
+}

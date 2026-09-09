@@ -7,6 +7,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import sqlite3
 import subprocess
 import tempfile
 import threading
@@ -607,6 +609,306 @@ class ProjectDagContract:
     itar_access_preflight_receipt: str | None
     sandbox_run_receipt: str | None
     compliance_package_validation_receipt: str | None
+
+
+def resume_project_dag_command_spec_nodes(
+    *,
+    contract_path: Path,
+    receipt_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path,
+    preserve_nodes: Sequence[str],
+    rerun_nodes: Sequence[str],
+    rerun_dependents: Sequence[str] = (),
+    watchdog_journal: Path | None = None,
+    execute: bool = False,
+) -> dict[str, Any]:
+    """Prepare and optionally execute a same-run project DAG command-spec resume.
+
+    This seam is intentionally narrower than a new DAG run: it keeps accepted
+    PASS node state in Tau's durable run-store, archives/removes only the named
+    failed command-spec nodes plus declared dependents, resets the run outcome to
+    RUNNING, and then invokes the normal bounded-ready-queue runner.
+    """
+
+    resolved_contract_path = contract_path.expanduser().resolve()
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
+    resolved_agents_root = agents_root.expanduser().resolve()
+    resolved_command_spec_root = command_spec_root.expanduser().resolve()
+    payload = load_dag_contract_payload(resolved_contract_path)
+    contract = validate_dag_contract(payload)
+    preserve = _normalize_node_selection(preserve_nodes, field="preserve_nodes")
+    requested_rerun = _normalize_node_selection(rerun_nodes, field="rerun_nodes")
+    dependents = _normalize_node_selection(rerun_dependents, field="rerun_dependents")
+    reset_nodes = tuple(dict.fromkeys([*requested_rerun, *dependents]))
+    if not reset_nodes:
+        raise RuntimeError("at least one --rerun-node is required")
+    unknown = [node for node in [*preserve, *reset_nodes] if node not in contract.nodes]
+    if unknown:
+        raise RuntimeError("unknown project DAG node(s): " + ", ".join(unknown))
+    overlap = sorted(set(preserve) & set(reset_nodes))
+    if overlap:
+        raise RuntimeError("nodes cannot be both preserved and rerun: " + ", ".join(overlap))
+    non_command = [node for node in reset_nodes if contract.nodes[node].command_spec is None]
+    if non_command:
+        raise RuntimeError("rerun nodes must be command-spec nodes: " + ", ".join(non_command))
+    missing_edges = [
+        node
+        for node in dependents
+        if not any(
+            edge.source == parent and edge.target == node
+            for edge in contract.edges
+            for parent in requested_rerun
+        )
+    ]
+    if missing_edges:
+        raise RuntimeError(
+            "rerun dependents must be direct successors of a rerun node: "
+            + ", ".join(missing_edges)
+        )
+    journal = _project_dag_resume_watchdog_journal(
+        watchdog_journal, contract=contract, receipt_dir=resolved_receipt_dir
+    )
+    run_store_path = resolved_receipt_dir / "dag-run.sqlite3"
+    if not run_store_path.is_file():
+        raise RuntimeError(f"project DAG run store missing: {run_store_path}")
+    admission = _prepare_project_dag_command_spec_resume_store(
+        run_store_path=run_store_path,
+        run_id=contract.dag_id,
+        contract_payload=payload,
+        command_spec_root=resolved_command_spec_root,
+        preserve_nodes=preserve,
+        reset_nodes=reset_nodes,
+    )
+    command = [
+        "uv",
+        "run",
+        "--project",
+        str(Path(__file__).resolve().parents[2]),
+        "tau",
+        "dag-run",
+        admission["resume_contract_path"],
+        "--receipt-dir",
+        str(resolved_receipt_dir),
+        "--agents-root",
+        str(resolved_agents_root),
+        "--command-spec-root",
+        admission["resume_command_spec_root"],
+        "--scheduler",
+        "bounded-ready-queue",
+    ]
+    receipt: dict[str, Any] = {
+        "schema": "tau.project_dag_command_spec_resume.v1",
+        "ok": True,
+        "status": "PREPARED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "dag_id": contract.dag_id,
+        "contract_path": str(resolved_contract_path),
+        "resume_contract_path": admission["resume_contract_path"],
+        "receipt_dir": str(resolved_receipt_dir),
+        "run_store_path": str(run_store_path),
+        "archive_path": admission["archive_path"],
+        "archived_source_artifacts": admission.get("archived_source_artifacts", []),
+        "preserved_nodes": list(preserve),
+        "rerun_nodes": list(requested_rerun),
+        "rerun_dependents": list(dependents),
+        "reset_nodes": list(reset_nodes),
+        "deleted_attempt_ids": admission["deleted_attempt_ids"],
+        "preserved_attempt_ids": admission["preserved_attempt_ids"],
+        "watchdog_journal": journal,
+        "command": command,
+        "safe_admission": {
+            "schema": "tau.project_dag_command_spec_resume_admission.v1",
+            "preserve_requires_pass": True,
+            "reset_requires_non_pass_or_pending": True,
+            "run_store_archived_before_mutation": True,
+            "watchdog_journal_checked": journal is not None,
+        },
+    }
+    _write_json(resolved_receipt_dir / "command-spec-resume-prep.json", receipt)
+    if execute:
+        execution = run_project_dag_contract(
+            contract_path=Path(str(admission["resume_contract_path"])),
+            receipt_dir=resolved_receipt_dir,
+            agents_root=resolved_agents_root,
+            command_spec_root=Path(str(admission["resume_command_spec_root"])),
+            scheduler="bounded-ready-queue",
+        )
+        receipt = {
+            **receipt,
+            "status": execution.get("status"),
+            "ok": execution.get("ok") is True,
+            "execution": execution,
+        }
+        _write_json(resolved_receipt_dir / "command-spec-resume-result.json", receipt)
+    return receipt
+
+
+def _normalize_node_selection(nodes: Sequence[str], *, field: str) -> tuple[str, ...]:
+    result: list[str] = []
+    for raw in nodes:
+        node = str(raw or "").strip()
+        if not node:
+            raise RuntimeError(f"{field} contains an empty node id")
+        if node not in result:
+            result.append(node)
+    return tuple(result)
+
+
+def _project_dag_resume_watchdog_journal(
+    path: Path | None, *, contract: ProjectDagContract, receipt_dir: Path
+) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    payload = _read_json_object(path.expanduser().resolve(), label="watchdog operation journal")
+    if payload.get("schema") != "agent_skills.project_watchdog.primary_operation.v2":
+        raise RuntimeError("watchdog journal schema mismatch")
+    if payload.get("run_id") not in {
+        contract.dag_id,
+        receipt_dir.parent.parent.name,
+        receipt_dir.parent.name,
+    }:
+        # Project-watchdog run_id differs from Ask dag_id; accept matching receipt_dir below.
+        pass
+    ask_run_dir = str(payload.get("ask_run_dir") or "")
+    if (
+        ask_run_dir
+        and Path(ask_run_dir).expanduser().resolve() != receipt_dir.parent.parent.resolve()
+    ):
+        raise RuntimeError("watchdog journal ask_run_dir does not match receipt_dir")
+    if payload.get("phase") not in {"retryable", "releasing", "settled"}:
+        raise RuntimeError("watchdog journal is not in a retry-safe phase")
+    if payload.get("tau_settled") is not True:
+        raise RuntimeError("watchdog journal has not settled the prior Tau run")
+    return {
+        "path": str(path.expanduser().resolve()),
+        "phase": payload.get("phase"),
+        "tau_settled": payload.get("tau_settled"),
+        "lease_released": payload.get("lease_released"),
+        "issue_number": payload.get("issue_number"),
+    }
+
+
+def _prepare_project_dag_command_spec_resume_store(
+    *,
+    run_store_path: Path,
+    run_id: str,
+    contract_payload: Mapping[str, Any],
+    command_spec_root: Path,
+    preserve_nodes: Sequence[str],
+    reset_nodes: Sequence[str],
+) -> dict[str, Any]:
+    archive_path = run_store_path.with_name(
+        run_store_path.stem
+        + ".command-spec-resume-"
+        + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        + run_store_path.suffix
+    )
+    con = sqlite3.connect(run_store_path)
+    con.row_factory = sqlite3.Row
+    try:
+        rows = [
+            dict(row)
+            for row in con.execute(
+                "SELECT attempt_id,node_id,state FROM dag_node_attempts WHERE run_id = ?",
+                (run_id,),
+            )
+        ]
+        by_node: dict[str, list[dict[str, Any]]] = {}
+        for row in rows:
+            by_node.setdefault(str(row["node_id"]), []).append(row)
+        preserved_attempt_ids: list[str] = []
+        preserved_results: dict[str, dict[str, Any]] = {}
+        for node in preserve_nodes:
+            for row in by_node.get(node, []):
+                projection = con.execute(
+                    "SELECT committed_json FROM dag_attempt_outputs WHERE attempt_id = ?",
+                    (row["attempt_id"],),
+                ).fetchone()
+                if projection is None:
+                    continue
+                try:
+                    committed = json.loads(str(projection["committed_json"]))
+                except json.JSONDecodeError:
+                    continue
+                if committed.get("status") == "PASS" and committed.get("verdict") == "PASS":
+                    preserved_attempt_ids.append(str(row["attempt_id"]))
+                    preserved_results[node] = committed
+                    break
+            if node not in preserved_results:
+                raise RuntimeError(f"preserved node is not an admitted PASS: {node}")
+        reset_attempt_ids = [
+            str(row["attempt_id"]) for node in reset_nodes for row in by_node.get(node, [])
+        ]
+    finally:
+        con.close()
+
+    shutil.move(str(run_store_path), str(archive_path))
+    archived_source_artifacts: list[str] = []
+    for source_name in ("source-dag.json", "source-dag-reference.json"):
+        source_path = run_store_path.parent / source_name
+        if source_path.exists():
+            source_archive = run_store_path.parent / (
+                source_name + ".command-spec-resume-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+            )
+            shutil.move(str(source_path), str(source_archive))
+            archived_source_artifacts.append(str(source_archive))
+    compiled_specs = run_store_path.parent / "compiled-command-specs"
+    if compiled_specs.exists():
+        compiled_archive = run_store_path.parent / (
+            "compiled-command-specs.command-spec-resume-"
+            + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        )
+        shutil.move(str(compiled_specs), str(compiled_archive))
+        archived_source_artifacts.append(str(compiled_archive))
+    resume_root = run_store_path.parent / "command-spec-resume"
+    replay_spec_root = resume_root / "command-specs"
+    replay_spec_root.mkdir(parents=True, exist_ok=True)
+    resume_payload = copy.deepcopy(dict(contract_payload))
+    for node in resume_payload.get("nodes", []):
+        if not isinstance(node, dict):
+            continue
+        node_id = str(node.get("id") or "")
+        if node_id in preserved_results:
+            spec_path = replay_spec_root / node_id / "tau-dispatch-command.json"
+            spec_path.parent.mkdir(parents=True, exist_ok=True)
+            replay_output = (
+                preserved_results[node_id].get("accepted_output") or preserved_results[node_id]
+            )
+            code = "print(" + json.dumps(json.dumps(replay_output)) + ")"
+            _write_json(
+                spec_path,
+                {
+                    "schema": "tau.command_spec.v1",
+                    "command": ["python", "-c", code],
+                    "timeout_s": 5,
+                    "cwd": str(run_store_path.parent),
+                    "replays_preserved_attempt_id": preserved_attempt_ids[
+                        list(preserved_results).index(node_id)
+                    ],
+                },
+            )
+            node["command_spec"] = str(spec_path)
+            node["executor"] = "local"
+            node["max_attempts"] = 1
+        elif node_id in reset_nodes:
+            command_spec = node.get("command_spec")
+            if command_spec is not None and not Path(str(command_spec)).is_absolute():
+                node["command_spec"] = str(
+                    command_spec_root / node_id / "tau-dispatch-command.json"
+                )
+    resume_contract_path = resume_root / "dag.json"
+    _write_json(resume_contract_path, resume_payload)
+    return {
+        "archive_path": str(archive_path),
+        "archived_source_artifacts": archived_source_artifacts,
+        "resume_contract_path": str(resume_contract_path),
+        "resume_command_spec_root": str(replay_spec_root),
+        "deleted_attempt_ids": reset_attempt_ids,
+        "preserved_attempt_ids": preserved_attempt_ids,
+    }
 
 
 def run_project_dag_contract(
@@ -2077,7 +2379,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -4235,9 +4537,9 @@ def _reviewer_binding_post_alerts(responses: Mapping[str, dict[str, Any]]) -> li
                             "BLOCK",
                             "reviewer_evidence_binding_invalid",
                             (
-                            "Reviewer PASS verdict was not bound to the exact creator "
-                            "artifact path and hash."
-                        ),
+                                "Reviewer PASS verdict was not bound to the exact creator "
+                                "artifact path and hash."
+                            ),
                             {
                                 "node_id": reviewer_node_id,
                                 "reviewed_node_id": reviewed_node_id,
@@ -4403,9 +4705,9 @@ def _provider_delivery_post_alerts(
                             "NEEDS_ATTENTION",
                             "tau_fallback_capability_downgrade_hidden",
                             (
-                            "Provider fallback changed capability but was reported as "
-                            "the original handler."
-                        ),
+                                "Provider fallback changed capability but was reported as "
+                                "the original handler."
+                            ),
                             {
                                 "node_id": node_id,
                                 "requested_handler": requested,
@@ -5761,7 +6063,7 @@ def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
 def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
     try:
         provider = load_provider_settings().get_provider(provider_name)
-    except ProviderConfigError, OSError, json.JSONDecodeError:
+    except (ProviderConfigError, OSError, json.JSONDecodeError):
         return None
     return provider_model_knowledge_cutoff(provider, model=model)
 
@@ -7325,7 +7627,7 @@ def _existing_ops_discord_notification_for_category(
 def _read_json_object_optional(path: Path) -> dict[str, Any] | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, UnicodeError, json.JSONDecodeError:
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return None
     return payload if isinstance(payload, dict) else None
 
@@ -9355,7 +9657,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except OSError, RuntimeError, ValueError:
+        except (OSError, RuntimeError, ValueError):
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -9534,7 +9836,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return {"type": type(value).__name__, "value": str(value)}
     return value
 
