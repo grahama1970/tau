@@ -25,7 +25,7 @@ def test_admit_dag_attempt_result_normalizes_pass_payload() -> None:
             "status": "PASS",
             "verdict": "PASS",
             "accepted_output": {"value": 1},
-            "artifacts": ["receipt.json"],
+            "extensions": {"artifacts": ["receipt.json"]},
         },
     )
 
@@ -40,9 +40,14 @@ def test_admit_dag_attempt_result_normalizes_pass_payload() -> None:
         "verdict": "PASS",
         "retryable": False,
         "accepted_output": {"value": 1},
+        "accepted_output_sha256": (
+            "sha256:48208f9428d64634bd8e28ff345bf0eab60d53c18fa2fbdb0b9bc1e84df2b5f6"
+        ),
+        "output_contract_id": "tau.accepted_output.any_object.v1",
         "errors": [],
         "alert_codes": [],
-        "artifacts": ["receipt.json"],
+        "diagnostics": {},
+        "extensions": {"artifacts": ["receipt.json"]},
         "source_schema": "tau.generic_dag_node_receipt.v1",
     }
     assert admission.validation["schema"] == DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA
@@ -142,7 +147,7 @@ def test_admit_dag_attempt_result_accepts_triage_error_code_verdict() -> None:
         (
             {"status": "PASS", "verdict": "PASS", "accepted_output": {"nan": math.nan}},
             "dag_attempt_result_non_canonical_json",
-            "$",
+            "$.accepted_output",
         ),
         (
             {"schema": DAG_ATTEMPT_RESULT_SCHEMA, "status": "PASS", "verdict": "PASS"},

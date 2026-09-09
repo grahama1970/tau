@@ -18,6 +18,9 @@ from typing import Any
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.attempt_result import (
+    OUTPUT_CONTRACT_ANY_OBJECT,
+    OUTPUT_CONTRACT_IDS,
+    OUTPUT_CONTRACT_NONE,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -1030,12 +1033,14 @@ def run_dag_plan(
                         result=result,
                         run_store=run_store,
                     )
+                    output_contract_id = _node_output_contract_id(nodes[node_id], result)
                     try:
                         result, validation = _validate_attempt_result(
                             plan_sha256=plan.plan_sha256,
                             identity=identity,
                             node_id=node_id,
                             result=result,
+                            output_contract_id=output_contract_id,
                         )
                     except DagAttemptResultAdmissionError as exc:
                         result = _triaged_blocked_attempt_result(
@@ -1049,6 +1054,7 @@ def run_dag_plan(
                             identity=identity,
                             node_id=node_id,
                             result=result,
+                            output_contract_id=output_contract_id,
                         )
                     raw_attempt_result = result
                     repeated_signature = _repeated_failure_signature(
@@ -1072,6 +1078,7 @@ def run_dag_plan(
                             identity=identity,
                             node_id=node_id,
                             result=result,
+                            output_contract_id=output_contract_id,
                         )
                         _inject_fault(fault_injector, "after_result_staged", identity)
                         run_store.validate_result(lease, identity.attempt_id, validation)
@@ -1417,9 +1424,7 @@ def _blocked_plan_validation_result(
     event_sink: EventSink | None,
 ) -> DagSchedulerResult:
     first_code = validation.codes[0] if validation.codes else "dag_plan_invalid"
-    node_states = tuple(
-        sorted((node.node_id, "blocked") for node in plan.nodes if node.node_id)
-    )
+    node_states = tuple(sorted((node.node_id, "blocked") for node in plan.nodes if node.node_id))
     node_result = {
         "node_id": "__dag_plan_admission__",
         "status": "BLOCKED",
@@ -1749,9 +1754,7 @@ def _process_operator_actions(
                 "lineage": {
                     "action_request_id": action_request_id,
                     "observed_journal_seq": action_request["observed_journal_seq"],
-                    "observed_journal_head_sha256": action_request[
-                        "observed_journal_head_sha256"
-                    ],
+                    "observed_journal_head_sha256": action_request["observed_journal_head_sha256"],
                 },
                 "expires_at": action_request["expires_at"],
                 "mutation_invalidates_prior_approval": True,
@@ -2530,20 +2533,103 @@ def _recover_incomplete_attempts(
     return None
 
 
+def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = dict(result)
+    diagnostics = dict(normalized.get("diagnostics") or {})
+    extensions = dict(normalized.get("extensions") or {})
+    boundary: dict[str, Any] = {}
+    for key in ("boundary_id", "repair_category", "failure_family", "failure"):
+        if key in normalized:
+            boundary[key] = normalized.pop(key)
+    if boundary:
+        diagnostics["scheduler_boundary"] = boundary
+    if "workspace_stale_read_state" in normalized:
+        diagnostics["workspace_stale_read_state"] = normalized.pop("workspace_stale_read_state")
+    if diagnostics:
+        normalized["diagnostics"] = diagnostics
+    scheduler_meta: dict[str, Any] = {}
+    for key in (
+        "classification_code",
+        "correction_required",
+        "repair_handler_id",
+        "repair_attempt_budget",
+        "checkpoint_ref",
+        "repair_args_schema",
+        "repair_args",
+        "repair_args_sha256",
+        "transition_evidence",
+    ):
+        if key in normalized:
+            scheduler_meta[key] = normalized.pop(key)
+    if scheduler_meta:
+        extensions["scheduler"] = scheduler_meta
+    generic_receipt: dict[str, Any] = {}
+    for key in (
+        "role",
+        "mocked",
+        "live",
+        "provider_live",
+        "provider_status",
+        "provider_verdict",
+        "goal_hash",
+        "workspace_id",
+        "pane_id",
+        "terminal_id",
+        "visible_log_path",
+        "visible_log_sha256",
+        "execution_evidence",
+        "usage",
+        "cost_accounting",
+        "cost_estimate",
+        "started_at",
+        "finished_at",
+        "duration_seconds",
+        "receipt_path",
+        "work_order_path",
+        "work_order_sha256",
+        "resumed",
+        "command_results",
+        "artifacts",
+        "policy_exceptions",
+        "handoff_summary",
+    ):
+        if key in normalized:
+            generic_receipt[key] = normalized.pop(key)
+    if generic_receipt:
+        extensions["generic_receipt"] = generic_receipt
+    if extensions:
+        normalized["extensions"] = extensions
+    return normalized
+
+
 def _validate_attempt_result(
     *,
     plan_sha256: str,
     identity: DagAttemptIdentity,
     node_id: str,
     result: Mapping[str, Any],
+    output_contract_id: str = OUTPUT_CONTRACT_ANY_OBJECT,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    result = _canonicalize_attempt_result_boundary(result)
     admission = admit_dag_attempt_result(
         plan_sha256=plan_sha256,
         identity=identity,
         node_id=node_id,
         result=result,
+        output_contract_id=output_contract_id,
     )
     return admission.normalized, admission.validation
+
+
+def _node_output_contract_id(node: DagPlanNode, result: Mapping[str, Any]) -> str:
+    extensions = node.source_extensions.to_value()
+    if isinstance(extensions, Mapping):
+        contract = extensions.get("output_contract_id") or extensions.get("output_schema")
+        if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
+            return contract
+    if result.get("accepted_output") is None:
+        return OUTPUT_CONTRACT_NONE
+    return OUTPUT_CONTRACT_ANY_OBJECT
 
 
 def _triaged_blocked_attempt_result(
@@ -2980,9 +3066,7 @@ def _open_repair_category_block(
     repair_categories: tuple[RepairCategoryProjection, ...],
 ) -> dict[str, Any] | None:
     open_categories = [
-        category
-        for category in repair_categories
-        if category.state in OPEN_REPAIR_CATEGORY_STATES
+        category for category in repair_categories if category.state in OPEN_REPAIR_CATEGORY_STATES
     ]
     if not open_categories:
         return None
@@ -3474,7 +3558,7 @@ def _admit_result_receipt(
     # them via system_settlement.
     try:
         parsed = json.loads(blob.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError):
+    except UnicodeDecodeError, ValueError:
         return False
     if not isinstance(parsed, dict):
         return False
@@ -3752,11 +3836,14 @@ def _with_attempt_history(
     )
     command_results: list[Any] = []
     for item in (*prior_results, result):
-        values = item.get("command_results")
+        extensions = item.get("extensions")
+        values = extensions.get("command_results") if isinstance(extensions, dict) else None
         if isinstance(values, list):
             command_results.extend(values)
     if command_results:
-        combined["command_results"] = command_results
+        extensions = dict(combined.get("extensions") or {})
+        extensions["command_results"] = command_results
+        combined["extensions"] = extensions
     combined["scheduler_attempts"] = [
         {
             "attempt": index,

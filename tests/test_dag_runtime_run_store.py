@@ -46,8 +46,9 @@ def test_sqlite_store_uses_wal_is_append_only_and_passes_integrity_check(
             "foreign_key_check": [],
             "journal_mode": "wal",
         }
-        with sqlite3.connect(database) as connection, pytest.raises(
-            sqlite3.IntegrityError, match="append-only"
+        with (
+            sqlite3.connect(database) as connection,
+            pytest.raises(sqlite3.IntegrityError, match="append-only"),
         ):
             connection.execute("UPDATE dag_run_events SET event_type = 'tampered'")
         store.release_lease(lease)
@@ -111,9 +112,7 @@ def test_store_migrates_v1_journal_and_preserves_resume_state(tmp_path: Path) ->
         store.release_lease(lease)
 
     with sqlite3.connect(database) as connection:
-        connection.execute(
-            "UPDATE dag_store_meta SET value = '1' WHERE key = 'schema_version'"
-        )
+        connection.execute("UPDATE dag_store_meta SET value = '1' WHERE key = 'schema_version'")
         connection.execute("PRAGMA user_version = 1")
 
     with SqliteDagRunStore(database) as store:
@@ -141,9 +140,7 @@ def test_store_rejects_future_journal_with_version_details(tmp_path: Path) -> No
     with SqliteDagRunStore(database):
         pass
     with sqlite3.connect(database) as connection:
-        connection.execute(
-            "UPDATE dag_store_meta SET value = '999' WHERE key = 'schema_version'"
-        )
+        connection.execute("UPDATE dag_store_meta SET value = '999' WHERE key = 'schema_version'")
         connection.execute("PRAGMA user_version = 999")
 
     with pytest.raises(DagRunStoreError) as error:
@@ -431,8 +428,9 @@ def test_store_blocks_tampered_output_projection(tmp_path: Path, projection: str
             f"UPDATE dag_attempt_outputs SET {column} = ? WHERE attempt_id = ?",
             (json.dumps({**result, "verdict": "TAMPERED"}), identity.attempt_id),
         )
-    with SqliteDagRunStore(database) as store, pytest.raises(
-        DagRunStoreError, match="dag_attempt_output_hash_mismatch"
+    with (
+        SqliteDagRunStore(database) as store,
+        pytest.raises(DagRunStoreError, match="dag_attempt_output_hash_mismatch"),
     ):
         store.list_attempts("run-1")
 
@@ -543,7 +541,7 @@ def test_scheduler_settles_malformed_adapter_result_and_replays_block(
         )
 
     assert first.status == second.status == "BLOCKED"
-    assert first.verdict == second.verdict == "DAG_ATTEMPT_RESULT_INVALID"
+    assert first.verdict == second.verdict == "tau_triage_unavailable_unclassified_16d0c7b5"
     assert calls == ["producer"]
     assert second.replayed_event_count > 0
 
@@ -660,8 +658,9 @@ def test_scheduler_default_owner_fences_concurrent_invocation(tmp_path: Path) ->
     with ThreadPoolExecutor(max_workers=1) as pool:
         future = pool.submit(first_run)
         assert started.wait(timeout=2)
-        with SqliteDagRunStore(database) as store, pytest.raises(
-            DagRunStoreError, match="dag_run_lease_held"
+        with (
+            SqliteDagRunStore(database) as store,
+            pytest.raises(DagRunStoreError, match="dag_run_lease_held"),
         ):
             run_dag_plan(
                 plan,
@@ -1168,9 +1167,7 @@ def test_operator_can_reconcile_uncertain_dispatched_run_and_start_next_generati
             allow_lease_takeover=True,
         )
         uncertain = [
-            attempt
-            for attempt in store.list_attempts("run-1")
-            if attempt.state == "UNCERTAIN"
+            attempt for attempt in store.list_attempts("run-1") if attempt.state == "UNCERTAIN"
         ]
 
     assert resumed.status == "BLOCKED"

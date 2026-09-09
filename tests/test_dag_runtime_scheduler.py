@@ -187,9 +187,10 @@ def test_scheduler_blocks_downstream_after_malformed_attempt_result(
         "dag_attempt_result_pass_verdict_mismatch",
         "attempt_result_admission",
     ]
-    assert result.node_results[0]["boundary_id"] == "attempt_result_admission"
-    assert result.node_results[0]["repair_category"] == "repairable_contract_failure"
-    failure = result.node_results[0]["failure"]
+    boundary = result.node_results[0]["diagnostics"]["scheduler_boundary"]
+    assert boundary["boundary_id"] == "attempt_result_admission"
+    assert boundary["repair_category"] == "repairable_contract_failure"
+    failure = boundary["failure"]
     assert failure["schema"] == "tau.internal_failure.v1"
     assert failure["original_code"] == "dag_attempt_result_pass_verdict_mismatch"
     assert failure["path"] == "$.verdict"
@@ -235,10 +236,11 @@ def test_scheduler_triages_adapter_exception(
 
     assert result.status == "BLOCKED"
     assert result.verdict == "triage_contract_invalid"
-    assert result.node_results[0]["failure"]["original_code"] == "ADAPTER_EXECUTION_FAILED"
-    assert result.node_results[0]["failure"]["boundary_id"] == "adapter_future_execution"
-    assert result.node_results[0]["repair_category"] == "repairable_infrastructure_failure"
-    triage = result.node_results[0]["failure"]["triage"]
+    boundary = result.node_results[0]["diagnostics"]["scheduler_boundary"]
+    assert boundary["failure"]["original_code"] == "ADAPTER_EXECUTION_FAILED"
+    assert boundary["failure"]["boundary_id"] == "adapter_future_execution"
+    assert boundary["repair_category"] == "repairable_infrastructure_failure"
+    triage = boundary["failure"]["triage"]
     assert triage["code"] == "triage_contract_invalid"
     assert triage["disposition"] == "CONTRACT_INVALID"
     assert triage["requires_human"] is True
@@ -267,11 +269,10 @@ def test_scheduler_boundary_recursive_failure_falls_back(
     result = run_dag_plan(plan, execute_node=execute)
 
     assert result.status == "BLOCKED"
-    assert result.node_results[0]["boundary_id"] == "recursive_failure_object_admission"
+    boundary = result.node_results[0]["diagnostics"]["scheduler_boundary"]
+    assert boundary["boundary_id"] == "recursive_failure_object_admission"
     assert result.node_results[0]["retryable"] is False
-    assert result.node_results[0]["failure"]["classification_code"] == (
-        "tau_scheduler_boundary_fallback"
-    )
+    assert boundary["failure"]["classification_code"] == "tau_scheduler_boundary_fallback"
 
 
 def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path) -> None:
@@ -397,13 +398,14 @@ def test_scheduler_does_not_duplicate_command_history_across_retries(tmp_path: P
             "node_id": "flaky",
             "status": "PASS" if passed else "BLOCKED",
             "verdict": "PASS" if passed else "TRANSIENT_FAILURE",
-            "command_results": [{"attempt": execution.attempt}],
+            "accepted_output": {"source_node_id": "flaky"} if passed else None,
+            "extensions": {"command_results": [{"attempt": execution.attempt}]},
         }
 
     result = run_dag_plan(plan, execute_node=execute)
 
     assert result.status == "PASS"
-    assert result.node_results[0]["command_results"] == [
+    assert result.node_results[0]["extensions"]["command_results"] == [
         {"attempt": 1},
         {"attempt": 2},
         {"attempt": 3},
@@ -662,9 +664,7 @@ def test_pre_start_block_cancels_and_collects_already_running_root(tmp_path: Pat
     }
 
 
-def _generic_spec(
-    tmp_path: Path, nodes: list[dict[str, object]]
-) -> dict[str, object]:
+def _generic_spec(tmp_path: Path, nodes: list[dict[str, object]]) -> dict[str, object]:
     return {
         "schema": "tau.generic_dag_spec.v1",
         "run_id": "scheduler-test",

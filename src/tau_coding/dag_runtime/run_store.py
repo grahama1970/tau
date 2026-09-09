@@ -16,6 +16,8 @@ from urllib.parse import quote
 
 from tau_coding.dag_runtime.attempt_result import (
     DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+    OUTPUT_CONTRACT_ANY_OBJECT,
+    OUTPUT_CONTRACT_IDS,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -1791,9 +1793,7 @@ class SqliteDagRunStore:
             if observed_seq is None:
                 observed_seq = value.get("journal_seq")
             observed_head = str(
-                value.get("observed_journal_head_sha256")
-                or value.get("journal_head_sha256")
-                or ""
+                value.get("observed_journal_head_sha256") or value.get("journal_head_sha256") or ""
             )
             requested_safe_point = str(value.get("requested_safe_point") or "scheduler_boundary")
             self._connection.execute(
@@ -2239,6 +2239,7 @@ class SqliteDagRunStore:
                     identity=identity,
                     node_id=identity.node_id,
                     result=result,
+                    output_contract_id=_result_output_contract_id(result),
                 )
             except DagAttemptResultAdmissionError as exc:
                 raise DagRunStoreError(exc.code, exc.path) from exc
@@ -3300,9 +3301,7 @@ class SqliteDagRunStore:
         observed_head: tuple[int, str] | None = None,
     ) -> None:
         if request.get("schema") != OPERATOR_ACTION_REQUEST_SCHEMA:
-            raise DagRunStoreError(
-                "operator_action_schema_invalid", str(request.get("schema"))
-            )
+            raise DagRunStoreError("operator_action_schema_invalid", str(request.get("schema")))
         action = _required_operator_string(request, "action")
         if action not in OPERATOR_ACTIONS:
             raise DagRunStoreError("operator_action_unknown", action)
@@ -3383,9 +3382,8 @@ class SqliteDagRunStore:
                 attempt_row["committed_sha256"],
                 attempt_id=str(attempt_row["attempt_id"]),
             )
-            failed = (
-                committed is not None
-                and (committed.get("status") != "PASS" or committed.get("verdict") != "PASS")
+            failed = committed is not None and (
+                committed.get("status") != "PASS" or committed.get("verdict") != "PASS"
             )
             if attempt_state != "SETTLED" or not failed:
                 raise DagRunStoreError("operator_action_retry_not_applicable", attempt_state)
@@ -3410,9 +3408,7 @@ class SqliteDagRunStore:
                 "operator_action_request_hash_mismatch", str(row["action_request_id"])
             )
         arguments = cast(dict[str, Any], json.loads(str(row["arguments_json"])))
-        client_correlation = cast(
-            dict[str, Any], json.loads(str(row["client_correlation_json"]))
-        )
+        client_correlation = cast(dict[str, Any], json.loads(str(row["client_correlation_json"])))
         return {
             "action_request_id": str(row["action_request_id"]),
             "idempotency_key": str(row["idempotency_key"]),
@@ -3965,3 +3961,10 @@ def _base_run_id(run_id: str) -> str:
     if found and prefix and suffix.isdigit():
         return prefix
     return run_id
+
+
+def _result_output_contract_id(result: Mapping[str, Any]) -> str:
+    contract = result.get("output_contract_id")
+    if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
+        return contract
+    return OUTPUT_CONTRACT_ANY_OBJECT

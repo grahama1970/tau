@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from tau_coding.dag_runtime.attempt_result import (
+    OUTPUT_CONTRACT_ANY_OBJECT,
+    OUTPUT_CONTRACT_IDS,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -288,9 +290,10 @@ def _runtime_projections_from_prefix(
         if event["event_type"] != "runtime_event_appended":
             continue
         payload = event["payload"]
-        if not isinstance(payload, Mapping) or payload.get(
-            "schema"
-        ) != RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA:
+        if (
+            not isinstance(payload, Mapping)
+            or payload.get("schema") != RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA
+        ):
             raise DagRunStoreError("runtime_event_journal_schema_invalid", str(event["seq"]))
         runtime_payload = payload.get("runtime_event")
         if not isinstance(runtime_payload, dict):
@@ -317,9 +320,7 @@ def _runtime_projections_from_prefix(
         transport = runtime_event.observation.to_value().get("transport")
         transport_mode = transport.get("mode") if isinstance(transport, dict) else "unknown"
         if payload.get("transport_mode") != transport_mode:
-            raise DagRunStoreError(
-                "runtime_event_transport_mode_mismatch", runtime_event.event_id
-            )
+            raise DagRunStoreError("runtime_event_transport_mode_mismatch", runtime_event.event_id)
         grouped.setdefault(runtime_event.endpoint_lease_sha256, []).append(runtime_event)
     return tuple(
         RuntimeStateProjection(
@@ -555,6 +556,7 @@ def replay_dag_run(
                 identity=identity,
                 node_id=identity.node_id,
                 result=result,
+                output_contract_id=_result_output_contract_id(result),
             )
         except DagAttemptResultAdmissionError as exc:
             raise RuntimeError(f"dag_transition_result_invalid:{exc.code}") from exc
@@ -563,9 +565,7 @@ def replay_dag_run(
             replayed["resumed"] = True
         replayed["durably_replayed"] = True
         node_states[node_id] = "blocked" if batch.block_run is not None else terminal_state
-        results.append(
-            DagReplayResult(node_id, identity.attempt, terminal_state, replayed)
-        )
+        results.append(DagReplayResult(node_id, identity.attempt, terminal_state, replayed))
         replay_events.append(
             {
                 "event": "node_replayed",
@@ -605,3 +605,10 @@ def replay_dag_run(
         lease_expires_at_ms=run_record.lease_expires_at_ms,
         block=block,
     )
+
+
+def _result_output_contract_id(result: Mapping[str, Any]) -> str:
+    contract = result.get("output_contract_id")
+    if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
+        return contract
+    return OUTPUT_CONTRACT_ANY_OBJECT
