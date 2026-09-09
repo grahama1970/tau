@@ -46,6 +46,7 @@ from tau_coding.run_ledger import (
 )
 
 PROJECT_STATUS_SCHEMA = "tau.project_status.v1"
+DEVELOPER_SHARE_STATUS_SCHEMA = "tau.developer_share_status.v1"
 GENERATOR_VERSION = "1.0.0"
 
 # Fields excluded from the semantic-content digest so repeated builds from the
@@ -91,7 +92,9 @@ def _git(repo: Path, *args: str) -> str | None:
     try:
         result = subprocess.run(
             ["git", "-C", str(repo), *args],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
@@ -117,9 +120,7 @@ def _proof_index(repo: Path) -> dict[str, Any]:
         for evidence in sorted(tickets_dir.glob("*/closure-evidence.json")):
             digest = _digest_file(evidence)
             if digest is not None:
-                entries.append(
-                    {"path": evidence.relative_to(repo).as_posix(), "sha256": digest}
-                )
+                entries.append({"path": evidence.relative_to(repo).as_posix(), "sha256": digest})
     combined = _sha256_text(_canonical(entries))
     return {"count": len(entries), "entries": entries, "digest": combined}
 
@@ -173,8 +174,12 @@ def _immutable_goal(repo: Path) -> dict[str, Any]:
 def _package(repo: Path) -> dict[str, Any]:
     pyproject = repo / "pyproject.toml"
     if not pyproject.is_file():
-        return {"version": UNKNOWN, "description": UNKNOWN, "source": "pyproject.toml",
-                "sha256": None}
+        return {
+            "version": UNKNOWN,
+            "description": UNKNOWN,
+            "source": "pyproject.toml",
+            "sha256": None,
+        }
     raw = pyproject.read_bytes()
     data = tomllib.loads(raw.decode("utf-8"))
     project = data.get("project", {})
@@ -210,8 +215,11 @@ def _capabilities(repo: Path) -> dict[str, Any]:
         "accepted_effect_ledger": (runtime / "effects.py").is_file(),
         "memory_projection_outbox": (runtime / "memory_projection.py").is_file(),
     }
-    return {"present": checks, "all_present": all(checks.values()),
-            "source": "src/tau_coding/dag_runtime/"}
+    return {
+        "present": checks,
+        "all_present": all(checks.values()),
+        "source": "src/tau_coding/dag_runtime/",
+    }
 
 
 def _acceptance(repo: Path) -> dict[str, Any]:
@@ -269,7 +277,7 @@ def _github_block(github_snapshot: dict[str, Any] | None) -> dict[str, Any]:
         return {
             "freshness": "STALE",
             "note": "No GitHub snapshot supplied; offline/installed build. "
-                    "Live refresh is an explicit maintainer action.",
+            "Live refresh is an explicit maintainer action.",
             "branch_protection": UNKNOWN,
             "required_checks": UNKNOWN,
             "open_critical_issues": UNKNOWN,
@@ -345,13 +353,21 @@ def build_project_status(
                 "checked-in closure-evidence proof index digest",
                 "checked-in retained agentic-eval evidence index digest and verifier status",
                 "clean-wheel acceptance baseline presence and verified signature binding",
-            ] + (["GitHub branch-protection, required checks, and open/closed critical issues"]
-                 if github_snapshot is not None else []),
+            ]
+            + (
+                ["GitHub branch-protection, required checks, and open/closed critical issues"]
+                if github_snapshot is not None
+                else []
+            ),
             "not_checked": [
                 "provider semantic correctness",
                 "runtime settlement authority (this artifact has none)",
-            ] + ([] if github_snapshot is not None else
-                 ["GitHub CI/issue/protection state (no snapshot; reported STALE/UNKNOWN)"]),
+            ]
+            + (
+                []
+                if github_snapshot is not None
+                else ["GitHub CI/issue/protection state (no snapshot; reported STALE/UNKNOWN)"]
+            ),
         },
     }
     status["semantic_content_digest"] = semantic_digest(status)
@@ -390,8 +406,7 @@ def verify_freshness(
     recomputed = semantic_digest(status)
     if recomputed != status.get("semantic_content_digest"):
         errors.append(
-            f"semantic_content_digest_drift:{status.get('semantic_content_digest')}"
-            f"!={recomputed}"
+            f"semantic_content_digest_drift:{status.get('semantic_content_digest')}!={recomputed}"
         )
 
     fresh = build_project_status(
@@ -404,6 +419,196 @@ def verify_freshness(
         if current != bound:
             errors.append(f"source_drift:{source}:{bound}!={current}")
     return errors
+
+
+def _waiver_for(waivers: dict[str, Any] | None, gate_id: str) -> dict[str, Any] | None:
+    if not isinstance(waivers, dict):
+        return None
+    items = waivers.get("waivers", [])
+    if not isinstance(items, list):
+        return None
+    for item in items:
+        if not isinstance(item, dict) or item.get("gate") != gate_id:
+            continue
+        signer = item.get("signer") if isinstance(item.get("signer"), dict) else {}
+        if signer.get("authority_class") == "human_operator" and item.get("scope"):
+            return item
+    return None
+
+
+def evaluate_developer_share_status(
+    status: dict[str, Any],
+    repo: Path,
+    *,
+    github_snapshot: dict[str, Any] | None = None,
+    waivers: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Evaluate share readiness from existing current-state inputs only."""
+
+    repo = repo.resolve()
+    current_commit = _git(repo, "rev-parse", "HEAD") or UNKNOWN
+    current_clean = _git(repo, "status", "--porcelain") == ""
+    freshness_errors = verify_freshness(status, repo, github_snapshot=github_snapshot)
+    gates: list[dict[str, Any]] = []
+
+    def add(
+        gate_id: str,
+        passed: bool | None,
+        *,
+        source: str,
+        observed: Any,
+        next_command: str,
+        waivable: bool = False,
+    ) -> None:
+        waiver = _waiver_for(waivers, gate_id) if waivable else None
+        if passed is True:
+            state = "PASS"
+        elif waiver is not None:
+            state = "WAIVED"
+        elif passed is False:
+            state = "FAIL"
+        else:
+            state = "UNKNOWN"
+        gates.append(
+            {
+                "id": gate_id,
+                "state": state,
+                "source": source,
+                "observed": observed,
+                "waivable": waivable,
+                "waiver": waiver,
+                "next_command": None if state in {"PASS", "WAIVED"} else next_command,
+            }
+        )
+
+    add(
+        "status_source_fresh",
+        not freshness_errors,
+        source="docs/status/CURRENT_STATE.json source_digests",
+        observed=freshness_errors,
+        next_command=(
+            "tau project-status build --out docs/status/CURRENT_STATE.json "
+            "--github-snapshot docs/status/github-snapshot.json && "
+            "tau project-status render docs/status/CURRENT_STATE.json "
+            "--out docs/status/CURRENT_STATE.md"
+        ),
+    )
+    add(
+        "status_source_commit_current",
+        status.get("git", {}).get("commit") == current_commit,
+        source="git rev-parse HEAD",
+        observed={
+            "status_commit": status.get("git", {}).get("commit"),
+            "current_commit": current_commit,
+        },
+        next_command="regenerate CURRENT_STATE from the exact reviewed HEAD",
+    )
+    add(
+        "canonical_status_clean_tree",
+        status.get("git", {}).get("clean_tree") is True and current_clean,
+        source="git status --porcelain and status.git.clean_tree",
+        observed={
+            "status_clean_tree": status.get("git", {}).get("clean_tree"),
+            "current_clean_tree": current_clean,
+        },
+        next_command="land or remove unrelated changes before generating share status",
+    )
+    add(
+        "github_snapshot_fresh",
+        status.get("github", {}).get("freshness") == "FRESH",
+        source="docs/status/github-snapshot.json",
+        observed=status.get("github", {}).get("freshness", UNKNOWN),
+        next_command="refresh docs/status/github-snapshot.json or attach a scoped human waiver",
+        waivable=True,
+    )
+    open_critical = status.get("github", {}).get("open_critical_issues")
+    add(
+        "no_unresolved_critical_security_findings",
+        len(open_critical) == 0 if isinstance(open_critical, list) else None,
+        source="github.open_critical_issues",
+        observed=open_critical,
+        next_command="resolve the owning security ticket before developer sharing",
+    )
+    proof_index = status.get("proof_index", {})
+    add(
+        "proof_index_structurally_valid",
+        proof_index.get("count", 0) > 0,
+        source="docs/proofs/tickets/*/closure-evidence.json",
+        observed=proof_index,
+        next_command="rebuild or repair the proof index inputs",
+    )
+    eval_index = status.get("agentic_eval_evidence_index", {})
+    add(
+        "agentic_eval_evidence_index_pass",
+        eval_index.get("ok") is True and eval_index.get("status") == "PASS",
+        source=str(DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX),
+        observed=eval_index,
+        next_command="rebuild the retained agentic-eval evidence index after repairing failures",
+    )
+    add(
+        "five_canonical_workflows_present",
+        status.get("workflows", {}).get("all_present") is True,
+        source="src/tau_coding/workflows/definitions/",
+        observed=status.get("workflows", {}),
+        next_command="restore the five canonical workflow definitions",
+    )
+    evidence = status.get("developer_share_evidence", {})
+    for gate_id, field in (
+        (
+            "clean_checkout_installed_wheel_launch_proof_present",
+            "clean_checkout_installed_wheel_launch",
+        ),
+        ("viewer_browser_proof_present", "viewer_browser"),
+        ("repair_self_heal_proof_present", "repair_self_heal"),
+    ):
+        add(
+            gate_id,
+            evidence.get(field) is True,
+            source=f"developer_share_evidence.{field}",
+            observed=evidence.get(field, UNKNOWN),
+            next_command=f"run the focused proof owner for {field}",
+        )
+    human_state = status.get("human_acceptance", {}).get("state")
+    add(
+        "human_acceptance_matches_goal",
+        human_state == "VERIFIED_ACCEPTANCE",
+        source="GOAL.md + human_acceptance",
+        observed=human_state,
+        next_command="obtain the explicit GOAL.md human acceptance attestation",
+        waivable=False,
+    )
+
+    machine_blockers = [
+        gate
+        for gate in gates
+        if gate["state"] in {"FAIL", "UNKNOWN"} and gate["id"] != "human_acceptance_matches_goal"
+    ]
+    human_gate = next(gate for gate in gates if gate["id"] == "human_acceptance_matches_goal")
+    if not machine_blockers and human_gate["state"] == "PASS":
+        readiness = "IMMUTABLE_GOAL_READY"
+    elif not machine_blockers:
+        readiness = "EXPERIMENTAL_PREVIEW_READY"
+    else:
+        readiness = "NOT_READY"
+
+    return {
+        "schema": DEVELOPER_SHARE_STATUS_SCHEMA,
+        "status": "PASS",
+        "readiness": readiness,
+        "repo": str(repo),
+        "source_commit": status.get("git", {}).get("commit", UNKNOWN),
+        "current_commit": current_commit,
+        "gates": gates,
+        "failing_gates": [gate["id"] for gate in gates if gate["state"] in {"FAIL", "UNKNOWN"}],
+        "proof_boundary": {
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "proves": "Existing share-readiness inputs were evaluated without "
+            "regenerating evidence.",
+            "does_not_prove": "Runtime correctness, provider quality, or human acceptance.",
+        },
+    }
 
 
 def render_markdown(status: dict[str, Any]) -> RenderResult:
@@ -439,8 +644,7 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
         "",
         f"- **Source commit**: `{status['git']['commit']}` (clean tree: "
         f"{_mark(status['git']['clean_tree'])})",
-        f"- **Package**: `{status['package']['version']}` — "
-        f"{status['package']['description']}",
+        f"- **Package**: `{status['package']['version']}` — {status['package']['description']}",
         f"- **Immutable goal**: {status['immutable_goal']['status']} (GOAL.md)",
         f"- **Five workflows present**: {_mark(status['workflows']['all_present'])}",
         f"- **Receipt-admission / effect-ledger / outbox**: admission="
@@ -453,8 +657,7 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
         f"- **GitHub freshness**: {gh['freshness']} "
         f"(branch protection: {_bp(gh['branch_protection'])}, "
         f"open critical issues: {_issue_numbers(gh['open_critical_issues'])})",
-        f"- **Proof index**: {status['proof_index']['count']} checked-in "
-        "closure-evidence records",
+        f"- **Proof index**: {status['proof_index']['count']} checked-in closure-evidence records",
         f"- **Agentic-eval evidence index**: {agentic_eval_index.get('status', UNKNOWN)} "
         f"({agentic_eval_index.get('report_count', 0)} reports, "
         f"{agentic_eval_index.get('artifact_count', 0)} artifacts)",
@@ -468,11 +671,13 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
 
 __all__ = [
     "PROJECT_STATUS_SCHEMA",
+    "DEVELOPER_SHARE_STATUS_SCHEMA",
     "GENERATOR_VERSION",
     "ProjectStatusError",
     "RenderResult",
     "build_project_status",
     "semantic_digest",
     "verify_freshness",
+    "evaluate_developer_share_status",
     "render_markdown",
 ]

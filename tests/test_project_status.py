@@ -7,9 +7,12 @@ import subprocess
 from pathlib import Path
 
 from tau_coding.acceptance_attestation import DEFAULT_ACCEPTANCE_ATTESTATION, sha256_file
+from tau_coding.cli import project_agent_developer_share_command
 from tau_coding.project_status import (
+    DEVELOPER_SHARE_STATUS_SCHEMA,
     PROJECT_STATUS_SCHEMA,
     build_project_status,
+    evaluate_developer_share_status,
     render_markdown,
     semantic_digest,
     verify_freshness,
@@ -20,6 +23,12 @@ from tau_coding.run_ledger import (
 )
 
 _AT = "2026-07-28T00:00:00Z"
+_SHARE_SNAPSHOT = {
+    "branch_protection": {"required_status_checks": False},
+    "required_checks": [],
+    "open_critical_issues": [],
+    "recently_completed": [],
+}
 
 
 def _init_repo(root: Path) -> None:
@@ -33,14 +42,23 @@ def _init_repo(root: Path) -> None:
     defs = root / "src" / "tau_coding" / "workflows" / "definitions"
     defs.mkdir(parents=True)
     for name in (
-        "repository-readiness", "tau-operator-reference", "repository-evidence-map",
-        "approved-release-bundle", "durable-repository-qualification",
+        "repository-readiness",
+        "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification",
     ):
         (defs / f"{name}.json").write_text("{}", encoding="utf-8")
     runtime = root / "src" / "tau_coding" / "dag_runtime"
     runtime.mkdir(parents=True)
-    for name in ("admission", "write_intent", "reconciliation", "system_settlement",
-                 "effects", "memory_projection"):
+    for name in (
+        "admission",
+        "write_intent",
+        "reconciliation",
+        "system_settlement",
+        "effects",
+        "memory_projection",
+    ):
         (runtime / f"{name}.py").write_text("# stub\n", encoding="utf-8")
     accept = root / "docs" / "proofs" / "acceptance"
     accept.mkdir(parents=True)
@@ -48,18 +66,30 @@ def _init_repo(root: Path) -> None:
         json.dumps({"schema": "x", "signature": None}), encoding="utf-8"
     )
     (accept / "provider-live-receipt.json").write_text(
-        json.dumps({"schema": "tau.workflow_provider_live_acceptance_receipt.v1", "provider_live": True}),
+        json.dumps(
+            {"schema": "tau.workflow_provider_live_acceptance_receipt.v1", "provider_live": True}
+        ),
         encoding="utf-8",
     )
     ticket = root / "docs" / "proofs" / "tickets" / "issue-1-demo"
     ticket.mkdir(parents=True)
-    (ticket / "closure-evidence.json").write_text(
-        json.dumps({"ticket": "#1"}), encoding="utf-8"
-    )
+    (ticket / "closure-evidence.json").write_text(json.dumps({"ticket": "#1"}), encoding="utf-8")
     subprocess.run(["git", "-C", str(root), "add", "."], check=True)
     subprocess.run(
-        ["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t",
-         "commit", "-q", "-m", "init"], check=True,
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "commit",
+            "-q",
+            "-m",
+            "init",
+        ],
+        check=True,
     )
 
 
@@ -150,11 +180,15 @@ def test_project_status_distinguishes_verified_and_invalid_human_acceptance(tmp_
         "source_commit": head,
         "baseline": {
             "path": "docs/proofs/acceptance/rungs-evidence-receipt.json",
-            "sha256": sha256_file(tmp_path / "docs" / "proofs" / "acceptance" / "rungs-evidence-receipt.json"),
+            "sha256": sha256_file(
+                tmp_path / "docs" / "proofs" / "acceptance" / "rungs-evidence-receipt.json"
+            ),
         },
         "proof_receipt": {
             "path": "docs/proofs/acceptance/provider-live-receipt.json",
-            "sha256": sha256_file(tmp_path / "docs" / "proofs" / "acceptance" / "provider-live-receipt.json"),
+            "sha256": sha256_file(
+                tmp_path / "docs" / "proofs" / "acceptance" / "provider-live-receipt.json"
+            ),
         },
     }
     _write_json(tmp_path / DEFAULT_ACCEPTANCE_ATTESTATION, attestation)
@@ -167,7 +201,10 @@ def test_project_status_distinguishes_verified_and_invalid_human_acceptance(tmp_
     _write_json(tmp_path / DEFAULT_ACCEPTANCE_ATTESTATION, attestation)
     invalid = build_project_status(tmp_path, generated_at=_AT)
     assert invalid["human_acceptance"]["state"] == "INVALID_HUMAN_SIGNATURE"
-    assert "baseline_receipt_digest_mismatch" in invalid["human_acceptance"]["verification"]["failure_codes"]
+    assert (
+        "baseline_receipt_digest_mismatch"
+        in invalid["human_acceptance"]["verification"]["failure_codes"]
+    )
 
 
 def test_capabilities_and_workflows_reflect_present_sources(tmp_path: Path) -> None:
@@ -192,8 +229,12 @@ def test_git_provenance_excluded_from_semantic_digest(tmp_path: Path) -> None:
 
 def test_github_snapshot_edit_without_rebuild_fails_verifier(tmp_path: Path) -> None:
     _init_repo(tmp_path)
-    snap = {"branch_protection": {"required_status_checks": True}, "required_checks": ["ci"],
-            "open_critical_issues": [], "recently_completed": []}
+    snap = {
+        "branch_protection": {"required_status_checks": True},
+        "required_checks": ["ci"],
+        "open_critical_issues": [],
+        "recently_completed": [],
+    }
     status = build_project_status(tmp_path, generated_at=_AT, github_snapshot=snap)
     assert verify_freshness(status, tmp_path, github_snapshot=snap) == []
     # a mutated snapshot at verify time is drift
@@ -231,6 +272,125 @@ def test_project_status_reports_agentic_eval_evidence_index_mismatch(tmp_path: P
     evidence = status["agentic_eval_evidence_index"]
     assert evidence["status"] == "FAIL"
     assert "report_digest_mismatch" in evidence["failure_codes"]
+
+
+def _share_ready_status(root: Path) -> dict[str, object]:
+    status = build_project_status(root, generated_at=_AT, github_snapshot=_SHARE_SNAPSHOT)
+    status["agentic_eval_evidence_index"] = {"ok": True, "status": "PASS"}
+    status["developer_share_evidence"] = {
+        "clean_checkout_installed_wheel_launch": True,
+        "viewer_browser": True,
+        "repair_self_heal": True,
+    }
+    status["semantic_content_digest"] = semantic_digest(status)
+    return status
+
+
+def test_developer_share_status_fails_source_mismatch(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    status = _share_ready_status(tmp_path)
+    (tmp_path / "extra.txt").write_text("new source\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "extra.txt"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "commit",
+            "-q",
+            "-m",
+            "advance",
+        ],
+        check=True,
+    )
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+
+    assert result["schema"] == DEVELOPER_SHARE_STATUS_SCHEMA
+    assert result["readiness"] == "NOT_READY"
+    assert "status_source_commit_current" in result["failing_gates"]
+
+
+def test_developer_share_status_reports_individual_blockers(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    status = build_project_status(tmp_path, generated_at=_AT, github_snapshot=None)
+
+    result = evaluate_developer_share_status(status, tmp_path)
+
+    failing = set(result["failing_gates"])
+    assert "github_snapshot_fresh" in failing
+    assert "agentic_eval_evidence_index_pass" in failing
+    assert "clean_checkout_installed_wheel_launch_proof_present" in failing
+    assert "viewer_browser_proof_present" in failing
+    assert "repair_self_heal_proof_present" in failing
+    assert "human_acceptance_matches_goal" in failing
+
+
+def test_developer_share_status_allows_only_scoped_freshness_waiver(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    status = _share_ready_status(tmp_path)
+    status["github"]["freshness"] = "STALE"  # type: ignore[index]
+    status["semantic_content_digest"] = semantic_digest(status)
+    waivers = {
+        "waivers": [
+            {
+                "gate": "github_snapshot_fresh",
+                "scope": "offline developer preview",
+                "signer": {"authority_class": "human_operator", "id": "graham"},
+            }
+        ]
+    }
+
+    result = evaluate_developer_share_status(
+        status, tmp_path, github_snapshot=_SHARE_SNAPSHOT, waivers=waivers
+    )
+
+    states = {gate["id"]: gate["state"] for gate in result["gates"]}
+    assert states["github_snapshot_fresh"] == "WAIVED"
+    assert states["human_acceptance_matches_goal"] == "FAIL"
+    assert result["readiness"] == "EXPERIMENTAL_PREVIEW_READY"
+
+
+def test_developer_share_status_uses_repo_relative_default_status_path(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _init_repo(tmp_path)
+    status = _share_ready_status(tmp_path)
+    _write_json(tmp_path / "docs/status/CURRENT_STATE.json", status)
+    _write_json(tmp_path / "docs/status/github-snapshot.json", _SHARE_SNAPSHOT)
+    monkeypatch.chdir(tmp_path.parent)
+
+    result = project_agent_developer_share_command(
+        [
+            "status",
+            "--json",
+            "--repo",
+            str(tmp_path),
+            "--github-snapshot",
+            "docs/status/github-snapshot.json",
+        ]
+    )
+
+    assert result["schema"] == DEVELOPER_SHARE_STATUS_SCHEMA
+    assert result["status"] == "PASS"
+
+
+def test_developer_share_status_reaches_immutable_ready_with_human_acceptance(
+    tmp_path: Path,
+) -> None:
+    _init_repo(tmp_path)
+    status = _share_ready_status(tmp_path)
+    status["human_acceptance"]["state"] = "VERIFIED_ACCEPTANCE"  # type: ignore[index]
+    status["semantic_content_digest"] = semantic_digest(status)
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+
+    assert result["readiness"] == "IMMUTABLE_GOAL_READY"
+    assert result["failing_gates"] == []
 
 
 def test_package_description_reflects_control_plane_product() -> None:

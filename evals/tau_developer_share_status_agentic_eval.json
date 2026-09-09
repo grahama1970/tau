@@ -1,0 +1,56 @@
+{
+  "version": 2,
+  "skill": "tau-developer-share-status",
+  "trials": 2,
+  "proof_scope": "Tau developer-share readiness gate aggregation",
+  "claims": {
+    "proves": "developer-share status fails closed on source mismatch, dirty canonical status generation, stale GitHub snapshot, failing agentic-eval index, unresolved critical security findings, missing viewer/repair proofs, and missing human acceptance; it also exposes a read-only installed-wheel status command.",
+    "does_not_prove": "Provider/model quality, real repository immutable-goal completion, security certification, or actual human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.developer_share.status_gate_aggregation",
+      "description": "Developer-share readiness is a typed gate matrix and cannot pass by stale or missing evidence.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "developer-share-status-gate-matrix",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.developer_share.status_gate_aggregation"],
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-developer-share-status && uv run python scripts/agentic-eval-tau-developer-share-status.py --work local/agentic-evals/tau-developer-share-status/work --out local/agentic-evals/tau-developer-share-status/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"readiness\": \"IMMUTABLE_GOAL_READY\"", "\"schema\": \"tau.developer_share_status.v1\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/source_mismatch_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/dirty_tree_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/source_mutation_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/stale_github_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/waiver_scoped", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/eval_index_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/security_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/missing_viewer_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/missing_repair_gate", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/human_missing_preview", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/human_waiver_rejected", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/immutable_ready", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/byte_stable_ready", "equals": true},
+          {"path": "../local/agentic-evals/tau-developer-share-status/proof.json", "json_pointer": "/checks/cli_readback", "equals": true}
+        ]
+      }
+    }
+  ]
+}

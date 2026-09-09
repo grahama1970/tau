@@ -5359,6 +5359,16 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "developer-share":
+        try:
+            payload = project_agent_developer_share_command(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command == "memory-provenance-proof":
         try:
             options = _parse_memory_provenance_proof_cli_args(positional_args[1:])
@@ -6176,11 +6186,11 @@ def _merge_stdin_prompt(prompt: str) -> str:
     try:
         if stdin.isatty():
             return prompt
-    except AttributeError, ValueError:
+    except (AttributeError, ValueError):
         return prompt
     try:
         piped = stdin.read()
-    except OSError, ValueError:
+    except (OSError, ValueError):
         return prompt
     if not piped:
         return prompt
@@ -7759,7 +7769,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except OSError, json.JSONDecodeError, RuntimeError:
+    except (OSError, json.JSONDecodeError, RuntimeError):
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -9421,10 +9431,7 @@ def _parse_agent_events_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _run_feature_inventory_cli(args: list[str]) -> dict[str, object]:
-    usage = (
-        "Usage: tau feature-inventory --inventory-out FILE --reconciliation-out FILE "
-        "[--json]"
-    )
+    usage = "Usage: tau feature-inventory --inventory-out FILE --reconciliation-out FILE [--json]"
     inventory_out: Path | None = None
     reconciliation_out: Path | None = None
     json_output = False
@@ -14993,7 +15000,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return
     if not isinstance(final_receipt, dict):
         return
@@ -15016,7 +15023,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -15045,7 +15052,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         if not isinstance(payload, dict):
             continue
@@ -15230,7 +15237,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 
@@ -16130,7 +16137,8 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
     build   --out <status.json> [--github-snapshot <file>] [--repo <dir>]
     render  <status.json> --out <status.md>
     verify  [--status <status.json>] [--github-snapshot <file>] [--repo <dir>]
-    verify-attestation [--attestation <file>] [--baseline-receipt <file>] [--proof-receipt <file>] [--repo <dir>]
+    verify-attestation [--attestation <file>] [--baseline-receipt <file>]
+    verify-attestation [--proof-receipt <file>] [--repo <dir>]
     """
 
     from datetime import UTC, datetime
@@ -16217,6 +16225,62 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
         return {"action": "verify-attestation", **result}
 
     raise RuntimeError(f"unknown project-status subcommand: {action}")
+
+
+def project_agent_developer_share_command(args: list[str]) -> dict[str, object]:
+    """Dispatch `tau developer-share status --json` (#352)."""
+
+    from tau_coding import project_status as ps
+
+    if not args or args[0] != "status":
+        raise RuntimeError("developer-share requires subcommand: status")
+    rest = args[1:]
+
+    def _opt(name: str, default: str | None = None) -> str | None:
+        if name in rest:
+            idx = rest.index(name)
+            if idx + 1 >= len(rest):
+                raise RuntimeError(f"{name} requires a value")
+            return rest[idx + 1]
+        return default
+
+    unknown = [
+        item
+        for item in rest
+        if item.startswith("--")
+        and item
+        not in {
+            "--json",
+            "--status",
+            "--github-snapshot",
+            "--repo",
+            "--waivers",
+        }
+    ]
+    if unknown:
+        raise RuntimeError(f"unknown developer-share status option: {unknown[0]}")
+    repo = Path(_opt("--repo", ".") or ".").expanduser().resolve()
+
+    def _path(value: str) -> Path:
+        path = Path(value).expanduser()
+        return path if path.is_absolute() else repo / path
+
+    status_path = _path(_opt("--status", "docs/status/CURRENT_STATE.json") or "")
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    snapshot_path = _opt("--github-snapshot")
+    github_snapshot = None
+    if snapshot_path:
+        github_snapshot = json.loads(_path(snapshot_path).read_text(encoding="utf-8"))
+    waivers_path = _opt("--waivers")
+    waivers = None
+    if waivers_path:
+        waivers = json.loads(_path(waivers_path).read_text(encoding="utf-8"))
+    return ps.evaluate_developer_share_status(
+        status,
+        repo,
+        github_snapshot=github_snapshot,
+        waivers=waivers,
+    )
 
 
 def project_agent_ticket_subagent_closure_proof_command(
