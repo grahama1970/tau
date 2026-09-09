@@ -1,4 +1,5 @@
 # Tau Zero-Trust Threat Model
+<!-- tau-doc-status: SECURITY_NONCLAIM -->
 
 Tau treats agent work as untrusted until receipts, artifacts, policies, and
 validators make a specific claim admissible. This threat model names the

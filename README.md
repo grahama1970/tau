@@ -11,6 +11,7 @@
 > Agents hallucinate. Tau contains them.
 
 <!-- BEGIN AUTHORITATIVE STATUS LINK (#224) -->
+<!-- tau-doc-status: CURRENT_CONTRACT -->
 > **Authoritative current status** is machine-generated, not the prose below.
 > See [`docs/status/CURRENT_STATE.md`](docs/status/CURRENT_STATE.md) (rendered)
 > and [`docs/status/CURRENT_STATE.json`](docs/status/CURRENT_STATE.json) (source),
@@ -868,6 +869,7 @@ Agents do not get to invent missing labels, mutate the immutable goal, or skip
 the next route. If the JSON does not validate, T’au refuses to dispatch.
 
 ## Special orchestration mode
+<!-- tau-doc-status: ROADMAP -->
 
 The default Tau loop is local and bounded: run one prompt, command, or handoff
 step, then emit a receipt.
@@ -903,6 +905,7 @@ If a non-human actor proposes a goal change, Tau routes to `goal-guardian` or
 `human` instead of mutating the goal.
 
 ## Self-fix mode
+<!-- tau-doc-status: ROADMAP -->
 
 T'au must be able to repair T'au itself, but only through the same harness
 controls used for other work. Self-fix is not unconstrained self-modification.

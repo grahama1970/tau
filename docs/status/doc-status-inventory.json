@@ -1,0 +1,197 @@
+{
+  "audited_paths": [
+    "README.md",
+    "docs/run-report.md",
+    "docs/replacement-harness-hardening.md",
+    "docs/zero-trust-product-plan.md",
+    "docs/threat-model.md",
+    "docs/context-compaction.md"
+  ],
+  "claim_count": 22,
+  "claims": [
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "README.md",
+      "line": 130,
+      "section": "Current zero-trust stack",
+      "text": "compliance, legal sufficiency, model safety, future route correctness, or that"
+    },
+    {
+      "classification": "CURRENT_CONTRACT",
+      "disposition": "classified",
+      "file": "README.md",
+      "line": 663,
+      "section": "Quickstart: zero-trust local run",
+      "text": "browser rendering, provider semantic quality, GitHub mutation, or future route"
+    },
+    {
+      "classification": "ROADMAP",
+      "disposition": "classified",
+      "file": "README.md",
+      "line": 889,
+      "section": "Special orchestration mode",
+      "text": "In the planned GitHub-backed deployment, the same state machine can be driven by"
+    },
+    {
+      "classification": "ROADMAP",
+      "disposition": "classified",
+      "file": "README.md",
+      "line": 929,
+      "section": "Self-fix mode",
+      "text": "or a future trusted `/tau self-fix` command. The issue body remains the durable"
+    },
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "docs/run-report.md",
+      "line": 132,
+      "section": "Non-Claims",
+      "text": "The report is static HTML. If a future UI serves or augments this report, that"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 10,
+      "section": "Current Readiness",
+      "text": "Tau is a credible zero-trust orchestration substrate, but not yet a daily-driver replacement harness. The immediate gap is not feature count. The gap is repeatable operator confidence:"
+    },
+    {
+      "classification": "ROADMAP",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 240,
+      "section": "Slice 10: HTTP Idle Timeout In TUI Settings",
+      "text": "to future provider streams without inventing unsupported WebSocket transport"
+    },
+    {
+      "classification": "ROADMAP",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 250,
+      "section": "Slice 10: HTTP Idle Timeout In TUI Settings",
+      "text": "- Changing the setting updates the active provider runtime timeout for future"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 328,
+      "section": "Slice 15: Read-Only Config Map",
+      "text": "prompts, and themes. Tau does not yet have a package selector contract, and a"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 341,
+      "section": "Slice 15: Read-Only Config Map",
+      "text": "- `/config` explicitly states that it is read-only and that Tau does not yet"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 367,
+      "section": "Slice 17: Permission Receipt Command Surface",
+      "text": "Pi makes gated permissions part of the operator loop. Tau does not yet have a"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/replacement-harness-hardening.md",
+      "line": 388,
+      "section": "Slice 18: Distinct Custom Entry Rendering",
+      "text": "messages. Tau does not yet expose custom extension renderer hooks, but it"
+    },
+    {
+      "classification": "ROADMAP",
+      "disposition": "classified",
+      "file": "docs/zero-trust-product-plan.md",
+      "line": 371,
+      "section": "B3. Examples",
+      "text": "example. The remaining examples in this section are still planned."
+    },
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "docs/threat-model.md",
+      "line": 14,
+      "section": "Assets",
+      "text": "- Memory intent/recall products and any future Memory writes."
+    },
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "docs/threat-model.md",
+      "line": 39,
+      "section": "Threats And Controls",
+      "text": "| Memory poisoning | Untrusted content alters future recall or routing. | Memory writes require approval policy; route-memory sync is separate from local signals. | Strong Memory identity/provenance controls remain future work. |"
+    },
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "docs/threat-model.md",
+      "line": 49,
+      "section": "Threats And Controls",
+      "text": "| Human approval forgery | Agent fabricates an approval packet. | Approval-gate receipts validate action, target, expiry, and packet fields. | Strong public-key identity/non-repudiation remains future work. |"
+    },
+    {
+      "classification": "SECURITY_NONCLAIM",
+      "disposition": "classified",
+      "file": "docs/threat-model.md",
+      "line": 74,
+      "section": "Non-Claims",
+      "text": "- future route correctness;"
+    },
+    {
+      "classification": "CURRENT_CONTRACT",
+      "disposition": "classified",
+      "file": "docs/context-compaction.md",
+      "line": 7,
+      "section": "Context Compaction",
+      "text": "rebuilds future provider context from:"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/context-compaction.md",
+      "line": 72,
+      "section": "Trigger Conditions",
+      "text": "Tau's provider interface does not yet expose a per-request max-output-token"
+    },
+    {
+      "classification": "CURRENT_CONTRACT",
+      "disposition": "classified",
+      "file": "docs/context-compaction.md",
+      "line": 161,
+      "section": "Critical Context",
+      "text": "for future finer-grained cut points. The current implementation avoids most"
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/context-compaction.md",
+      "line": 207,
+      "section": "Known Limitations",
+      "text": "- Tau estimates tokens with `chars / 4`; it does not yet store provider usage."
+    },
+    {
+      "classification": "KNOWN_LIMITATION",
+      "disposition": "classified",
+      "file": "docs/context-compaction.md",
+      "line": 210,
+      "section": "Known Limitations",
+      "text": "- The provider interface does not yet expose max output tokens for the"
+    }
+  ],
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": "Runtime correctness, semantic truth of each doc claim, or GOAL.md completion.",
+    "proves": "Primary developer docs classify aspirational phrases by explicit doc status."
+  },
+  "schema": "tau.doc_status_inventory.v1",
+  "unclassified": [],
+  "unclassified_count": 0
+}

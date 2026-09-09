@@ -1,4 +1,5 @@
 # Static Run Report
+<!-- tau-doc-status: CURRENT_CONTRACT -->
 
 Tau run reports render existing run artifacts into a single static HTML file.
 They are for inspection and review, not live operational monitoring.
@@ -113,6 +114,7 @@ Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.
 
 ## Non-Claims
+<!-- tau-doc-status: SECURITY_NONCLAIM -->
 
 The report does not prove:
 

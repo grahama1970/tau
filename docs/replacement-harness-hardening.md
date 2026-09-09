@@ -1,4 +1,5 @@
 # Tau Replacement-Harness Hardening
+<!-- tau-doc-status: ROADMAP -->
 
 Status: active hardening backlog.
 

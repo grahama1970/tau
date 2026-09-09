@@ -365,6 +365,7 @@ uv run tau run dag.json --data-boundary .tau/data-boundary.json
 Internally, this can delegate to `tau dag-run`.
 
 ### B3. Examples
+<!-- tau-doc-status: ROADMAP -->
 
 Status: `examples/zero-trust-basic/` is implemented as the first copyable
 example. The remaining examples in this section are still planned.

@@ -1,4 +1,5 @@
 # Context Compaction
+<!-- tau-doc-status: CURRENT_CONTRACT -->
 
 Context compaction is how Tau keeps a long coding session usable when the
 conversation approaches a model's context limit. Tau asks the configured model to
@@ -201,6 +202,7 @@ context if possible, and retries with the compacted context. If the retry also
 fails, Tau surfaces that error and stops instead of looping.
 
 ## Known Limitations
+<!-- tau-doc-status: KNOWN_LIMITATION -->
 
 - Tau estimates tokens with `chars / 4`; it does not yet store provider usage.
 - Tau has provider-configured context windows for built-in models and falls back
