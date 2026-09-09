@@ -778,13 +778,32 @@ def _project_dag_resume_watchdog_journal(
         and Path(ask_run_dir).expanduser().resolve() != receipt_dir.parent.parent.resolve()
     ):
         raise RuntimeError("watchdog journal ask_run_dir does not match receipt_dir")
-    if payload.get("phase") not in {"retryable", "releasing", "settled"}:
+    phase = payload.get("phase")
+    if phase not in {"retryable", "releasing", "settled", "running"}:
         raise RuntimeError("watchdog journal is not in a retry-safe phase")
     if payload.get("tau_settled") is not True:
         raise RuntimeError("watchdog journal has not settled the prior Tau run")
+    if phase == "running":
+        event = payload.get("lease_event")
+        before = payload.get("lease_before_event")
+        token = payload.get("owner_token")
+        if (
+            payload.get("lease_released") is not False
+            or not isinstance(event, Mapping)
+            or type(event.get("id")) is not int
+            or event.get("id", 0) <= 0
+            or event.get("event") != "labeled"
+            or not event.get("created_at")
+            or not payload.get("lease_actor")
+            or event.get("actor") != payload.get("lease_actor")
+            or (isinstance(before, Mapping) and before.get("id") == event.get("id"))
+            or not isinstance(token, str) or not token
+            or payload.get("lease_agent") != "project-watchdog-" + token
+        ):
+            raise RuntimeError("watchdog running journal lacks a confirmed active lease")
     return {
         "path": str(path.expanduser().resolve()),
-        "phase": payload.get("phase"),
+        "phase": phase,
         "tau_settled": payload.get("tau_settled"),
         "lease_released": payload.get("lease_released"),
         "issue_number": payload.get("issue_number"),

@@ -2,9 +2,13 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 from tau_coding.project_dag import (
+    _project_dag_resume_watchdog_journal,
     resume_project_dag_command_spec_nodes,
     run_project_dag_contract,
+    validate_dag_contract,
 )
 
 
@@ -47,6 +51,75 @@ def test_command_spec_resume_preserves_creator_and_reruns_reviewer_only(tmp_path
     assert Path(resumed["resume_contract_path"]).is_file()
     assert (tmp_path / "coder-count.txt").read_text() == "1"
     assert (tmp_path / "reviewer-count.txt").read_text() == "2"
+
+
+def test_command_spec_resume_accepts_watchdog_running_journal_with_active_lease(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = validate_dag_contract(json.loads(contract_path.read_text(encoding="utf-8")))
+    receipt_dir = tmp_path / "ask" / "ask-tau-repair-fixture" / "tau-receipts"
+    receipt_dir.mkdir(parents=True)
+    journal = tmp_path / "operation.json"
+    journal.write_text(
+        json.dumps(
+            {
+                "schema": "agent_skills.project_watchdog.primary_operation.v2",
+                "phase": "running",
+                "run_id": "project-watchdog-fixture",
+                "ask_run_dir": str(receipt_dir.parent.parent),
+                "tau_settled": True,
+                "lease_released": False,
+                "owner_token": "fixture",
+                "lease_agent": "project-watchdog-fixture",
+                "lease_actor": "fixture",
+                "lease_before_event": {"id": 6, "event": "unlabeled"},
+                "lease_event": {
+                    "id": 7,
+                    "event": "labeled",
+                    "actor": "fixture",
+                    "created_at": "2026-09-09T00:00:00Z",
+                },
+                "issue_number": 1628,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    observed = _project_dag_resume_watchdog_journal(
+        journal, contract=contract, receipt_dir=receipt_dir
+    )
+
+    assert observed is not None
+    assert observed["phase"] == "running"
+    assert observed["lease_released"] is False
+
+
+def test_command_spec_resume_rejects_watchdog_running_journal_without_active_lease(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = validate_dag_contract(json.loads(contract_path.read_text(encoding="utf-8")))
+    receipt_dir = tmp_path / "ask" / "ask-tau-repair-fixture" / "tau-receipts"
+    receipt_dir.mkdir(parents=True)
+    journal = tmp_path / "operation.json"
+    journal.write_text(
+        json.dumps(
+            {
+                "schema": "agent_skills.project_watchdog.primary_operation.v2",
+                "phase": "running",
+                "run_id": "project-watchdog-fixture",
+                "ask_run_dir": str(receipt_dir.parent.parent),
+                "tau_settled": True,
+                "lease_released": True,
+                "issue_number": 1628,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="confirmed active lease"):
+        _project_dag_resume_watchdog_journal(journal, contract=contract, receipt_dir=receipt_dir)
 
 
 def _write_contract(tmp_path: Path) -> Path:
