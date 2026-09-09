@@ -40,6 +40,7 @@ from tau_coding.acceptance_attestation import (
     DEFAULT_ACCEPTANCE_BASELINE,
     verify_acceptance_attestation,
 )
+from tau_coding.developer_surface_inventory import build_developer_surface_inventory
 from tau_coding.run_ledger import (
     DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX,
     verify_agentic_eval_ledger_evidence_index,
@@ -312,6 +313,7 @@ def build_project_status(
     agentic_eval_evidence_index = _agentic_eval_evidence_index(repo)
     workflows = _workflows(repo)
     capabilities = _capabilities(repo)
+    developer_surface_inventory = build_developer_surface_inventory(repo)
     acceptance = _acceptance(repo)
     github = _github_block(github_snapshot)
 
@@ -337,6 +339,7 @@ def build_project_status(
         "immutable_goal": goal,
         "workflows": workflows,
         "capabilities": capabilities,
+        "developer_surface_inventory": developer_surface_inventory,
         "human_acceptance": acceptance,
         "github": github,
         "proof_index": proof_index,
@@ -551,6 +554,20 @@ def evaluate_developer_share_status(
         source="src/tau_coding/workflows/definitions/",
         observed=status.get("workflows", {}),
         next_command="restore the five canonical workflow definitions",
+    )
+    inventory = status.get("developer_surface_inventory", {})
+    add(
+        "developer_surface_inventory_clean",
+        inventory.get("status") == "PASS"
+        and inventory.get("unclassified_count") == 0
+        and inventory.get("bug_stub_count") == 0,
+        source="developer_surface_inventory",
+        observed={
+            "status": inventory.get("status", UNKNOWN),
+            "unclassified_count": inventory.get("unclassified_count", UNKNOWN),
+            "bug_stub_count": inventory.get("bug_stub_count", UNKNOWN),
+        },
+        next_command="tau developer-share stub-inventory --json --repo <repo>",
     )
     evidence = status.get("developer_share_evidence", {})
     for gate_id, field in (

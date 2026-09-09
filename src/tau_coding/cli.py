@@ -16232,8 +16232,9 @@ def project_agent_developer_share_command(args: list[str]) -> dict[str, object]:
 
     from tau_coding import project_status as ps
 
-    if not args or args[0] != "status":
-        raise RuntimeError("developer-share requires subcommand: status")
+    if not args or args[0] not in {"status", "stub-inventory"}:
+        raise RuntimeError("developer-share requires subcommand: status or stub-inventory")
+    action = args[0]
     rest = args[1:]
 
     def _opt(name: str, default: str | None = None) -> str | None:
@@ -16264,6 +16265,11 @@ def project_agent_developer_share_command(args: list[str]) -> dict[str, object]:
     def _path(value: str) -> Path:
         path = Path(value).expanduser()
         return path if path.is_absolute() else repo / path
+
+    if action == "stub-inventory":
+        from tau_coding.developer_surface_inventory import build_developer_surface_inventory
+
+        return build_developer_surface_inventory(repo)
 
     status_path = _path(_opt("--status", "docs/status/CURRENT_STATE.json") or "")
     status = json.loads(status_path.read_text(encoding="utf-8"))

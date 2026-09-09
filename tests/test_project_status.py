@@ -8,6 +8,7 @@ from pathlib import Path
 
 from tau_coding.acceptance_attestation import DEFAULT_ACCEPTANCE_ATTESTATION, sha256_file
 from tau_coding.cli import project_agent_developer_share_command
+from tau_coding.developer_surface_inventory import build_developer_surface_inventory
 from tau_coding.project_status import (
     DEVELOPER_SHARE_STATUS_SCHEMA,
     PROJECT_STATUS_SCHEMA,
@@ -277,6 +278,11 @@ def test_project_status_reports_agentic_eval_evidence_index_mismatch(tmp_path: P
 def _share_ready_status(root: Path) -> dict[str, object]:
     status = build_project_status(root, generated_at=_AT, github_snapshot=_SHARE_SNAPSHOT)
     status["agentic_eval_evidence_index"] = {"ok": True, "status": "PASS"}
+    status["developer_surface_inventory"] = {
+        "status": "PASS",
+        "unclassified_count": 0,
+        "bug_stub_count": 0,
+    }
     status["developer_share_evidence"] = {
         "clean_checkout_installed_wheel_launch": True,
         "viewer_browser": True,
@@ -324,10 +330,45 @@ def test_developer_share_status_reports_individual_blockers(tmp_path: Path) -> N
     failing = set(result["failing_gates"])
     assert "github_snapshot_fresh" in failing
     assert "agentic_eval_evidence_index_pass" in failing
+    assert "developer_surface_inventory_clean" in failing
     assert "clean_checkout_installed_wheel_launch_proof_present" in failing
     assert "viewer_browser_proof_present" in failing
     assert "repair_self_heal_proof_present" in failing
     assert "human_acceptance_matches_goal" in failing
+
+
+def test_developer_surface_inventory_detects_seeded_normal_route_stub(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    normal_route = tmp_path / "src" / "tau_coding" / "project_status.py"
+    normal_route.write_text(
+        "def advertised():\n    return 'placeholder_result'\n", encoding="utf-8"
+    )
+
+    inventory = build_developer_surface_inventory(tmp_path)
+
+    assert inventory["status"] == "FAIL"
+    assert any(
+        item["file"] == "src/tau_coding/project_status.py"
+        and "placeholder_result" in item["marker"]
+        for item in inventory["unclassified_markers"]
+    )
+
+
+def test_developer_share_status_fails_on_unclassified_surface_marker(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    status = _share_ready_status(tmp_path)
+    status["developer_surface_inventory"] = {
+        "status": "FAIL",
+        "unclassified_count": 1,
+        "bug_stub_count": 0,
+    }
+    status["semantic_content_digest"] = semantic_digest(status)
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+
+    states = {gate["id"]: gate["state"] for gate in result["gates"]}
+    assert states["developer_surface_inventory_clean"] == "FAIL"
+    assert result["readiness"] == "NOT_READY"
 
 
 def test_developer_share_status_allows_only_scoped_freshness_waiver(tmp_path: Path) -> None:
