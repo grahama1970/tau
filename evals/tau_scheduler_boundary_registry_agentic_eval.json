@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "skill": "tau-scheduler-boundary-registry",
+  "trials": 2,
+  "proof_scope": "Tau scheduler/runtime authority-boundary failure containment",
+  "claims": {
+    "proves": "installed-wheel scheduler-boundary-registry exposes a classified authority-boundary registry and recursive classifier failures fail closed with a Tau-specific fallback code.",
+    "does_not_prove": "provider/model quality or every external runtime backend path."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.scheduler.boundary_failure_containment",
+      "description": "Scheduler boundary failures are classified and recursive failure classification cannot escape as an untyped exception.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "scheduler-boundary-registry-installed-wheel",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.scheduler.boundary_failure_containment"],
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-scheduler-boundary-registry && uv run python scripts/agentic-eval-tau-scheduler-boundary-registry.py --work local/agentic-evals/tau-scheduler-boundary-registry/work --out local/agentic-evals/tau-scheduler-boundary-registry/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"recursive_failure_contained\": true",
+          "\"registry_has_at_least_10_boundaries\": true"
+        ],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/installed_cli_registry_schema", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/registry_has_at_least_10_boundaries", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/recursive_failure_contained", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/recursive_failure_has_tau_code", "equals": true}
+        ]
+      }
+    }
+  ]
+}

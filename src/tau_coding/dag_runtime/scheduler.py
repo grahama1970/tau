@@ -21,6 +21,11 @@ from tau_coding.dag_runtime.attempt_result import (
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
+from tau_coding.dag_runtime.boundary_registry import (
+    attach_boundary_failure,
+    boundary_for_original_code,
+    fallback_boundary_failure,
+)
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import (
     DagPlan,
@@ -638,12 +643,17 @@ def run_dag_plan(
                             )
                             resource_tokens = (*worker_tokens, *resource_tokens)
                         except (ResourceLeaseDenied, WorkerAssignmentError) as exc:
-                            blocked_result = {
-                                "node_id": node_id,
-                                "status": "BLOCKED",
-                                "verdict": exc.code.upper(),
-                                "errors": [str(exc)],
-                            }
+                            original_code = (
+                                "RESOURCE_LEASE_DENIED"
+                                if isinstance(exc, ResourceLeaseDenied)
+                                else "WORKER_ASSIGNMENT_FAILED"
+                            )
+                            blocked_result = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"scheduler_boundary:{original_code}:{exc}",
+                                original_code=original_code,
+                                original_exception=exc,
+                            )
                             node_states[node_id] = "blocked"
                             resolved.add(node_id)
                             break
@@ -951,6 +961,7 @@ def run_dag_plan(
                             node_id=node_id,
                             signal=f"dag_node_future_exception:{type(exc).__name__}:{exc}",
                             original_code="ADAPTER_EXECUTION_FAILED",
+                            original_exception=exc,
                         )
                     if worker_binding is not None and run_store is not None and lease is not None:
                         try:
@@ -963,13 +974,12 @@ def run_dag_plan(
                                 result=result,
                             )
                         except WorkerAssignmentError as exc:
-                            result = {
-                                "node_id": node_id,
-                                "status": "BLOCKED",
-                                "verdict": exc.code.upper(),
-                                "errors": [str(exc)],
-                                "retryable": False,
-                            }
+                            result = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"worker_completion_failure:{exc.code}:{exc}",
+                                original_code="WORKER_COMPLETION_FAILED",
+                                original_exception=exc,
+                            )
                     if resource_lease_manager is not None and resource_tokens:
                         resource_lease_manager.release(
                             resource_tokens,
@@ -2222,25 +2232,40 @@ def _triaged_blocked_attempt_result(
     signal: str,
     original_code: str,
     error_path: str | None = None,
+    original_exception: BaseException | None = None,
 ) -> dict[str, Any]:
-    triage = classify_tau_failure(signal, layer="tau")
-    triage_code = str(triage.get("code") or "tau_unclassified_internal_error")
-    result = {
-        "node_id": node_id,
-        "status": "BLOCKED",
-        "verdict": triage_code,
-        "errors": [str(triage.get("cause") or signal)],
-        "alert_codes": [triage_code, original_code],
-        "retryable": False,
-        "failure": {
-            "schema": "tau.internal_failure.v1",
-            "original_code": original_code,
-            "triage": triage,
-        },
-    }
-    if error_path is not None:
-        result["failure"]["path"] = error_path
-    return result
+    boundary = boundary_for_original_code(original_code)
+    try:
+        triage = classify_tau_failure(signal, layer="tau")
+        triage_code = str(triage.get("code") or "tau_unclassified_internal_error")
+        result = {
+            "node_id": node_id,
+            "status": "BLOCKED",
+            "verdict": triage_code,
+            "errors": [str(triage.get("cause") or signal)],
+            "alert_codes": [triage_code, original_code, boundary.boundary_id],
+            "retryable": False,
+            "failure": {
+                "schema": "tau.internal_failure.v1",
+                "original_code": original_code,
+                "classification_code": triage_code,
+                "triage": triage,
+            },
+        }
+        if error_path is not None:
+            result["failure"]["path"] = error_path
+        return attach_boundary_failure(
+            result,
+            boundary_id=boundary.boundary_id,
+            original_exception=original_exception,
+        )
+    except Exception as exc:  # noqa: BLE001 - recursive containment boundary.
+        return fallback_boundary_failure(
+            node_id=node_id,
+            boundary_id="recursive_failure_object_admission",
+            original_code=original_code,
+            error=f"recursive boundary containment failure: {type(exc).__name__}: {exc}",
+        )
 
 
 def _apply_workspace_stale_read_observations(

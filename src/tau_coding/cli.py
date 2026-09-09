@@ -5359,6 +5359,14 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "scheduler-boundary-registry":
+        if positional_args[1:] not in ([], ["--json"]):
+            raise typer.BadParameter("Usage: tau scheduler-boundary-registry [--json]")
+        from tau_coding.dag_runtime.boundary_registry import scheduler_boundary_registry_payload
+
+        typer.echo(json.dumps(scheduler_boundary_registry_payload(), indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if not print_requested and command == "developer-share":
         try:
             payload = project_agent_developer_share_command(positional_args[1:])
