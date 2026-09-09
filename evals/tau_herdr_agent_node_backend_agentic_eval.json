@@ -15,7 +15,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && mkdir -p local/agentic-evals/tau-herdr-agent-node-backend && rm -rf local/agentic-evals/tau-herdr-agent-node-backend/work && uv run python scripts/agentic-eval-tau-herdr-agent-node-backend.py --work local/agentic-evals/tau-herdr-agent-node-backend/work --out local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+        "cd .. && HERDR_BIN=$(mise which herdr 2>/dev/null || command -v herdr) && export PATH=$(dirname \"$HERDR_BIN\"):$PATH && mkdir -p local/agentic-evals/tau-herdr-agent-node-backend && rm -rf local/agentic-evals/tau-herdr-agent-node-backend/work && uv run python scripts/agentic-eval-tau-herdr-agent-node-backend.py --work local/agentic-evals/tau-herdr-agent-node-backend/work --out local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
       ],
       "evidence_class": "live_e2e",
       "expected": {
@@ -106,6 +106,16 @@
           {
             "equals": true,
             "json_pointer": "/local_vs_herdr_equivalence/journal_head_sha256_equal",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/adapter_endpoint_lease_persistence/matches_runtime_lease",
+            "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
+          },
+          {
+            "equals": "ALIVE",
+            "json_pointer": "/adapter_endpoint_lease_persistence/adoptable_after_readback",
             "path": "../local/agentic-evals/tau-herdr-agent-node-backend/proof.json"
           },
           {
@@ -211,8 +221,8 @@
     }
   ],
   "claims": {
-    "does_not_prove": "Provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or that the shipped adapter persists endpoint leases itself for restart adoption (the harness persists the lease record the scheduler needs; FakeProvider is the model in both workers).",
-    "proves": "A real Tau scheduler process is SIGKILLed while a Herdr-hosted worker is in flight and a restarted scheduler adopts the same endpoint from the durable lease record with one settlement and no duplicate endpoint or attempt; replacement_decision blocks on a live induced UNKNOWN observation and creates zero endpoints; the same fixture work order yields field-equal work orders and settlements (all fields except attempt_id/sha256, including turn/tool receipt digests, evidence, and journal head) through the local in-process path and the adapter's Herdr worker path; pane text is diagnostic only; an operator action round-trips through Tau's inbox; confirmed-dead retry gets new lineage; cleanup refuses foreign authorization and leaves an unrelated workspace pane intact; the installed wheel imports the adapter and backend without the source checkout."
+    "does_not_prove": "Provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or human acceptance. FakeProvider is the model in both workers.",
+    "proves": "A real Tau scheduler process is SIGKILLed while a Herdr-hosted worker is in flight and a restarted scheduler adopts the same endpoint from the durable lease record with one settlement and no duplicate endpoint or attempt; the shipped adapter writes and read-backs its own endpoint lease record for the Herdr adapter path; replacement_decision blocks on a live induced UNKNOWN observation and creates zero endpoints; the same fixture work order yields field-equal work orders and settlements (all fields except attempt_id/sha256, including turn/tool receipt digests, evidence, and journal head) through the local in-process path and the adapter's Herdr worker path; pane text is diagnostic only; an operator action round-trips through Tau's inbox; confirmed-dead retry gets new lineage; cleanup refuses foreign authorization and leaves an unrelated workspace pane intact; the installed wheel imports the adapter and backend without the source checkout."
   },
   "proof_scope": "Herdr runtime backend support for Tau-owned headless agent-node worker endpoints",
   "skill": "tau",

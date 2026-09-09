@@ -13,12 +13,15 @@ from typing import Any
 
 import pytest
 
+from tau_coding.dag_runtime.agent_node_adapter import execute_tau_agent_node
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import FrozenJson, canonical_sha256
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt
 from tau_coding.runtime_backends import (
     HerdrRuntimeBackend,
     RuntimeBackendRegistry,
+    RuntimeEndpointLease,
     RuntimeRequirement,
     herdr_cleanup_authorization,
     herdr_runtime_scope_request,
@@ -315,6 +318,146 @@ def test_spawn_binds_exact_workspace_pane_terminal_and_session(tmp_path: Path) -
     assert backend_ids["pane_id"] == "w1:p1"
     assert backend_ids["terminal_id"] == "term-1"
     assert backend.list_owned("run-1") == [lease]
+
+
+def test_agent_node_adapter_persists_endpoint_lease_for_restart_adoption(
+    tmp_path: Path,
+) -> None:
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "adapter-persists-endpoint-lease",
+            "run_dir": str(tmp_path / "run"),
+            "nodes": [
+                {
+                    "node_id": "worker",
+                    "role": "worker",
+                    "tau_agent": {
+                        "prompt": "write a receipt",
+                        "role": "worker",
+                        "model": "fixture",
+                        "worker_command": ["python", "-c", "pass"],
+                        "cwd": str(tmp_path),
+                        "worker_settlement_path": str(tmp_path / "settlement.json"),
+                        "worker_settlement_timeout_seconds": 1.0,
+                        "runtime_observe_seconds": 1.0,
+                    },
+                    "runtime_requirement": {
+                        "schema": "tau.runtime_requirement.v1",
+                        "backend": "herdr",
+                        "interaction_mode": "interactive",
+                        "required_capabilities": [
+                            "interactive",
+                            "stable_endpoint_id",
+                            "supports_working_directory",
+                        ],
+                        "session_scope": "node_attempt",
+                        "observation_requirements": ["PROCESS"],
+                    },
+                    "depends_on": [],
+                    "accepted_context_from": [],
+                    "receipt_path": str(tmp_path / "worker.json"),
+                    "timeout_seconds": 5,
+                    "max_attempts": 1,
+                }
+            ],
+        },
+        source_path=tmp_path / "dag.json",
+    )
+    run_id = "adapter-persists-endpoint-lease"
+    store = SqliteDagRunStore(tmp_path / "dag-run.sqlite3")
+    try:
+        lease = store.acquire_run(
+            plan=plan,
+            run_id=run_id,
+            owner_id="scheduler-before-loss",
+            ttl_seconds=60.0,
+        )
+        identity = store.reserve_attempt(
+            lease,
+            plan_sha256=plan.plan_sha256,
+            node_id="worker",
+            attempt=1,
+        )
+        store.mark_dispatched(lease, identity.attempt_id)
+        node = plan.nodes[0]
+        work_order = {
+            "schema": "tau.agent_node.v1",
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt_id": identity.attempt_id,
+            "attempt": identity.attempt,
+            "goal_hash": plan.runtime_goal_hash,
+            "plan_sha256": plan.plan_sha256,
+            "model": "fixture",
+            "harness": "tau_native_agent_loop",
+            "role": "worker",
+            "required_evidence": [],
+            "transport_profile_selection": None,
+        }
+        (tmp_path / "settlement.json").write_text(
+            json.dumps(
+                {
+                    "schema": "tau.agent_node_settlement.v1",
+                    "run_id": run_id,
+                    "node_id": node.node_id,
+                    "attempt_id": identity.attempt_id,
+                    "attempt": identity.attempt,
+                    "goal_hash": plan.runtime_goal_hash,
+                    "plan_sha256": plan.plan_sha256,
+                    "harness": "tau_native_agent_loop",
+                    "work_order_sha256": canonical_sha256(work_order),
+                    "state": "completed",
+                    "blockers": [],
+                    "final_text": "done",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        fake = FakeHerdr()
+        backend = HerdrRuntimeBackend(
+            session="default",
+            command_runner=fake,
+            poll_interval_seconds=0.001,
+        )
+
+        result = execute_tau_agent_node(
+            node,
+            (),
+            DagNodeAttempt(
+                attempt=identity.attempt,
+                max_attempts=1,
+                cancel_event=threading.Event(),
+                run_id=run_id,
+                attempt_id=identity.attempt_id,
+                idempotency_key=identity.idempotency_key,
+            ),
+            goal_hash=plan.runtime_goal_hash,
+            plan_sha256=plan.plan_sha256,
+            provider_factory=lambda _node, _config: None,
+            tools_factory=lambda _node, _config: [],
+            run_store=store,
+            lease=lease,
+            runtime_backend=backend,
+            runtime_cwd=tmp_path,
+        )
+
+        record_path = (
+            tmp_path / "agent-workers" / "worker" / "attempt-001" / "endpoint-lease.json"
+        )
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        endpoint = RuntimeEndpointLease.from_payload(record["endpoint_lease"])
+        restarted = HerdrRuntimeBackend(session="default", command_runner=fake)
+
+        assert result["status"] == "PASS"
+        assert record["schema"] == "tau.herdr_agent_node_endpoint_lease_record.v1"
+        assert record["endpoint_lease_sha256"] == endpoint.sha256
+        assert record["work_order_sha256"] == canonical_sha256(work_order)
+        assert record["run_store_path"] == str(tmp_path / "dag-run.sqlite3")
+        assert restarted.observe(endpoint).liveness == "ALIVE"
+    finally:
+        store.close()
 
 
 def test_backend_reopens_and_adopts_existing_tau_endpoint_from_lease(tmp_path: Path) -> None:

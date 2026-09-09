@@ -972,10 +972,12 @@ class HerdrRuntimeBackend:
             "payload": payload,
         }
         if check and completed.returncode != 0:
+            detail = _command_error_detail(result)
             raise RuntimeError(
                 "herdr_runtime_command_failed:"
                 + " ".join(args[:2])
                 + f":exit={completed.returncode}"
+                + detail
             )
         return result
 
@@ -1133,6 +1135,20 @@ def _validate_cleanup_authorization(
     mismatches = [key for key, value in expected.items() if payload.get(key) != value]
     if mismatches:
         raise RuntimeError("herdr_runtime_cleanup_unauthorized:" + ",".join(mismatches))
+
+
+def _command_error_detail(result: Mapping[str, Any]) -> str:
+    payload = result.get("payload")
+    if isinstance(payload, Mapping):
+        error = payload.get("error")
+        if isinstance(error, Mapping):
+            code = error.get("code")
+            message = error.get("message")
+            parts = [str(item) for item in (code, message) if item]
+            if parts:
+                return ":" + ":".join(parts)[:500]
+    stderr = str(result.get("stderr") or "").strip()
+    return f":stderr={stderr[-500:]}" if stderr else ""
 
 
 def _validate_tau_binding(value: Any, endpoint: RuntimeEndpointLease) -> None:

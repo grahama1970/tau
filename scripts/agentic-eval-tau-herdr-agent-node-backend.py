@@ -147,6 +147,32 @@ def _wait_for_json(path: Path, *, timeout_seconds: float = 10.0) -> dict[str, An
     raise FileNotFoundError(f"receipt not readable after {timeout_seconds}s: {path}: {last_error}")
 
 
+def _wait_for_child_json(
+    path: Path,
+    child: subprocess.Popen[str],
+    *,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    deadline = time.monotonic() + timeout_seconds
+    last_error: Exception | None = None
+    while time.monotonic() < deadline:
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            last_error = exc
+        if child.poll() is not None:
+            stdout, stderr = child.communicate(timeout=1)
+            raise FileNotFoundError(
+                f"receipt not readable before child exit {child.returncode}: {path}: "
+                f"{last_error}; stdout={stdout[-1000:]!r}; stderr={stderr[-2000:]!r}"
+            )
+        time.sleep(0.05)
+    raise FileNotFoundError(
+        f"receipt not readable after {timeout_seconds}s: {path}: {last_error}; "
+        f"child_returncode={child.poll()}"
+    )
+
+
 def _runtime_requirement(backend: str) -> dict[str, Any] | None:
     if backend == "local":
         # Undeclared runtime_requirement on a tau_agent node compiles to the
@@ -172,7 +198,7 @@ def _runtime_requirement(backend: str) -> dict[str, Any] | None:
 
 
 def _agent_config(work: Path, *, node_id: str, role: str, prompt: str) -> dict[str, Any]:
-    return {
+    config = {
         "prompt": prompt,
         "role": role,
         "model": "fixture",
@@ -193,6 +219,11 @@ def _agent_config(work: Path, *, node_id: str, role: str, prompt: str) -> dict[s
         "worker_settlement_timeout_seconds": 60.0,
         "worker_deadline_seconds": 120.0,
     }
+    if node_id == "agent-a":
+        config["worker_environment"] = {
+            WORKER_DELAY_ENV: os.environ.get(WORKER_DELAY_ENV, "0")
+        }
+    return config
 
 
 def _spec(work: Path, marker: str, *, backend: str) -> dict[str, Any]:
@@ -476,6 +507,7 @@ def _phase_before_loss(args: argparse.Namespace) -> int:
     """Scheduler process that will be SIGKILLed while agent-a is in flight."""
     work = Path(args.work)
     marker = args.marker
+    os.environ[WORKER_DELAY_ENV] = str(args.worker_delay_seconds)
     plan = compile_generic_dag_plan(
         _spec(work, marker, backend="herdr"), source_path=work / "issue315-herdr.dag.json"
     )
@@ -487,55 +519,25 @@ def _phase_before_loss(args: argparse.Namespace) -> int:
         owner_id=f"scheduler-before-loss-pid{os.getpid()}",
         ttl_seconds=1.0,
     )
-    scope = backend.ensure_scope(
-        herdr_runtime_scope_request(run_id=marker, owner="tau", cwd=work, label="issue315-herdr")
-    ).to_value()
     identity = store.reserve_attempt(
         lease, plan_sha256=plan.plan_sha256, node_id="agent-a", attempt=1
     )
     store.mark_dispatched(lease, identity.attempt_id)
-    attempt_dir = work / "agent-workers" / "agent-a" / "attempt-001"
-    endpoint, work_order = _spawn_direct(
-        backend,
-        plan=plan,
-        node_id="agent-a",
-        identity=identity,
-        scope_id=str(scope["scope_id"]),
-        work=work,
-        handshake_path=attempt_dir / "handshake.json",
-        settlement_path=attempt_dir / "settlement.json",
-        delay_seconds=float(args.worker_delay_seconds),
-    )
-    first_projection = RuntimeEventBridge(store).wait_and_append(
+    result = execute_tau_agent_node(
+        next(n for n in plan.nodes if n.node_id == "agent-a"),
+        (),
+        _execution(identity),
+        goal_hash=plan.runtime_goal_hash,
+        plan_sha256=plan.plan_sha256,
+        provider_factory=lambda node, config: _fixture_provider(),
+        tools_factory=lambda node, config: [_note_tool()],
+        run_store=store,
         lease=lease,
-        backend=backend,
-        endpoint=endpoint,
-        cursor=None,
-        deadline=datetime.now(UTC) + timedelta(seconds=3),
+        runtime_backend=backend,
+        runtime_cwd=work,
     )
-    # Durable endpoint lease: what a Tau scheduler must persist so a restarted
-    # process can adopt without re-dispatching.
-    write_durable_json(
-        attempt_dir / "endpoint-lease.json",
-        {
-            "schema": "tau.herdr_agent_node_endpoint_lease_record.v1",
-            "scheduler_pid": os.getpid(),
-            "scheduler_owner_id": lease.owner_id,
-            "run_id": marker,
-            "node_id": "agent-a",
-            "attempt_id": identity.attempt_id,
-            "idempotency_key": identity.idempotency_key,
-            "work_order_sha256": canonical_sha256(work_order),
-            "scope": scope,
-            "endpoint_lease": endpoint.to_payload(),
-            "endpoint_lease_sha256": endpoint.sha256,
-            "first_projection_liveness": first_projection.projection.liveness
-            if first_projection
-            else None,
-            "settlement_path": str(attempt_dir / "settlement.json"),
-            "handshake_path": str(attempt_dir / "handshake.json"),
-        },
-    )
+    if result.get("status") != "PASS":
+        raise RuntimeError(f"before_loss_adapter_failed:{result}")
     # Stay "in flight" holding the run lease until the parent kills us.
     while True:
         with contextlib.suppress(Exception):
@@ -576,12 +578,20 @@ def main() -> int:
     unrelated_lease: RuntimeEndpointLease | None = None
     store_path = work / "dag-run.sqlite3"
 
-    herdr_plan = compile_generic_dag_plan(
-        _spec(work, marker, backend="herdr"), source_path=work / "issue315-herdr.dag.json"
-    )
-    local_plan = compile_generic_dag_plan(
-        _spec(work, marker, backend="local"), source_path=work / "issue315-local.dag.json"
-    )
+    previous_delay = os.environ.get(WORKER_DELAY_ENV)
+    os.environ[WORKER_DELAY_ENV] = str(worker_delay)
+    try:
+        herdr_plan = compile_generic_dag_plan(
+            _spec(work, marker, backend="herdr"), source_path=work / "issue315-herdr.dag.json"
+        )
+        local_plan = compile_generic_dag_plan(
+            _spec(work, marker, backend="local"), source_path=work / "issue315-local.dag.json"
+        )
+    finally:
+        if previous_delay is None:
+            os.environ.pop(WORKER_DELAY_ENV, None)
+        else:
+            os.environ[WORKER_DELAY_ENV] = previous_delay
     runtime_requirements = {
         node.node_id: node.runtime_requirement.to_value() for node in herdr_plan.nodes
     }
@@ -613,7 +623,9 @@ def main() -> int:
             raise RuntimeError(
                 f"stale work dir: {attempt_dir / 'endpoint-lease.json'} already exists; use a fresh --work"
             )
-        lease_record = _wait_for_json(attempt_dir / "endpoint-lease.json", timeout_seconds=40)
+        lease_record = _wait_for_child_json(
+            attempt_dir / "endpoint-lease.json", child, timeout_seconds=40
+        )
         assert child.pid == lease_record["scheduler_pid"], "child pid mismatch"
         settlement_present_before_kill = (attempt_dir / "settlement.json").exists()
         kill_at = datetime.now(UTC)
@@ -769,14 +781,12 @@ def main() -> int:
             herdr_b_lease = next((item for item in owned_after_b if item.node_id == "agent-b"), None)
             if herdr_b_lease is not None:
                 leases.append(herdr_b_lease)
+            herdr_attempt_dir = Path(store_path).parent / "agent-workers" / "agent-b" / "attempt-001"
             herdr_handshake = json.loads(
-                (
-                    Path(store_path).parent
-                    / "agent-workers"
-                    / "agent-b"
-                    / "attempt-001"
-                    / "handshake.json"
-                ).read_text(encoding="utf-8")
+                (herdr_attempt_dir / "handshake.json").read_text(encoding="utf-8")
+            )
+            herdr_endpoint_lease_record = json.loads(
+                (herdr_attempt_dir / "endpoint-lease.json").read_text(encoding="utf-8")
             )
             herdr_settlement = (herdr_result.get("accepted_output") or {}).get("settlement") or {}
 
@@ -825,6 +835,21 @@ def main() -> int:
         settlement_diff = sorted(
             f for f in compared_fields if local_settlement.get(f) != herdr_settlement.get(f)
         )
+        adapter_record_matches_lease = (
+            herdr_b_lease is not None
+            and herdr_endpoint_lease_record.get("endpoint_lease_sha256") == herdr_b_lease.sha256
+            and herdr_endpoint_lease_record.get("endpoint_lease", {}).get("endpoint_id")
+            == herdr_b_lease.endpoint_id
+        )
+        report["adapter_endpoint_lease_persistence"] = {
+            "record_schema": herdr_endpoint_lease_record.get("schema"),
+            "record_path": str(herdr_attempt_dir / "endpoint-lease.json"),
+            "endpoint_lease_sha256": herdr_endpoint_lease_record.get("endpoint_lease_sha256"),
+            "matches_runtime_lease": adapter_record_matches_lease,
+            "adoptable_after_readback": (
+                restarted_backend.observe(herdr_b_lease).liveness if herdr_b_lease is not None else None
+            ),
+        }
         report["local_vs_herdr_equivalence"] = {
             "herdr_result_status": herdr_result.get("status"),
             "herdr_result_verdict": herdr_result.get("verdict"),
@@ -858,6 +883,8 @@ def main() -> int:
         }
         if herdr_result.get("status") != "PASS":
             errors.append("herdr_adapter_path_not_pass")
+        if not adapter_record_matches_lease:
+            errors.append("adapter_endpoint_lease_not_persisted")
         if local_result.get("status") != "PASS":
             errors.append("local_adapter_path_not_pass")
         if not report["local_vs_herdr_equivalence"]["equivalent"]:
@@ -1102,6 +1129,7 @@ def main() -> int:
             "proves": (
                 "A real Tau scheduler process was SIGKILLed while a Herdr-hosted agent worker was in flight and a restarted "
                 "scheduler adopted the same endpoint from the durable lease with one settlement and no duplicate endpoint; "
+                "the shipped adapter wrote and read back its own endpoint lease record for the Herdr path; "
                 "replacement_decision blocked on a live induced UNKNOWN observation and created zero endpoints; the same fixture "
                 "work order produced field-equal settlements (all fields except attempt_id/sha256) through the local in-process "
                 "path and the adapter's Herdr worker path; pane text is diagnostic only; an operator action round-tripped through "
@@ -1109,9 +1137,7 @@ def main() -> int:
                 "unrelated workspace pane intact; the installed wheel imports the adapter and backend without the source checkout."
             ),
             "does_not_prove": (
-                "provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or that the "
-                "shipped adapter itself persists endpoint leases for restart adoption (this harness persists the lease record "
-                "the scheduler would need; see local_vs_herdr_equivalence and scheduler_process_loss for the exact boundary)."
+                "provider semantic quality, paid-provider execution, React Flow rendering, GOAL.md completion, or human acceptance."
             ),
             "fixture_provider": "FakeProvider in both local and Herdr workers; FakeProvider is the model, Herdr and the scheduler are live",
         },

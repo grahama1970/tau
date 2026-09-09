@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import os
 import time
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime, timedelta
@@ -288,6 +289,11 @@ def _execute_tau_agent_node_with_herdr(
                 label=str(config.get("runtime_scope_label") or "tau-agent-workers"),
             )
         ).to_value()
+        worker_environment = {
+            "TAU_AGENT_WORKER_HANDSHAKE": str(handshake_path),
+            "TAU_AGENT_WORK_ORDER_SHA256": canonical_sha256(work_order),
+            **_string_mapping(config.get("worker_environment"), "worker_environment"),
+        }
         endpoint = runtime_backend.spawn(
             herdr_runtime_spawn_request(
                 run_id=execution.run_id,
@@ -304,12 +310,21 @@ def _execute_tau_agent_node_with_herdr(
                 goal_hash=work_order["goal_hash"],
                 owner=owner,
                 label=plan_node.node_id,
-                environment={
-                    "TAU_AGENT_WORKER_HANDSHAKE": str(handshake_path),
-                    "TAU_AGENT_WORK_ORDER_SHA256": canonical_sha256(work_order),
-                },
+                environment=worker_environment,
                 lease_seconds=float(config.get("runtime_lease_seconds") or 3600.0),
             )
+        )
+        _persist_endpoint_lease_record(
+            path=attempt_dir / "endpoint-lease.json",
+            endpoint=endpoint,
+            execution=execution,
+            plan_node=plan_node,
+            work_order=work_order,
+            scope=scope,
+            run_store_path=Path(run_store.path),
+            handshake_path=handshake_path,
+            settlement_path=settlement_path,
+            scheduler_owner_id=getattr(lease, "owner_id", None),
         )
         RuntimeEventBridge(run_store).wait_and_append(
             lease=lease,
@@ -439,6 +454,45 @@ def _worker_handshake(
     return payload
 
 
+def _persist_endpoint_lease_record(
+    *,
+    path: Path,
+    endpoint: Any,
+    execution: Any,
+    plan_node: DagPlanNode,
+    work_order: Mapping[str, Any],
+    scope: Mapping[str, Any],
+    run_store_path: Path,
+    handshake_path: Path,
+    settlement_path: Path,
+    scheduler_owner_id: str | None,
+) -> None:
+    from tau_coding.dag_runtime.admission import read_back_durable_json, write_durable_json
+
+    payload = {
+        "schema": "tau.herdr_agent_node_endpoint_lease_record.v1",
+        "run_id": execution.run_id,
+        "node_id": plan_node.node_id,
+        "attempt_id": execution.attempt_id,
+        "attempt": execution.attempt,
+        "idempotency_key": execution.idempotency_key,
+        "scheduler_pid": os.getpid(),
+        "scheduler_owner_id": scheduler_owner_id,
+        "run_store_path": str(run_store_path),
+        "work_order_sha256": canonical_sha256(work_order),
+        "scope": dict(scope),
+        "endpoint_lease": endpoint.to_payload(),
+        "endpoint_lease_sha256": endpoint.sha256,
+        "handshake_path": str(handshake_path),
+        "settlement_path": str(settlement_path),
+        "created_at": datetime.now(UTC).isoformat(),
+    }
+    written = write_durable_json(path, payload)
+    readback = read_back_durable_json(written)
+    if readback.get("endpoint_lease_sha256") != endpoint.sha256:
+        raise RuntimeError("herdr_endpoint_lease_record_readback_mismatch")
+
+
 def _wait_for_settlement(path: Path, *, timeout_seconds: float) -> dict[str, Any]:
     deadline = time.monotonic() + timeout_seconds
     last_error: Exception | None = None
@@ -486,6 +540,21 @@ def _string_list(value: Any, label: str) -> list[str]:
     if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
         raise ValueError(f"{label} must contain non-empty strings")
     return list(value)
+
+
+def _string_mapping(value: Any, label: str) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{label} must be an object")
+    result: dict[str, str] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not key:
+            raise ValueError(f"{label} keys must be non-empty strings")
+        if not isinstance(item, str):
+            raise ValueError(f"{label}.{key} must be a string")
+        result[key] = item
+    return result
 
 
 def _worker_path(value: Any, *, cwd: Path) -> Path:
