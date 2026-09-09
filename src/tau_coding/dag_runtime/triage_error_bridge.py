@@ -26,6 +26,9 @@ def classify_tau_failure(text: str, *, layer: str = "tau") -> dict[str, Any]:
 
     runner = _triage_runner()
     if runner is None:
+        native = _native_fallback(text, layer=layer)
+        if native is not None:
+            return native
         return _mint("tau_triage_unavailable", "triage-error runner not found")
     try:
         completed = subprocess.run(
@@ -41,7 +44,10 @@ def classify_tau_failure(text: str, *, layer: str = "tau") -> dict[str, Any]:
                 "tau_triage_classification_failed",
                 f"triage-error classify exited {completed.returncode}: {signal}",
             )
-        return TriageErrorClassification.model_validate_json(completed.stdout).model_dump()
+        payload = TriageErrorClassification.model_validate_json(completed.stdout).model_dump()
+        payload.setdefault("classifier_kind", "EXTERNAL_CLASSIFIER")
+        payload.setdefault("classifier_path", str(runner))
+        return payload
     except (OSError, subprocess.TimeoutExpired, ValidationError, ValueError) as exc:
         return _mint("tau_triage_classification_failed", str(exc))
 
@@ -49,11 +55,33 @@ def classify_tau_failure(text: str, *, layer: str = "tau") -> dict[str, Any]:
 def _triage_runner() -> Path | None:
     configured = os.environ.get("TAU_TRIAGE_ERROR_RUN_SH")
     candidates = [Path(configured).expanduser()] if configured else []
-    candidates.append(Path.home() / "workspace/experiments/agent-skills/skills/triage-error/run.sh")
+    skills_root = os.environ.get("TAU_SKILLS_ROOT")
+    if skills_root:
+        candidates.append(Path(skills_root).expanduser() / "triage-error" / "run.sh")
+    agent_skills_root = os.environ.get("TAU_AGENT_SKILLS_ROOT")
+    if agent_skills_root:
+        candidates.append(
+            Path(agent_skills_root).expanduser() / "skills" / "triage-error" / "run.sh"
+        )
     for candidate in candidates:
         if candidate.is_file():
             return candidate
     return None
+
+
+def _native_fallback(text: str, *, layer: str) -> dict[str, Any] | None:
+    lowered = text.lower()
+    if "missing required evidence" not in lowered:
+        return None
+    return {
+        "code": "tau_project_dag_missing_required_evidence",
+        "layer": layer,
+        "cause": "DAG node failed because required evidence was missing.",
+        "next_command": "rerun the same semantic node after attaching required evidence",
+        "ambiguous": False,
+        "classifier_kind": "NATIVE_FALLBACK",
+        "classifier_version": "tau.dag_runtime.triage_error_bridge.v1",
+    }
 
 
 def _mint(prefix: str, cause: str) -> dict[str, Any]:
@@ -64,4 +92,5 @@ def _mint(prefix: str, cause: str) -> dict[str, Any]:
         "cause": cause,
         "next_command": None,
         "ambiguous": True,
+        "classifier_kind": "UNAVAILABLE",
     }
