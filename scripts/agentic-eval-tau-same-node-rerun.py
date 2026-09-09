@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove a repaired Tau required-node failure reruns the same semantic node then advances."""
+"""Prove a repaired Tau node reruns the same semantic node then advances (#344)."""
 
 from __future__ import annotations
 
@@ -7,15 +7,27 @@ import argparse
 import json
 import shutil
 import subprocess
-import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
-from tau_coding.dag_viewer.project_receipt_projection import ProjectReceiptProjection
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.correction import (
+    CorrectionActionIntent,
+    CorrectionIncident,
+    run_correction_transaction,
+)
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.scheduler import DagCorrectionRequest, run_dag_plan
+from tau_coding.security_capability import capability_grant_sha256
 
 GOAL_HASH = "sha256:tau-same-node-rerun-agentic-eval"
 DAG_ID = "tau-same-node-rerun-agentic-eval"
+
+
+class InjectedSchedulerCrash(RuntimeError):
+    pass
 
 
 def main() -> int:
@@ -23,7 +35,6 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-root", type=Path)
-    parser.add_argument("--uv-bin", default="uv")
     parser.add_argument("--timeout-seconds", type=int, default=180)
     args = parser.parse_args()
 
@@ -34,160 +45,166 @@ def main() -> int:
         if args.run_root
         else Path(tempfile.mkdtemp(prefix="tau-same-node-rerun-"))
     )
-    receipt_dir = run_root / "run"
-    specs = run_root / "specs"
-    agents = run_root / "agents"
-    logs = run_root / "logs"
-    for path in (receipt_dir, specs / "coder", specs / "reviewer", agents, logs):
-        path.mkdir(parents=True, exist_ok=True)
-
-    coder_spec = specs / "coder" / "tau-dispatch-command.json"
-    reviewer_spec = specs / "reviewer" / "tau-dispatch-command.json"
-    dag = run_root / "dag.json"
-    _write_command_spec(coder_spec, cwd=run_root, payload=_handoff("coder", evidence=[]))
-    _write_command_spec(
-        reviewer_spec,
-        cwd=run_root,
-        payload=_handoff("reviewer", evidence=[_evidence("reviewer_verdict")], next_agent="human"),
-    )
-    _write_dag(dag, coder_spec, reviewer_spec)
-
-    tau = [shutil.which(args.uv_bin) or args.uv_bin, "run", "--project", str(repo), "tau"]
-    first = _run(
-        [
-            *tau,
-            "dag-run",
-            str(dag),
-            "--receipt-dir",
-            str(receipt_dir),
-            "--agents-root",
-            str(agents),
-            "--scheduler",
-            "bounded-ready-queue",
-        ],
-        cwd=repo,
-        timeout=args.timeout_seconds,
-        stdout_path=logs / "first.stdout.json",
-        stderr_path=logs / "first.stderr.txt",
-    )
-    first_payload = _parse_json(first["stdout"])
-    repair = ((first_payload or {}).get("pipeline_self_repair") or [{}])[0]
-    ledger = Path(str(repair.get("ledger") or ""))
-    category_key = str(repair.get("category_key") or "")
-    proof_report = run_root / "agentic-evals-report.json"
-    proof_report.write_text(
+    if run_root.exists():
+        shutil.rmtree(run_root)
+    run_root.mkdir(parents=True)
+    proof_dir = run_root / "proof"
+    proof_dir.mkdir()
+    run_dir = run_root / "run"
+    database = run_dir / "dag-run.sqlite3"
+    state_path = run_root / "state.json"
+    state_path.write_text(
         json.dumps(
             {
-                "schema": "agentic_evals.report.v2",
-                "readiness": "READY",
-                "status": "PASS",
-                "cases": [{"name": "same-node-rerun", "status": "PASS"}],
+                "coder_fixed": False,
+                "coder_calls": 0,
+                "sibling_calls": 0,
+                "reviewer_calls": 0,
+                "repair_action_calls": 0,
+                "repair_verify_calls": 0,
+                "outputs": {},
             },
-            indent=2,
+            sort_keys=True,
         )
-        + "\n",
-        encoding="utf-8",
     )
-    mark = _run(
+    plan = _plan(run_root)
+    events: list[dict[str, Any]] = []
+
+    open_crash = _run_scheduler(
+        plan=plan,
+        database=database,
+        state_path=state_path,
+        events=events,
+        fault_point="after_repair_category_open",
+        lease_owner="open-crash",
+    )
+    open_snapshot = _snapshot(database, plan.plan_id)
+    open_reconciliation = _resolve_reconciliation(database, plan.plan_id, "after_open_crash")
+    time.sleep(0.1)
+
+    revalidating_crash = _run_scheduler(
+        plan=plan,
+        database=database,
+        state_path=state_path,
+        events=events,
+        fault_point="after_repair_category_revalidating",
+        lease_owner="revalidating-crash",
+    )
+    revalidating_snapshot = _snapshot(database, plan.plan_id)
+    revalidating_reconciliation = _resolve_reconciliation(
+        database,
+        plan.plan_id,
+        "after_revalidating_crash",
+    )
+    time.sleep(0.1)
+
+    final_result = _run_scheduler(
+        plan=plan,
+        database=database,
+        state_path=state_path,
+        events=events,
+        fault_point=None,
+        lease_owner="final",
+    )
+    final_snapshot = _snapshot(database, plan.plan_id)
+    state = _read_state(state_path)
+
+    smoke = _run(
         [
-            str(Path.home() / ".pi" / "agent" / "skills" / "pipeline-self-repair" / "run.sh"),
-            "mark-repaired",
-            "--ledger",
-            str(ledger),
-            "--category-key",
-            category_key,
-            "--proof-report",
-            str(proof_report),
-            "--goal-project",
-            "tau",
-            "--json",
+            "python",
+            "-m",
+            "py_compile",
+            "src/tau_coding/dag_runtime/correction.py",
+            "src/tau_coding/dag_runtime/run_store.py",
+            "src/tau_coding/dag_runtime/replay.py",
+            "src/tau_coding/dag_runtime/scheduler.py",
+            "scripts/agentic-eval-tau-same-node-rerun.py",
         ],
         cwd=repo,
         timeout=args.timeout_seconds,
-        stdout_path=logs / "mark-repaired.stdout.json",
-        stderr_path=logs / "mark-repaired.stderr.txt",
     )
-    _write_command_spec(
-        coder_spec,
-        cwd=run_root,
-        payload=_handoff("coder", evidence=[_evidence("creator_artifact")], next_agent="reviewer"),
-    )
-    second = _run(
-        [
-            *tau,
-            "dag-run",
-            str(dag),
-            "--receipt-dir",
-            str(receipt_dir),
-            "--agents-root",
-            str(agents),
-            "--scheduler",
-            "bounded-ready-queue",
-        ],
-        cwd=repo,
-        timeout=args.timeout_seconds,
-        stdout_path=logs / "second.stdout.json",
-        stderr_path=logs / "second.stderr.txt",
-    )
-    second_payload = _parse_json(second["stdout"])
-    snapshot = ProjectReceiptProjection.load(receipt_dir).snapshot()
 
-    observed_edges = (second_payload or {}).get("observed_edges") or []
-    errors: list[str] = []
-    if first["exit_code"] == 0 or (first_payload or {}).get("status") != "BLOCKED":
-        errors.append("first_run_not_blocked")
-    if repair.get("node_id") != "coder" or not category_key:
-        errors.append("repair_category_missing")
-    if mark["exit_code"] != 0:
-        errors.append("mark_repaired_failed")
-    if second["exit_code"] != 0 or (second_payload or {}).get("status") != "PASS":
-        errors.append("second_run_not_pass")
-    if ((second_payload or {}).get("node_attempts") or {}).get("coder") != 2:
-        errors.append("same_node_attempt_2_not_recorded")
-    if not any(
-        item.get("from_node") == "coder" and item.get("to_node") == "reviewer"
-        for item in observed_edges
-        if isinstance(item, dict)
-    ):
-        errors.append("downstream_reviewer_not_released")
-    rerun = (second_payload or {}).get("pipeline_self_repair_rerun") or {}
-    if rerun.get("authorized") is not True:
-        errors.append("repair_rerun_not_authorized_by_ledger")
-    if snapshot["run_summary"].get("repair", {}).get("open_category_count") != 0:
-        errors.append("viewer_repair_category_not_closed")
-    tau_triage = (
-        (((rerun.get("closed_repair_records") or [{}])[0]).get("tau_triage") or {})
-        if isinstance(rerun, dict)
-        else {}
-    )
-    if tau_triage.get("code") != "tau_project_dag_missing_required_evidence" or not tau_triage.get(
-        "next_command"
-    ):
-        errors.append("tau_specific_triage_code_missing")
+    categories = final_snapshot["repair_categories"]
+    first_category = categories[0] if categories else {}
+    result_by_node = {item.get("node_id"): item for item in final_result.node_results}
+    sibling_output = result_by_node.get("sibling", {}).get("accepted_output") or {}
+    coder_attempts = state.get("outputs", {}).get("coder_attempts", [])
+    ledger_trace = _ledger_trace(final_snapshot["events"])
 
+    checks = {
+        "open_crash_recorded_open_category": open_crash == "InjectedSchedulerCrash"
+        and [item.get("state") for item in open_snapshot["repair_categories"]] == ["OPEN"],
+        "open_restart_safe": open_reconciliation.get("decision")
+        in {"authorize_new_generation", "not_required"},
+        "revalidating_crash_recorded_revalidating": revalidating_crash
+        == "InjectedSchedulerCrash"
+        and [item.get("state") for item in revalidating_snapshot["repair_categories"]]
+        == ["REVALIDATING"],
+        "revalidating_restart_safe": revalidating_reconciliation.get("decision")
+        in {"authorize_new_generation", "not_required"},
+        "final_pass": final_result.status == "PASS" and final_result.verdict == "PASS",
+        "same_node_attempt_2_recorded": final_result.node_results
+        and result_by_node.get("coder", {}).get("attempt_count") == 2
+        and 2 in coder_attempts,
+        "sibling_not_regenerated": state.get("sibling_calls") == 1,
+        "sibling_output_byte_identical": sibling_output.get("payload_sha256")
+        == state.get("outputs", {}).get("sibling_payload_sha256"),
+        "reviewer_released_after_repair": state.get("reviewer_calls") == 1
+        and result_by_node.get("reviewer", {}).get("status") == "PASS",
+        "repair_closed": first_category.get("state") == "SAME_NODE_RERUN",
+        "repair_has_resulting_attempt": bool(
+            first_category.get("record", {}).get("resulting_attempt_id")
+        ),
+        "repair_action_once": state.get("repair_action_calls") == 1,
+        "repair_verify_once": state.get("repair_verify_calls") == 1,
+        "ledger_trace_complete": ledger_trace
+        == ["OPEN", "REPAIRING", "REVALIDATING", "RESOLVED", "SAME_NODE_RERUN"],
+        "py_compile_passed": smoke["exit_code"] == 0,
+    }
+    errors = [name for name, ok in checks.items() if not ok]
     receipt = {
         "schema": "tau.same_node_rerun_agentic_eval_proof.v1",
+        "issue": 344,
         "ok": not errors,
         "status": "PASS" if not errors else "BLOCKED",
         "mocked": False,
         "live": True,
         "provider_live": False,
         "run_root": str(run_root),
-        "receipt_dir": str(receipt_dir),
-        "first_status": (first_payload or {}).get("status"),
-        "repair_category_key": category_key,
-        "mark_repaired_exit_code": mark["exit_code"],
-        "second_status": (second_payload or {}).get("status"),
-        "node_attempts": (second_payload or {}).get("node_attempts"),
-        "observed_edges": observed_edges,
-        "repair_rerun": rerun,
-        "tau_triage": tau_triage,
-        "viewer_repair_summary": snapshot["run_summary"].get("repair"),
+        "receipt_dir": str(run_dir),
+        "checks": checks,
         "errors": errors,
-        "proof_boundary": (
-            "Live local Tau CLI with safe command-spec fixtures; provider/model semantics "
-            "are not exercised."
-        ),
+        "open_crash": _result_label(open_crash),
+        "open_reconciliation": open_reconciliation,
+        "open_repair_states": [item.get("state") for item in open_snapshot["repair_categories"]],
+        "revalidating_crash": _result_label(revalidating_crash),
+        "revalidating_reconciliation": revalidating_reconciliation,
+        "revalidating_repair_states": [
+            item.get("state") for item in revalidating_snapshot["repair_categories"]
+        ],
+        "final_status": final_result.status,
+        "final_verdict": final_result.verdict,
+        "node_attempts": {
+            item.get("node_id"): item.get("attempt_count") for item in final_result.node_results
+        },
+        "node_call_counts": {
+            "coder": state.get("coder_calls"),
+            "sibling": state.get("sibling_calls"),
+            "reviewer": state.get("reviewer_calls"),
+            "repair_action": state.get("repair_action_calls"),
+            "repair_verify": state.get("repair_verify_calls"),
+        },
+        "observed_edges": [list(item) for item in final_result.edge_states],
+        "repair_categories": categories,
+        "ledger_trace": ledger_trace,
+        "sibling_output": sibling_output,
+        "commands": {"py_compile": smoke},
+        "proof_boundary": {
+            "proves": "Live local Tau scheduler API with SqliteDagRunStore, durable repair "
+            "category replay, deterministic correction evidence, same-node rerun, and fan-out "
+            "sibling preservation.",
+            "does_not_prove": "Provider/model semantic quality or browser-backed agents.",
+        },
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -195,117 +212,267 @@ def main() -> int:
     return 0 if not errors else 1
 
 
-def _write_dag(path: Path, coder_spec: Path, reviewer_spec: Path) -> None:
-    path.write_text(
-        json.dumps(
-            {
-                "schema": "tau.dag_contract.v1",
-                "dag_id": DAG_ID,
-                "goal": {"goal_id": DAG_ID, "goal_version": 1, "goal_hash": GOAL_HASH},
-                "target": {"repo": "grahama1970/tau", "target": "agentic-eval:same-node-rerun"},
-                "entry_node": "coder",
-                "terminal_nodes": ["human"],
-                "limits": {"resume": True, "default_timeout_seconds": 30, "max_total_attempts": 4},
-                "repair_policy": {
-                    "enabled": True,
-                    "handler": "pipeline-self-repair",
-                    "goal_project": "tau",
-                    "pipeline": "tau",
-                    "repo": "grahama1970/tau",
-                    "skip_memory": True,
-                    "skip_github": True,
-                    "no_ticket": True,
-                    "timeout_seconds": 60,
-                },
-                "nodes": [
-                    {
-                        "id": "coder",
-                        "agent": "coder",
-                        "executor": "local",
-                        "max_attempts": 1,
-                        "command_spec": str(coder_spec),
-                        "required_evidence": ["creator_artifact"],
+def _run_scheduler(
+    *,
+    plan: Any,
+    database: Path,
+    state_path: Path,
+    events: list[dict[str, Any]],
+    fault_point: str | None,
+    lease_owner: str,
+) -> Any:
+    def execute_node(
+        node: Any,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: Any,
+    ) -> dict[str, Any]:
+        state = _read_state(state_path)
+        state[f"{node.node_id}_calls"] = int(state.get(f"{node.node_id}_calls") or 0) + 1
+        outputs = dict(state.get("outputs") or {})
+        if node.node_id == "coder":
+            attempts = list(outputs.get("coder_attempts") or [])
+            attempts.append(attempt.attempt)
+            outputs["coder_attempts"] = attempts
+            if not state.get("coder_fixed"):
+                _write_state(state_path, state | {"outputs": outputs})
+                return {
+                    "node_id": "coder",
+                    "status": "BLOCKED",
+                    "verdict": "PROVIDER_AUTH_REQUIRED",
+                    "retryable": True,
+                    "correction_required": True,
+                    "repair_handler_id": "scheduler.correction_handler",
+                    "repair_attempt_budget": 1,
+                    "checkpoint_ref": "node_input_manifest",
+                    "errors": ["fixture repair required"],
+                    "failure": {
+                        "schema": "tau.internal_failure.v1",
+                        "original_code": "ADAPTER_EXECUTION_FAILED",
+                        "classification_code": "tau_same_node_fixture_repair_required",
                     },
-                    {
-                        "id": "reviewer",
-                        "agent": "reviewer",
-                        "executor": "local",
-                        "max_attempts": 1,
-                        "command_spec": str(reviewer_spec),
-                        "required_evidence": ["reviewer_verdict"],
-                    },
-                ],
-                "edges": [{"from": "coder", "to": "reviewer"}, {"from": "reviewer", "to": "human"}],
-                "required_evidence": ["creator_artifact", "reviewer_verdict"],
-                "fail_closed_on": [
-                    "missing_required_evidence",
-                    "pipeline_self_repair_required",
-                    "max_attempts_exceeded",
-                ],
-            },
-            indent=2,
-            sort_keys=True,
+                }
+            payload = {"source_node_id": "coder", "attempt": attempt.attempt, "fixed": True}
+        elif node.node_id == "sibling":
+            payload = {"source_node_id": "sibling", "value": "unaffected"}
+            outputs["sibling_payload_sha256"] = _stable_sha(payload)
+        else:
+            payload = {
+                "source_node_id": "reviewer",
+                "accepted_from": [item.get("source_node_id") for item in accepted_inputs],
+            }
+        payload["payload_sha256"] = _stable_sha(payload)
+        outputs[f"{node.node_id}_last"] = payload
+        state["outputs"] = outputs
+        _write_state(state_path, state)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": payload,
+        }
+
+    def correction_handler(request: DagCorrectionRequest):
+        incident = CorrectionIncident.create(
+            run_id=request.attempt.run_id,
+            dag_id=request.plan.plan_id,
+            node_id=request.node.node_id,
+            attempt=request.attempt.attempt,
+            trigger=str(request.result.get("verdict") or "node_failure"),
+            classification="RETRYABLE",
+            goal_hash=request.plan.runtime_goal_hash,
+            observed_state=dict(request.result),
         )
-        + "\n",
-        encoding="utf-8",
+        intent = CorrectionActionIntent.create(
+            incident=incident,
+            capability="provider.repair_auth",
+            action="refresh_local_provider_auth",
+            target={"provider": "local-fixture"},
+            policy_sha256="sha256:policy",
+            capability_grant=_grant(incident),
+        )
+
+        def apply_action(_intent: CorrectionActionIntent) -> dict[str, Any]:
+            state = _read_state(state_path)
+            state["repair_action_calls"] = int(state.get("repair_action_calls") or 0) + 1
+            state["coder_fixed"] = True
+            _write_state(state_path, state)
+            return {"fixed": True, "repair_action_calls": state["repair_action_calls"]}
+
+        def verify_action(
+            _intent: CorrectionActionIntent, _receipt: dict[str, Any]
+        ) -> dict[str, Any]:
+            state = _read_state(state_path)
+            state["repair_verify_calls"] = int(state.get("repair_verify_calls") or 0) + 1
+            _write_state(state_path, state)
+            return {"verified": state.get("coder_fixed") is True}
+
+        return run_correction_transaction(
+            store=request.run_store,
+            lease=request.lease,
+            incident=incident,
+            intent=intent,
+            apply_action=apply_action,
+            verify_action=verify_action,
+        )
+
+    def inject(point: str, _payload: dict[str, Any]) -> None:
+        if point == fault_point:
+            raise InjectedSchedulerCrash(point)
+
+    try:
+        with SqliteDagRunStore(database) as store:
+            return run_dag_plan(
+                plan,
+                execute_node=execute_node,
+                run_store=store,
+                run_id=plan.plan_id,
+                lease_owner=lease_owner,
+                allow_lease_takeover=True,
+                lease_ttl_seconds=0.05,
+                max_concurrency=1,
+                event_sink=events.append,
+                correction_handler=correction_handler,
+                fault_injector=inject if fault_point else None,
+            )
+    except InjectedSchedulerCrash as exc:
+        return type(exc).__name__
+
+
+def _plan(root: Path) -> Any:
+    return compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": DAG_ID,
+            "run_dir": str(root / "run"),
+            "nodes": [
+                _node(root, "coder", max_attempts=2),
+                _node(root, "sibling", max_attempts=1),
+                _node(root, "reviewer", depends_on=["coder", "sibling"], max_attempts=1),
+            ],
+        },
+        source_path=root / "dag.json",
     )
 
 
-def _evidence(kind: str) -> dict[str, str]:
-    return {"kind": kind, "goal_hash": GOAL_HASH, "path": "fixture://same-node-rerun"}
-
-
-def _handoff(
-    agent: str, *, evidence: list[dict[str, str]], next_agent: str = "human"
+def _node(
+    root: Path, node_id: str, *, depends_on: list[str] | None = None, max_attempts: int
 ) -> dict[str, Any]:
     return {
-        "schema": "tau.agent_handoff.v1",
-        "github": {"repo": "grahama1970/tau", "target": "agentic-eval:same-node-rerun"},
-        "goal": {"goal_id": DAG_ID, "goal_version": 1, "goal_hash": GOAL_HASH},
-        "previous_subagent": agent,
-        "context": {"summary": f"{agent} fixture", "artifacts": []},
-        "result": {"status": "PASS", "summary": f"{agent} fixture", "evidence": evidence},
-        "rationale": "same-node rerun proof fixture",
-        "next_agent": {
-            "name": next_agent,
-            "executor": "human" if next_agent == "human" else "local",
-            "reason": "continue",
-        },
-        "required_evidence": [item["kind"] for item in evidence],
-        "stop_condition": "done",
+        "node_id": node_id,
+        "role": node_id,
+        "command": ["true"],
+        "depends_on": depends_on or [],
+        "accepted_context_from": depends_on or [],
+        "receipt_path": str(root / f"{node_id}.json"),
+        "timeout_seconds": 1,
+        "max_attempts": max_attempts,
     }
 
 
-def _write_command_spec(path: Path, *, cwd: Path, payload: dict[str, Any]) -> None:
-    code = f"import json; print(json.dumps({payload!r}))"
-    path.write_text(
-        json.dumps({"command": [sys.executable, "-c", code], "timeout_s": 5, "cwd": str(cwd)}),
-        encoding="utf-8",
-    )
+def _grant(incident: CorrectionIncident) -> dict[str, Any]:
+    grant: dict[str, Any] = {
+        "schema": "tau.capability_grant.v1",
+        "grant_id": f"grant:{incident.incident_id}",
+        "request_sha256": "sha256:request",
+        "run_id": incident.run_id,
+        "dag_id": incident.dag_id,
+        "node_id": incident.node_id,
+        "attempt": incident.attempt,
+        "actor_id": "human:operator",
+        "goal_hash": incident.goal_hash,
+        "security_context_sha256": "sha256:security-context",
+        "policy_profile_sha256": "sha256:policy",
+        "data_boundary_sha256": "sha256:boundary",
+        "capability": "provider.repair_auth",
+        "target": "refresh_local_provider_auth",
+        "resource_scope": ["provider:local-fixture"],
+        "maximum_effect": {"max_repairs": 1},
+        "issued_at": "2026-07-16T00:00:00Z",
+        "expires_at": "2099-01-01T00:00:00Z",
+        "granting_authority": "tau.command_spec_policy.v1",
+    }
+    grant["grant_sha256"] = capability_grant_sha256(grant)
+    return grant
 
 
-def _run(
-    command: list[str], *, cwd: Path, timeout: int, stdout_path: Path, stderr_path: Path
-) -> dict[str, Any]:
-    proc = subprocess.run(
-        command, cwd=cwd, capture_output=True, text=True, timeout=timeout, check=False
-    )
-    stdout_path.write_text(proc.stdout, encoding="utf-8")
-    stderr_path.write_text(proc.stderr, encoding="utf-8")
+def _snapshot(database: Path, run_id: str) -> dict[str, Any]:
+    with SqliteDagRunStore(database) as store:
+        events = [dict(item) for item in store.load_events(run_id)]
+    from tau_coding.dag_runtime.correction import reduce_repair_category_projections
+
+    repairs = reduce_repair_category_projections(tuple(events))
     return {
+        "events": events,
+        "repair_categories": [
+            {
+                "repair_id": item.repair_id,
+                "state": item.state,
+                "journal_sequence": item.journal_sequence,
+                "record": item.record,
+                "transitions": list(item.transitions),
+            }
+            for item in repairs
+        ],
+    }
+
+
+def _resolve_reconciliation(database: Path, run_id: str, reason: str) -> dict[str, Any]:
+    with SqliteDagRunStore(database) as store:
+        pending = store.reconciliation_required_runs()
+        if not any(item.run_id == run_id for item in pending):
+            return {"decision": "not_required"}
+        return store.resolve_reconciliation_required_run(
+            run_id=run_id,
+            decision="authorize_new_generation",
+            operator_id="agentic-eval-operator",
+            reason=reason,
+        )
+
+
+def _ledger_trace(events: list[dict[str, Any]]) -> list[str]:
+    return [
+        str(item.get("payload", {}).get("repair", {}).get("state"))
+        for item in events
+        if item.get("event_type") == "repair_category_state_committed"
+    ]
+
+
+def _result_label(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    return str(getattr(value, "status", type(value).__name__))
+
+
+def _run(command: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
+    proc = subprocess.run(
+        command,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    return {
+        "command": command,
+        "cwd": str(cwd),
         "exit_code": proc.returncode,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
-        "command": command,
     }
 
 
-def _parse_json(text: str) -> dict[str, Any] | None:
-    try:
-        value = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-    return value if isinstance(value, dict) else None
+def _stable_sha(value: dict[str, Any]) -> str:
+    from tau_coding.dag_runtime.model import canonical_sha256
+
+    return canonical_sha256(value)
+
+
+def _read_state(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_state(path: Path, state: dict[str, Any]) -> None:
+    path.write_text(json.dumps(state, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _resolve_out(repo: Path, out: Path) -> Path:

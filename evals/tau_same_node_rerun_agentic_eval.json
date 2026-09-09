@@ -2,10 +2,10 @@
   "version": 2,
   "skill": "tau-same-node-rerun",
   "trials": 2,
-  "proof_scope": "Tau required-node repair closure and same semantic node rerun",
+  "proof_scope": "Tau durable repair category closure and same semantic node rerun",
   "claims": {
-    "proves": "A BLOCKED required node cannot advance downstream until pipeline-self-repair ledger validation with retained agentic-eval proof passes, after which Tau archives the blocked run store, reruns the same semantic node as attempt 2, and then releases downstream nodes.",
-    "does_not_prove": "Provider semantic quality, real external ticket closure, or human acceptance of the repaired output."
+    "proves": "A BLOCKED required node creates one durable repair category; open and revalidating restart states replay safely; deterministic correction evidence closes the category; Tau reruns the same semantic node as attempt 2; an unaffected sibling is not regenerated; downstream releases only after repaired admission.",
+    "does_not_prove": "Provider semantic quality, real external ticket closure, or browser-backed agent behavior."
   },
   "capability_claims": [
     {
@@ -17,7 +17,7 @@
   ],
   "cases": [
     {
-      "name": "blocked-node-reruns-after-category-green",
+      "name": "blocked-node-reruns-after-repair-category-green",
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "live_e2e",
@@ -30,18 +30,26 @@
       ],
       "expected": {
         "exit_code": 0,
-        "stdout_contains": ["\"status\": \"PASS\"", "\"first_status\": \"BLOCKED\"", "\"second_status\": \"PASS\"", "\"authorized\": true"],
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"same_node_attempt_2_recorded\": true",
+          "\"ledger_trace_complete\": true",
+          "\"sibling_not_regenerated\": true"
+        ],
         "artifacts": [
           {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/ok", "equals": true},
           {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/mocked", "equals": false},
           {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/live", "equals": true},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/first_status", "equals": "BLOCKED"},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/second_status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/final_status", "equals": "PASS"},
           {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/node_attempts/coder", "equals": 2},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/repair_rerun/authorized", "equals": true},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/viewer_repair_summary/open_category_count", "equals": 0},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/tau_triage/code", "equals": "tau_project_dag_missing_required_evidence"},
-          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/tau_triage/ambiguous", "equals": false}
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/node_attempts/sibling", "equals": 1},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/node_call_counts/repair_action", "equals": 1},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/node_call_counts/repair_verify", "equals": 1},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/checks/open_crash_recorded_open_category", "equals": true},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/checks/revalidating_crash_recorded_revalidating", "equals": true},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/checks/ledger_trace_complete", "equals": true},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/checks/sibling_output_byte_identical", "equals": true},
+          {"path": "../local/agentic-evals/tau-same-node-rerun-proof.json", "json_pointer": "/ledger_trace/4", "equals": "SAME_NODE_RERUN"}
         ]
       }
     }

@@ -26,7 +26,16 @@ from tau_coding.dag_runtime.boundary_registry import (
     boundary_for_original_code,
     fallback_boundary_failure,
 )
-from tau_coding.dag_runtime.correction import CorrectionStateProjection
+from tau_coding.dag_runtime.correction import (
+    ALLOWED_REPAIR_HANDLER_IDS,
+    OPEN_REPAIR_CATEGORY_STATES,
+    CorrectionStateProjection,
+    RepairCategoryProjection,
+    closure_evidence_refs_from_correction,
+    ensure_repair_category_open,
+    repair_category_from_failure,
+    transition_repair_category,
+)
 from tau_coding.dag_runtime.model import (
     DagPlan,
     DagPlanContextBinding,
@@ -351,7 +360,12 @@ def run_dag_plan(
             fault_injector=fault_injector,
             correction_handler=correction_handler,
         )
-        blocked_result = replayed_block or recovery_block
+        open_repair_block = None
+        if correction_handler is None:
+            open_repair_block = _open_repair_category_block(
+                repair_category_projections_for_run(run_store, effective_run_id)
+            )
+        blocked_result = replayed_block or recovery_block or open_repair_block
 
     _emit(event_sink, {"event": "scheduler_started", "plan_id": plan.plan_id})
     try:
@@ -961,7 +975,6 @@ def run_dag_plan(
                             node_id=node_id,
                             signal=f"dag_node_future_exception:{type(exc).__name__}:{exc}",
                             original_code="ADAPTER_EXECUTION_FAILED",
-                            original_exception=exc,
                         )
                     if worker_binding is not None and run_store is not None and lease is not None:
                         try:
@@ -1088,6 +1101,7 @@ def run_dag_plan(
                         lease=lease,
                         correction_handler=correction_handler,
                         event_sink=event_sink,
+                        fault_injector=fault_injector,
                     )
                     will_retry = (
                         retryable
@@ -1112,6 +1126,21 @@ def run_dag_plan(
                         if run_store is not None and lease is not None:
                             run_store.schedule_retry(
                                 lease, identity.attempt_id, next_attempt=attempt + 1
+                            )
+                            _mark_repair_same_node_rerun_scheduled(
+                                plan=plan,
+                                node=nodes[node_id],
+                                current_attempt_id=identity.attempt_id,
+                                next_attempt_id=_attempt_id_for(
+                                    run_id=effective_run_id,
+                                    plan_sha256=plan.plan_sha256,
+                                    node_id=node_id,
+                                    attempt=attempt + 1,
+                                ),
+                                next_attempt=attempt + 1,
+                                run_store=run_store,
+                                lease=lease,
+                                event_sink=event_sink,
                             )
                             _inject_fault(fault_injector, "after_retry_scheduled", identity)
                         scheduled.remove(node_id)
@@ -1794,12 +1823,39 @@ def _correction_allows_retry(
     lease: DagRunLease | None,
     correction_handler: CorrectionHandler | None,
     event_sink: EventSink | None,
+    fault_injector: Callable[[str, Mapping[str, Any]], None] | None,
 ) -> bool:
-    """Require durable verification only for explicitly correction-gated failures."""
+    """Require durable repair-category resolution before same-node retry."""
 
     if result.get("correction_required") is not True:
         return True
+    repair_projection: RepairCategoryProjection | None = None
+    if run_store is not None and lease is not None:
+        repair_projection = _ensure_repair_category_for_failure(
+            plan=plan,
+            node=node,
+            result=result,
+            attempt=attempt,
+            run_store=run_store,
+            lease=lease,
+            event_sink=event_sink,
+            fault_injector=fault_injector,
+        )
+        if repair_projection.state == "RESOLVED":
+            return True
+        if repair_projection.state == "SAME_NODE_RERUN":
+            return True
+        if repair_projection.state in {"ESCALATED_HUMAN", "TERMINAL"}:
+            return False
     if correction_handler is None or run_store is None or lease is None:
+        if repair_projection is not None and repair_projection.state in OPEN_REPAIR_CATEGORY_STATES:
+            transition_repair_category(
+                store=run_store,
+                lease=lease,
+                category=repair_projection,
+                state="ESCALATED_HUMAN",
+                reason="durable_correction_handler_required",
+            )
         _emit(
             event_sink,
             {
@@ -1810,6 +1866,35 @@ def _correction_allows_retry(
             },
         )
         return False
+    if repair_projection is None:
+        return False
+    handler_id = str(repair_projection.record.get("repair_handler_id") or "")
+    if handler_id not in ALLOWED_REPAIR_HANDLER_IDS:
+        transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="TERMINAL",
+            reason="repair_handler_not_allowlisted",
+        )
+        return False
+    if int(repair_projection.record.get("repair_attempt_budget") or 0) < 1:
+        transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="TERMINAL",
+            reason="repair_attempt_budget_exhausted",
+        )
+        return False
+    if repair_projection.state == "OPEN":
+        repair_projection = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="REPAIRING",
+            reason="repair_handler_started",
+        )
     projection = correction_handler(
         DagCorrectionRequest(
             plan=plan,
@@ -1820,6 +1905,66 @@ def _correction_allows_retry(
             lease=lease,
         )
     )
+    if projection.state == "VERIFIED":
+        if repair_projection.state != "REVALIDATING":
+            repair_projection = transition_repair_category(
+                store=run_store,
+                lease=lease,
+                category=repair_projection,
+                state="REVALIDATING",
+                reason="repair_handler_returned_verified_correction",
+                correction_projection=projection,
+            )
+            _inject_fault(
+                fault_injector,
+                "after_repair_category_revalidating",
+                {
+                    "run_id": attempt.run_id,
+                    "node_id": node.node_id,
+                    "attempt": attempt.attempt,
+                    "attempt_id": attempt.attempt_id,
+                    "repair_id": repair_projection.repair_id,
+                    "repair_state": repair_projection.state,
+                },
+            )
+        closure_refs = closure_evidence_refs_from_correction(projection)
+        if not closure_refs:
+            transition_repair_category(
+                store=run_store,
+                lease=lease,
+                category=repair_projection,
+                state="TERMINAL",
+                reason="repair_closure_evidence_invalid_or_forged",
+                correction_projection=projection,
+            )
+            return False
+        repair_projection = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="RESOLVED",
+            reason="deterministic_repair_closure_evidence_validated",
+            closure_evidence_refs=closure_refs,
+            correction_projection=projection,
+        )
+    elif projection.state == "HUMAN_ROUTED":
+        repair_projection = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="ESCALATED_HUMAN",
+            reason="correction_routed_to_human",
+            correction_projection=projection,
+        )
+    elif projection.state in {"REJECTED", "EXHAUSTED", "UNCERTAIN"}:
+        repair_projection = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=repair_projection,
+            state="TERMINAL",
+            reason=f"correction_{projection.state.lower()}",
+            correction_projection=projection,
+        )
     _emit(
         event_sink,
         {
@@ -1828,11 +1973,159 @@ def _correction_allows_retry(
             "attempt": attempt.attempt,
             "incident_id": projection.incident_id,
             "correction_state": projection.state,
+            "repair_id": repair_projection.repair_id,
+            "repair_state": repair_projection.state,
             "journal_sequence": projection.journal_sequence,
-            "retry_authorized": projection.state == "VERIFIED",
+            "retry_authorized": repair_projection.state == "RESOLVED",
         },
     )
-    return projection.state == "VERIFIED"
+    return repair_projection.state == "RESOLVED"
+
+
+def _ensure_repair_category_for_failure(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    result: Mapping[str, Any],
+    attempt: DagNodeAttempt,
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    event_sink: EventSink | None,
+    fault_injector: Callable[[str, Mapping[str, Any]], None] | None,
+) -> RepairCategoryProjection:
+    category = repair_category_from_failure(
+        run_id=attempt.run_id,
+        plan_sha256=plan.plan_sha256,
+        goal_binding=plan.goal_binding.to_value(),
+        goal_hash=plan.runtime_goal_hash,
+        node_id=node.node_id,
+        failing_attempt_id=attempt.attempt_id,
+        failing_attempt=attempt.attempt,
+        result=result,
+        repair_handler_id=str(result.get("repair_handler_id") or "scheduler.correction_handler"),
+        repair_attempt_budget=_repair_attempt_budget(
+            result=result,
+            attempt=attempt,
+        ),
+    )
+    projection = ensure_repair_category_open(
+        store=run_store,
+        lease=lease,
+        category=category,
+    )
+    checkpoint_error = _checkpoint_binding_error(plan=plan, result=result)
+    if checkpoint_error is not None and projection.state in OPEN_REPAIR_CATEGORY_STATES:
+        projection = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=projection,
+            state="TERMINAL",
+            reason=checkpoint_error,
+        )
+    _inject_fault(
+        fault_injector,
+        "after_repair_category_open",
+        {
+            "run_id": attempt.run_id,
+            "node_id": node.node_id,
+            "attempt": attempt.attempt,
+            "attempt_id": attempt.attempt_id,
+            "repair_id": projection.repair_id,
+            "repair_state": projection.state,
+        },
+    )
+    _emit(
+        event_sink,
+        {
+            "event": "repair_category_observed",
+            "repair_id": projection.repair_id,
+            "node_id": node.node_id,
+            "attempt": attempt.attempt,
+            "state": projection.state,
+            "repair_family": projection.record.get("repair_family"),
+        },
+    )
+    return projection
+
+
+def _checkpoint_binding_error(*, plan: DagPlan, result: Mapping[str, Any]) -> str | None:
+    checkpoint = result.get("checkpoint")
+    if not isinstance(checkpoint, Mapping):
+        return None
+    plan_sha256 = checkpoint.get("plan_sha256")
+    if isinstance(plan_sha256, str) and plan_sha256 and plan_sha256 != plan.plan_sha256:
+        return "checkpoint_plan_sha256_mismatch"
+    goal_hash = checkpoint.get("goal_hash")
+    if isinstance(goal_hash, str) and goal_hash and goal_hash != plan.runtime_goal_hash:
+        return "checkpoint_goal_hash_mismatch"
+    return None
+
+
+def _repair_attempt_budget(*, result: Mapping[str, Any], attempt: DagNodeAttempt) -> int:
+    raw_budget = result.get("repair_attempt_budget")
+    if isinstance(raw_budget, int) and not isinstance(raw_budget, bool):
+        return max(0, raw_budget)
+    return max(0, attempt.max_attempts - attempt.attempt)
+
+
+def _mark_repair_same_node_rerun_scheduled(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    current_attempt_id: str,
+    next_attempt_id: str,
+    next_attempt: int,
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    event_sink: EventSink | None,
+) -> None:
+    projections = [
+        projection
+        for projection in repair_category_projections_for_run(run_store, lease.run_id)
+        if projection.state == "RESOLVED"
+        and projection.record.get("node_id") == node.node_id
+        and projection.record.get("failing_attempt_id") == current_attempt_id
+    ]
+    for projection in projections:
+        updated = transition_repair_category(
+            store=run_store,
+            lease=lease,
+            category=projection,
+            state="SAME_NODE_RERUN",
+            reason="fresh_same_semantic_node_attempt_scheduled",
+            resulting_attempt_id=next_attempt_id,
+        )
+        _emit(
+            event_sink,
+            {
+                "event": "repair_category_same_node_rerun_scheduled",
+                "repair_id": updated.repair_id,
+                "node_id": node.node_id,
+                "plan_sha256": plan.plan_sha256,
+                "failing_attempt_id": current_attempt_id,
+                "resulting_attempt_id": next_attempt_id,
+                "next_attempt": next_attempt,
+            },
+        )
+
+
+def repair_category_projections_for_run(
+    run_store: SqliteDagRunStore, run_id: str
+) -> tuple[RepairCategoryProjection, ...]:
+    from tau_coding.dag_runtime.correction import reduce_repair_category_projections
+
+    return reduce_repair_category_projections(run_store.load_events(run_id))
+
+
+def _attempt_id_for(*, run_id: str, plan_sha256: str, node_id: str, attempt: int) -> str:
+    basis = {
+        "schema": "tau.dag_attempt_identity.v1",
+        "run_id": run_id,
+        "plan_sha256": plan_sha256,
+        "node_id": node_id,
+        "attempt": attempt,
+    }
+    return f"attempt-{canonical_sha256(basis).removeprefix('sha256:')[:32]}"
 
 
 def _repeated_failure_signature(
@@ -2079,12 +2372,28 @@ def _recover_incomplete_attempts(
             lease=lease,
             correction_handler=correction_handler,
             event_sink=event_sink,
+            fault_injector=fault_injector,
         )
         will_retry = (
             retryable and correction_allows_retry and identity.attempt < nodes[node_id].max_attempts
         )
         if stored.state != "OUTPUT_COMMITTED" and failed and will_retry:
             run_store.schedule_retry(lease, identity.attempt_id, next_attempt=identity.attempt + 1)
+            _mark_repair_same_node_rerun_scheduled(
+                plan=plan,
+                node=nodes[node_id],
+                current_attempt_id=identity.attempt_id,
+                next_attempt_id=_attempt_id_for(
+                    run_id=lease.run_id,
+                    plan_sha256=plan.plan_sha256,
+                    node_id=node_id,
+                    attempt=identity.attempt + 1,
+                ),
+                next_attempt=identity.attempt + 1,
+                run_store=run_store,
+                lease=lease,
+                event_sink=event_sink,
+            )
             attempt_history[node_id].append(raw_result)
             attempt_counts[node_id] = max(attempt_counts[node_id], identity.attempt)
             node_states[node_id] = "pending"
@@ -2244,7 +2553,12 @@ def _triaged_blocked_attempt_result(
             "verdict": triage_code,
             "errors": [str(triage.get("cause") or signal)],
             "alert_codes": [triage_code, original_code, boundary.boundary_id],
-            "retryable": False,
+            "retryable": True,
+            "correction_required": True,
+            "repair_handler_id": "scheduler.correction_handler",
+            "repair_attempt_budget": 1,
+            "checkpoint_ref": "node_input_manifest",
+            "classification_code": triage_code,
             "failure": {
                 "schema": "tau.internal_failure.v1",
                 "original_code": original_code,
@@ -2254,11 +2568,24 @@ def _triaged_blocked_attempt_result(
         }
         if error_path is not None:
             result["failure"]["path"] = error_path
-        return attach_boundary_failure(
+        result = attach_boundary_failure(
             result,
             boundary_id=boundary.boundary_id,
             original_exception=original_exception,
         )
+        _validate_attempt_result(
+            plan_sha256="sha256:boundary-fallback-probe",
+            identity=DagAttemptIdentity(
+                run_id="boundary-fallback-probe",
+                node_id=node_id,
+                attempt=1,
+                attempt_id="boundary-fallback-probe",
+                idempotency_key="boundary-fallback-probe",
+            ),
+            node_id=node_id,
+            result=result,
+        )
+        return result
     except Exception as exc:  # noqa: BLE001 - recursive containment boundary.
         return fallback_boundary_failure(
             node_id=node_id,
@@ -2266,6 +2593,12 @@ def _triaged_blocked_attempt_result(
             original_code=original_code,
             error=f"recursive boundary containment failure: {type(exc).__name__}: {exc}",
         )
+
+
+def _blocked_verdict_for_original_code(original_code: str) -> str:
+    if original_code.startswith("dag_attempt_result_"):
+        return "DAG_ATTEMPT_RESULT_INVALID"
+    return original_code
 
 
 def _apply_workspace_stale_read_observations(
@@ -2603,6 +2936,29 @@ def _restore_durable_state(
         if stored.state == "RETRY_SCHEDULED":
             attempt_history[stored.identity.node_id].append(stored.staged_result)
     return len(events), replay.block
+
+
+def _open_repair_category_block(
+    repair_categories: tuple[RepairCategoryProjection, ...],
+) -> dict[str, Any] | None:
+    open_categories = [
+        category
+        for category in repair_categories
+        if category.state in OPEN_REPAIR_CATEGORY_STATES
+    ]
+    if not open_categories:
+        return None
+    first = sorted(open_categories, key=lambda item: item.repair_id)[0]
+    return {
+        "status": "BLOCKED",
+        "verdict": "DAG_REPAIR_CATEGORY_OPEN",
+        "errors": [
+            "durable repair category remains open; same semantic node rerun is not yet allowed"
+        ],
+        "repair_id": first.repair_id,
+        "repair_state": first.state,
+        "repair_category": first.record,
+    }
 
 
 def _cancel_and_collect_futures(

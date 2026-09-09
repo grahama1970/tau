@@ -41,6 +41,7 @@ RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
 AGENT_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.agent_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
+REPAIR_CATEGORY_JOURNAL_ENTRY_SCHEMA = "tau.dag_repair_category_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
 STORE_SCHEMA_VERSION = 5
 STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, 3, 4, STORE_SCHEMA_VERSION})
@@ -1501,6 +1502,32 @@ class SqliteDagRunStore:
                 event_type="correction_state_committed",
                 entity_type="correction",
                 entity_id=incident_id,
+                payload=value,
+            )
+
+    def append_repair_category_event(
+        self,
+        lease: DagRunLease,
+        *,
+        event_key: str,
+        repair_id: str,
+        payload: Mapping[str, Any],
+    ) -> int:
+        """Append one idempotent repair-category transition under the run lease."""
+
+        value = dict(payload)
+        if value.get("schema") != REPAIR_CATEGORY_JOURNAL_ENTRY_SCHEMA:
+            raise DagRunStoreError("repair_category_journal_entry_schema_invalid")
+        if value.get("repair_id") != repair_id:
+            raise DagRunStoreError("repair_category_binding_mismatch", repair_id)
+        with self._transaction():
+            self._assert_lease(lease)
+            return self._append_event(
+                lease,
+                event_key=event_key,
+                event_type="repair_category_state_committed",
+                entity_type="repair_category",
+                entity_id=repair_id,
                 payload=value,
             )
 

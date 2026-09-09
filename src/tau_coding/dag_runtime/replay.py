@@ -10,6 +10,10 @@ from tau_coding.dag_runtime.attempt_result import (
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
+from tau_coding.dag_runtime.correction import (
+    RepairCategoryProjection,
+    reduce_repair_category_projections,
+)
 from tau_coding.dag_runtime.model import DagPlan, canonical_sha256, require_valid_dag_plan
 from tau_coding.dag_runtime.run_store import (
     RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA,
@@ -58,6 +62,7 @@ class DagReplayState:
     attempts: tuple[DagReplayAttempt, ...]
     results: tuple[DagReplayResult, ...]
     runtime_projections: tuple[RuntimeStateProjection, ...]
+    repair_categories: tuple[RepairCategoryProjection, ...]
     transition_receipts: tuple[DagCommittedReceipt, ...]
     replay_events: tuple[dict[str, Any], ...]
     deadline_monotonic: tuple[tuple[str, float], ...]
@@ -436,6 +441,17 @@ def replay_dag_run(
     receipts: dict[str, DagCommittedReceipt] = {}
     replay_events: list[dict[str, Any]] = []
     block: dict[str, Any] | None = None
+    repair_categories = reduce_repair_category_projections(events)
+    for category in repair_categories:
+        replay_events.append(
+            {
+                "event": "repair_category_replayed",
+                "repair_id": category.repair_id,
+                "node_id": category.record.get("node_id"),
+                "state": category.state,
+                "durably_replayed": True,
+            }
+        )
     last_sequence = 0
     attempt_by_id = {stored.identity.attempt_id: stored.identity for stored in attempts}
     for event in events:
@@ -580,6 +596,7 @@ def replay_dag_run(
         attempts=replay_attempts,
         results=tuple(results),
         runtime_projections=runtime_projections,
+        repair_categories=repair_categories,
         transition_receipts=tuple(receipts.values()),
         replay_events=tuple(replay_events),
         deadline_monotonic=tuple(sorted(deadlines.items())),

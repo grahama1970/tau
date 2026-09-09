@@ -1,216 +1,173 @@
 {
+  "checks": {
+    "final_pass": true,
+    "ledger_trace_complete": true,
+    "open_crash_recorded_open_category": true,
+    "open_restart_safe": true,
+    "py_compile_passed": true,
+    "repair_action_once": true,
+    "repair_closed": true,
+    "repair_has_resulting_attempt": true,
+    "repair_verify_once": true,
+    "revalidating_crash_recorded_revalidating": true,
+    "revalidating_restart_safe": true,
+    "reviewer_released_after_repair": true,
+    "same_node_attempt_2_recorded": true,
+    "sibling_not_regenerated": true,
+    "sibling_output_byte_identical": true
+  },
+  "commands": {
+    "py_compile": {
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "src/tau_coding/dag_runtime/correction.py",
+        "src/tau_coding/dag_runtime/run_store.py",
+        "src/tau_coding/dag_runtime/replay.py",
+        "src/tau_coding/dag_runtime/scheduler.py",
+        "scripts/agentic-eval-tau-same-node-rerun.py"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  },
   "errors": [],
-  "first_status": "BLOCKED",
+  "final_status": "PASS",
+  "final_verdict": "PASS",
+  "issue": 344,
+  "ledger_trace": [
+    "OPEN",
+    "REPAIRING",
+    "REVALIDATING",
+    "RESOLVED",
+    "SAME_NODE_RERUN"
+  ],
   "live": true,
-  "mark_repaired_exit_code": 0,
   "mocked": false,
   "node_attempts": {
     "coder": 2,
-    "reviewer": 1
+    "reviewer": 1,
+    "sibling": 1
+  },
+  "node_call_counts": {
+    "coder": 2,
+    "repair_action": 1,
+    "repair_verify": 1,
+    "reviewer": 1,
+    "sibling": 1
   },
   "observed_edges": [
-    {
-      "from_agent": "coder",
-      "from_node": "coder",
-      "to_agent": "reviewer",
-      "to_node": "reviewer"
-    },
-    {
-      "from_agent": "reviewer",
-      "from_node": "reviewer",
-      "to_agent": "human",
-      "to_node": "human"
-    }
+    [
+      "generic-dependency:coder:reviewer",
+      "success"
+    ],
+    [
+      "generic-dependency:sibling:reviewer",
+      "success"
+    ]
   ],
   "ok": true,
-  "proof_boundary": "Live local Tau CLI with safe command-spec fixtures; provider/model semantics are not exercised.",
+  "open_crash": "InjectedSchedulerCrash",
+  "open_reconciliation": {
+    "decision": "not_required"
+  },
+  "open_repair_states": [
+    "OPEN"
+  ],
+  "proof_boundary": {
+    "does_not_prove": "Provider/model semantic quality or browser-backed agents.",
+    "proves": "Live local Tau scheduler API with SqliteDagRunStore, durable repair category replay, deterministic correction evidence, same-node rerun, and fan-out sibling preservation."
+  },
   "provider_live": false,
-  "receipt_dir": "/tmp/tau-same-node-rerun-81aoutui/run",
-  "repair_category_key": "tau/coder/tau-project-dag-missing-required-evidence/agentic-eval-same-node-rerun/v1",
-  "repair_rerun": {
-    "archived_run_store_path": "/tmp/tau-same-node-rerun-81aoutui/run/dag-run.pre-repair-rerun-20260829T151704Z.sqlite3",
-    "attempted": true,
-    "authorized": true,
-    "closed_category_count": 1,
-    "closed_repair_records": [
-      {
-        "agentic_eval": {
-          "report": {
-            "bytes": 172,
-            "path": "/tmp/tau-same-node-rerun-81aoutui/agentic-evals-report.json",
-            "sha256": "sha256:1f96b81d55e333eb6a049030edd376097fe01e0424aa419a1b799bb1a2393fc9"
-          },
-          "retained_guard_required": true
+  "receipt_dir": "/tmp/tau-same-node-rerun-luhemjta/run",
+  "repair_categories": [
+    {
+      "journal_sequence": 25,
+      "record": {
+        "checkpoint": {
+          "ref": "node_input_manifest"
         },
-        "attempt": 1,
-        "attempt_id": "attempt-4f971c3009943b41f0ed97b50af6111a",
-        "blocking": false,
-        "category_key": "tau/coder/tau-project-dag-missing-required-evidence/agentic-eval-same-node-rerun/v1",
-        "command": [
-          "/home/graham/.pi/agent/skills/pipeline-self-repair/run.sh",
-          "record-failure",
-          "--pipeline",
-          "tau",
-          "--step-id",
-          "coder",
-          "--run-id",
-          "tau-same-node-rerun-agentic-eval",
-          "--target",
-          "agentic-eval:same-node-rerun",
-          "--run-root",
-          "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair",
-          "--ledger",
-          "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/replay_ledger.jsonl",
-          "--receipt",
-          "/tmp/tau-same-node-rerun-81aoutui/run/ready-queue/coder/attempt-001/failed-step-receipt.json",
-          "--raw-signal",
-          "MISSING_REQUIRED_EVIDENCE | missing_required_evidence | Node response did not include required evidence.",
-          "--attempt",
-          "1",
-          "--goal-project",
-          "tau",
-          "--goal-context",
-          "Tau DAG tau-same-node-rerun-agentic-eval required node coder failed and must not unblock downstream work until the same semantic node passes.",
-          "--json",
-          "--repo",
-          "grahama1970/tau",
-          "--skip-memory",
-          "--skip-github",
-          "--no-ticket"
+        "classification_code": "PROVIDER_AUTH_REQUIRED",
+        "closure_evidence_refs": [
+          "correction_action_receipt:sha256:ddd2f76e7c3e7deecbb618d42f93c520ef951b1e7780c05c026ba45d2775c419",
+          "correction_verification:sha256:7b5810ef2402bbdee139cb30980472a83665bf882ce82fdf57114b64c1d39835"
         ],
-        "discord": null,
-        "failed_step_receipt": "/tmp/tau-same-node-rerun-81aoutui/run/ready-queue/coder/attempt-001/failed-step-receipt.json",
-        "failure_category_id": "agentic-evals:tau:tau-coder-tau-project-dag-missing-required-evidence",
-        "goal_alignment": {
-          "command": {
-            "command": [
-              "/home/graham/workspace/experiments/agent-skills/skills/goal-drift/run.sh",
-              "goal",
-              "--project",
-              "tau"
-            ],
-            "returncode": 0,
-            "stderr_excerpt": "",
-            "stdout_excerpt": ", ledger trace links,\\n  Discord-backed human questions or status responses, blocked states, human\\n  approval waits, resume, and completion;\\n- viewer verification includes inspected desktop and mobile screenshots plus\\n  a browser workflow trace showing the same run advance through running,\\n  concurrent, blocked or approval-waiting, resumed, and completed states;\\n- a clean checkout can launch the DAGs and viewer using documented commands;\\n- final proof reports `mocked: no`, `live: yes`, what was exercised, and what\\n  remains unverified;\\n- dedicated `$agentic-evals` prove the default ledger trace, the\\n  `$pipeline-self-repair` repair branch, and Discord human unblock/status\\n  behavior separately;\\n- the human accepts that the workflows and viewer make Tau's value and state\\n  understandable without repository archaeology.\\n\\n## Non-Goals\\n\\nTau's goal is not to:\\n\\n- maximize commits, branches, pull requests, issues, receipts, tests, or agents;\\n- treat Git activity as project progress;\\n- build a generic agent framework or an unbounded autonomous swarm;\\n- trust model consensus, reviewer prose, or a producer's `PASS` field;\\n- claim legal compliance, model truthfulness, or perfect sandbox isolation;\\n- build separate viewers or bespoke orchestration paths for each example;\\n- add adjacent features that do not directly unblock a completion criterion\\n  above.\\n\\n## Critical-Path Rule\\n\\nEvery implementation task must name the completion criterion it advances and\\nthe inspectable artifact or behavior it will produce. Work that advances none\\nof the criteria is a side quest and must not be performed.\\n\\nGit commits preserve accepted work. They are retention evidence, not the goal,\\nthe progress model, or proof of product completion.\",\n  \"source\": \"human_prompt\",\n  \"repos\": [\n    \"/home/graham/workspace/experiments/tau\"\n  ],\n  \"registered_at\": \"2026-08-28T17:53:59.085975+00:00\",\n  \"criteria\": [\n    {\n      \"key\": \"canonical_dag_ladder\",\n      \"text\": \"All five canonical DAGs execute against intended real runtimes with truthful progress and useful outputs.\",\n      \"artifact_globs\": [\n        \"docs/status/**/*.json\",\n        \"experiments/goal-locked-subagents/proofs/**/*.json\",\n        \"local/**/*.json\"\n      ],\n      \"keywords\": [\n        \"canonical\",\n        \"workflow\",\n        \"dag\",\n        \"PASS\",\n        \"mocked\",\n        \"live\"\n      ],\n      \"min_instances\": 1\n    },\n    {\n      \"key\": \"repairable_step_ledger\",\n      \"text\": \"Every required DAG step is repairable, classified, ledgered, and rerun as the same semantic node before downstream work advances.\",\n      \"artifact_globs\": [\n        \"**/run-ledger.json\",\n        \"**/replay_ledger.jsonl\",\n        \"**/dag-progress.json\",\n        \"**/dag-receipt.json\"\n      ],\n      \"keywords\": [\n        \"pipeline-self-repair\",\n        \"triage\",\n        \"failure_category_id\",\n        \"same semantic node\",\n        \"run-ledger\"\n      ],\n      \"min_instances\": 1\n    },\n    {\n      \"key\": \"visual_collaboration\",\n      \"text\": \"React Flow viewer renders live DAG progress, repair overlays, ledger trace, ticket/watchdog/eval links, and human decisions without repository archaeology.\",\n      \"artifact_globs\": [\n        \"web/dag-viewer/**/*.tsx\",\n        \"**/viewer*.json\",\n        \"**/*screenshot*.png\"\n      ],\n      \"keywords\": [\n        \"React Flow\",\n        \"viewer\",\n        \"repair overlay\",\n        \"ledger\",\n        \"human decision\",\n        \"Discord\"\n      ],\n      \"min_instances\": 1\n    },\n    {\n      \"key\": \"agentic_eval_proof\",\n      \"text\": \"Dedicated agentic evals prove default ledger trace, pipeline-self-repair branch, and Discord unblock/status behavior separately.\",\n      \"artifact_globs\": [\n        \"evals/*agentic_eval.json\",\n        \"**/agentic-evals-report*.json\"\n      ],\n      \"keywords\": [\n        \"agentic_evals.report.v2\",\n        \"READY\",\n        \"live\",\n        \"mocked\",\n        \"pipeline-self-repair\",\n        \"Discord\"\n      ],\n      \"min_instances\": 1\n    }\n  ]\n}\n\n"
-          },
-          "criteria_count": 4,
-          "drift_risk": "LOW",
-          "goal_hash": "sha256:487927bd638ffa3399a65e8a9729dda9168645c1f63e014ed8771958c999f792",
-          "goal_source": "human_prompt",
-          "goal_text_sha256": "sha256:ba8056e7577818097056f338a067d9e0a6b92655005251ab7d2f6de6bdd61331",
-          "matching_criteria": [
-            {
-              "key": "canonical_dag_ladder",
-              "matched_keywords": [
-                "dag"
-              ]
-            }
-          ],
-          "project": "tau",
-          "status": "PASS_COMPARED_TO_IMMUTABLE_GOAL",
-          "target_project_match": true
-        },
-        "ledger": "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/replay_ledger.jsonl",
+        "created_at": "2026-09-09T16:00:40.948222+00:00",
+        "failing_attempt": 1,
+        "failing_attempt_id": "attempt-f06e352e64f7311ad034458a063b566f",
+        "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
+        "goal_version": 1,
         "node_id": "coder",
-        "ok": true,
-        "projection_path": "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/coder-attempt-001-projection.json",
-        "record_failure_receipt": "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/coder-attempt-001-record-failure.json",
-        "repair_state": "CATEGORY_GREEN",
-        "schema": "tau.pipeline_self_repair_projection.v1",
-        "status": "CATEGORY_GREEN",
-        "tau_triage": {
-          "ambiguous": false,
-          "cause": "A required Tau DAG node response did not include one or more evidence kinds declared by node.required_evidence.",
-          "code": "tau_project_dag_missing_required_evidence",
-          "layer": "tau.project_dag",
-          "next_command": "Open the failed-step receipt listed in pipeline_self_repair.failed_step_receipt, fix the same node's handler output so result.evidence contains every missing kind with the active goal_hash, then rerun tau dag-run against the same receipt directory after the repair ledger is CATEGORY_GREEN.",
-          "recoverable": true,
-          "schema": "tau.triage_code.v1"
-        },
-        "ticket": {
-          "action": "ticket_skipped",
-          "command": [],
-          "depends_on": [],
-          "issue_ref": null,
-          "issue_state": null,
-          "note": "--no-ticket was set; repair category is not routable yet.",
-          "result": null
-        },
-        "triage": {
-          "ambiguous": false,
-          "cause": "A required Tau DAG node response omitted one or more evidence kinds declared by node.required_evidence, so downstream DAG progress must stay blocked.",
-          "code": "tau_project_dag_missing_required_evidence",
-          "layer": "tau.project_dag",
-          "matched_tokens": "[REDACTED]",
-          "next_command": "Open the failed-step receipt named in pipeline_self_repair.failed_step_receipt; repair the same node handler so result.evidence includes every missing kind with the active goal_hash; run the retained agentic eval; mark the repair ledger CATEGORY_GREEN; rerun tau dag-run against the same receipt directory.",
-          "recoverable": true
-        },
-        "watchdog": {
-          "status": "SKIPPED"
-        }
-      }
-    ],
-    "node_attempt_offsets": {
-      "coder": 1
-    },
-    "proof_boundary": "A prior BLOCKED project-DAG run may be rerun in the same receipt directory only after pipeline-self-repair validate-ledger --require-agentic-eval returns PASS.",
-    "reason": "all_pipeline_self_repair_ledgers_closed",
-    "repair_artifacts": [
-      "/tmp/tau-same-node-rerun-81aoutui/run/ready-queue/coder/attempt-001/failed-step-receipt.json",
-      "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/coder-attempt-001-record-failure.json",
-      "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/coder-attempt-001-projection.json",
-      "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/replay_ledger.jsonl"
-    ],
-    "same_semantic_node_ids": [
-      "coder"
-    ],
-    "schema": "tau.pipeline_self_repair_rerun_authorization.v1",
-    "validations": [
-      {
-        "command": [
-          "/home/graham/.pi/agent/skills/pipeline-self-repair/run.sh",
-          "validate-ledger",
-          "--ledger",
-          "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/replay_ledger.jsonl",
-          "--require-agentic-eval",
-          "--json"
+        "original_failure_code": "ADAPTER_EXECUTION_FAILED",
+        "plan_sha256": "sha256:7c6e1e5937e31a5ab77223591105d5aab0db5956c6d8826611bdd848eaef7ee5",
+        "repair_args_digest": "sha256:b3038b7a960c3cccd79e8fb8c4c2305df236305abc24cbbeba1112dad6bc01a6",
+        "repair_attempt_budget": 1,
+        "repair_family": "adapter_execution_failed",
+        "repair_handler_id": "scheduler.correction_handler",
+        "repair_id": "repair-09ed3da373f29dbac578aa43a36fa490",
+        "required_closure_evidence": [
+          "correction_action_receipt_sha256",
+          "correction_verification_result_sha256"
         ],
-        "failure_count": 0,
-        "failures": [],
-        "ledger": "/tmp/tau-same-node-rerun-81aoutui/run/pipeline-self-repair/replay_ledger.jsonl",
-        "returncode": 0,
-        "schema": "pipeline_self_repair.validation.v1",
-        "status": "PASS"
-      }
-    ]
+        "resulting_attempt_id": "attempt-38df14defc67c02d91f88c131113ffaa",
+        "run_id": "generic:tau-same-node-rerun-agentic-eval",
+        "schema": "tau.dag_repair_category.v1",
+        "state": "SAME_NODE_RERUN",
+        "updated_at": "2026-09-09T16:00:41.186028+00:00"
+      },
+      "repair_id": "repair-09ed3da373f29dbac578aa43a36fa490",
+      "state": "SAME_NODE_RERUN",
+      "transitions": [
+        {
+          "from_state": null,
+          "reason": "repairable_node_failure_classified",
+          "to_state": "OPEN"
+        },
+        {
+          "from_state": "OPEN",
+          "reason": "repair_handler_started",
+          "to_state": "REPAIRING"
+        },
+        {
+          "correction_incident_id": "incident-7f7e7ed3836dd059e52d3035b28aabce",
+          "correction_journal_sequence": 20,
+          "correction_state": "VERIFIED",
+          "from_state": "REPAIRING",
+          "reason": "repair_handler_returned_verified_correction",
+          "to_state": "REVALIDATING"
+        },
+        {
+          "correction_incident_id": "incident-7f7e7ed3836dd059e52d3035b28aabce",
+          "correction_journal_sequence": 20,
+          "correction_state": "VERIFIED",
+          "from_state": "REVALIDATING",
+          "reason": "deterministic_repair_closure_evidence_validated",
+          "to_state": "RESOLVED"
+        },
+        {
+          "from_state": "RESOLVED",
+          "reason": "fresh_same_semantic_node_attempt_scheduled",
+          "to_state": "SAME_NODE_RERUN"
+        }
+      ]
+    }
+  ],
+  "revalidating_crash": "InjectedSchedulerCrash",
+  "revalidating_reconciliation": {
+    "decision": "not_required"
   },
-  "run_root": "/tmp/tau-same-node-rerun-81aoutui",
+  "revalidating_repair_states": [
+    "REVALIDATING"
+  ],
+  "run_root": "/tmp/tau-same-node-rerun-luhemjta",
   "schema": "tau.same_node_rerun_agentic_eval_proof.v1",
-  "second_status": "PASS",
-  "status": "PASS",
-  "tau_triage": {
-    "ambiguous": false,
-    "cause": "A required Tau DAG node response did not include one or more evidence kinds declared by node.required_evidence.",
-    "code": "tau_project_dag_missing_required_evidence",
-    "layer": "tau.project_dag",
-    "next_command": "Open the failed-step receipt listed in pipeline_self_repair.failed_step_receipt, fix the same node's handler output so result.evidence contains every missing kind with the active goal_hash, then rerun tau dag-run against the same receipt directory after the repair ledger is CATEGORY_GREEN.",
-    "recoverable": true,
-    "schema": "tau.triage_code.v1"
+  "sibling_output": {
+    "payload_sha256": "sha256:83a32755219f2051b524d5c6352c0874487fe67e4f3a4feec34a35511b4e09cb",
+    "source_node_id": "sibling",
+    "value": "unaffected"
   },
-  "viewer_repair_summary": {
-    "available": true,
-    "category_count": 1,
-    "discord_states": [],
-    "incident_ids": [
-      "agentic-evals:tau:tau-coder-tau-project-dag-missing-required-evidence"
-    ],
-    "open_category_count": 0,
-    "ops_discord_http_statuses": [],
-    "ops_discord_message_urls": [],
-    "ops_discord_notification_statuses": [],
-    "schema": "tau.pipeline_self_repair_summary.v1",
-    "states": [
-      "CATEGORY_GREEN"
-    ]
-  }
+  "status": "PASS"
 }
