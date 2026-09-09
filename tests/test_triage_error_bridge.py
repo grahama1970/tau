@@ -1,13 +1,42 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
-from tau_coding.dag_runtime.triage_error_bridge import classify_tau_failure
+from tau_coding.dag_runtime.triage_error_bridge import (
+    TRIAGE_CLASSIFICATION_SCHEMA,
+    TRIAGE_CONTRACT_INVALID_CODE,
+    TRIAGE_REPAIR_ARGS_SCHEMA,
+    admit_triage_classification,
+    classify_tau_failure,
+)
 
 
-def test_classify_tau_failure_mints_code_when_triage_runner_fails(
+def _valid_payload(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema": TRIAGE_CLASSIFICATION_SCHEMA,
+        "code": "tau_project_dag_missing_required_evidence",
+        "layer": "dag-runtime",
+        "cause": "DAG node failed because required evidence was missing.",
+        "repair_family": "result_contract_invalid",
+        "disposition": "KNOWN_REPAIR",
+        "repair_handler_id": "scheduler.correction_handler",
+        "repair_args_schema": TRIAGE_REPAIR_ARGS_SCHEMA,
+        "repair_args": {
+            "strategy": "same_semantic_node_rerun",
+            "repair_family": "result_contract_invalid",
+            "classification_code": "tau_project_dag_missing_required_evidence",
+        },
+        "requires_human": False,
+        "diagnostics": {"source": "fixture"},
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_classify_tau_failure_mints_closed_contract_when_triage_runner_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -18,10 +47,13 @@ def test_classify_tau_failure_mints_code_when_triage_runner_fails(
 
     result = classify_tau_failure("internal tau failure", layer="tau")
 
-    assert result["ambiguous"] is True
+    assert result["schema"] == TRIAGE_CLASSIFICATION_SCHEMA
+    assert result["disposition"] == "AMBIGUOUS"
+    assert result["requires_human"] is True
     assert result["code"].startswith("tau_triage_classification_failed_unclassified_")
     assert result["layer"] == "tau"
     assert "classifier exploded" in result["cause"]
+    assert "next_command" not in result
 
 
 def test_classify_tau_failure_uses_native_fallback_without_runner(
@@ -33,27 +65,28 @@ def test_classify_tau_failure_uses_native_fallback_without_runner(
 
     result = classify_tau_failure("node missing required evidence", layer="dag-runtime")
 
-    assert result == {
-        "code": "tau_project_dag_missing_required_evidence",
-        "layer": "dag-runtime",
-        "cause": "DAG node failed because required evidence was missing.",
-        "next_command": "rerun the same semantic node after attaching required evidence",
-        "ambiguous": False,
-        "classifier_kind": "NATIVE_FALLBACK",
-        "classifier_version": "tau.dag_runtime.triage_error_bridge.v1",
-    }
+    assert result["schema"] == TRIAGE_CLASSIFICATION_SCHEMA
+    assert result["code"] == "tau_project_dag_missing_required_evidence"
+    assert result["disposition"] == "KNOWN_REPAIR"
+    assert result["repair_handler_id"] == "scheduler.correction_handler"
+    assert result["repair_args_schema"] == TRIAGE_REPAIR_ARGS_SCHEMA
+    assert result["repair_args_sha256"].startswith("sha256:")
+    assert result["requires_human"] is False
+    assert result["diagnostics"]["classifier_kind"] == "NATIVE_FALLBACK"
+    assert "next_command" not in result
 
 
-def test_classify_tau_failure_uses_configured_skills_root(
+def test_classify_tau_failure_accepts_canonical_external_contract(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     runner = tmp_path / "skills" / "triage-error" / "run.sh"
     runner.parent.mkdir(parents=True)
+    payload = _valid_payload(code="external_code", layer="tau")
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     runner.write_text(
         "#!/usr/bin/env python3\n"
-        "import json\n"
-        "print(json.dumps({\"code\": \"external_code\", \"layer\": \"tau\", \"cause\": \"ok\"}))\n",
+        "print(" + repr(canonical) + ")\n",
         encoding="utf-8",
     )
     runner.chmod(0o755)
@@ -63,8 +96,57 @@ def test_classify_tau_failure_uses_configured_skills_root(
     result = classify_tau_failure("anything", layer="tau")
 
     assert result["code"] == "external_code"
-    assert result["classifier_kind"] == "EXTERNAL_CLASSIFIER"
-    assert result["classifier_path"] == str(runner)
+    assert result["diagnostics"]["classifier_kind"] == "EXTERNAL_CLASSIFIER"
+    assert result["diagnostics"]["classifier_path"] == str(runner)
+
+
+def test_classify_tau_failure_rejects_legacy_classifier_payload(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = tmp_path / "run.sh"
+    runner.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json\n"
+        "print(json.dumps({'code':'external_code','layer':'tau','cause':'ok','next_command':'rm -rf /'}))\n",
+        encoding="utf-8",
+    )
+    runner.chmod(0o755)
+    monkeypatch.setenv("TAU_TRIAGE_ERROR_RUN_SH", str(runner))
+
+    result = classify_tau_failure("anything", layer="tau")
+
+    assert result["code"] == TRIAGE_CONTRACT_INVALID_CODE
+    assert result["disposition"] == "CONTRACT_INVALID"
+    assert result["requires_human"] is True
+    assert result["diagnostics"]["classifier_kind"] == "CONTRACT_INVALID"
+    assert "next_command" not in result
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"code": "bad code"},
+        {"code": "bad/slash"},
+        {"code": "unicodé"},
+        {"code": "x" * 129},
+        {"layer": "unknown"},
+        {"repair_handler_id": "shell.exec"},
+        {"repair_args": {"strategy": "same_semantic_node_rerun", "repair_family": "result_contract_invalid", "classification_code": "ok_code", "extra": "nope"}},
+        {"repair_args": {"strategy": "same_semantic_node_rerun", "repair_family": "result_contract_invalid", "classification_code": "ok_code", "payload": "echo ok && rm -rf /"}},
+        {"disposition": "KNOWN_REPAIR", "requires_human": True},
+        {"disposition": "AMBIGUOUS", "repair_handler_id": "scheduler.correction_handler"},
+    ],
+)
+def test_admit_triage_classification_invalid_payloads_fail_closed(overrides: dict[str, object]) -> None:
+    result = admit_triage_classification(_valid_payload(**overrides), layer="scheduler")
+
+    assert result["code"] == TRIAGE_CONTRACT_INVALID_CODE
+    assert result["layer"] == "scheduler"
+    assert result["disposition"] == "CONTRACT_INVALID"
+    assert result["requires_human"] is True
+    assert "repair_handler_id" not in result
+    assert "next_command" not in result
 
 
 def test_classify_tau_failure_does_not_execute_old_home_relative_runner(
@@ -91,6 +173,6 @@ def test_classify_tau_failure_does_not_execute_old_home_relative_runner(
 
     result = classify_tau_failure("unknown failure", layer="tau")
 
-    assert result["classifier_kind"] == "UNAVAILABLE"
+    assert result["diagnostics"]["classifier_kind"] == "UNAVAILABLE"
     assert result["code"].startswith("tau_triage_unavailable_unclassified_")
     assert not marker.exists()

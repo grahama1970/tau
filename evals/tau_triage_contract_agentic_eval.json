@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "skill": "tau-triage-contract",
+  "trials": 3,
+  "proof_scope": "Tau DAG triage classification and typed repair-action contract",
+  "claims": {
+    "proves": "Tau admits only closed versioned triage classifications, rejects legacy next_command/ambiguous fields and malformed codes/layers/repair handlers/repair args, and scheduler legacy-classifier paths emit admissible triage_contract_invalid blocked attempts.",
+    "does_not_prove": "External triage-error catalog quality, provider/model behavior, GitHub closure, GOAL.md completion, or human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.triage.closed_repair_contract",
+      "description": "Tau DAG failure classification cannot cross the scheduler boundary as free-form repair text and must become a typed repair action or deterministic contract-invalid blocker.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "closed-triage-repair-contract",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.triage.closed_repair_contract"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-triage-contract.py --out local/agentic-evals/tau-triage-contract/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"invalid_payloads_fail_closed\": true", "\"pytest_contract_tests_passed\": true"],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/provider_live", "equals": false},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/checks/pytest_contract_tests_passed", "equals": true},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/checks/valid_known_repair_admitted", "equals": true},
+          {"path": "../local/agentic-evals/tau-triage-contract/proof.json", "json_pointer": "/checks/invalid_payloads_fail_closed", "equals": true}
+        ]
+      }
+    }
+  ]
+}

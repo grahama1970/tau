@@ -72,7 +72,11 @@ from tau_coding.dag_runtime.transition import (
     transition_batch_to_payload,
     validate_transition_batch,
 )
-from tau_coding.dag_runtime.triage_error_bridge import classify_tau_failure
+from tau_coding.dag_runtime.triage_error_bridge import (
+    TRIAGE_CONTRACT_INVALID_CODE,
+    admit_triage_classification,
+    classify_tau_failure,
+)
 from tau_coding.dag_runtime.worker_assignment import (
     WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
     WorkerAssignment,
@@ -2002,7 +2006,7 @@ def _ensure_repair_category_for_failure(
         failing_attempt_id=attempt.attempt_id,
         failing_attempt=attempt.attempt,
         result=result,
-        repair_handler_id=str(result.get("repair_handler_id") or "scheduler.correction_handler"),
+        repair_handler_id=_declared_repair_handler_id(result),
         repair_attempt_budget=_repair_attempt_budget(
             result=result,
             attempt=attempt,
@@ -2066,6 +2070,13 @@ def _repair_attempt_budget(*, result: Mapping[str, Any], attempt: DagNodeAttempt
     if isinstance(raw_budget, int) and not isinstance(raw_budget, bool):
         return max(0, raw_budget)
     return max(0, attempt.max_attempts - attempt.attempt)
+
+
+def _declared_repair_handler_id(result: Mapping[str, Any]) -> str:
+    handler_id = result.get("repair_handler_id")
+    if isinstance(handler_id, str) and handler_id.strip():
+        return handler_id.strip()
+    return "missing_repair_handler"
 
 
 def _mark_repair_same_node_rerun_scheduled(
@@ -2545,27 +2556,39 @@ def _triaged_blocked_attempt_result(
 ) -> dict[str, Any]:
     boundary = boundary_for_original_code(original_code)
     try:
-        triage = classify_tau_failure(signal, layer="tau")
-        triage_code = str(triage.get("code") or "tau_unclassified_internal_error")
+        triage = admit_triage_classification(classify_tau_failure(signal, layer="tau"))
+        triage_code = str(triage.get("code") or TRIAGE_CONTRACT_INVALID_CODE)
+        repair_handler_id = _allowlisted_triage_repair_handler_id(triage)
+        repair_allowed = repair_handler_id is not None
         result = {
             "node_id": node_id,
             "status": "BLOCKED",
             "verdict": triage_code,
             "errors": [str(triage.get("cause") or signal)],
             "alert_codes": [triage_code, original_code, boundary.boundary_id],
-            "retryable": True,
-            "correction_required": True,
-            "repair_handler_id": "scheduler.correction_handler",
-            "repair_attempt_budget": 1,
-            "checkpoint_ref": "node_input_manifest",
+            "retryable": repair_allowed,
+            "correction_required": repair_allowed,
             "classification_code": triage_code,
             "failure": {
                 "schema": "tau.internal_failure.v1",
                 "original_code": original_code,
                 "classification_code": triage_code,
+                "triage_disposition": triage.get("disposition"),
+                "requires_human": triage.get("requires_human"),
                 "triage": triage,
             },
         }
+        if repair_allowed:
+            result.update(
+                {
+                    "repair_handler_id": repair_handler_id,
+                    "repair_attempt_budget": 1,
+                    "checkpoint_ref": "node_input_manifest",
+                    "repair_args_schema": triage.get("repair_args_schema"),
+                    "repair_args": dict(triage.get("repair_args") or {}),
+                    "repair_args_sha256": triage.get("repair_args_sha256"),
+                }
+            )
         if error_path is not None:
             result["failure"]["path"] = error_path
         result = attach_boundary_failure(
@@ -2599,6 +2622,21 @@ def _blocked_verdict_for_original_code(original_code: str) -> str:
     if original_code.startswith("dag_attempt_result_"):
         return "DAG_ATTEMPT_RESULT_INVALID"
     return original_code
+
+
+def _allowlisted_triage_repair_handler_id(triage: Mapping[str, Any]) -> str | None:
+    if triage.get("disposition") != "KNOWN_REPAIR":
+        return None
+    if triage.get("requires_human") is not False:
+        return None
+    handler_id = triage.get("repair_handler_id")
+    if not isinstance(handler_id, str) or handler_id not in ALLOWED_REPAIR_HANDLER_IDS:
+        return None
+    if not isinstance(triage.get("repair_args"), Mapping):
+        return None
+    if not isinstance(triage.get("repair_args_schema"), str):
+        return None
+    return handler_id
 
 
 def _apply_workspace_stale_read_observations(

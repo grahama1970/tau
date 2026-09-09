@@ -176,12 +176,14 @@ def test_scheduler_blocks_downstream_after_malformed_attempt_result(
 
     assert called == ["producer"]
     assert result.status == "BLOCKED"
-    assert result.verdict == "tau_unclassified_11111111"
+    assert result.verdict == "triage_contract_invalid"
     assert result.completed_node_ids == ()
     assert result.node_results[0]["status"] == "BLOCKED"
-    assert result.node_results[0]["errors"] == ["malformed DAG node result"]
+    assert result.node_results[0]["errors"] == [
+        "Classifier output failed Tau triage contract validation."
+    ]
     assert result.node_results[0]["alert_codes"] == [
-        "tau_unclassified_11111111",
+        "triage_contract_invalid",
         "dag_attempt_result_pass_verdict_mismatch",
         "attempt_result_admission",
     ]
@@ -193,13 +195,10 @@ def test_scheduler_blocks_downstream_after_malformed_attempt_result(
     assert failure["path"] == "$.verdict"
     assert failure["boundary_id"] == "attempt_result_admission"
     assert failure["repair_category"] == "repairable_contract_failure"
-    assert failure["triage"] == {
-        "code": "tau_unclassified_11111111",
-        "layer": "tau",
-        "cause": "malformed DAG node result",
-        "next_command": "file a repair ticket",
-        "ambiguous": True,
-    }
+    assert failure["triage"]["code"] == "triage_contract_invalid"
+    assert failure["triage"]["disposition"] == "CONTRACT_INVALID"
+    assert failure["triage"]["requires_human"] is True
+    assert "next_command" not in failure["triage"]
 
 
 def test_scheduler_triages_adapter_exception(
@@ -235,11 +234,15 @@ def test_scheduler_triages_adapter_exception(
     result = run_dag_plan(plan, execute_node=execute)
 
     assert result.status == "BLOCKED"
-    assert result.verdict == "tau_unclassified_22222222"
+    assert result.verdict == "triage_contract_invalid"
     assert result.node_results[0]["failure"]["original_code"] == "ADAPTER_EXECUTION_FAILED"
     assert result.node_results[0]["failure"]["boundary_id"] == "adapter_future_execution"
     assert result.node_results[0]["repair_category"] == "repairable_infrastructure_failure"
-    assert result.node_results[0]["failure"]["triage"]["next_command"] == "run debugger"
+    triage = result.node_results[0]["failure"]["triage"]
+    assert triage["code"] == "triage_contract_invalid"
+    assert triage["disposition"] == "CONTRACT_INVALID"
+    assert triage["requires_human"] is True
+    assert "next_command" not in triage
 
 
 def test_scheduler_boundary_recursive_failure_falls_back(

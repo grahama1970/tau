@@ -14,6 +14,10 @@ DAG_ATTEMPT_RESULT_SCHEMA = "tau.dag_attempt_result.v1"
 DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA = "tau.dag_attempt_result_validation.v1"
 ATTEMPT_RESULT_STATUSES = frozenset({"PASS", "FAIL", "BLOCKED", "CANCELLED"})
 IDENTITY_CLAIM_FIELDS = ("run_id", "plan_sha256", "attempt_id")
+MACHINE_TOKEN_MAX_LENGTH = 128
+MACHINE_TOKEN_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_:-."
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,8 +192,15 @@ def admit_dag_attempt_result(
 
 
 def _machine_token(value: str) -> bool:
-    allowed = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_:-.")
-    return bool(value) and all(char in allowed for char in value) and (
+    return is_dag_machine_code(value)
+
+
+def is_dag_machine_code(value: str) -> bool:
+    """Return whether ``value`` satisfies Tau's canonical machine-code grammar."""
+
+    return bool(value) and len(value) <= MACHINE_TOKEN_MAX_LENGTH and all(
+        char in MACHINE_TOKEN_CHARS for char in value
+    ) and (
         value == value.upper() or any(separator in value for separator in ("_", ":", "-", "."))
     )
 
