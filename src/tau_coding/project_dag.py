@@ -806,6 +806,8 @@ def _project_dag_resume_watchdog_journal(
         "phase": phase,
         "tau_settled": payload.get("tau_settled"),
         "lease_released": payload.get("lease_released"),
+        "lease_event_id": (payload.get("lease_event") or {}).get("id"),
+        "lease_agent": payload.get("lease_agent"),
         "issue_number": payload.get("issue_number"),
     }
 
