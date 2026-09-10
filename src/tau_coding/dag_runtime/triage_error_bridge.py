@@ -1,4 +1,8 @@
-"""Bridge Tau DAG failures to the shared triage-error vocabulary."""
+"""Bridge Tau DAG failures to the shared triage-error vocabulary.
+
+Diagram ID: tau.failure-repair
+Excalidraw source: docs/explain/boards/tau-failure-repair.excalidraw
+"""
 
 from __future__ import annotations
 

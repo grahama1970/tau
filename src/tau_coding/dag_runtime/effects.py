@@ -21,6 +21,9 @@ a default.
 Effect identity is `(effect_type, effect_scope, effect_key)` and survives new
 runs; run/attempt ids are provenance columns only. Receipt identity (per
 attempt) remains separate: many attempts may reference one logical effect.
+
+Diagram ID: tau.effect-settlement
+Excalidraw source: docs/explain/boards/tau-effect-settlement.excalidraw
 """
 
 from __future__ import annotations

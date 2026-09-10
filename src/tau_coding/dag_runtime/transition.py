@@ -1,4 +1,8 @@
-"""Typed transition effects consumed by the canonical DagPlan scheduler."""
+"""Typed transition effects consumed by the canonical DagPlan scheduler.
+
+Diagram ID: tau.scheduler-authority
+Excalidraw source: docs/explain/boards/tau-scheduler-authority.excalidraw
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,8 @@
-"""Typed, backend-neutral contracts for Tau runtime endpoints."""
+"""Typed, backend-neutral contracts for Tau runtime endpoints.
+
+Diagram ID: tau.runtime-backend-boundary
+Excalidraw source: docs/explain/boards/tau-runtime-backend-boundary.excalidraw
+"""
 
 from __future__ import annotations
 

@@ -3,28 +3,37 @@
 Generated from live module docstrings under `src/tau_agent`, `src/tau_ai`, `src/tau_coding/dag_runtime`, `src/tau_coding/dag_viewer`, and `src/tau_coding/runtime_backends`.
 
 - Core modules scanned: 89
-- Core modules with diagram references: 14
+- Core modules with diagram references: 21
 - Core modules without module docstring: 1
 - Core modules skipped by parser errors: 0
 
-## First-pass covered modules
+## Covered modules
 
 - `src/tau_agent/harness.py` — Stateful reusable agent harness built on the pure loop.
 - `src/tau_agent/loop.py` — Pure provider/tool agent loop.
 - `src/tau_ai/events.py` — Provider-neutral streaming events emitted by model adapters.
 - `src/tau_ai/provider.py` — Provider protocol for Tau model adapters.
 - `src/tau_coding/dag_runtime/agent_node_adapter.py` — Scheduler dispatch for ``tau_native_agent_loop`` DAG nodes (tau#310).
+- `src/tau_coding/dag_runtime/artifact_reference.py` — Hash-addressed by-reference artifact inputs for DAG context bindings.
 - `src/tau_coding/dag_runtime/attempt_result.py` — Canonical DAG attempt result admission.
+- `src/tau_coding/dag_runtime/compiler.py` — Compile public Tau DAG contracts into the canonical internal DagPlan.
+- `src/tau_coding/dag_runtime/effects.py` — Accepted-effect identity, ownership, and reconciliation (contract 8.A3).
 - `src/tau_coding/dag_runtime/model.py` — Immutable, backend-neutral representation of a validated Tau DAG.
 - `src/tau_coding/dag_runtime/native_agent_dispatch.py` — CLI/scheduler dispatch for ``tau_agent`` nodes (tau#340).
 - `src/tau_coding/dag_runtime/replay.py` — Pure replay of the durable Tau DAG journal.
 - `src/tau_coding/dag_runtime/run_store.py` — Transactional SQLite journal for the canonical DAG scheduler.
 - `src/tau_coding/dag_runtime/scheduler.py` — Backend-neutral scheduler state machine for compiled Tau DAG plans.
+- `src/tau_coding/dag_runtime/transition.py` — Typed transition effects consumed by the canonical DagPlan scheduler.
+- `src/tau_coding/dag_runtime/triage_error_bridge.py` — Bridge Tau DAG failures to the shared triage-error vocabulary.
+- `src/tau_coding/dag_runtime/worker_assignment.py` — Deterministic worker capability matching for DAG scheduler dispatch.
 - `src/tau_coding/dag_viewer/project_receipt_projection.py` — Read-only DAG viewer projection for project-DAG receipt directories.
 - `src/tau_coding/dag_viewer/projection.py` — Build browser-neutral manifests and live snapshots from durable replay.
 - `src/tau_coding/dag_viewer/server.py` — Loopback-only, read-only HTTP server for Tau DAG projections.
+- `src/tau_coding/runtime_backends/contracts.py` — Typed, backend-neutral contracts for Tau runtime endpoints.
 
 ## Highest-priority remaining missing diagram links
+
+This is not a percent-complete target. The catalog is concept-first; modules below should only gain diagram links when a new concept-level explainer needs them.
 
 - `src/tau_agent/__init__.py` — Portable agent harness primitives for Tau.
 - `src/tau_agent/events.py` — Events emitted by Tau's portable agent layer.
@@ -51,11 +60,8 @@ Generated from live module docstrings under `src/tau_agent`, `src/tau_ai`, `src/
 - `src/tau_coding/dag_runtime/agent_node.py` — Tau-native agent-node execution contract (tau#310).
 - `src/tau_coding/dag_runtime/agent_projection.py` — Tau-agent run projections and operator-action contracts (tau#309).
 - `src/tau_coding/dag_runtime/agent_requirement.py` — Deterministic Tau agent-requirement validation and SciLLM transport-profile selection.
-- `src/tau_coding/dag_runtime/artifact_reference.py` — Hash-addressed by-reference artifact inputs for DAG context bindings.
 - `src/tau_coding/dag_runtime/boundary_registry.py` — Scheduler authority-boundary failure registry (#349).
-- `src/tau_coding/dag_runtime/compiler.py` — Compile public Tau DAG contracts into the canonical internal DagPlan.
 - `src/tau_coding/dag_runtime/correction.py` — Durable, bounded correction transactions over Tau's canonical journal.
-- `src/tau_coding/dag_runtime/effects.py` — Accepted-effect identity, ownership, and reconciliation (contract 8.A3).
 - `src/tau_coding/dag_runtime/execution_profile.py` — Hash-bound execution profile resolution for canonical Tau DAG plans.
 - `src/tau_coding/dag_runtime/memory_projection.py` — Outbox projection of accepted Tau outcomes into graph-memory (contract A3/220).
 - `src/tau_coding/dag_runtime/node_input_manifest.py` — Resolve declared DAG context bindings into durable node input manifests.
@@ -65,11 +71,9 @@ Generated from live module docstrings under `src/tau_agent`, `src/tau_ai`, `src/
 - `src/tau_coding/dag_runtime/retention.py` — Retention and archive helpers for local Tau DAG run directories.
 - `src/tau_coding/dag_runtime/subprocess_control.py` — Cooperative process-group execution for DagPlan adapters.
 - `src/tau_coding/dag_runtime/system_settlement.py` — Scheduler-authored settlement receipts and the run-store failure state.
+- `src/tau_coding/dag_runtime/test_ticket_repair_release.py` — no module docstring
 - `src/tau_coding/dag_runtime/ticket_repair_release.py` — Ticket repair handoff context and releaser policy contracts.
-- `src/tau_coding/dag_runtime/transition.py` — Typed transition effects consumed by the canonical DagPlan scheduler.
-- `src/tau_coding/dag_runtime/triage_error_bridge.py` — Bridge Tau DAG failures to the shared triage-error vocabulary.
 - `src/tau_coding/dag_runtime/watched_run.py` — Store-backed, viewer-watched programmatic scheduler runs (tau#312).
-- `src/tau_coding/dag_runtime/worker_assignment.py` — Deterministic worker capability matching for DAG scheduler dispatch.
 - `src/tau_coding/dag_runtime/worker_session_pool.py` — Tau-owned reusable worker session pools for scheduler-managed providers.
 - `src/tau_coding/dag_runtime/workspace_reads.py` — Durable workspace read sets, change signals, and stale-read reconciliation.
 - `src/tau_coding/dag_runtime/write_intent.py` — Append-only write-intent sidecar with CRC framing.
@@ -85,7 +89,6 @@ Generated from live module docstrings under `src/tau_agent`, `src/tau_ai`, `src/
 - `src/tau_coding/dag_viewer/static_files.py` — Read packaged DAG viewer assets without requiring Node at runtime.
 - `src/tau_coding/runtime_backends/__init__.py` — Backend-neutral runtime contracts and registry.
 - `src/tau_coding/runtime_backends/base.py` — Runtime backend protocol; implementations provide mechanics, never DAG authority.
-- `src/tau_coding/runtime_backends/contracts.py` — Typed, backend-neutral contracts for Tau runtime endpoints.
 - `src/tau_coding/runtime_backends/event_bridge.py` — Durable bridge from backend observations into Tau's authoritative journal.
 - `src/tau_coding/runtime_backends/herdr.py` — Herdr implementation of Tau's interactive runtime backend contract.
 - `src/tau_coding/runtime_backends/herdr_native_events.py` — Herdr AF_UNIX event subscription transport.

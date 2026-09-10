@@ -5,6 +5,9 @@ from Tau's receipt admission ledger, re-reads the admitted file, verifies its
 hash and size, rejects path/symlink escapes from the run evidence root, and then
 returns a small `tau.artifact_reference.v1` object that downstream adapters can
 dereference through this module when they actually need the bytes.
+
+Diagram ID: tau.node-input-binding
+Excalidraw source: docs/explain/boards/tau-node-input-binding.excalidraw
 """
 
 from __future__ import annotations

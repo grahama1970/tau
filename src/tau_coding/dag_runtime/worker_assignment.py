@@ -1,4 +1,8 @@
-"""Deterministic worker capability matching for DAG scheduler dispatch."""
+"""Deterministic worker capability matching for DAG scheduler dispatch.
+
+Diagram ID: tau.worker-dispatch
+Excalidraw source: docs/explain/boards/tau-worker-dispatch.excalidraw
+"""
 
 from __future__ import annotations
 

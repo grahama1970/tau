@@ -1,4 +1,8 @@
-"""Compile public Tau DAG contracts into the canonical internal DagPlan."""
+"""Compile public Tau DAG contracts into the canonical internal DagPlan.
+
+Diagram ID: tau.dag-compilation
+Excalidraw source: docs/explain/boards/tau-dag-compilation.excalidraw
+"""
 
 from __future__ import annotations
 

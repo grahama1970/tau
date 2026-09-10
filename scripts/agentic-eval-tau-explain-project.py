@@ -15,6 +15,8 @@ EXCALIDRAW = Path.home() / ".pi/agent/skills/ops-excalidraw/run.sh"
 EXPLAINERS = REPO / "docs/explain/explainers.jsonl"
 BOARDS = REPO / "docs/explain/boards"
 
+EXPECTED_RECORDS = 14
+
 REQUIRED_DOC_LINKS = {
     "src/tau_agent/loop.py": "tau.agent-loop",
     "src/tau_ai/provider.py": "tau.provider-boundary",
@@ -23,12 +25,26 @@ REQUIRED_DOC_LINKS = {
     "src/tau_coding/dag_runtime/native_agent_dispatch.py": "tau.native-agent-node",
     "src/tau_coding/dag_runtime/replay.py": "tau.viewer-replay",
     "src/tau_coding/dag_viewer/project_receipt_projection.py": "tau.viewer-replay",
+    "src/tau_coding/dag_runtime/compiler.py": "tau.dag-compilation",
+    "src/tau_coding/dag_runtime/transition.py": "tau.scheduler-authority",
+    "src/tau_coding/dag_runtime/run_store.py": "tau.journal-recovery",
+    "src/tau_coding/dag_runtime/artifact_reference.py": "tau.node-input-binding",
+    "src/tau_coding/runtime_backends/contracts.py": "tau.runtime-backend-boundary",
+    "src/tau_coding/dag_runtime/worker_assignment.py": "tau.worker-dispatch",
+    "src/tau_coding/dag_runtime/effects.py": "tau.effect-settlement",
+    "src/tau_coding/dag_runtime/triage_error_bridge.py": "tau.failure-repair",
 }
 
 QUESTIONS = {
-    "How does Tau execute a DAG durably?": "tau.dag_runtime",
+    "How does Tau execute a public DAG contract durably?": "tau.dag_runtime",
     "Why can a DAG node not smuggle arbitrary fields?": "tau.attempt_result_boundary",
     "How does a Tau DAG node run the native agent loop safely?": "tau.native_agent_node",
+    "How does Tau turn a public DAG contract into the canonical DagPlan?": "tau.dag_compilation",
+    "Who decides that a Tau DAG node is ready or blocked?": "tau.scheduler_authority",
+    "How does Tau decide exactly what context a DAG node may consume?": "tau.node_input_binding",
+    "What can a Tau runtime backend do, and what decisions is it forbidden from making?": "tau.runtime_backend_boundary",
+    "How does Tau prevent retries from duplicating side effects?": "tau.effect_settlement",
+    "When execution goes wrong, how does Tau classify the failure?": "tau.failure_repair",
 }
 
 
@@ -82,8 +98,8 @@ def main() -> int:
 
     checks = {
         "explainer_validation_passed": validate_payload.get("status") == "PASS"
-        and validate_payload.get("records") == 6,
-        "explainer_list_has_six_records": len(list_payload.get("records", [])) == 6,
+        and validate_payload.get("records") == EXPECTED_RECORDS,
+        "explainer_list_has_expected_records": len(list_payload.get("records", [])) == EXPECTED_RECORDS,
         "questions_route_to_expected_features": all(
             ask_payloads[question].get("matched_feature") == feature
             and ask_payloads[question].get("debugger_stops")
@@ -91,7 +107,7 @@ def main() -> int:
             and ask_payloads[question].get("diagram", {}).get("source_kind") == "excalidraw"
             for question, feature in QUESTIONS.items()
         ),
-        "boards_validate": len(board_results) == 6
+        "boards_validate": len(board_results) == EXPECTED_RECORDS
         and all(json_stdout(result).get("status") == "PASS" for result in board_results.values()),
         "module_docstrings_link_diagrams": docstring_links_present(),
     }
@@ -108,7 +124,7 @@ def main() -> int:
             "proves": (
                 "Tau has a valid source-bound explain-project catalog with editable "
                 "Excalidraw boards, debugger stops, cockpit bullet points, and "
-                "module docstring links for the first core architecture slice."
+                "module docstring links for the first core and P1 authority-boundary architecture slices."
             ),
             "does_not_prove": (
                 "Live debugger execution, provider availability, rendered SVG approval, "

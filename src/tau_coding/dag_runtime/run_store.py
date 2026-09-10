@@ -2,6 +2,9 @@
 
 Diagram ID: tau.dag-runtime
 Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
+
+Diagram ID: tau.journal-recovery
+Excalidraw source: docs/explain/boards/tau-journal-recovery.excalidraw
 """
 
 from __future__ import annotations
