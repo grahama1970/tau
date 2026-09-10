@@ -62,6 +62,7 @@ def test_classify_tau_failure_uses_native_fallback_without_runner(
     monkeypatch.delenv("TAU_TRIAGE_ERROR_RUN_SH", raising=False)
     monkeypatch.delenv("TAU_SKILLS_ROOT", raising=False)
     monkeypatch.delenv("TAU_AGENT_SKILLS_ROOT", raising=False)
+    monkeypatch.setattr("tau_coding.dag_runtime.triage_error_bridge._default_triage_runner_candidates", lambda: ())
 
     result = classify_tau_failure("node missing required evidence", layer="dag-runtime")
 
@@ -176,3 +177,30 @@ def test_classify_tau_failure_does_not_execute_old_home_relative_runner(
     assert result["diagnostics"]["classifier_kind"] == "UNAVAILABLE"
     assert result["code"].startswith("tau_triage_unavailable_unclassified_")
     assert not marker.exists()
+
+
+def test_classify_tau_failure_finds_default_installed_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """2026-09-10 regression: watchdog/ask env carries no TAU_* roots, so every
+    failure minted tau_triage_unavailable. The ~/.pi/agent/skills default must
+    be consulted without any environment."""
+    runner = tmp_path / "pi-skills" / "triage-error" / "run.sh"
+    runner.parent.mkdir(parents=True)
+    payload = _valid_payload(code="external_code", layer="tau")
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    runner.write_text("#!/usr/bin/env python3\nprint(" + repr(canonical) + ")\n", encoding="utf-8")
+    runner.chmod(0o755)
+    monkeypatch.delenv("TAU_TRIAGE_ERROR_RUN_SH", raising=False)
+    monkeypatch.delenv("TAU_SKILLS_ROOT", raising=False)
+    monkeypatch.delenv("TAU_AGENT_SKILLS_ROOT", raising=False)
+    monkeypatch.setattr(
+        "tau_coding.dag_runtime.triage_error_bridge._default_triage_runner_candidates", lambda: (runner,)
+    )
+
+    result = classify_tau_failure("anything", layer="tau")
+
+    assert result["code"] == "external_code"
+    assert result["diagnostics"]["classifier_kind"] == "EXTERNAL_CLASSIFIER"
+    assert result["diagnostics"]["classifier_path"] == str(runner)

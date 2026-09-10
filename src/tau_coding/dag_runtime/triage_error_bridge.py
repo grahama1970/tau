@@ -212,6 +212,14 @@ def admit_triage_classification(
         return _contract_invalid(str(exc), layer=layer)
 
 
+#: Canonical installed-skills fallback. The watchdog -> ask -> tau execution
+#: environment carries none of the TAU_* skills-root variables, so without this
+#: default every boundary failure mints tau_triage_unavailable (observed
+#: 2026-09-10 across agent-skills#1616/#1618/#1619/#1641 and tau#343).
+def _default_triage_runner_candidates() -> tuple[Path, ...]:
+    return (Path.home() / ".pi" / "agent" / "skills" / "triage-error" / "run.sh",)
+
+
 def _triage_runner() -> Path | None:
     configured = os.environ.get("TAU_TRIAGE_ERROR_RUN_SH")
     candidates = [Path(configured).expanduser()] if configured else []
@@ -223,6 +231,7 @@ def _triage_runner() -> Path | None:
         candidates.append(
             Path(agent_skills_root).expanduser() / "skills" / "triage-error" / "run.sh"
         )
+    candidates.extend(_default_triage_runner_candidates())
     for candidate in candidates:
         if candidate.is_file():
             return candidate
