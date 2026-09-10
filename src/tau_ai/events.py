@@ -1,4 +1,8 @@
-"""Provider-neutral streaming events emitted by model adapters."""
+"""Provider-neutral streaming events emitted by model adapters.
+
+Diagram ID: tau.provider-boundary
+Excalidraw source: docs/explain/boards/tau-provider-boundary.excalidraw
+"""
 
 from typing import Literal
 

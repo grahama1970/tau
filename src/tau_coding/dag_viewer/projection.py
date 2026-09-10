@@ -1,4 +1,8 @@
-"""Build browser-neutral manifests and live snapshots from durable replay."""
+"""Build browser-neutral manifests and live snapshots from durable replay.
+
+Diagram ID: tau.viewer-replay
+Excalidraw source: docs/explain/boards/tau-viewer-replay.excalidraw
+"""
 
 from __future__ import annotations
 

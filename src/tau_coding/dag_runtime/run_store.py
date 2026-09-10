@@ -1,4 +1,8 @@
-"""Transactional SQLite journal for the canonical DAG scheduler."""
+"""Transactional SQLite journal for the canonical DAG scheduler.
+
+Diagram ID: tau.dag-runtime
+Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
+"""
 
 from __future__ import annotations
 

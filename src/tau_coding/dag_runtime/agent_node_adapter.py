@@ -5,6 +5,9 @@ into an ``AgentNodeRun`` executed under the canonical scheduler's injected
 ``execute_node`` boundary. The provider is supplied by the caller (SciLLM
 transport for live runs, ``FakeProvider`` for deterministic fixtures) — the
 adapter itself never talks to a provider SDK.
+
+Diagram ID: tau.native-agent-node
+Excalidraw source: docs/explain/boards/tau-native-agent-node.excalidraw
 """
 
 from __future__ import annotations

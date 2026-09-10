@@ -1,4 +1,8 @@
-"""Canonical DAG attempt result admission."""
+"""Canonical DAG attempt result admission.
+
+Diagram ID: tau.attempt-result-boundary
+Excalidraw source: docs/explain/boards/tau-attempt-result-boundary.excalidraw
+"""
 
 from __future__ import annotations
 

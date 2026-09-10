@@ -1,4 +1,10 @@
-"""Pure replay of the durable Tau DAG journal."""
+"""Pure replay of the durable Tau DAG journal.
+
+Diagram ID: tau.dag-runtime
+Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
+Diagram ID: tau.viewer-replay
+Excalidraw source: docs/explain/boards/tau-viewer-replay.excalidraw
+"""
 
 from __future__ import annotations
 

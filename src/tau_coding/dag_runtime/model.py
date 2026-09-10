@@ -1,4 +1,8 @@
-"""Immutable, backend-neutral representation of a validated Tau DAG."""
+"""Immutable, backend-neutral representation of a validated Tau DAG.
+
+Diagram ID: tau.dag-runtime
+Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
+"""
 
 from __future__ import annotations
 

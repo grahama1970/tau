@@ -1,4 +1,8 @@
-"""Loopback-only, read-only HTTP server for Tau DAG projections."""
+"""Loopback-only, read-only HTTP server for Tau DAG projections.
+
+Diagram ID: tau.viewer-replay
+Excalidraw source: docs/explain/boards/tau-viewer-replay.excalidraw
+"""
 
 from __future__ import annotations
 

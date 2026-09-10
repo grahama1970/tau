@@ -1,4 +1,8 @@
-"""Read-only DAG viewer projection for project-DAG receipt directories."""
+"""Read-only DAG viewer projection for project-DAG receipt directories.
+
+Diagram ID: tau.viewer-replay
+Excalidraw source: docs/explain/boards/tau-viewer-replay.excalidraw
+"""
 
 from __future__ import annotations
 
@@ -754,7 +758,7 @@ def _ledger_summary(root: Path) -> dict[str, Any] | None:
     try:
         ledger = read_ledger(ledger_path)
         verification = verify_ledger(ledger)
-    except OSError, ValueError, json.JSONDecodeError:
+    except (OSError, ValueError, json.JSONDecodeError):
         return {
             "schema": "tau.dag_ledger_summary.v1",
             "available": False,
@@ -793,7 +797,7 @@ def _build_project_receipt_index(*, root: Path, receipt: dict[str, Any]) -> Rece
         data = resolved.read_bytes()
         try:
             payload = json.loads(data)
-        except UnicodeError, json.JSONDecodeError:
+        except (UnicodeError, json.JSONDecodeError):
             continue
         if not isinstance(payload, dict):
             continue

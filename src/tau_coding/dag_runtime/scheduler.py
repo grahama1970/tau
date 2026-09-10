@@ -1,4 +1,10 @@
-"""Backend-neutral scheduler state machine for compiled Tau DAG plans."""
+"""Backend-neutral scheduler state machine for compiled Tau DAG plans.
+
+Diagram ID: tau.dag-runtime
+Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
+Diagram ID: tau.attempt-result-boundary
+Excalidraw source: docs/explain/boards/tau-attempt-result-boundary.excalidraw
+"""
 
 from __future__ import annotations
 
@@ -3573,7 +3579,7 @@ def _admit_result_receipt(
     # them via system_settlement.
     try:
         parsed = json.loads(blob.decode("utf-8"))
-    except UnicodeDecodeError, ValueError:
+    except (UnicodeDecodeError, ValueError):
         return False
     if not isinstance(parsed, dict):
         return False

@@ -1,4 +1,8 @@
-"""Stateful reusable agent harness built on the pure loop."""
+"""Stateful reusable agent harness built on the pure loop.
+
+Diagram ID: tau.agent-loop
+Excalidraw source: docs/explain/boards/tau-agent-loop.excalidraw
+"""
 
 from collections import deque
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence

@@ -1,4 +1,8 @@
-"""Pure provider/tool agent loop."""
+"""Pure provider/tool agent loop.
+
+Diagram ID: tau.agent-loop
+Excalidraw source: docs/explain/boards/tau-agent-loop.excalidraw
+"""
 
 import asyncio
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence

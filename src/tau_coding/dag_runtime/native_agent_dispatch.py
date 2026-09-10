@@ -10,6 +10,9 @@ transport-profile selection (tau#308), and hands the node to
 read-only ``AgentTool`` implementations.
 
 Nothing here talks to a model directly; SciLLM is the only transport.
+
+Diagram ID: tau.native-agent-node
+Excalidraw source: docs/explain/boards/tau-native-agent-node.excalidraw
 """
 
 from __future__ import annotations

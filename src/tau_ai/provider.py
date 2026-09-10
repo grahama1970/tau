@@ -1,4 +1,8 @@
-"""Provider protocol for Tau model adapters."""
+"""Provider protocol for Tau model adapters.
+
+Diagram ID: tau.provider-boundary
+Excalidraw source: docs/explain/boards/tau-provider-boundary.excalidraw
+"""
 
 from collections.abc import AsyncIterator
 from typing import Protocol
