@@ -2545,6 +2545,10 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         diagnostics["scheduler_boundary"] = boundary
     if "workspace_stale_read_state" in normalized:
         diagnostics["workspace_stale_read_state"] = normalized.pop("workspace_stale_read_state")
+    if "alerts" in normalized:
+        diagnostics["alerts"] = normalized.pop("alerts")
+    if "stop_reason" in normalized:
+        diagnostics["stop_reason"] = normalized.pop("stop_reason")
     if diagnostics:
         normalized["diagnostics"] = diagnostics
     scheduler_meta: dict[str, Any] = {}
@@ -2597,6 +2601,17 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
             generic_receipt[key] = normalized.pop(key)
     if generic_receipt:
         extensions["generic_receipt"] = generic_receipt
+    runtime_meta: dict[str, Any] = {}
+    for key in (
+        "dispatch",
+        "knowledge_provenance",
+        "knowledge_freshness_receipt",
+        "course_correction_artifacts",
+    ):
+        if key in normalized:
+            runtime_meta[key] = normalized.pop(key)
+    if runtime_meta:
+        extensions["runtime"] = runtime_meta
     if extensions:
         normalized["extensions"] = extensions
     return normalized

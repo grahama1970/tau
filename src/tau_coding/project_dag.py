@@ -797,7 +797,8 @@ def _project_dag_resume_watchdog_journal(
             or not payload.get("lease_actor")
             or event.get("actor") != payload.get("lease_actor")
             or (isinstance(before, Mapping) and before.get("id") == event.get("id"))
-            or not isinstance(token, str) or not token
+            or not isinstance(token, str)
+            or not token
             or payload.get("lease_agent") != "project-watchdog-" + token
         ):
             raise RuntimeError("watchdog running journal lacks a confirmed active lease")
@@ -2400,7 +2401,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -6084,7 +6085,7 @@ def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
 def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
     try:
         provider = load_provider_settings().get_provider(provider_name)
-    except (ProviderConfigError, OSError, json.JSONDecodeError):
+    except ProviderConfigError, OSError, json.JSONDecodeError:
         return None
     return provider_model_knowledge_cutoff(provider, model=model)
 
@@ -6731,26 +6732,40 @@ def _run_shared_project_dag_plan(
         )
     for node_result in result.node_results:
         node_id = str(node_result.get("node_id") or "")
+        diagnostics = node_result.get("diagnostics") if isinstance(node_result, dict) else None
+        extensions = node_result.get("extensions") if isinstance(node_result, dict) else None
+        runtime_meta = extensions.get("runtime") if isinstance(extensions, dict) else None
         dispatch = node_result.get("dispatch")
+        if not isinstance(dispatch, dict) and isinstance(runtime_meta, dict):
+            dispatch = runtime_meta.get("dispatch")
         if isinstance(dispatch, dict) and not _dispatch_already_recorded(dispatches, dispatch):
             dispatches.append(dispatch)
         accepted_output = node_result.get("accepted_output")
         if node_id and isinstance(accepted_output, dict):
             responses[node_id] = accepted_output
         attempt_count = node_result.get("attempt_count")
-        if node_id and isinstance(attempt_count, int) and attempt_count > 0:
+        if (
+            node_id
+            and isinstance(attempt_count, int)
+            and attempt_count > 0
+            and contract.nodes[node_id].executor != "scheduler"
+        ):
             node_attempts[node_id] = attempt_count
         if node_id:
             node_root = receipt_dir / "ready-queue" / node_id
             node_artifacts[node_id] = [
                 str(path) for path in sorted(node_root.rglob("*")) if path.is_file()
             ]
-        alerts.extend(item for item in node_result.get("alerts", []) if isinstance(item, dict))
+        result_alerts = node_result.get("alerts")
+        if not isinstance(result_alerts, list) and isinstance(diagnostics, dict):
+            result_alerts = diagnostics.get("alerts")
+        alerts.extend(item for item in (result_alerts or []) if isinstance(item, dict))
         errors.extend(str(item) for item in node_result.get("errors", []))
+        correction_artifacts = node_result.get("course_correction_artifacts")
+        if not isinstance(correction_artifacts, list) and isinstance(runtime_meta, dict):
+            correction_artifacts = runtime_meta.get("course_correction_artifacts")
         course_correction_artifacts.extend(
-            str(item)
-            for item in node_result.get("course_correction_artifacts", [])
-            if isinstance(item, str)
+            str(item) for item in (correction_artifacts or []) if isinstance(item, str)
         )
         repair_projection = node_result.get("pipeline_self_repair")
         if isinstance(repair_projection, dict):
@@ -6767,7 +6782,7 @@ def _run_shared_project_dag_plan(
                 value = repair_projection.get(key)
                 if isinstance(value, str):
                     pipeline_self_repair_artifacts.append(value)
-        for alert in node_result.get("alerts", []):
+        for alert in result_alerts or []:
             evidence = alert.get("evidence") if isinstance(alert, dict) else None
             correction = (
                 evidence.get("course_correction_receipt") if isinstance(evidence, dict) else None
@@ -7648,7 +7663,7 @@ def _existing_ops_discord_notification_for_category(
 def _read_json_object_optional(path: Path) -> dict[str, Any] | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+    except OSError, UnicodeError, json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
 
@@ -9678,7 +9693,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except (OSError, RuntimeError, ValueError):
+        except OSError, RuntimeError, ValueError:
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -9857,7 +9872,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 

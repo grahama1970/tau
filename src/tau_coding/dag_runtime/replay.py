@@ -259,6 +259,7 @@ def _attempts_from_prefix(
                     identity=attempt["identity"],
                     node_id=attempt["identity"].node_id,
                     result=result,
+                    output_contract_id=_result_output_contract_id(result),
                 )
             except DagAttemptResultAdmissionError as exc:
                 raise DagRunStoreError("dag_attempt_result_invalid", exc.code) from exc
@@ -561,6 +562,9 @@ def replay_dag_run(
         except DagAttemptResultAdmissionError as exc:
             raise RuntimeError(f"dag_transition_result_invalid:{exc.code}") from exc
         replayed = dict(admission.normalized)
+        replayed.setdefault("attempt_count", identity.attempt)
+        replayed.setdefault("scheduler_attempt", identity.attempt)
+        replayed.setdefault("scheduler_attempt_id", identity.attempt_id)
         if "resumed" in replayed:
             replayed["resumed"] = True
         replayed["durably_replayed"] = True
