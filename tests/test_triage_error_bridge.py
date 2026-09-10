@@ -204,3 +204,13 @@ def test_classify_tau_failure_finds_default_installed_runner(
     assert result["code"] == "external_code"
     assert result["diagnostics"]["classifier_kind"] == "EXTERNAL_CLASSIFIER"
     assert result["diagnostics"]["classifier_path"] == str(runner)
+
+
+def test_classifier_command_requests_tau_contract() -> None:
+    """2026-09-10 regression: the plain classify shape is legacy JSON and every
+    external classification degraded to triage_contract_invalid."""
+    from tau_coding.dag_runtime.triage_error_bridge import _classifier_command
+
+    cmd = _classifier_command(Path("/x/run.sh"), "boom", "tau")
+    assert cmd[-2:] == ["--contract", "tau"]
+    assert cmd[:3] == ["/x/run.sh", "classify", "--text"]

@@ -171,6 +171,13 @@ class TriageErrorClassification(BaseModel):
         return self
 
 
+def _classifier_command(runner: Path, text: str, layer: str) -> list[str]:
+    """The triage-error skill must emit tau's strict canonical contract; the
+    plain classify shape is legacy and degrades to triage_contract_invalid."""
+    return [str(runner), "classify", "--text", text, "--layer", layer,
+            "--contract", "tau"]
+
+
 def classify_tau_failure(text: str, *, layer: str = "tau") -> dict[str, Any]:
     """Classify a Tau boundary failure behind a fail-closed typed contract."""
 
@@ -182,7 +189,7 @@ def classify_tau_failure(text: str, *, layer: str = "tau") -> dict[str, Any]:
         return _mint("tau_triage_unavailable", "triage-error runner not found")
     try:
         completed = subprocess.run(
-            [str(runner), "classify", "--text", text, "--layer", layer],
+            _classifier_command(runner, text, layer),
             check=False,
             text=True,
             capture_output=True,
