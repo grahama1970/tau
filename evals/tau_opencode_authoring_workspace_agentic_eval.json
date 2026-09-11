@@ -1,0 +1,69 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "tau#355 opencode.serve authoring lane survives codex unavailability: seam route acceptance, real worktree lease allocation+admission+release with receipt read-back, and fail-closed cross-check mismatch.",
+  "claims": {
+    "proves": "With the codex.exec workspace route closed (simulated outage), the opencode.serve oc-author lane is accepted by the ask seam, allocates and admits a real Git-worktree lease, redirects the launch cwd into it, and releases with a cleanup receipt.",
+    "does_not_prove": "OpenCode provider semantic quality, scillm service availability, repair_creator end-to-end ticket resolution, or agent-skills seat-routing wiring."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.opencode_authoring_lane",
+      "description": "The opencode.serve authoring transport provides a capability-valid workspace route under codex unavailability, fail-closed at lease, admission, cross-check, and release.",
+      "criticality": "critical",
+      "evidence_required": {"deterministic": true}
+    }
+  ],
+  "seams": [
+    {
+      "seam_id": "tau.opencode_authoring_lane.seam_route",
+      "seam_type": "pure deterministic transform",
+      "criticality": "critical",
+      "claim_id": "tau.opencode_authoring_lane",
+      "required_evidence": ["deterministic"]
+    },
+    {
+      "seam_id": "tau.opencode_authoring_lane.worktree_lifecycle",
+      "seam_type": "filesystem/process",
+      "criticality": "critical",
+      "claim_id": "tau.opencode_authoring_lane",
+      "required_evidence": ["deterministic"]
+    }
+  ],
+  "cases": [
+    {
+      "name": "route-codex-unavailable-oc-author-accepted",
+      "type": "adversarial",
+      "evidence_class": "deterministic",
+      "real_world": true,
+      "supports_claims": ["tau.opencode_authoring_lane"],
+      "seams": ["tau.opencode_authoring_lane.seam_route"],
+      "command": ["bash", "-c", "cd .. && uv run python scripts/agentic-eval-tau-opencode-authoring-workspace.py route"],
+      "expected": {"exit_code": 0, "stdout_contains": ["ROUTE_PASS"]},
+      "timeout_seconds": 120
+    },
+    {
+      "name": "lane-lease-admission-release",
+      "type": "positive",
+      "evidence_class": "deterministic",
+      "real_world": true,
+      "supports_claims": ["tau.opencode_authoring_lane"],
+      "seams": ["tau.opencode_authoring_lane.worktree_lifecycle"],
+      "command": ["bash", "-c", "cd .. && uv run python scripts/agentic-eval-tau-opencode-authoring-workspace.py lane"],
+      "expected": {"exit_code": 0, "stdout_contains": ["LANE_PASS"]},
+      "timeout_seconds": 180
+    },
+    {
+      "name": "mismatch-blocks-fail-closed",
+      "type": "negative",
+      "evidence_class": "deterministic",
+      "real_world": true,
+      "supports_claims": ["tau.opencode_authoring_lane"],
+      "seams": ["tau.opencode_authoring_lane.worktree_lifecycle"],
+      "command": ["bash", "-c", "cd .. && uv run python scripts/agentic-eval-tau-opencode-authoring-workspace.py mismatch"],
+      "expected": {"exit_code": 0, "stdout_contains": ["MISMATCH_PASS"]},
+      "timeout_seconds": 180
+    }
+  ]
+}
