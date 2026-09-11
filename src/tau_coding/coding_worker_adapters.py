@@ -295,6 +295,65 @@ def write_omp_worker_doctor_receipt(
     return payload
 
 
+def _maybe_allocate_opencode_authoring_workspace(
+    *,
+    work_order: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+    apply: bool,
+) -> dict[str, Any] | None:
+    """tau#355: allocate + admit a leased worktree for the opencode.serve lane.
+
+    Fail closed: any lease/admission/cross-check failure appends a typed alert
+    and returns None, so the launch receipt is BLOCKED before any HTTP call.
+    ``release_required`` stays true in the binding; release happens through the
+    existing cleanup-authorized worktree path, never silently here.
+    """
+
+    ws = work_order.get("workspace")
+    if not isinstance(ws, dict):
+        return None
+    if not apply:
+        return {"status": "dry_run", "lease_sha256": None, "worktree_path": None}
+    from tau_coding.runtime_backends.worktrees import GitWorktreeLeaseError, GitWorktreeLeaseManager
+
+    try:
+        manager = GitWorktreeLeaseManager(
+            root=Path(str(ws["worktree_state_root"])), owner="tau-scillm-worker"
+        )
+        lease = manager.allocate(
+            repository=Path(str(work_order["repo"])),
+            run_id=str(work_order["dag_id"]),
+            plan_revision=str(work_order["goal_hash"]),
+            node_id=str(work_order["node_id"]),
+            attempt_id=f"attempt-{int(work_order['attempt'])}",
+            base_commit="HEAD",
+            allowed_paths=tuple(str(p) for p in work_order.get("allowed_paths") or ()),
+        )
+        admission = manager.admit(lease)
+    except GitWorktreeLeaseError as exc:
+        alerts.append(_alert("workspace_lease_failed", f"{exc.code}:{exc.detail}"))
+        return None
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        alerts.append(_alert("workspace_lease_failed", f"unexpected: {exc}") )
+        return None
+    expected_root = ws.get("worktree_root")
+    if isinstance(expected_root, str) and expected_root != lease.worktree_path:
+        alerts.append(
+            _alert(
+                "workspace_worktree_mismatch",
+                f"declared worktree_root {expected_root} != allocated {lease.worktree_path}",
+            )
+        )
+        return None
+    return {
+        "status": "allocated",
+        "lease_sha256": lease.sha256,
+        "worktree_path": lease.worktree_path,
+        "admission_status": admission.get("status"),
+        "admission_changed_paths": admission.get("changed_paths"),
+    }
+
+
 def write_scillm_worker_launch_receipt(
     *,
     work_order_path: Path,
@@ -378,7 +437,14 @@ def write_scillm_worker_launch_receipt(
             _alert("missing_scillm_auth_token", "apply requires a SciLLM bearer auth token")
         )
 
-    request_payload = _scillm_opencode_request_payload(work_order, route)
+    workspace_stage = _maybe_allocate_opencode_authoring_workspace(
+        work_order=work_order, alerts=alerts, apply=apply
+    )
+    request_payload = _scillm_opencode_request_payload(
+        work_order,
+        route,
+        workspace_cwd=(workspace_stage or {}).get("worktree_path"),
+    )
     url = f"{scillm_base_url.rstrip('/')}{SCILLM_OPENCODE_SERVE_ENDPOINT}"
     launch_result = _maybe_post_scillm_opencode_run(
         apply=apply,
@@ -419,6 +485,7 @@ def write_scillm_worker_launch_receipt(
         "provider_live": bool(provider_attestation),
         "dry_run": not apply,
         "apply_requested": apply,
+        "workspace": workspace_stage,
         "http_executed": launch_result["http_executed"],
         "launch_skipped": launch_result["launch_skipped"],
         "http_status": launch_result["http_status"],
@@ -2421,6 +2488,7 @@ def _append_referenced_receipt_binding_alerts(
 def _scillm_opencode_request_payload(
     work_order: Mapping[str, Any],
     route: Mapping[str, Any],
+    workspace_cwd: str | None = None,
 ) -> dict[str, Any]:
     skills = route.get("skills")
     if not isinstance(skills, list) or not all(isinstance(item, str) for item in skills):
@@ -2430,7 +2498,9 @@ def _scillm_opencode_request_payload(
         "agent": route.get("agent"),
         "skills": skills,
         "cleanup_session": True,
-        "cwd": work_order.get("repo"),
+        # tau#355: an allocated authoring workspace redirects the OpenCode
+        # session cwd from the shared checkout into the leased worktree.
+        "cwd": workspace_cwd or work_order.get("repo"),
         "scillm_metadata": {
             "schema": SCILLM_WORK_ORDER_SCHEMA,
             "dag_id": work_order.get("dag_id"),

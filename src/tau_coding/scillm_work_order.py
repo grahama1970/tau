@@ -23,6 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 SCILLM_WORK_ORDER_SCHEMA = "tau.executor.scillm_worker.v1"
 SCILLM_OPENCODE_SERVE_ENDPOINT = "/v1/scillm/opencode/runs"
 GOAL_HASH_PREFIX = "sha256:"
+OPENCODE_SERVE_TRANSPORT = "opencode.serve"
 
 
 class ScillmModelProviderRoute(BaseModel):
@@ -53,6 +54,58 @@ class ScillmModelProviderRoute(BaseModel):
         return value
 
 
+class OpenCodeWorktreeBinding(BaseModel):
+    """Workspace binding for the ``opencode.serve`` authoring transport (tau#355).
+
+    This is the second, named workspace-capable authoring lane beside
+    ``codex.exec``. It binds an OpenCode serve session to a Git-worktree lease
+    managed by ``runtime_backends.worktrees.GitWorktreeLeaseManager``: the
+    session runs with ``cwd=worktree_root`` under a pinned authoring agent
+    profile, and the work order is not complete until the lease admission
+    receipt exists and a cleanup-authorized release has run. Fail closed at
+    every step; there is no authoring without the lease receipts.
+    """
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    transport: Literal["opencode.serve"]
+    worktree_state_root: str = Field(min_length=1)
+    # Optional expected cross-checks: the launch allocates the lease and
+    # derives these paths deterministically; a caller who declares them gets a
+    # fail-closed mismatch alert instead of silent drift.
+    worktree_root: str | None = None
+    lease_receipt_path: str | None = None
+    admission_receipt_path: str | None = None
+    release_required: Literal[True] = True
+    agent_profile: str = Field(min_length=1)
+
+    @field_validator("worktree_state_root")
+    @classmethod
+    def state_root_not_disposable(cls, value: str) -> str:
+        # The worktree audit forbids /tmp worktrees: an authoring lane whose
+        # leased workspace can vanish with a reboot is not a repair route.
+        # Applies to the declared state root and any declared cross-check.
+        if value.startswith("/tmp/") or value == "/tmp":
+            raise ValueError("worktree paths must not live under /tmp")
+        return value
+
+    @field_validator("worktree_root", "lease_receipt_path", "admission_receipt_path")
+    @classmethod
+    def receipt_paths_not_disposable(cls, value: str | None) -> str | None:
+        if value is not None and (value.startswith("/tmp/") or value == "/tmp"):
+            raise ValueError("worktree paths must not live under /tmp")
+        return value
+
+    @field_validator("agent_profile")
+    @classmethod
+    def agent_profile_is_not_chat_model(cls, value: str) -> str:
+        if value.startswith("opencode-go/"):
+            raise ValueError(
+                "agent_profile must be an OpenCode authoring agent profile, not an opencode-go/* chat model"
+            )
+        return value
+
+
 class ScillmWorkerWorkOrder(BaseModel):
     """Typed ``tau.executor.scillm_worker.v1`` work order.
 
@@ -78,6 +131,7 @@ class ScillmWorkerWorkOrder(BaseModel):
     # Required by the launch surface (checked there with its own codes); a
     # validate-only work order may omit it, so shape is enforced only when present.
     model_provider_route: ScillmModelProviderRoute | None = None
+    workspace: OpenCodeWorktreeBinding | None = None
     forbidden_paths: list[str] | None = None
     required_artifacts: list[str] | None = None
     timeout_s: int | None = Field(default=None, ge=1)
@@ -104,6 +158,25 @@ class ScillmWorkerWorkOrder(BaseModel):
             data = dict(data)
             data["model_provider_route"] = None
         return data
+
+    @model_validator(mode="after")
+    def workspace_requires_opencode_serve(self) -> "ScillmWorkerWorkOrder":
+        # tau#355: workspace authoring is allowed on exactly two transports —
+        # codex.exec (ask seam) and opencode.serve (this boundary). A workspace
+        # on any other surface is a capability-invariant violation, not a
+        # routing preference, so it fails closed here at the typed boundary.
+        if self.workspace is not None:
+            route = self.model_provider_route
+            if route is None or route.surface != "opencode_serve":
+                raise ValueError(
+                    "workspace requires model_provider_route.surface='opencode_serve' "
+                    "(the opencode.serve authoring transport); chat/review surfaces stay workspace-less"
+                )
+            if self.workspace.agent_profile != route.agent:
+                raise ValueError(
+                    "workspace.agent_profile must equal model_provider_route.agent"
+                )
+        return self
 
     @field_validator("goal_hash")
     @classmethod
@@ -150,6 +223,12 @@ LEGACY_ALERT_CODES: dict[str, str] = {
     "model_provider_route.surface": "invalid_scillm_surface",
     "model_provider_route.endpoint": "invalid_scillm_endpoint",
     "model_provider_route.agent": "missing_scillm_agent_profile",
+    "workspace": "invalid_workspace_binding",
+    "workspace.transport": "invalid_workspace_transport",
+    "workspace.worktree_root": "invalid_worktree_root",
+    "workspace.agent_profile": "chat_model_used_as_agent",
+    "workspace.lease_receipt_path": "missing_worktree_lease_receipt",
+    "workspace.admission_receipt_path": "missing_worktree_admission_receipt",
 }
 
 
@@ -167,7 +246,9 @@ def legacy_alert_codes(errors: list[dict[str, Any]]) -> list[str]:
 
 
 __all__ = [
+    "OPENCODE_SERVE_TRANSPORT",
     "SCILLM_WORK_ORDER_SCHEMA",
+    "OpenCodeWorktreeBinding",
     "ScillmModelProviderRoute",
     "ScillmWorkerWorkOrder",
     "format_work_order_errors",

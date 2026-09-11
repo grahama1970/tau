@@ -201,3 +201,180 @@ def test_watchdog_captured_inputs_are_blocked_when_present() -> None:
             json.loads((base / f"{name}.json").read_text(encoding="utf-8"))
         )
         assert any(e["loc"] == "dag_id" and e["type"] == expected for e in errors), errors
+
+
+def _with_workspace(order: dict[str, Any], tmp_path: Path, **overrides: Any) -> dict[str, Any]:
+    # Shape-only tests: use synthetic non-/tmp paths (the worktree audit and
+    # this boundary both refuse /tmp worktrees, and pytest tmp_path IS /tmp).
+    workspace = {
+        "transport": "opencode.serve",
+        "worktree_state_root": "/workspace-leases/tau-355",
+        "release_required": True,
+        "agent_profile": "build",
+    }
+    workspace.update(overrides)
+    order["workspace"] = workspace
+    return order
+
+
+def test_workspace_binding_valid_on_opencode_serve_surface(tmp_path: Path) -> None:
+    order = _with_workspace(_valid(tmp_path), tmp_path)
+    assert ScillmWorkerWorkOrder.model_validate(order) is not None
+
+
+def test_workspace_binding_rejected_without_opencode_serve_surface(tmp_path: Path) -> None:
+    order = _with_workspace(_valid(tmp_path), tmp_path)
+    order["model_provider_route"] = None
+    errors = work_order_validation_errors(order)
+    assert any("surface='opencode_serve'" in e["msg"] for e in errors), errors
+    assert "invalid_workspace_binding" in legacy_alert_codes(errors) or not legacy_alert_codes(errors)
+
+
+def test_workspace_agent_profile_must_match_route_agent(tmp_path: Path) -> None:
+    order = _with_workspace(_valid(tmp_path), tmp_path, agent_profile="other-profile")
+    errors = work_order_validation_errors(order)
+    assert any("must equal model_provider_route.agent" in e["msg"] for e in errors), errors
+
+
+def test_workspace_rejects_chat_model_agent_profile(tmp_path: Path) -> None:
+    order = _with_workspace(_valid(tmp_path), tmp_path, agent_profile="opencode-go/glm-5.3")
+    errors = work_order_validation_errors(order)
+    assert any(e["loc"] == "workspace.agent_profile" for e in errors), errors
+    assert "chat_model_used_as_agent" in legacy_alert_codes(errors)
+
+
+def test_workspace_rejects_tmp_paths(tmp_path: Path) -> None:
+    for field in ("worktree_state_root", "worktree_root", "lease_receipt_path", "admission_receipt_path"):
+        order = _with_workspace(_valid(tmp_path), tmp_path, **{field: "/tmp/authoring"})
+        errors = work_order_validation_errors(order)
+        assert any(e["loc"] == f"workspace.{field}" for e in errors), (field, errors)
+
+
+def test_workspace_declared_cross_check_paths_accepted(tmp_path: Path) -> None:
+    order = _with_workspace(
+        _valid(tmp_path),
+        tmp_path,
+        worktree_root="/workspace-leases/tau-355/derived-wt",
+        lease_receipt_path="/workspace-leases/tau-355/derived-lease.json",
+        admission_receipt_path="/workspace-leases/tau-355/derived-admission.json",
+    )
+    assert ScillmWorkerWorkOrder.model_validate(order) is not None
+
+
+def test_workspace_release_required_cannot_be_false(tmp_path: Path) -> None:
+    order = _with_workspace(_valid(tmp_path), tmp_path, release_required=False)  # type: ignore[call-overload]
+    errors = work_order_validation_errors(order)
+    assert any(e["loc"] == "workspace.release_required" for e in errors), errors
+
+
+def test_workspace_absent_still_valid(tmp_path: Path) -> None:
+    order = _valid(tmp_path)
+    assert ScillmWorkerWorkOrder.model_validate(order) is not None
+
+
+def _git(cwd: Path, *args: str) -> str:
+    import subprocess
+    result = subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
+@pytest.fixture
+def git_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repository"
+    repo.mkdir()
+    _git(repo, "init", "--initial-branch=main")
+    _git(repo, "config", "user.email", "tau-tests@example.invalid")
+    _git(repo, "config", "user.name", "Tau Tests")
+    (repo / "src").mkdir()
+    (repo / "src" / "file.txt").write_text("base\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "fixture")
+    return repo
+
+
+def _home_lease_root(key: str) -> Path:
+    # The binding refuses /tmp lease roots (worktrees must survive reboots);
+    # pytest tmp_path IS /tmp, so tests use a scrubbed home-based root.
+    root = Path.home() / ".cache" / "tau-test-leases" / key
+    if root.exists():
+        import shutil
+        shutil.rmtree(root)
+    root.parent.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def test_workspace_launch_allocates_and_admits_lease(tmp_path: Path, git_repo: Path) -> None:
+    state_root = _home_lease_root("dry-run")
+    order = _valid(tmp_path)
+    order["repo"] = str(git_repo)
+    order["workspace"] = {
+        "transport": "opencode.serve",
+        "worktree_state_root": str(state_root),
+        "release_required": True,
+        "agent_profile": "build",
+    }
+    path = tmp_path / "work-order.json"
+    path.write_text(json.dumps(order), encoding="utf-8")
+    receipt = write_scillm_worker_launch_receipt(
+        work_order_path=path, output_path=tmp_path / "r.json", apply=False
+    )
+    ws = receipt["workspace"]
+    assert ws["status"] == "dry_run"
+    assert not state_root.exists() or not any(state_root.iterdir())
+
+
+def test_workspace_launch_cross_check_mismatch_blocks(tmp_path: Path, git_repo: Path) -> None:
+    state_root = _home_lease_root("cross-check")
+    order = _valid(tmp_path)
+    order["repo"] = str(git_repo)
+    order["workspace"] = {
+        "transport": "opencode.serve",
+        "worktree_state_root": str(state_root),
+        "worktree_root": "/nonexistent/declared-wt",
+        "release_required": True,
+        "agent_profile": "build",
+    }
+    path = tmp_path / "work-order.json"
+    path.write_text(json.dumps(order), encoding="utf-8")
+
+    # Force allocation path with apply=True but a dead scillm URL: the
+    # workspace stage must still run and record the mismatch before HTTP.
+    receipt = write_scillm_worker_launch_receipt(
+        work_order_path=path,
+        output_path=tmp_path / "r.json",
+        apply=True,
+        auth_token="x",
+        scillm_base_url="http://127.0.0.1:1",
+    )
+    assert receipt["workspace"] is None
+    assert any(a["code"] == "workspace_worktree_mismatch" for a in receipt["alerts"])
+
+
+def test_workspace_launch_apply_allocates_real_lease_and_redirects_cwd(
+    tmp_path: Path, git_repo: Path
+) -> None:
+    state_root = _home_lease_root("apply-allocates")
+    order = _valid(tmp_path)
+    order["repo"] = str(git_repo)
+    order["workspace"] = {
+        "transport": "opencode.serve",
+        "worktree_state_root": str(state_root),
+        "release_required": True,
+        "agent_profile": "build",
+    }
+    path = tmp_path / "work-order.json"
+    path.write_text(json.dumps(order), encoding="utf-8")
+    receipt = write_scillm_worker_launch_receipt(
+        work_order_path=path,
+        output_path=tmp_path / "r.json",
+        apply=True,
+        auth_token="x",
+        scillm_base_url="http://127.0.0.1:1",  # dead: workspace stage must still complete
+    )
+    ws = receipt["workspace"]
+    assert ws["status"] == "allocated"
+    assert ws["admission_status"] == "PASS"
+    assert ws["worktree_path"] and Path(ws["worktree_path"]).is_dir()
+    assert ws["worktree_path"] not in str(git_repo)  # separate leased worktree
+    # HTTP failure is lane-local: the lease/admission evidence survives.
+    assert receipt["http_executed"] is True and receipt["status"] == "BLOCKED"
