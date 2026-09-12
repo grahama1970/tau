@@ -4511,7 +4511,28 @@ def _artifact_boundary_post_alerts(
             path_value = (
                 evidence.get("svg_path") or evidence.get("artifact_path") or evidence.get("path")
             )
-            if evidence.get("origin") != "tau_node_artifact" or not isinstance(path_value, str):
+            if evidence.get("origin") != "tau_node_artifact":
+                # tau#338: visual artifact evidence that does not declare Tau
+                # node-artifact origin must BLOCK, not be ignored — bespoke
+                # hand-authored SVG/preview paths were sailing through here as
+                # if they were DAG progress. Non-visual evidence still passes.
+                is_visual_artifact = bool(evidence.get("svg_path")) or (
+                    isinstance(path_value, str) and path_value.lower().endswith(".svg")
+                )
+                if is_visual_artifact:
+                    return [
+                        _alert(
+                            "BLOCK",
+                            "create_svg_artifact_origin_invalid",
+                            (
+                                "Visual artifact evidence does not declare Tau node-artifact "
+                                "origin; bespoke artifacts cannot stand in for DAG progress."
+                            ),
+                            {"node_id": node_id, "path": str(path_value)},
+                        )
+                    ]
+                continue
+            if not isinstance(path_value, str):
                 continue
             if evidence.get("mocked") is not False or evidence.get("live") is not True:
                 continue

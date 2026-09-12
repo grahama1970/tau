@@ -5637,3 +5637,21 @@ def _reviewer_handoff(*, goal_hash: str) -> dict[str, object]:
         "goal_hash": "sha256:active-goal",
     }
     return response
+
+
+def test_project_dag_blocks_bespoke_svg_without_tau_origin(tmp_path: Path) -> None:
+    """tau#338: hand-authored SVG evidence with no origin declaration blocks fail-closed."""
+    from tau_coding.project_dag import _artifact_boundary_post_alerts
+
+    responses = {
+        "creator": {
+            "status": "PASS",
+            "result": {
+                "evidence": [
+                    {"kind": "visual_preview", "svg_path": "/mnt/storage12tb/skills/local/preview.svg"}
+                ]
+            },
+        }
+    }
+    alerts = _artifact_boundary_post_alerts(tmp_path / "run", responses)
+    assert alerts and alerts[0]["code"] == "create_svg_artifact_origin_invalid"
