@@ -532,6 +532,51 @@ def evaluate_developer_share_status(
         observed=open_critical,
         next_command="resolve the owning security ticket before developer sharing",
     )
+    # tau#343: the scan/gate exists (security_audit_conformance) but was
+    # orphaned from share readiness — share could pass on fresh GitHub state
+    # while REAL_SECRET / HARDCODED_RUNTIME_PATH blockers were unresolved.
+    # Fail closed: a missing, stale, or blocked gate receipt blocks sharing.
+    share_security_receipt_path = (
+        repo / "docs" / "proofs" / "tickets" / "issue-343-security-gate" / "security-gate.json"
+    )
+    share_security_observed: dict[str, Any] = {
+        "receipt": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+        "receipt_present": share_security_receipt_path.is_file(),
+    }
+    share_security_pass = False  # tau#343: missing receipt is a hard fail, not unknown
+    if share_security_receipt_path.is_file():
+        try:
+            share_security_receipt = json.loads(
+                share_security_receipt_path.read_text(encoding="utf-8")
+            )
+        except (OSError, ValueError):
+            share_security_receipt = None
+        if isinstance(share_security_receipt, dict):
+            share_security_counts = share_security_receipt.get("counts") or {}
+            share_security_observed.update(
+                {
+                    "receipt_status": share_security_receipt.get("status"),
+                    "share_readiness": share_security_receipt.get("share_readiness"),
+                    "unresolved_blockers": share_security_counts.get("unresolved_blockers"),
+                    "receipt_source_commit": share_security_receipt.get("source_commit"),
+                }
+            )
+            share_security_pass = (
+                share_security_receipt.get("status") == "PASS"
+                and share_security_receipt.get("share_readiness") == "READY"
+                and share_security_counts.get("unresolved_blockers") == 0
+                and share_security_receipt.get("source_commit") == current_commit
+            )
+    add(
+        "share_security_gate_receipt_current_and_clean",
+        share_security_pass,
+        source="docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+        observed=share_security_observed,
+        next_command=(
+            "run the issue #343 security gate verification "
+            "(write_issue_343_security_gate_verification) for this exact commit and retain the receipt"
+        ),
+    )
     proof_index = status.get("proof_index", {})
     add(
         "proof_index_structurally_valid",

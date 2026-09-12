@@ -32,6 +32,37 @@ _SHARE_SNAPSHOT = {
 }
 
 
+def _write_passing_share_security_receipt(root: Path) -> None:
+    """tau#343: share-ready fixtures need a current, clean security-gate receipt."""
+    import json as _json
+    commit = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    gate_dir = root / "docs" / "proofs" / "tickets" / "issue-343-security-gate"
+    gate_dir.mkdir(parents=True, exist_ok=True)
+    receipt = gate_dir / "security-gate.json"
+    payload = {
+        "status": "PASS",
+        "share_readiness": "READY",
+        "source_commit": commit,
+        "counts": {"unresolved_blockers": 0, "reconciled": True},
+    }
+    # A committed receipt cannot self-reference its own commit hash and stay
+    # tree-clean; commit a placeholder, mark skip-worktree, then write the
+    # real payload so porcelain stays empty for the clean-tree gate.
+    receipt.write_text("{}", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", str(receipt)], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "fixture receipt"], check=True)
+    subprocess.run(["git", "-C", str(root), "update-index", "--skip-worktree", str(receipt)], check=True)
+    commit = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    payload["source_commit"] = commit
+    receipt.write_text(_json.dumps(payload), encoding="utf-8")
+
+
 def _init_repo(root: Path) -> None:
     subprocess.run(["git", "init", "-q", "-b", "main", str(root)], check=True)
     (root / "GOAL.md").write_text("# Tau Immutable Goal\n\n**Status:** Active\n", encoding="utf-8")
@@ -276,6 +307,7 @@ def test_project_status_reports_agentic_eval_evidence_index_mismatch(tmp_path: P
 
 
 def _share_ready_status(root: Path) -> dict[str, object]:
+    _write_passing_share_security_receipt(root)
     status = build_project_status(root, generated_at=_AT, github_snapshot=_SHARE_SNAPSHOT)
     status["agentic_eval_evidence_index"] = {"ok": True, "status": "PASS"}
     status["developer_surface_inventory"] = {
@@ -444,3 +476,40 @@ def test_package_description_reflects_control_plane_product() -> None:
     description = data["project"]["description"].lower()
     assert "admission" in description or "supervision" in description or "control" in description
     assert "minimalist pi-style coding-agent harness" not in description
+
+
+def test_share_security_gate_blocks_when_receipt_missing() -> None:
+    """tau#343: no retained security-gate receipt => share NOT_READY, gate fails."""
+    import tempfile
+    from pathlib import Path
+    from tau_coding.project_status import evaluate_developer_share_status
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        status = {"git": {"commit": "x" * 40, "clean_tree": True}, "github": {"open_critical_issues": [], "freshness": "FRESH"}}
+        result = evaluate_developer_share_status(status, repo)
+        gate = next(g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean")
+        assert gate["state"] == "FAIL"
+        assert result["readiness"] == "NOT_READY"
+
+
+def test_share_security_gate_blocks_on_unresolved_blockers() -> None:
+    """tau#343: retained receipt with unresolved blockers => gate fails."""
+    import json
+    import tempfile
+    from pathlib import Path
+    from tau_coding.project_status import evaluate_developer_share_status
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        receipt_dir = repo / "docs" / "proofs" / "tickets" / "issue-343-security-gate"
+        receipt_dir.mkdir(parents=True)
+        (receipt_dir / "security-gate.json").write_text(json.dumps({
+            "status": "BLOCKED", "share_readiness": "BLOCKED", "source_commit": "x" * 40,
+            "counts": {"unresolved_blockers": 2, "reconciled": True},
+        }))
+        status = {"git": {"commit": "x" * 40, "clean_tree": True}, "github": {"open_critical_issues": [], "freshness": "FRESH"}}
+        result = evaluate_developer_share_status(status, repo)
+        gate = next(g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean")
+        assert gate["state"] == "FAIL"
