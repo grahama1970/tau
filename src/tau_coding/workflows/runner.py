@@ -539,6 +539,13 @@ def _run_materialized_workflow(
     viewer = _wait_for_viewer(materialized.run_dir, workflow_thread, failure)
     viewer_thread = threading.Thread(target=viewer.serve_forever, name="tau-viewer", daemon=True)
     viewer_thread.start()
+    # tau#350: print the run identity and progress-view deep link immediately
+    # so headless and --no-browser-open launches still surface the viewer URL.
+    print(
+        f"run_dir: {materialized.run_dir}\n"
+        f"progress_view: {viewer.url}",
+        flush=True,
+    )
     if browser_open:
         webbrowser.open(viewer.url)
     workflow_thread.join()
