@@ -154,6 +154,13 @@ class DagViewerApplication:
             return json_response({"status": "ok", "read_only": True})
         if path == "/api/v1/capabilities":
             return json_response(viewer_capabilities())
+        if path == "/api/v1/catalog":
+            # tau#350: the canonical five-workflow catalog served from the
+            # same authoritative definitions registry the CLI uses, so the
+            # viewer landing cannot drift from `tau workflows list`.
+            from tau_coding.workflows.catalog import workflow_catalog_payload
+
+            return json_response(workflow_catalog_payload())
         if path == "/api/v1/manifest":
             at_sequence = parse_at_sequence(parsed.query)
             if self._project_receipt is not None:

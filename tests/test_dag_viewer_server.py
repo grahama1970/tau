@@ -513,3 +513,22 @@ def test_non_loopback_blocks_before_bind(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     with pytest.raises(RuntimeError, match="dag_viewer_non_loopback_forbidden"):
         create_dag_viewer_server(run_dir=tmp_path, host="0.0.0.0", port=0)
+
+
+def test_viewer_serves_catalog_from_one_registry(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    """tau#350: /api/v1/catalog serves the same registry as the CLI list."""
+    server, _thread = viewer_server
+    status, _headers, body = _request(server, "GET", "/api/v1/catalog")
+    assert status == 200
+    payload = _json(body)
+    assert payload["schema"] == "tau.workflow_catalog.v1"
+    ids = [w["workflow_id"] for w in payload["workflows"]]
+    assert ids == [
+        "repository-readiness",
+        "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification",
+    ]
