@@ -129,6 +129,46 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     assert called == ["producer"]
 
 
+
+def test_scheduler_compacts_large_command_results_before_attempt_admission(
+    tmp_path: Path,
+) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "producer")]),
+        source_path=tmp_path / "dag.json",
+    )
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": node.node_id},
+            "command_results": [
+                {
+                    "command": "python - <<'PY'",
+                    "exit_code": 0,
+                    "stdout": "x" * 32000,
+                    "stderr": "",
+                }
+            ],
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "PASS"
+    command_result = result.node_results[0]["command_results"][0]
+    assert "stdout" not in command_result
+    assert command_result["stdout_bytes"] == 32000
+    assert command_result["full_result_bytes"] > 32000
+    assert "stdout_sha256" in command_result
+    assert command_result["exit_code"] == 0
+
 def test_scheduler_blocks_downstream_after_malformed_attempt_result(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

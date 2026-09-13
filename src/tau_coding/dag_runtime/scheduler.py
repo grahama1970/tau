@@ -51,6 +51,7 @@ from tau_coding.dag_runtime.model import (
     DagPlanNode,
     DagPlanValidation,
     FrozenJson,
+    canonical_json,
     canonical_sha256,
     validate_dag_plan,
 )
@@ -1369,7 +1370,9 @@ def run_dag_plan(
         )
         raise
 
-    ordered_results = tuple(results[node_id] for node_id in result_order)
+    ordered_results = tuple(
+        _result_with_public_extensions(results[node_id]) for node_id in result_order
+    )
     if (
         blocked_result is None
         and persisted_outcome is not None
@@ -2539,6 +2542,47 @@ def _recover_incomplete_attempts(
     return None
 
 
+def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
+    compact: dict[str, Any] = {}
+    for key in (
+        "command",
+        "cmd",
+        "returncode",
+        "exit_code",
+        "timed_out",
+        "duration_seconds",
+        "receipt_path",
+        "output_path",
+        "stdout_path",
+        "stderr_path",
+        "sha256",
+        "stdout_sha256",
+        "stderr_sha256",
+    ):
+        if key in value:
+            compact[key] = value[key]
+    full_result_json = canonical_json(value)
+    compact["full_result_sha256"] = canonical_sha256(value)
+    compact["full_result_bytes"] = len(full_result_json.encode("utf-8"))
+    if "stdout" in value and "stdout_sha256" not in compact:
+        compact["stdout_sha256"] = canonical_sha256(value.get("stdout"))
+    if "stderr" in value and "stderr_sha256" not in compact:
+        compact["stderr_sha256"] = canonical_sha256(value.get("stderr"))
+    if "stdout" in value:
+        compact["stdout_bytes"] = len(str(value.get("stdout") or "").encode("utf-8"))
+    if "stderr" in value:
+        compact["stderr_bytes"] = len(str(value.get("stderr") or "").encode("utf-8"))
+    return compact
+
+
+def _compact_command_results_for_boundary(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return [_compact_command_result_for_boundary(item) for item in value]
+    return [_compact_command_result_for_boundary(value)]
+
+
 def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str, Any]:
     normalized = dict(result)
     diagnostics = dict(normalized.get("diagnostics") or {})
@@ -2604,7 +2648,10 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "handoff_summary",
     ):
         if key in normalized:
-            generic_receipt[key] = normalized.pop(key)
+            value = normalized.pop(key)
+            if key == "command_results":
+                value = _compact_command_results_for_boundary(value)
+            generic_receipt[key] = value
     if generic_receipt:
         extensions["generic_receipt"] = generic_receipt
     runtime_meta: dict[str, Any] = {}
@@ -2621,6 +2668,43 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
     if extensions:
         normalized["extensions"] = extensions
     return normalized
+
+
+def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Return compact receipt metadata at the legacy public result surface."""
+
+    projected = dict(result)
+    extensions = projected.get("extensions")
+    generic_receipt = (
+        extensions.get("generic_receipt") if isinstance(extensions, Mapping) else None
+    )
+    if not isinstance(generic_receipt, Mapping):
+        return projected
+    for key in (
+        "adapter_kind",
+        "harness",
+        "mocked",
+        "live",
+        "provider_live",
+        "provider_status",
+        "provider_verdict",
+        "transport_profile",
+        "policy_hash",
+        "provider_invoked",
+        "transport_turn_results",
+        "receipt_path",
+        "work_order_path",
+        "work_order_sha256",
+        "usage",
+        "cost_estimate",
+        "resumed",
+        "command_results",
+        "artifacts",
+    ):
+        if key in generic_receipt and key not in projected:
+            projected[key] = generic_receipt[key]
+    return projected
+
 
 
 def _validate_attempt_result(
