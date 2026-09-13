@@ -1,10 +1,4 @@
-"""Backend-neutral scheduler state machine for compiled Tau DAG plans.
-
-Diagram ID: tau.dag-runtime
-Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
-Diagram ID: tau.attempt-result-boundary
-Excalidraw source: docs/explain/boards/tau-attempt-result-boundary.excalidraw
-"""
+"""Backend-neutral scheduler state machine for compiled Tau DAG plans."""
 
 from __future__ import annotations
 
@@ -56,8 +50,15 @@ from tau_coding.dag_runtime.model import (
     validate_dag_plan,
 )
 from tau_coding.dag_runtime.node_input_manifest import (
+    DAG_NODE_DISPATCH_SCHEMA,
+    NODE_INPUT_MANIFEST_SCHEMA,
+    DagNodeDispatchAdmissionError,
+    admit_node_dispatch_envelope,
     admit_node_input_manifest,
+    build_node_dispatch_projection,
     resolve_node_input_manifest,
+    validate_admitted_node_dispatch_envelope,
+    validate_node_dispatch_projection_against_scheduler_state,
 )
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
 from tau_coding.dag_runtime.resource_leases import (
@@ -125,6 +126,10 @@ class DagNodeAttempt:
     input_manifest_path: str | None = None
     input_manifest_sha256: str | None = None
     input_manifest_admission_id: str | None = None
+    dispatch_envelope: Mapping[str, Any] | None = None
+    dispatch_envelope_sha256: str | None = None
+    dispatch_envelope_path: str | None = None
+    dispatch_envelope_admission_id: str | None = None
     worker_assignment_path: str | None = None
     worker_assignment_sha256: str | None = None
     worker_assignment_admission_id: str | None = None
@@ -572,7 +577,7 @@ def run_dag_plan(
                     )
                     transition_receipt_paths.extend(start_transition.receipt_paths)
                     for transition_event in start_transition.events:
-                        _emit(event_sink, transition_event)
+                        _emit(event_sink, dict(transition_event))
                     if start_transition.block_run is not None:
                         blocked_result = {
                             "status": "BLOCKED",
@@ -618,13 +623,15 @@ def run_dag_plan(
                             run_store=run_store,
                             lease=lease,
                             identity=identity,
-                            manifest=input_resolution.manifest,
+                            manifest=dict(input_resolution.manifest),
                         )
                         _inject_fault(fault_injector, "after_input_manifest_admitted", identity)
                         accepted_inputs = input_resolution.accepted_inputs
                         if input_resolution.blocked_result is not None:
                             run_store.mark_dispatched(lease, identity.attempt_id)
-                            future = pool.submit(_return_result, input_resolution.blocked_result)
+                            future = pool.submit(
+                                _return_result, dict(input_resolution.blocked_result)
+                            )
                             futures[future] = node_id
                             future_attempts[future] = identity
                             future_resource_leases[future] = ()
@@ -638,6 +645,53 @@ def run_dag_plan(
                                     "attempt": attempt,
                                     "verdict": input_resolution.blocked_result["verdict"],
                                     "input_manifest_sha256": input_admission["sha256"],
+                                },
+                            )
+                            continue
+                        try:
+                            dispatch_projection = build_node_dispatch_projection(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                input_resolution=input_resolution,
+                                input_admission=input_admission,
+                                edge_states=edge_states,
+                                results=results,
+                                initial_workspace_read_set=initial_read_set,
+                            )
+                            validate_node_dispatch_projection_against_scheduler_state(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                input_resolution=input_resolution,
+                                input_admission=input_admission,
+                                projection=dispatch_projection,
+                                edge_states=edge_states,
+                                results=results,
+                                initial_workspace_read_set=initial_read_set,
+                            )
+                        except DagNodeDispatchAdmissionError as exc:
+                            blocked = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"{exc.code}:{exc.path}",
+                                original_code=exc.code,
+                            )
+                            run_store.mark_dispatched(lease, identity.attempt_id)
+                            future = pool.submit(_return_result, blocked)
+                            futures[future] = node_id
+                            future_attempts[future] = identity
+                            future_resource_leases[future] = ()
+                            scheduled.add(node_id)
+                            node_states[node_id] = "running"
+                            _emit(
+                                event_sink,
+                                {
+                                    "event": "node_dispatch_blocked",
+                                    "node_id": node_id,
+                                    "attempt": attempt,
+                                    "verdict": blocked["verdict"],
+                                    "dispatch_error": exc.code,
+                                    "dispatch_error_path": exc.path,
                                 },
                             )
                             continue
@@ -682,9 +736,86 @@ def run_dag_plan(
                                 original_code=original_code,
                                 original_exception=exc,
                             )
+                            blocked_result["verdict"] = (
+                                exc.code.upper()
+                                if isinstance(exc, WorkerAssignmentError)
+                                else original_code
+                            )
                             node_states[node_id] = "blocked"
                             resolved.add(node_id)
                             break
+                        try:
+                            dispatch_projection = build_node_dispatch_projection(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                input_resolution=input_resolution,
+                                input_admission=input_admission,
+                                edge_states=edge_states,
+                                results=results,
+                                initial_workspace_read_set=initial_read_set,
+                                resource_lease_tokens=resource_tokens,
+                                worker_assignment_admission=worker_admission,
+                            )
+                            dispatch_projection = admit_node_dispatch_envelope(
+                                run_store=run_store,
+                                lease=lease,
+                                identity=identity,
+                                plan=plan,
+                                node=nodes[node_id],
+                                input_resolution=input_resolution,
+                                input_admission=input_admission,
+                                projection=dispatch_projection,
+                                edge_states=edge_states,
+                                results=results,
+                                initial_workspace_read_set=initial_read_set,
+                                resource_lease_tokens=resource_tokens,
+                                worker_assignment_admission=worker_admission,
+                            )
+                        except (DagNodeDispatchAdmissionError, DagRunStoreError) as exc:
+                            if resource_lease_manager is not None and resource_tokens:
+                                resource_lease_manager.release(
+                                    resource_tokens,
+                                    run_store=run_store,
+                                    scheduler_lease=lease,
+                                    reason="dispatch_envelope_admission_failed",
+                                )
+                            dispatch_code = (
+                                exc.code
+                                if isinstance(exc, DagNodeDispatchAdmissionError)
+                                else "dag_node_dispatch_admission_failed"
+                            )
+                            dispatch_path = (
+                                exc.path
+                                if isinstance(exc, DagNodeDispatchAdmissionError)
+                                else "$.receipt_admission"
+                            )
+                            blocked = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"{dispatch_code}:{dispatch_path}",
+                                original_code=dispatch_code,
+                                original_exception=exc,
+                            )
+                            run_store.mark_dispatched(lease, identity.attempt_id)
+                            future = pool.submit(_return_result, blocked)
+                            futures[future] = node_id
+                            future_attempts[future] = identity
+                            future_resource_leases[future] = ()
+                            scheduled.add(node_id)
+                            node_states[node_id] = "running"
+                            _emit(
+                                event_sink,
+                                {
+                                    "event": "node_dispatch_blocked",
+                                    "node_id": node_id,
+                                    "attempt": attempt,
+                                    "verdict": blocked["verdict"],
+                                    "dispatch_error": dispatch_code,
+                                    "dispatch_error_path": dispatch_path,
+                                },
+                            )
+                            continue
+                        accepted_inputs = dispatch_projection.accepted_inputs
                         run_store.mark_dispatched(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_attempt_dispatched", identity)
                     else:
@@ -708,7 +839,9 @@ def run_dag_plan(
                         accepted_inputs = input_resolution.accepted_inputs
                         input_admission = None
                         if input_resolution.blocked_result is not None:
-                            future = pool.submit(_return_result, input_resolution.blocked_result)
+                            future = pool.submit(
+                                _return_result, dict(input_resolution.blocked_result)
+                            )
                             futures[future] = node_id
                             future_attempts[future] = identity
                             future_resource_leases[future] = ()
@@ -724,6 +857,52 @@ def run_dag_plan(
                                 },
                             )
                             continue
+                        try:
+                            dispatch_projection = build_node_dispatch_projection(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                input_resolution=input_resolution,
+                                input_admission=None,
+                                edge_states=edge_states,
+                                results=results,
+                                initial_workspace_read_set=None,
+                            )
+                            validate_node_dispatch_projection_against_scheduler_state(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                input_resolution=input_resolution,
+                                input_admission=None,
+                                projection=dispatch_projection,
+                                edge_states=edge_states,
+                                results=results,
+                            )
+                        except DagNodeDispatchAdmissionError as exc:
+                            blocked = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"{exc.code}:{exc.path}",
+                                original_code=exc.code,
+                            )
+                            future = pool.submit(_return_result, blocked)
+                            futures[future] = node_id
+                            future_attempts[future] = identity
+                            future_resource_leases[future] = ()
+                            scheduled.add(node_id)
+                            node_states[node_id] = "running"
+                            _emit(
+                                event_sink,
+                                {
+                                    "event": "node_dispatch_blocked",
+                                    "node_id": node_id,
+                                    "attempt": attempt,
+                                    "verdict": blocked["verdict"],
+                                    "dispatch_error": exc.code,
+                                    "dispatch_error_path": exc.path,
+                                },
+                            )
+                            continue
+                        accepted_inputs = dispatch_projection.accepted_inputs
                     input_manifest_path = (
                         str(input_admission["path"]) if isinstance(input_admission, dict) else None
                     )
@@ -767,6 +946,16 @@ def run_dag_plan(
                             input_manifest_path=input_manifest_path,
                             input_manifest_sha256=input_manifest_sha256,
                             input_manifest_admission_id=input_manifest_admission_id,
+                            dispatch_envelope=dispatch_projection.envelope,
+                            dispatch_envelope_sha256=(
+                                dispatch_projection.dispatch_envelope_sha256
+                            ),
+                            dispatch_envelope_path=(
+                                dispatch_projection.dispatch_envelope_path
+                            ),
+                            dispatch_envelope_admission_id=(
+                                dispatch_projection.dispatch_envelope_admission_id
+                            ),
                             worker_assignment_path=worker_assignment_path,
                             worker_assignment_sha256=worker_assignment_sha256,
                             worker_assignment_admission_id=worker_assignment_admission_id,
@@ -859,7 +1048,7 @@ def run_dag_plan(
                             )
                             transition_receipt_paths.extend(transition.receipt_paths)
                             for event in transition.events:
-                                _emit(event_sink, event)
+                                _emit(event_sink, dict(event))
                             if transition.block_run is not None:
                                 blocked_result = {
                                     "status": "BLOCKED",
@@ -934,7 +1123,7 @@ def run_dag_plan(
                         )
                         transition_receipt_paths.extend(transition.receipt_paths)
                         for event in transition.events:
-                            _emit(event_sink, event)
+                            _emit(event_sink, dict(event))
                         if transition.block_run is not None:
                             blocked_result = {
                                 "status": "BLOCKED",
@@ -1262,7 +1451,7 @@ def run_dag_plan(
                     )
                     transition_receipt_paths.extend(transition.receipt_paths)
                     for transition_event in transition.events:
-                        _emit(event_sink, transition_event)
+                        _emit(event_sink, dict(transition_event))
                     if transition.block_run is not None:
                         if blocked_result is None:
                             blocked_result = {
@@ -1333,7 +1522,7 @@ def run_dag_plan(
                 )
                 transition_receipt_paths.extend(completion_transition.receipt_paths)
                 for transition_event in completion_transition.events:
-                    _emit(event_sink, transition_event)
+                    _emit(event_sink, dict(transition_event))
                 if completion_transition.block_run is not None:
                     if blocked_result is None:
                         blocked_result = {
@@ -1864,7 +2053,12 @@ def _correction_allows_retry(
         if repair_projection.state in {"ESCALATED_HUMAN", "TERMINAL"}:
             return False
     if correction_handler is None or run_store is None or lease is None:
-        if repair_projection is not None and repair_projection.state in OPEN_REPAIR_CATEGORY_STATES:
+        if (
+            repair_projection is not None
+            and repair_projection.state in OPEN_REPAIR_CATEGORY_STATES
+            and run_store is not None
+            and lease is not None
+        ):
             transition_repair_category(
                 store=run_store,
                 lease=lease,
@@ -2646,6 +2840,12 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "artifacts",
         "policy_exceptions",
         "handoff_summary",
+        "provider_invoked",
+        "transport_profile",
+        "transport_turn_results",
+        "policy_hash",
+        "adapter_kind",
+        "harness",
     ):
         if key in normalized:
             value = normalized.pop(key)
@@ -2671,7 +2871,7 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
 
 
 def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
-    """Return compact receipt metadata at the legacy public result surface."""
+    """Return a compatibility projection without changing the admitted result."""
 
     projected = dict(result)
     extensions = projected.get("extensions")
@@ -2704,7 +2904,6 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
         if key in generic_receipt and key not in projected:
             projected[key] = generic_receipt[key]
     return projected
-
 
 
 def _validate_attempt_result(
@@ -2751,7 +2950,7 @@ def _triaged_blocked_attempt_result(
         triage_code = str(triage.get("code") or TRIAGE_CONTRACT_INVALID_CODE)
         repair_handler_id = _allowlisted_triage_repair_handler_id(triage)
         repair_allowed = repair_handler_id is not None
-        result = {
+        result: dict[str, Any] = {
             "node_id": node_id,
             "status": "BLOCKED",
             "verdict": triage_code,
@@ -2992,7 +3191,7 @@ def _enforce_node_completion_boundary(
         run_store.path.parent / "node-completion-boundaries" / f"{identity.attempt_id}.json"
     )
     try:
-        write_result = write_durable_json(boundary_path, validation.boundary)
+        write_result = write_durable_json(boundary_path, dict(validation.boundary))
         admission = run_store.admit_receipt(
             lease,
             identity.attempt_id,
@@ -3129,6 +3328,14 @@ def _restore_durable_state(
         attempts=attempts,
         runtime_projections=runtime_projections,
     )
+    _validate_replayed_dispatch_envelopes(
+        plan=plan,
+        run_store=run_store,
+        run_id=run_id,
+        nodes=nodes,
+        attempts=attempts,
+        replay=replay,
+    )
     policy.restore(
         plan,
         DagPolicyReplayState(
@@ -3165,6 +3372,82 @@ def _restore_durable_state(
         if stored.state == "RETRY_SCHEDULED":
             attempt_history[stored.identity.node_id].append(stored.staged_result)
     return len(events), replay.block
+
+
+def _validate_replayed_dispatch_envelopes(
+    *,
+    plan: DagPlan,
+    run_store: SqliteDagRunStore,
+    run_id: str,
+    nodes: Mapping[str, DagPlanNode],
+    attempts: tuple[Any, ...],
+    replay: Any,
+) -> None:
+    attempts_by_id = {stored.identity.attempt_id: stored.identity for stored in attempts}
+    input_admissions = {
+        str(row["attempt_id"]): row
+        for row in run_store.list_admissions(run_id, receipt_kind=NODE_INPUT_MANIFEST_SCHEMA)
+    }
+    dispatch_admissions = run_store.list_admissions(
+        run_id,
+        receipt_kind=DAG_NODE_DISPATCH_SCHEMA,
+    )
+    if not dispatch_admissions:
+        return
+    replay_results = {
+        result.node_id: _dispatch_replay_result_payload(result.payload)
+        for result in replay.results
+    }
+    replay_edge_states = dict(replay.edge_states)
+    for admission in dispatch_admissions:
+        attempt_id = str(admission.get("attempt_id") or "")
+        identity = attempts_by_id.get(attempt_id)
+        if identity is None:
+            raise RuntimeError(f"dag_node_dispatch_attempt_missing:{attempt_id}")
+        node = nodes.get(identity.node_id)
+        if node is None:
+            raise RuntimeError(f"dag_node_dispatch_node_missing:{identity.node_id}")
+        initial_read_set = initial_workspace_read_set(
+            plan=plan,
+            node=node,
+            run_id=run_id,
+            attempt_id=identity.attempt_id,
+            attempt=identity.attempt,
+        )
+        try:
+            validate_admitted_node_dispatch_envelope(
+                admission=admission,
+                plan=plan,
+                node=node,
+                identity=identity,
+                input_admission=input_admissions.get(identity.attempt_id),
+                edge_states=replay_edge_states,
+                results=replay_results,
+                initial_workspace_read_set=initial_read_set,
+            )
+        except DagNodeDispatchAdmissionError as exc:
+            raise RuntimeError(f"{exc.code}:{exc.path}") from exc
+
+
+def _dispatch_replay_result_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the original scheduler result surface used by dispatch hashing."""
+
+    result = dict(payload)
+    result.pop("durably_replayed", None)
+    if "scheduler_attempts" not in result:
+        result["scheduler_attempts"] = [
+            {
+                "attempt": result.get("scheduler_attempt") or result.get("attempt"),
+                "status": result.get("status"),
+                "verdict": result.get("verdict"),
+                "errors": (
+                    list(result.get("errors", []))
+                    if isinstance(result.get("errors"), list)
+                    else []
+                ),
+            }
+        ]
+    return result
 
 
 def _open_repair_category_block(
@@ -3650,6 +3933,16 @@ def _admit_result_receipt(
 
     raw_path = result.get("receipt_path")
     if not isinstance(raw_path, str) or not raw_path.strip():
+        extensions = result.get("extensions")
+        generic_receipt = (
+            extensions.get("generic_receipt") if isinstance(extensions, Mapping) else None
+        )
+        raw_path = (
+            generic_receipt.get("receipt_path")
+            if isinstance(generic_receipt, Mapping)
+            else None
+        )
+    if not isinstance(raw_path, str) or not raw_path.strip():
         return False
     path = Path(raw_path)
     try:
@@ -3862,7 +4155,7 @@ def _settle_unrunnable_nodes(
             )
             transition_receipt_paths.extend(transition.receipt_paths)
             for transition_event in transition.events:
-                _emit(event_sink, transition_event)
+                _emit(event_sink, dict(transition_event))
             if transition.block_run is not None:
                 return transition.block_run
             completion_transition = policy.after_completion_batch(
@@ -3905,7 +4198,7 @@ def _settle_unrunnable_nodes(
             )
             transition_receipt_paths.extend(completion_transition.receipt_paths)
             for transition_event in completion_transition.events:
-                _emit(event_sink, transition_event)
+                _emit(event_sink, dict(transition_event))
             if completion_transition.block_run is not None:
                 return completion_transition.block_run
             if node_id in resolved:

@@ -1,8 +1,4 @@
-"""Immutable, backend-neutral representation of a validated Tau DAG.
-
-Diagram ID: tau.dag-runtime
-Excalidraw source: docs/explain/boards/tau-dag-runtime.excalidraw
-"""
+"""Immutable, backend-neutral representation of a validated Tau DAG."""
 
 from __future__ import annotations
 
@@ -25,6 +21,16 @@ CONTEXT_BINDING_ON_INVALID = frozenset({"omit", "block", "fail"})
 DAG_PLAN_TERMINAL_KINDS = frozenset({"declared_node", "external", "derived_leaf"})
 DAG_PLAN_TARGET_KINDS = frozenset({"node", "terminal"})
 DAG_PLAN_TIMEOUT_KINDS = frozenset({"explicit", "source_default", "adapter_defined"})
+DAG_NODE_INPUT_CONTRACT_NONE = "tau.node_input.none.v1"
+DAG_NODE_INPUT_CONTRACT_ACCEPTED_INPUTS = "tau.node_input.accepted_inputs.v1"
+DAG_NODE_INPUT_CONTRACT_COMPAT = "tau.node_input.compat_accepted_inputs.v1"
+DAG_NODE_INPUT_CONTRACT_IDS = frozenset(
+    {
+        DAG_NODE_INPUT_CONTRACT_NONE,
+        DAG_NODE_INPUT_CONTRACT_ACCEPTED_INPUTS,
+        DAG_NODE_INPUT_CONTRACT_COMPAT,
+    }
+)
 DAG_PLAN_ADAPTER_KINDS = frozenset(
     {
         "generic_artifact_transaction",
@@ -254,6 +260,7 @@ def validate_dag_plan(plan: DagPlan) -> DagPlanValidation:
             f"{path}.source_bindings",
             "source_binding_invalid",
         )
+        _validate_node_input_contract(issues, node, f"{path}.source_extensions")
 
     _validate_unique_tuple(
         issues,
@@ -425,6 +432,53 @@ def _validate_json_objects(
         decoded = value.to_value()
         if not isinstance(decoded, Mapping):
             issues.append(DagPlanValidationIssue(code, f"{root_path}[{index}]"))
+
+
+def _validate_node_input_contract(
+    issues: list[DagPlanValidationIssue],
+    node: DagPlanNode,
+    path: str,
+) -> None:
+    value = node.source_extensions.to_value()
+    if not isinstance(value, Mapping):
+        issues.append(DagPlanValidationIssue("node_source_extensions_invalid", path))
+        return
+    declared = value.get("input_contract_id", value.get("input_schema_id"))
+    if declared is None:
+        issues.append(
+            DagPlanValidationIssue(
+                "node_input_contract_missing",
+                f"{path}.input_contract_id",
+                "declare tau.node_input.none.v1 when no upstream input is accepted",
+            )
+        )
+        return
+    if declared not in DAG_NODE_INPUT_CONTRACT_IDS:
+        issues.append(
+            DagPlanValidationIssue(
+                "node_input_contract_unknown",
+                f"{path}.input_contract_id",
+                str(declared),
+            )
+        )
+    version = value.get("input_schema_version")
+    if not isinstance(version, str) or not version.strip():
+        issues.append(
+            DagPlanValidationIssue(
+                "node_input_contract_version_invalid",
+                f"{path}.input_schema_version",
+            )
+        )
+    elif isinstance(declared, str) and declared in DAG_NODE_INPUT_CONTRACT_IDS:
+        expected_version = declared.rsplit(".", 1)[-1]
+        if version != expected_version:
+            issues.append(
+                DagPlanValidationIssue(
+                    "node_input_contract_version_mismatch",
+                    f"{path}.input_schema_version",
+                    f"expected {expected_version}",
+                )
+            )
 
 
 def _validate_runtime_bindings(
@@ -882,6 +936,15 @@ class DagPlan:
             _raise_local_validation("nodes_invalid", "$.nodes")
         if not isinstance(self.control_edges, tuple):
             _raise_local_validation("control_edges_invalid", "$.control_edges")
+        object.__setattr__(
+            self,
+            "nodes",
+            _nodes_with_declared_input_contracts(
+                nodes=self.nodes,
+                control_edges=self.control_edges,
+                terminal_endpoints=self.terminal_endpoints,
+            ),
+        )
 
     @property
     def runtime_goal_hash(self) -> str:
@@ -922,6 +985,50 @@ class DagPlan:
 
     def with_computed_hash(self) -> DagPlan:
         return replace(self, plan_sha256=canonical_sha256(self.to_payload(include_hash=False)))
+
+
+def _nodes_with_declared_input_contracts(
+    *,
+    nodes: tuple[DagPlanNode, ...],
+    control_edges: tuple[DagPlanEdge, ...],
+    terminal_endpoints: tuple[DagPlanTerminal, ...],
+) -> tuple[DagPlanNode, ...]:
+    incoming_targets = {
+        edge.target_id for edge in control_edges if edge.target_kind == "node"
+    }
+    declared_terminals = {
+        terminal.terminal_id
+        for terminal in terminal_endpoints
+        if terminal.kind == "declared_node"
+    }
+    normalized: list[DagPlanNode] = []
+    for node in nodes:
+        extensions = node.source_extensions.to_value()
+        if not isinstance(extensions, Mapping) or (
+            extensions.get("input_contract_id") is not None
+            or extensions.get("input_schema_id") is not None
+        ):
+            normalized.append(node)
+            continue
+        input_contract_id = (
+            DAG_NODE_INPUT_CONTRACT_NONE
+            if node.node_id not in incoming_targets or node.node_id in declared_terminals
+            else DAG_NODE_INPUT_CONTRACT_ACCEPTED_INPUTS
+        )
+        normalized.append(
+            replace(
+                node,
+                source_extensions=FrozenJson.from_value(
+                    {
+                        **dict(extensions),
+                        "input_contract_id": input_contract_id,
+                        "input_schema_version": "v1",
+                        "input_contract_origin": "compiled_plan_explicit_inference",
+                    }
+                ),
+            )
+        )
+    return tuple(normalized)
 
 
 def _require_non_empty_string(value: object, label: str, path: str) -> None:

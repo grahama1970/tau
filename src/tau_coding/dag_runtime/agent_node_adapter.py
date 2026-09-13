@@ -5,9 +5,6 @@ into an ``AgentNodeRun`` executed under the canonical scheduler's injected
 ``execute_node`` boundary. The provider is supplied by the caller (SciLLM
 transport for live runs, ``FakeProvider`` for deterministic fixtures) — the
 adapter itself never talks to a provider SDK.
-
-Diagram ID: tau.native-agent-node
-Excalidraw source: docs/explain/boards/tau-native-agent-node.excalidraw
 """
 
 from __future__ import annotations
@@ -25,6 +22,11 @@ from typing import Any
 from tau_agent.tools import AgentTool
 from tau_coding.dag_runtime.agent_node import AgentNodeError, AgentNodeRun, ToolPolicy
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
+from tau_coding.dag_runtime.node_input_manifest import (
+    DAG_NODE_DISPATCH_SCHEMA,
+    DagNodeDispatchAdmissionError,
+    validate_node_dispatch_envelope,
+)
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 
 TAU_NATIVE_ADAPTER_KIND = "tau_native_agent_loop"
@@ -57,6 +59,12 @@ def execute_tau_agent_node(
     instead of completing. ``plan_sha256`` binds the work order to the compiled
     plan when the caller has it; ``DagPlanNode`` itself does not carry it.
     """
+    dispatch_envelope = _execution_dispatch_envelope(execution, plan_node=plan_node)
+    if dispatch_envelope is not None:
+        if plan_sha256 is not None:
+            _require_dispatch_value(dispatch_envelope, "plan_sha256", plan_sha256)
+        goal_hash = str(dispatch_envelope["goal_hash"])
+        accepted_inputs = tuple(dict(item) for item in dispatch_envelope["accepted_inputs"])
     config = dict(plan_node.adapter_config.to_value() or {})
     runtime_requirement = RuntimeRequirement.from_payload(
         plan_node.runtime_requirement.to_value()
@@ -78,13 +86,24 @@ def execute_tau_agent_node(
         "attempt_id": execution.attempt_id,
         "attempt": execution.attempt,
         "goal_hash": goal_hash,
-        "plan_sha256": plan_sha256 or getattr(plan_node, "plan_sha256", None) or "0" * 64,
+        "plan_sha256": (
+            str(dispatch_envelope["plan_sha256"])
+            if dispatch_envelope is not None
+            else plan_sha256
+            or getattr(plan_node, "plan_sha256", None)
+            or "0" * 64
+        ),
         "model": str(config.get("model", "profile-owned")),
         "harness": str(config.get("harness", "tau_native_agent_loop")),
         "role": config.get("role"),
         "required_evidence": list(config.get("required_evidence", [])),
         "transport_profile_selection": config.get("transport_profile_selection"),
     }
+    if dispatch_envelope is not None:
+        work_order["dispatch_envelope_sha256"] = dispatch_envelope["envelope_sha256"]
+        work_order["input_manifest_sha256"] = dispatch_envelope[
+            "resolved_input_manifest_sha256"
+        ]
     tools = list(tools_factory(plan_node, config))
     policy = ToolPolicy(
         goal_hash=goal_hash,
@@ -423,6 +442,8 @@ def _worker_handshake(
         "prompt_sha256": canonical_sha256(prompt),
         "accepted_inputs": [dict(item) for item in accepted_inputs],
         "accepted_inputs_sha256": canonical_sha256(list(accepted_inputs)),
+        "dispatch_envelope_sha256": work_order.get("dispatch_envelope_sha256"),
+        "input_manifest_sha256": work_order.get("input_manifest_sha256"),
         "run_store_path": str(run_store_path),
         "settlement_path": str(settlement_path),
         "selected_transport_profile": work_order.get("transport_profile_selection"),
@@ -455,6 +476,45 @@ def _worker_handshake(
     }
     payload["handshake_sha256"] = canonical_sha256(payload)
     return payload
+
+
+def _execution_dispatch_envelope(
+    execution: Any,
+    *,
+    plan_node: DagPlanNode,
+) -> dict[str, Any] | None:
+    envelope = getattr(execution, "dispatch_envelope", None)
+    if envelope is None:
+        return None
+    try:
+        parsed = validate_node_dispatch_envelope(envelope).model_dump(by_alias=True)
+    except DagNodeDispatchAdmissionError as exc:
+        raise AgentNodeError("dispatch_envelope_invalid", f"{exc.code}:{exc.path}") from exc
+    if parsed["schema"] != DAG_NODE_DISPATCH_SCHEMA or parsed["node_id"] != plan_node.node_id:
+        raise AgentNodeError("dispatch_envelope_invalid", "dispatch envelope node mismatch")
+    expected = {
+        "run_id": getattr(execution, "run_id", None),
+        "attempt_id": getattr(execution, "attempt_id", None),
+        "attempt": getattr(execution, "attempt", None),
+        "idempotency_key": getattr(execution, "idempotency_key", None),
+    }
+    for field, value in expected.items():
+        if parsed.get(field) != value:
+            raise AgentNodeError(
+                "dispatch_envelope_invalid",
+                f"dispatch envelope {field} mismatch",
+            )
+    return parsed
+
+
+def _require_dispatch_value(
+    dispatch_envelope: Mapping[str, Any], field: str, expected: Any
+) -> None:
+    if dispatch_envelope.get(field) != expected:
+        raise AgentNodeError(
+            "dispatch_envelope_invalid",
+            f"dispatch envelope {field} mismatch",
+        )
 
 
 def _persist_endpoint_lease_record(

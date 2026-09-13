@@ -10,6 +10,7 @@ import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal, FrozenJson, canonical_sha256
+from tau_coding.dag_runtime.node_input_manifest import DagNodeDispatchAdmissionError
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_runtime.transition import (
     AllSuccessTransitionPolicy,
@@ -168,6 +169,58 @@ def test_scheduler_compacts_large_command_results_before_attempt_admission(
     assert command_result["full_result_bytes"] > 32000
     assert "stdout_sha256" in command_result
     assert command_result["exit_code"] == 0
+
+def test_scheduler_rejects_invalid_dispatch_before_adapter_execution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "producer")]),
+        source_path=tmp_path / "dag.json",
+    )
+    called: list[str] = []
+
+    def reject_dispatch(**kwargs: Any) -> None:
+        del kwargs
+        raise DagNodeDispatchAdmissionError(
+            "dag_node_dispatch_goal_hash_mismatch", "$.goal_hash"
+        )
+
+    def classify(signal: str, *, layer: str) -> dict[str, Any]:
+        assert layer == "tau"
+        assert signal == "dag_node_dispatch_goal_hash_mismatch:$.goal_hash"
+        return {
+            "code": "tau_unclassified_33333333",
+            "layer": "tau",
+            "cause": "dispatch envelope goal hash mismatch",
+            "next_command": "rebuild dispatch envelope from scheduler state",
+            "ambiguous": True,
+        }
+
+    monkeypatch.setattr(
+        "tau_coding.dag_runtime.scheduler.validate_node_dispatch_projection_against_scheduler_state",
+        reject_dispatch,
+    )
+    monkeypatch.setattr("tau_coding.dag_runtime.scheduler.classify_tau_failure", classify)
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        called.append(node.node_id)
+        return {"node_id": node.node_id, "status": "PASS", "verdict": "PASS"}
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert called == []
+    assert result.status == "BLOCKED"
+    assert result.node_results[0]["status"] == "BLOCKED"
+    assert "dag_node_dispatch_goal_hash_mismatch" in result.node_results[0]["alert_codes"]
+    assert result.node_results[0]["diagnostics"]["scheduler_boundary"]["failure"]["original_code"] == "dag_node_dispatch_goal_hash_mismatch"
+
+
 
 def test_scheduler_blocks_downstream_after_malformed_attempt_result(
     tmp_path: Path,

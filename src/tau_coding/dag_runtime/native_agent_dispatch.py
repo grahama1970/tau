@@ -10,9 +10,6 @@ transport-profile selection (tau#308), and hands the node to
 read-only ``AgentTool`` implementations.
 
 Nothing here talks to a model directly; SciLLM is the only transport.
-
-Diagram ID: tau.native-agent-node
-Excalidraw source: docs/explain/boards/tau-native-agent-node.excalidraw
 """
 
 from __future__ import annotations
@@ -31,6 +28,11 @@ from tau_coding.dag_runtime.agent_requirement import (
     validate_selection_receipt,
 )
 from tau_coding.dag_runtime.model import DagPlanNode, FrozenJson, canonical_sha256
+from tau_coding.dag_runtime.node_input_manifest import (
+    DAG_NODE_DISPATCH_SCHEMA,
+    DagNodeDispatchAdmissionError,
+    validate_node_dispatch_envelope,
+)
 
 SCILLM_BASE_URL_ENV = "SCILLM_BASE_URL"
 DEFAULT_SCILLM_BASE_URL = "http://localhost:4001"
@@ -177,6 +179,16 @@ def preflight_native_node(
     """
     if _precancelled(execution):
         raise NativeNodePreflightError("CANCELLED", "cancel requested before dispatch")
+    dispatch_envelope = _validated_dispatch_envelope(
+        plan_node=plan_node,
+        execution=execution,
+        goal_hash=goal_hash,
+        plan_sha256=plan_sha256,
+    )
+    if dispatch_envelope is not None:
+        goal_hash = str(dispatch_envelope["goal_hash"])
+        if plan_sha256 is None:
+            plan_sha256 = str(dispatch_envelope["plan_sha256"])
     config = dict(plan_node.adapter_config.to_value() or {})
     prompt = config.get("prompt")
     if not isinstance(prompt, str) or not prompt.strip():
@@ -233,7 +245,11 @@ def preflight_native_node(
         node_id=plan_node.node_id,
         attempt_id=execution.attempt_id,
         attempt=execution.attempt,
-        plan_sha256=plan_sha256 or "0" * 64,
+        plan_sha256=(
+            plan_sha256
+            or _dispatch_field(dispatch_envelope, "plan_sha256")
+            or "0" * 64
+        ),
         goal_hash=goal_hash,
         policy_hash=policy_hash,
         data_boundary_hash=canonical_sha256({"cwd": str(cwd), "allowed_paths": paths}),
@@ -249,6 +265,9 @@ def preflight_native_node(
     config["cwd"] = str(cwd)
     config["allowed_tools"] = tools
     config["allowed_paths"] = paths
+    dispatch_envelope_sha256 = _dispatch_field(dispatch_envelope, "envelope_sha256")
+    if dispatch_envelope_sha256 is not None:
+        config["dispatch_envelope_sha256"] = dispatch_envelope_sha256
     return config
 
 
@@ -301,6 +320,8 @@ def execute_native_agent_node(
         "attempt_id": execution.attempt_id,
         "goal_hash": goal_hash,
     }
+    if isinstance(config.get("dispatch_envelope_sha256"), str):
+        correlation["dispatch_envelope_sha256"] = str(config["dispatch_envelope_sha256"])
     provider_holder: dict[str, Any] = {}
 
     def provider_factory(node: DagPlanNode, node_config: Mapping[str, Any]) -> Any:
@@ -328,6 +349,49 @@ def execute_native_agent_node(
     if isinstance(turn_results, list):
         result["transport_turn_results"] = list(turn_results)
     return result
+
+
+def _validated_dispatch_envelope(
+    *,
+    plan_node: DagPlanNode,
+    execution: Any,
+    goal_hash: str,
+    plan_sha256: str | None,
+) -> dict[str, Any] | None:
+    del goal_hash
+    envelope = getattr(execution, "dispatch_envelope", None)
+    if envelope is None:
+        return None
+    try:
+        parsed = validate_node_dispatch_envelope(envelope).model_dump(by_alias=True)
+    except DagNodeDispatchAdmissionError as exc:
+        raise NativeNodePreflightError(
+            "DAG_NODE_DISPATCH_INVALID", f"{exc.code}:{exc.path}"
+        ) from exc
+    expected = {
+        "schema": DAG_NODE_DISPATCH_SCHEMA,
+        "run_id": getattr(execution, "run_id", None),
+        "node_id": plan_node.node_id,
+        "attempt_id": getattr(execution, "attempt_id", None),
+        "attempt": getattr(execution, "attempt", None),
+        "idempotency_key": getattr(execution, "idempotency_key", None),
+    }
+    if plan_sha256 is not None:
+        expected["plan_sha256"] = plan_sha256
+    for field, value in expected.items():
+        if parsed.get(field) != value:
+            raise NativeNodePreflightError(
+                "DAG_NODE_DISPATCH_INVALID",
+                f"dispatch envelope {field} mismatch",
+            )
+    return parsed
+
+
+def _dispatch_field(envelope: Mapping[str, Any] | None, field: str) -> str | None:
+    if envelope is None:
+        return None
+    value = envelope.get(field)
+    return value if isinstance(value, str) and value else None
 
 
 __all__ = [
