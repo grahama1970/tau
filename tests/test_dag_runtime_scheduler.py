@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import threading
 import time
 from dataclasses import replace
@@ -503,6 +504,52 @@ def test_scheduler_does_not_duplicate_command_history_across_retries(tmp_path: P
         {"attempt": 2},
         {"attempt": 3},
     ]
+
+
+def test_scheduler_compacts_large_dispatch_before_attempt_result_admission(
+    tmp_path: Path,
+) -> None:
+    payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    large_dispatch = {
+        "schema": "tau.agent_handoff_command_dispatch_receipt.v1",
+        "status": "COMPLETED",
+        "ok": True,
+        "command_results": [
+            {
+                "command": ["python", "worker.py", "x" * 20_000],
+                "returncode": 0,
+                "stdout": "x" * 40_000,
+                "stderr": "",
+                "runtime_capture": {"stdout": "y" * 40_000},
+            }
+            for _ in range(20)
+        ],
+        "artifacts": [str(tmp_path / f"artifact-{index}.txt") for index in range(200)],
+    }
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        del accepted_inputs, execution
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": node.node_id},
+            "dispatch": large_dispatch,
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "PASS"
+    runtime = result.node_results[0]["extensions"]["runtime"]
+    dispatch = runtime["dispatch"]
+    assert dispatch["full_dispatch_bytes"] > 80_000
+    assert dispatch["full_dispatch_sha256"] == canonical_sha256(large_dispatch)
+    assert "stdout" not in dispatch["command_results"][0]
+    assert dispatch["command_results"][0]["command"]["truncated"] is True
+    assert dispatch["command_results"][-1]["omitted_count"] == 12
+    assert dispatch["artifacts"]["truncated"] is True
+    assert len(json.dumps(result.node_results[0]["extensions"]).encode("utf-8")) < 16_384
 
 
 def test_dag_plan_scheduler_respects_non_retryable_adapter_result(tmp_path: Path) -> None:
