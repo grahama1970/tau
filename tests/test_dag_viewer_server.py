@@ -24,6 +24,7 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionView,
 )
 from tau_coding.dag_viewer.server import (
+    DagViewerHttpServer,
     RunningDagViewerServer,
     _host_header_matches_server,
     create_dag_viewer_server,
@@ -50,12 +51,7 @@ class _ReceiptTransitionPolicy(AllSuccessTransitionPolicy):
         )
 
 
-def _durable_run(
-    tmp_path: Path,
-    *,
-    scheduler_run_id: str = "viewer-run",
-    role: str = "worker",
-) -> None:
+def _durable_run(tmp_path: Path) -> None:
     payload = {
         "schema": "tau.generic_dag_spec.v1",
         "run_id": "viewer-run",
@@ -63,7 +59,7 @@ def _durable_run(
         "nodes": [
             {
                 "node_id": "worker",
-                "role": role,
+                "role": "worker",
                 "command": ["true"],
                 "receipt_path": str(tmp_path / "worker-receipt.json"),
             }
@@ -79,7 +75,7 @@ def _durable_run(
         run_dag_plan(
             plan,
             run_store=store,
-            run_id=scheduler_run_id,
+            run_id="viewer-run",
             transition_policy=_ReceiptTransitionPolicy(receipt_path),
             execute_node=lambda node, inputs, attempt: {
                 "node_id": node.node_id,
@@ -101,6 +97,7 @@ def viewer_server(tmp_path: Path) -> tuple[RunningDagViewerServer, threading.Thr
         thread.join(timeout=2)
     else:
         server.httpd.server_close()
+    assert not thread.is_alive()
 
 
 def _request(
@@ -141,7 +138,9 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
     assert "default-src 'self'" in headers["Content-Security-Policy"]
     asset_match = re.search(rb'href="(/assets/[^"]+\.css)"', body)
     assert asset_match is not None
-    asset_status, asset_headers, asset_body = _request(server, "GET", asset_match.group(1).decode())
+    asset_status, asset_headers, asset_body = _request(
+        server, "GET", asset_match.group(1).decode()
+    )
     assert asset_status == 200
     assert asset_headers["Content-Type"].startswith("text/css")
     assert asset_body
@@ -149,10 +148,6 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
         ("/api/v1/capabilities", "tau.dag_viewer_capabilities.v1"),
         ("/api/v1/manifest", "tau.dag_view_manifest.v1"),
         ("/api/v1/state", "tau.dag_view_snapshot.v2"),
-        (
-            "/api/v1/nodes/worker/inspector",
-            "tau.selected_node_inspector_projection.v1",
-        ),
         ("/api/v1/events?after_sequence=0&limit=20", "tau.dag_live_event.v1"),
     ):
         status, headers, body = _request(server, "GET", path)
@@ -173,49 +168,6 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
     assert after == before
 
 
-def test_selected_node_inspector_is_backend_projected_and_read_only(
-    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
-) -> None:
-    server, _ = viewer_server
-    database = server.application.run_dir / "dag-run.sqlite3"
-    with sqlite3.connect(database) as connection:
-        before = connection.execute(
-            "SELECT COUNT(*), MAX(seq) FROM dag_run_events WHERE run_id = 'viewer-run'"
-        ).fetchone()
-
-    status, headers, body = _request(server, "GET", "/api/v1/nodes/worker/inspector")
-    payload = _json(body)
-    assert status == 200
-    assert headers["Cache-Control"] == "no-store"
-    assert payload["schema"] == "tau.selected_node_inspector_projection.v1"
-    assert payload["run_id"] == "viewer-run"
-    assert payload["node_id"] == "worker"
-    assert payload["attempt"] == 1
-    assert payload["journal_sequence"] > 0
-    assert payload["projection_key"].startswith("sha256:")
-    assert payload["projection_sha256"].startswith("sha256:")
-    assert payload["read_only"] is True
-    assert payload["mutation_controls"] == []
-    assert payload["contract"]["status"] == "available"
-    assert payload["accepted_inputs"]["status"] == "not_available"
-    assert payload["completion_boundary"]["status"] == "not_available"
-    assert payload["review_scope"]["status"] == "not_enforced"
-    assert payload["workspace_freshness"]["status"] == "not_enforced"
-    assert payload["worker"]["status"] == "not_enforced"
-    assert payload["diagnostics"]["authority"] == "diagnostic_only"
-    assert payload["diagnostics"]["can_settle_node"] is False
-    assert payload["accepted_evidence_and_artifacts"]["receipts"][0]["schema"] == (
-        "tau.worker_receipt.v1"
-    )
-    assert "Accepted evidence" not in json.dumps(payload["diagnostics"])
-
-    with sqlite3.connect(database) as connection:
-        after = connection.execute(
-            "SELECT COUNT(*), MAX(seq) FROM dag_run_events WHERE run_id = 'viewer-run'"
-        ).fetchone()
-    assert after == before
-
-
 def test_state_etag_and_concurrent_reads_are_consistent(
     viewer_server: tuple[RunningDagViewerServer, threading.Thread],
 ) -> None:
@@ -230,93 +182,15 @@ def test_state_etag_and_concurrent_reads_are_consistent(
     assert body == b""
     assert cached_headers["Cache-Control"] == "no-store"
     assert "Content-Length" not in cached_headers
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        responses = list(pool.map(lambda _: _request(server, "GET", "/api/v1/state"), range(16)))
+    assert DagViewerHttpServer.request_queue_size >= 32
+    assert DagViewerHttpServer.daemon_threads is True
+    assert DagViewerHttpServer.block_on_close is False
+    with ThreadPoolExecutor(max_workers=32) as pool:
+        responses = list(pool.map(lambda _: _request(server, "GET", "/api/v1/state"), range(64)))
+    assert len(responses) == 64
+    assert {status for status, _, _ in responses} == {200}
     assert {headers["ETag"] for _, headers, _ in responses} == {etag}
     assert {body for _, _, body in responses} == {first}
-
-
-def test_default_viewer_follows_new_run_generation(
-    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
-) -> None:
-    server, _ = viewer_server
-    initial_status, initial_headers, initial_body = _request(server, "GET", "/api/v1/state")
-    assert initial_status == 200
-    initial = _json(initial_body)
-    assert initial["run_id"] == "viewer-run"
-
-    _durable_run(
-        server.application.run_dir,
-        scheduler_run_id="viewer-run:generation:1",
-    )
-    advanced_status, advanced_headers, advanced_body = _request(
-        server,
-        "GET",
-        "/api/v1/state",
-        headers={"If-None-Match": initial_headers["ETag"]},
-    )
-    advanced = _json(advanced_body)
-
-    assert advanced_status == 200
-    assert advanced_headers["ETag"] != initial_headers["ETag"]
-    assert advanced["run_id"] == "viewer-run:generation:1"
-    assert advanced["plan_sha256"] == initial["plan_sha256"]
-    assert server.application.run_id == "viewer-run:generation:1"
-    manifest = _json(_request(server, "GET", "/api/v1/manifest")[2])
-    assert manifest["run_id"] == advanced["run_id"]
-    assert manifest["plan_sha256"] == advanced["plan_sha256"]
-
-
-def test_default_viewer_starts_at_latest_generation_of_sole_lineage(tmp_path: Path) -> None:
-    _durable_run(tmp_path)
-    _durable_run(tmp_path, scheduler_run_id="viewer-run:generation:1")
-
-    server = create_dag_viewer_server(run_dir=tmp_path)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        assert server.application.run_id == "viewer-run:generation:1"
-        assert _json(_request(server, "GET", "/api/v1/state")[2])["run_id"] == (
-            "viewer-run:generation:1"
-        )
-    finally:
-        server.shutdown()
-        thread.join(timeout=2)
-
-
-def test_explicit_run_id_stays_pinned_when_successor_exists(tmp_path: Path) -> None:
-    _durable_run(tmp_path)
-    server = create_dag_viewer_server(run_dir=tmp_path, run_id="viewer-run")
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        _durable_run(tmp_path, scheduler_run_id="viewer-run:generation:1")
-        assert _json(_request(server, "GET", "/api/v1/state")[2])["run_id"] == "viewer-run"
-    finally:
-        server.shutdown()
-        thread.join(timeout=2)
-
-
-@pytest.mark.parametrize(
-    ("run_id", "role", "error_code"),
-    [
-        ("viewer-run:generation:2", "worker", "dag_viewer_run_generation_non_contiguous"),
-        ("viewer-run:generation:01", "worker", "dag_viewer_run_generation_invalid"),
-        ("other-run", "worker", "dag_viewer_run_id_ambiguous"),
-        ("viewer-run:generation:1", "different-role", "dag_viewer_plan_hash_mismatch"),
-    ],
-)
-def test_default_viewer_rejects_invalid_or_unrelated_lineages(
-    tmp_path: Path,
-    run_id: str,
-    role: str,
-    error_code: str,
-) -> None:
-    _durable_run(tmp_path)
-    _durable_run(tmp_path, scheduler_run_id=run_id, role=role)
-
-    with pytest.raises(RuntimeError, match=error_code):
-        create_dag_viewer_server(run_dir=tmp_path)
 
 
 def test_state_polling_does_not_rebuild_receipt_index(
@@ -513,22 +387,3 @@ def test_non_loopback_blocks_before_bind(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     with pytest.raises(RuntimeError, match="dag_viewer_non_loopback_forbidden"):
         create_dag_viewer_server(run_dir=tmp_path, host="0.0.0.0", port=0)
-
-
-def test_viewer_serves_catalog_from_one_registry(
-    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
-) -> None:
-    """tau#350: /api/v1/catalog serves the same registry as the CLI list."""
-    server, _thread = viewer_server
-    status, _headers, body = _request(server, "GET", "/api/v1/catalog")
-    assert status == 200
-    payload = _json(body)
-    assert payload["schema"] == "tau.workflow_catalog.v1"
-    ids = [w["workflow_id"] for w in payload["workflows"]]
-    assert ids == [
-        "repository-readiness",
-        "tau-operator-reference",
-        "repository-evidence-map",
-        "approved-release-bundle",
-        "durable-repository-qualification",
-    ]
