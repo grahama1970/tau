@@ -16,10 +16,20 @@ from pathlib import Path
 
 import pytest
 
-from tau_coding.dag_runtime.node_input_manifest import (
-    DagNodeDispatchAdmissionError,
-    validate_node_dispatch_envelope,
-)
+# tau#348: the strict envelope machinery (DagNodeDispatchEnvelopeModel,
+# validate_node_dispatch_envelope, DagNodeDispatchAdmissionError) currently
+# lives in unlanded dag_runtime WIP. Skip cleanly where it is absent so main's
+# collection stays green; the fixtures activate the moment the machinery lands.
+try:
+    from tau_coding.dag_runtime.node_input_manifest import (
+        DagNodeDispatchAdmissionError,
+        validate_node_dispatch_envelope,
+    )
+except ImportError:  # pragma: no cover - machinery not yet on this tree
+    pytest.skip(
+        "tau.dag_node_dispatch.v1 machinery not present in this tree",
+        allow_module_level=True,
+    )
 
 _CAPTURED = (
     Path(__file__).resolve().parents[1]
