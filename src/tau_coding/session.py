@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import fnmatch
+import hashlib
 import inspect
 import os
 import shutil
@@ -14,6 +15,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import monotonic, time
 from typing import Any, Final, Literal, cast
+from uuid import uuid4
 
 from tau_agent import (
     AgentEndEvent,
@@ -175,6 +177,8 @@ from tau_coding.tui.config import (
 StreamingBehavior = Literal["steer", "follow_up"]
 InputSource = Literal["interactive", "rpc", "extension"]
 ModelSelectSource = Literal["set", "cycle", "restore"]
+SESSION_CONTROL_NAMESPACE: Final = "tau.session_control"
+SESSION_CONTROL_SCHEMA: Final = "tau.session_control.v1"
 _UNSET_LEAF_ID: Final[object] = object()
 _BASH_SESSION_ENV_KEYS: Final[tuple[str, ...]] = (
     "TAU_SESSION_ID",
@@ -256,6 +260,61 @@ class CompactionPlan:
     messages_to_summarize: tuple[AgentMessage, ...]
 
 
+@dataclass(slots=True)
+class _ActiveTurnControl:
+    turn_id: str
+    attempt_id: str
+    work_order_id: str
+    prompt: str
+    cancelled: bool = False
+    terminal_persisted: bool = False
+
+
+@dataclass(slots=True)
+class _QueuedControlItem:
+    queue_id: str
+    content: str
+    state: str = "QUEUED"
+    release_count: int = 0
+
+
+def _sha256_text(value: str) -> str:
+    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _replay_session_control_follow_up_queue(
+    entries: Sequence[SessionEntry],
+) -> list[_QueuedControlItem]:
+    by_id: dict[str, _QueuedControlItem] = {}
+    terminal_states = {"RELEASED", "REMOVED", "TERMINAL"}
+    for entry in entries:
+        if not isinstance(entry, CustomEntry) or entry.namespace != SESSION_CONTROL_NAMESPACE:
+            continue
+        data = entry.data
+        if data.get("schema") != SESSION_CONTROL_SCHEMA:
+            continue
+        if data.get("event") != "queue_state" or data.get("queue_kind") != "follow_up":
+            continue
+        queue_id = data.get("queue_id")
+        if not isinstance(queue_id, str) or not queue_id:
+            continue
+        state = data.get("state")
+        if not isinstance(state, str):
+            continue
+        if state in terminal_states:
+            by_id.pop(queue_id, None)
+            continue
+        content = data.get("content")
+        if not isinstance(content, str):
+            continue
+        by_id[queue_id] = _QueuedControlItem(
+            queue_id=queue_id,
+            content=content,
+            state=state,
+        )
+    return list(by_id.values())
+
+
 @dataclass(frozen=True, slots=True)
 class CodingSessionConfig:
     """Configuration for a persistent coding session."""
@@ -329,6 +388,7 @@ class CodingSession:
         command_registry: CommandRegistry | None = None,
         base_command_registry: CommandRegistry | None = None,
         pending_initial_entries: tuple[SessionEntry, ...] = (),
+        session_control_entries: Sequence[SessionEntry] | None = None,
     ) -> None:
         self._config = config
         self._state = state
@@ -370,6 +430,13 @@ class CodingSession:
         self._terminal_signal: SimpleCancellationToken | None = None
         self._pending_terminal_context_messages: list[UserMessage] = []
         self._owned_providers: list[ClosableModelProvider] = []
+        self._active_turn_control: _ActiveTurnControl | None = None
+        self._queued_follow_up_control: list[_QueuedControlItem] = (
+            _replay_session_control_follow_up_queue(session_control_entries or state.entries)
+        )
+        self._session_control_initial_user_seen = False
+        for item in self._queued_follow_up_control:
+            self._harness.follow_up_message(UserMessage(content=item.content))
         self._quit_shutdown_emitted = False
         self._diagnostic_logger = AgentCallDiagnosticLogger.from_paths(self._resource_paths.paths)
         self._credential_store = FileCredentialStore(
@@ -501,6 +568,7 @@ class CodingSession:
             command_registry=command_registry,
             base_command_registry=base_command_registry,
             pending_initial_entries=pending_initial_entries,
+            session_control_entries=linear_state.entries,
         )
         session._sync_thinking_level_to_active_model()
         session._refresh_runtime_provider()
@@ -1394,6 +1462,8 @@ class CodingSession:
 
     def cancel(self) -> None:
         """Cancel the currently running agent turn, if any."""
+        if self._active_turn_control is not None:
+            self._active_turn_control.cancelled = True
         self._harness.cancel()
 
     def cancel_terminal_command(self) -> None:
@@ -1407,12 +1477,60 @@ class CodingSession:
 
     def clear_queued_messages(self) -> QueuedMessages:
         """Clear queued steering and follow-up messages."""
-        return self._harness.clear_queues()
+        snapshot = self._harness.clear_queues()
+        removed = list(self._queued_follow_up_control)
+        self._queued_follow_up_control.clear()
+        for item in removed:
+            self._schedule_session_control_event(
+                "queue_state",
+                state="REMOVED",
+                queue_id=item.queue_id,
+                queue_kind="follow_up",
+                content=item.content,
+                content_sha256=_sha256_text(item.content),
+            )
+        return snapshot
 
     def pop_latest_follow_up_message(self) -> str | None:
         """Remove and return the most recently queued follow-up message."""
         message = self._harness.pop_latest_follow_up()
+        if message is not None and self._queued_follow_up_control:
+            item = self._queued_follow_up_control.pop()
+            item.state = "REMOVED"
+            self._schedule_session_control_event(
+                "queue_state",
+                state="REMOVED",
+                queue_id=item.queue_id,
+                queue_kind="follow_up",
+                content=item.content,
+                content_sha256=_sha256_text(item.content),
+            )
         return None if message is None else message.content
+
+    async def release_next_follow_up_message(self) -> str | None:
+        """Remove and return the oldest queued follow-up while recording a release."""
+        message = self._harness.pop_next_follow_up()
+        if message is None:
+            return None
+        if self._queued_follow_up_control:
+            item = self._queued_follow_up_control.pop(0)
+            if item.content == message.content and item.state not in {
+                "RELEASED",
+                "REMOVED",
+                "TERMINAL",
+            }:
+                item.state = "RELEASED"
+                item.release_count += 1
+                await self._append_session_control_event(
+                    "queue_state",
+                    state="RELEASED",
+                    queue_id=item.queue_id,
+                    queue_kind="follow_up",
+                    content=item.content,
+                    content_sha256=_sha256_text(item.content),
+                    release_count=item.release_count,
+                )
+        return message.content
 
     def set_model(self, model: str) -> object | None:
         """Switch the active model for future turns and make it the default."""
@@ -2764,6 +2882,8 @@ class CodingSession:
                 yield self._harness.steer(expanded_content)
                 return
             if streaming_behavior == "follow_up":
+                item = await self._record_follow_up_queued(expanded_content)
+                self._queued_follow_up_control.append(item)
                 yield self._harness.follow_up(expanded_content)
                 return
             raise RuntimeError(
@@ -2783,6 +2903,7 @@ class CodingSession:
         overflow_event: ErrorEvent | None = None
         terminal_error_message = ""
         loop_receipt = self._start_loop_receipt(objective=expanded_content)
+        await self._start_session_control_turn(expanded_content, reason="prompt")
         try:
             async for event in self._harness.prompt(expanded_content):
                 if loop_receipt is not None:
@@ -2790,6 +2911,7 @@ class CodingSession:
                 await self._emit_extension_agent_event(event)
                 if isinstance(event, MessageEndEvent):
                     persisted_count = await self._persist_messages_since(persisted_count)
+                await self._record_session_control_agent_event(event)
                 if isinstance(event, ErrorEvent) and not event.recoverable:
                     self._last_diagnostic_log_path = self._diagnostic_logger.log_error_event(
                         context=context,
@@ -2802,10 +2924,15 @@ class CodingSession:
                         terminal_error_message = event.message
                 yield event
             persisted_count = await self._persist_messages_since(persisted_count)
+            await self._finish_session_control_turn("COMPLETED")
             if overflow_event is not None:
                 compacted = await self._try_overflow_compact(context=context)
                 if compacted:
                     retry_persisted_count = len(self._harness.messages)
+                    await self._start_session_control_turn(
+                        expanded_content,
+                        reason="overflow_retry",
+                    )
                     async for retry_event in self._harness.continue_():
                         if loop_receipt is not None:
                             loop_receipt.record(retry_event)
@@ -2814,6 +2941,7 @@ class CodingSession:
                             retry_persisted_count = await self._persist_messages_since(
                                 retry_persisted_count
                             )
+                        await self._record_session_control_agent_event(retry_event)
                         if isinstance(retry_event, ErrorEvent) and not retry_event.recoverable:
                             self._last_diagnostic_log_path = (
                                 self._diagnostic_logger.log_error_event(
@@ -2825,6 +2953,7 @@ class CodingSession:
                             terminal_error_message = retry_event.message
                         yield retry_event
                     await self._persist_messages_since(retry_persisted_count)
+                    await self._finish_session_control_turn("COMPLETED")
                 await self._flush_pending_terminal_context_messages()
                 if loop_receipt is not None:
                     await self._finish_loop_receipt(
@@ -2849,17 +2978,23 @@ class CodingSession:
             )
             raise
         finally:
+            if self._active_turn_control is not None:
+                await self._finish_session_control_turn(
+                    "CANCELLED" if self._active_turn_control.cancelled else "TERMINAL"
+                )
             self._harness.config.system = base_system_prompt
 
     async def continue_(self) -> AsyncIterator[AgentEvent]:
         """Continue the agent from restored state and persist new messages."""
         context = self._diagnostic_context()
         persisted_count = len(self._harness.messages)
+        await self._start_session_control_turn("", reason="continue")
         try:
             async for event in self._harness.continue_():
                 await self._emit_extension_agent_event(event)
                 if isinstance(event, MessageEndEvent):
                     persisted_count = await self._persist_messages_since(persisted_count)
+                await self._record_session_control_agent_event(event)
                 if isinstance(event, ErrorEvent) and not event.recoverable:
                     self._last_diagnostic_log_path = self._diagnostic_logger.log_error_event(
                         context=context,
@@ -2868,6 +3003,7 @@ class CodingSession:
                     )
                 yield event
             await self._persist_messages_since(persisted_count)
+            await self._finish_session_control_turn("COMPLETED")
             await self._flush_pending_terminal_context_messages()
             await self._try_auto_compact(context=context, phase="auto_compact_after_continue")
             await self._emit_extension_agent_settled()
@@ -2878,6 +3014,125 @@ class CodingSession:
                 exc=exc,
             )
             raise
+        finally:
+            if self._active_turn_control is not None:
+                await self._finish_session_control_turn(
+                    "CANCELLED" if self._active_turn_control.cancelled else "TERMINAL"
+                )
+
+    async def _start_session_control_turn(self, prompt: str, *, reason: str) -> None:
+        turn_id = f"turn-{uuid4().hex}"
+        attempt_id = f"attempt-{uuid4().hex}"
+        work_order_id = f"work-{uuid4().hex}"
+        self._active_turn_control = _ActiveTurnControl(
+            turn_id=turn_id,
+            attempt_id=attempt_id,
+            work_order_id=work_order_id,
+            prompt=prompt,
+        )
+        self._session_control_initial_user_seen = False
+        await self._append_session_control_event(
+            "turn_started",
+            state="RUNNING",
+            reason=reason,
+            turn_id=turn_id,
+            attempt_id=attempt_id,
+            work_order_id=work_order_id,
+            prompt_sha256=_sha256_text(prompt),
+        )
+
+    async def _finish_session_control_turn(self, state: str) -> None:
+        active = self._active_turn_control
+        if active is None or active.terminal_persisted:
+            return
+        active.terminal_persisted = True
+        await self._append_session_control_event(
+            "attempt_terminal",
+            state=state,
+            turn_id=active.turn_id,
+            attempt_id=active.attempt_id,
+            work_order_id=active.work_order_id,
+            cancelled=active.cancelled or state == "CANCELLED",
+        )
+        self._active_turn_control = None
+        self._session_control_initial_user_seen = False
+
+    async def _record_follow_up_queued(self, content: str) -> _QueuedControlItem:
+        item = _QueuedControlItem(queue_id=f"queue-{uuid4().hex}", content=content)
+        await self._append_session_control_event(
+            "queue_state",
+            state="QUEUED",
+            queue_id=item.queue_id,
+            queue_kind="follow_up",
+            content=content,
+            content_sha256=_sha256_text(content),
+        )
+        return item
+
+    async def _record_session_control_agent_event(self, event: AgentEvent) -> None:
+        active = self._active_turn_control
+        if isinstance(event, ErrorEvent):
+            if event.message.startswith("Late provider"):
+                await self._append_session_control_event(
+                    "late_output_ignored",
+                    state="IGNORED",
+                    turn_id=None if active is None else active.turn_id,
+                    attempt_id=None if active is None else active.attempt_id,
+                    work_order_id=None if active is None else active.work_order_id,
+                    message=event.message,
+                    data=event.data or {},
+                )
+                return
+            if event.recoverable and event.message == "Agent run cancelled":
+                if active is not None:
+                    active.cancelled = True
+                await self._finish_session_control_turn("CANCELLED")
+                return
+
+        if not isinstance(event, MessageEndEvent):
+            return
+        message = event.message
+        if not isinstance(message, UserMessage):
+            return
+        if not self._session_control_initial_user_seen:
+            self._session_control_initial_user_seen = True
+            return
+        if not self._queued_follow_up_control:
+            return
+        item = self._queued_follow_up_control[0]
+        if item.content != message.content or item.state in {"RELEASED", "REMOVED", "TERMINAL"}:
+            return
+        item.state = "RELEASED"
+        item.release_count += 1
+        self._queued_follow_up_control.pop(0)
+        await self._append_session_control_event(
+            "queue_state",
+            state="RELEASED",
+            queue_id=item.queue_id,
+            queue_kind="follow_up",
+            content=item.content,
+            content_sha256=_sha256_text(item.content),
+            release_count=item.release_count,
+            turn_id=None if active is None else active.turn_id,
+            attempt_id=None if active is None else active.attempt_id,
+            work_order_id=None if active is None else active.work_order_id,
+        )
+
+    async def _append_session_control_event(self, event: str, **data: Any) -> None:
+        payload = {
+            "schema": SESSION_CONTROL_SCHEMA,
+            "event": event,
+            "recorded_at": time(),
+            **data,
+        }
+        await self.append_custom_entry(SESSION_CONTROL_NAMESPACE, payload)
+
+    def _schedule_session_control_event(self, event: str, **data: Any) -> None:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        loop.create_task(self._append_session_control_event(event, **data))
 
     async def _emit_extension_agent_event(self, event: AgentEvent) -> None:
         for payload in _extension_agent_event_payloads(event, messages=self._harness.messages):
