@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Event
 from typing import Any
 
+from tau_coding.dag_runtime.spawn_env import build_governed_spawn_env
 from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 from tau_coding.external_workspace import agent_skills_root
 
@@ -478,13 +478,11 @@ def _execute_tau_runtime_handshake(
         "--output",
         str(output_path),
     ]
-    env = dict(os.environ)
-    src_path = str(repo_root / "src")
-    env["PYTHONPATH"] = (
-        src_path
-        if not env.get("PYTHONPATH")
-        else f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
-    )
+    # Deny-by-default spawn env: base allowlist plus contract-declared
+    # env_passthrough only — the child never inherits undeclared host secrets.
+    spawn = build_governed_spawn_env(spec.configuration.get("env_passthrough", ()))
+    env = spawn.env
+    env["PYTHONPATH"] = str(repo_root / "src")
     completed = run_cancellable_subprocess(
         command,
         cwd=repo_root,
