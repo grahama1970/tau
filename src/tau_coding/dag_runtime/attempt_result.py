@@ -19,16 +19,30 @@ DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA = "tau.dag_attempt_result_validation.v1"
 ATTEMPT_RESULT_STATUSES = frozenset({"PASS", "FAIL", "BLOCKED", "CANCELLED"})
 IDENTITY_CLAIM_FIELDS = ("run_id", "plan_sha256", "attempt_id")
 OUTPUT_CONTRACT_ANY_OBJECT = "tau.accepted_output.any_object.v1"
+OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT = "tau.accepted_output.compat_optional_object.v1"
 OUTPUT_CONTRACT_NONE = "tau.accepted_output.none.v1"
 OUTPUT_CONTRACT_SOURCE_NODE = "tau.accepted_output.source_node.v1"
 OUTPUT_CONTRACT_IDS = frozenset(
-    {OUTPUT_CONTRACT_ANY_OBJECT, OUTPUT_CONTRACT_NONE, OUTPUT_CONTRACT_SOURCE_NODE}
+    {
+        OUTPUT_CONTRACT_ANY_OBJECT,
+        OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT,
+        OUTPUT_CONTRACT_NONE,
+        OUTPUT_CONTRACT_SOURCE_NODE,
+    }
 )
 MACHINE_TOKEN_MAX_LENGTH = 128
 MACHINE_TOKEN_CHARS = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_:-."
 )
-AUXILIARY_FIELD_MAX_BYTES = 16384
+AUXILIARY_FIELD_MAX_BYTES = 32768
+
+
+class SourceNodeAcceptedOutput(BaseModel):
+    """Strict accepted-output contract for ordinary DAG node completions."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    source_node_id: str = Field(min_length=1)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +81,7 @@ class DagAttemptResultModel(BaseModel):
     diagnostics: dict[str, Any] = Field(default_factory=dict)
     extensions: dict[str, Any] = Field(default_factory=dict)
     output_contract_id: str | None = None
+    output_schema_version: str | None = None
     source_schema: str | None = None
     attempt_count: int | None = None
     scheduler_attempt_id: str | None = None
@@ -100,6 +115,7 @@ class DagAttemptResultModel(BaseModel):
         "node_id",
         "attempt_id",
         "accepted_output_sha256",
+        "output_schema_version",
         "source_schema",
         "scheduler_attempt_id",
     )
@@ -155,10 +171,14 @@ def admit_dag_attempt_result(
     identity: Any,
     node_id: str,
     result: Mapping[str, Any],
-    output_contract_id: str = OUTPUT_CONTRACT_ANY_OBJECT,
+    output_contract_id: str | None = None,
 ) -> DagAttemptResultAdmission:
     """Normalize one raw adapter result into ``tau.dag_attempt_result.v1``."""
 
+    explicit_output_contract = output_contract_id is not None
+    output_contract_id, output_schema_version = normalize_output_contract_id(
+        output_contract_id or OUTPUT_CONTRACT_ANY_OBJECT
+    )
     if output_contract_id not in OUTPUT_CONTRACT_IDS:
         raise DagAttemptResultAdmissionError(
             "dag_attempt_result_output_contract_unknown",
@@ -185,17 +205,37 @@ def admit_dag_attempt_result(
         _require_claim(raw, "node_id", node_id)
         _require_claim(raw, "attempt_id", identity.attempt_id)
         _require_claim(raw, "attempt", identity.attempt)
-    if parsed.output_contract_id is not None and parsed.output_contract_id != output_contract_id:
+    parsed_contract: str | None = None
+    if parsed.output_contract_id is not None:
+        parsed_contract, _ = normalize_output_contract_id(parsed.output_contract_id)
+    if parsed_contract is not None and parsed_contract != output_contract_id:
         raise DagAttemptResultAdmissionError(
             "dag_attempt_result_output_contract_mismatch",
             "$.output_contract_id",
         )
+    if (
+        parsed.output_schema_version is not None
+        and parsed.output_schema_version != output_schema_version
+    ):
+        raise DagAttemptResultAdmissionError(
+            "dag_attempt_result_output_contract_mismatch",
+            "$.output_schema_version",
+        )
 
     accepted_output_hash = _validate_accepted_output(
+        node_id=node_id,
         output_contract_id=output_contract_id,
         accepted_output=parsed.accepted_output,
         status=parsed.status,
     )
+    if (
+        parsed.accepted_output_sha256 is not None
+        and parsed.accepted_output_sha256 != accepted_output_hash
+    ):
+        raise DagAttemptResultAdmissionError(
+            "dag_attempt_result_output_hash_mismatch",
+            "$.accepted_output_sha256",
+        )
     retryable = parsed.retryable
     if retryable is None:
         retryable = parsed.status not in {"PASS", "CANCELLED"}
@@ -218,6 +258,8 @@ def admit_dag_attempt_result(
         "diagnostics": parsed.diagnostics,
         "extensions": parsed.extensions,
     }
+    if explicit_output_contract or parsed.output_schema_version is not None:
+        normalized["output_schema_version"] = output_schema_version
     if isinstance(claimed_schema, str) and claimed_schema != DAG_ATTEMPT_RESULT_SCHEMA:
         normalized["source_schema"] = claimed_schema
     try:
@@ -239,13 +281,34 @@ def admit_dag_attempt_result(
             "attempt": identity.attempt,
             "result_sha256": result_sha256,
             "output_contract_id": output_contract_id,
+            "output_schema_version": output_schema_version,
             "accepted_output_sha256": accepted_output_hash,
         },
     )
 
 
+def normalize_output_contract_id(output_contract_id: str) -> tuple[str, str]:
+    """Return the trusted contract id and version encoded by Tau's registry."""
+
+    if not isinstance(output_contract_id, str):
+        raise DagAttemptResultAdmissionError(
+            "dag_attempt_result_output_contract_unknown",
+            "$.output_contract_id",
+        )
+    if output_contract_id not in OUTPUT_CONTRACT_IDS:
+        raise DagAttemptResultAdmissionError(
+            "dag_attempt_result_output_contract_unknown",
+            "$.output_contract_id",
+        )
+    return output_contract_id, output_contract_id.rsplit(".", 1)[-1]
+
+
 def _validate_accepted_output(
-    *, output_contract_id: str, accepted_output: dict[str, Any] | None, status: str
+    *,
+    node_id: str,
+    output_contract_id: str,
+    accepted_output: dict[str, Any] | None,
+    status: str,
 ) -> str | None:
     if status != "PASS":
         return None
@@ -257,18 +320,29 @@ def _validate_accepted_output(
             )
         return None
     if accepted_output is None:
+        if output_contract_id == OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT:
+            return None
         raise DagAttemptResultAdmissionError(
             "dag_attempt_result_output_required",
             "$.accepted_output",
         )
-    if output_contract_id == OUTPUT_CONTRACT_SOURCE_NODE and (
-        set(accepted_output) != {"source_node_id"}
-        or not isinstance(accepted_output.get("source_node_id"), str)
-    ):
-        raise DagAttemptResultAdmissionError(
-            "dag_attempt_result_output_schema_invalid",
-            "$.accepted_output",
-        )
+    if output_contract_id == OUTPUT_CONTRACT_SOURCE_NODE:
+        try:
+            validated = SourceNodeAcceptedOutput.model_validate(accepted_output)
+        except ValidationError as exc:
+            path = "$.accepted_output" + "".join(
+                f".{part}" if isinstance(part, str) else f"[{part}]"
+                for part in tuple(exc.errors()[0].get("loc", ()))
+            )
+            raise DagAttemptResultAdmissionError(
+                "dag_attempt_result_output_schema_invalid",
+                path,
+            ) from exc
+        if validated.source_node_id != node_id:
+            raise DagAttemptResultAdmissionError(
+                "dag_attempt_result_output_schema_invalid",
+                "$.accepted_output.source_node_id",
+            )
     try:
         return canonical_sha256(accepted_output)
     except RuntimeError as exc:

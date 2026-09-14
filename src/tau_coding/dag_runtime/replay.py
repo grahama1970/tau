@@ -13,8 +13,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from tau_coding.dag_runtime.attempt_result import (
-    OUTPUT_CONTRACT_ANY_OBJECT,
-    OUTPUT_CONTRACT_IDS,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -22,7 +20,13 @@ from tau_coding.dag_runtime.correction import (
     RepairCategoryProjection,
     reduce_repair_category_projections,
 )
-from tau_coding.dag_runtime.model import DagPlan, canonical_sha256, require_valid_dag_plan
+from tau_coding.dag_runtime.model import (
+    DagPlan,
+    DagPlanNode,
+    canonical_sha256,
+    node_output_contract_id,
+    require_valid_dag_plan,
+)
 from tau_coding.dag_runtime.run_store import (
     RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA,
     DagAttemptIdentity,
@@ -129,7 +133,7 @@ def replay_dag_run_at_sequence(
     run_record = _run_record_from_prefix(plan=plan, run_id=run_id, events=events)
     attempts = _attempts_from_prefix(
         run_id=run_id,
-        plan_sha256=plan.plan_sha256,
+        plan=plan,
         events=events,
     )
     runtime_projections = _runtime_projections_from_prefix(run_id=run_id, events=events)
@@ -210,10 +214,11 @@ def _run_record_from_prefix(
 def _attempts_from_prefix(
     *,
     run_id: str,
-    plan_sha256: str,
+    plan: DagPlan,
     events: tuple[dict[str, Any], ...],
 ) -> tuple[StoredAttempt, ...]:
     attempts: dict[str, dict[str, Any]] = {}
+    nodes = {node.node_id: node for node in plan.nodes}
     states = {
         "attempt_dispatched": "DISPATCHED",
         "attempt_result_staged": "STAGED",
@@ -261,11 +266,14 @@ def _attempts_from_prefix(
                 raise DagRunStoreError("dag_attempt_result_conflict", attempt_id)
             try:
                 admission = admit_dag_attempt_result(
-                    plan_sha256=plan_sha256,
+                    plan_sha256=plan.plan_sha256,
                     identity=attempt["identity"],
                     node_id=attempt["identity"].node_id,
                     result=result,
-                    output_contract_id=_result_output_contract_id(result),
+                    output_contract_id=_node_output_contract_id(
+                        nodes,
+                        attempt["identity"].node_id,
+                    ),
                 )
             except DagAttemptResultAdmissionError as exc:
                 raise DagRunStoreError("dag_attempt_result_invalid", exc.code) from exc
@@ -449,6 +457,7 @@ def replay_dag_run(
     receipts: dict[str, DagCommittedReceipt] = {}
     replay_events: list[dict[str, Any]] = []
     block: dict[str, Any] | None = None
+    nodes = {node.node_id: node for node in plan.nodes}
     repair_categories = reduce_repair_category_projections(events)
     for category in repair_categories:
         replay_events.append(
@@ -563,7 +572,7 @@ def replay_dag_run(
                 identity=identity,
                 node_id=identity.node_id,
                 result=result,
-                output_contract_id=_result_output_contract_id(result),
+                output_contract_id=_node_output_contract_id(nodes, identity.node_id),
             )
         except DagAttemptResultAdmissionError as exc:
             raise RuntimeError(f"dag_transition_result_invalid:{exc.code}") from exc
@@ -571,8 +580,6 @@ def replay_dag_run(
         replayed.setdefault("attempt_count", identity.attempt)
         replayed.setdefault("scheduler_attempt", identity.attempt)
         replayed.setdefault("scheduler_attempt_id", identity.attempt_id)
-        if "resumed" in replayed:
-            replayed["resumed"] = True
         replayed["durably_replayed"] = True
         node_states[node_id] = "blocked" if batch.block_run is not None else terminal_state
         results.append(DagReplayResult(node_id, identity.attempt, terminal_state, replayed))
@@ -617,8 +624,8 @@ def replay_dag_run(
     )
 
 
-def _result_output_contract_id(result: Mapping[str, Any]) -> str:
-    contract = result.get("output_contract_id")
-    if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
-        return contract
-    return OUTPUT_CONTRACT_ANY_OBJECT
+def _node_output_contract_id(nodes: Mapping[str, DagPlanNode], node_id: str) -> str:
+    node = nodes.get(node_id)
+    if node is None:
+        raise DagRunStoreError("dag_attempt_result_invalid", node_id)
+    return node_output_contract_id(node)

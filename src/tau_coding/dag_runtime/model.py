@@ -31,6 +31,20 @@ DAG_NODE_INPUT_CONTRACT_IDS = frozenset(
         DAG_NODE_INPUT_CONTRACT_COMPAT,
     }
 )
+DAG_NODE_OUTPUT_CONTRACT_ANY_OBJECT = "tau.accepted_output.any_object.v1"
+DAG_NODE_OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT = (
+    "tau.accepted_output.compat_optional_object.v1"
+)
+DAG_NODE_OUTPUT_CONTRACT_NONE = "tau.accepted_output.none.v1"
+DAG_NODE_OUTPUT_CONTRACT_SOURCE_NODE = "tau.accepted_output.source_node.v1"
+DAG_NODE_OUTPUT_CONTRACT_IDS = frozenset(
+    {
+        DAG_NODE_OUTPUT_CONTRACT_ANY_OBJECT,
+        DAG_NODE_OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT,
+        DAG_NODE_OUTPUT_CONTRACT_NONE,
+        DAG_NODE_OUTPUT_CONTRACT_SOURCE_NODE,
+    }
+)
 DAG_PLAN_ADAPTER_KINDS = frozenset(
     {
         "generic_artifact_transaction",
@@ -261,6 +275,7 @@ def validate_dag_plan(plan: DagPlan) -> DagPlanValidation:
             "source_binding_invalid",
         )
         _validate_node_input_contract(issues, node, f"{path}.source_extensions")
+        _validate_node_output_contract(issues, node, f"{path}.source_extensions")
 
     _validate_unique_tuple(
         issues,
@@ -479,6 +494,46 @@ def _validate_node_input_contract(
                     f"expected {expected_version}",
                 )
             )
+
+
+def _validate_node_output_contract(
+    issues: list[DagPlanValidationIssue],
+    node: DagPlanNode,
+    path: str,
+) -> None:
+    value = node.source_extensions.to_value()
+    if not isinstance(value, Mapping):
+        issues.append(DagPlanValidationIssue("node_source_extensions_invalid", path))
+        return
+    declared = _declared_output_contract(value)
+    if declared is None:
+        issues.append(
+            DagPlanValidationIssue(
+                "node_output_contract_missing",
+                f"{path}.output_contract_id",
+                "declare tau.accepted_output.none.v1 when no accepted payload is legal",
+            )
+        )
+        return
+    if declared not in DAG_NODE_OUTPUT_CONTRACT_IDS:
+        issues.append(
+            DagPlanValidationIssue(
+                "node_output_contract_unknown",
+                f"{path}.output_contract_id",
+                str(declared),
+            )
+        )
+        return
+    version = value.get("output_schema_version", value.get("output_contract_version"))
+    expected_version = declared.rsplit(".", 1)[-1]
+    if version != expected_version:
+        issues.append(
+            DagPlanValidationIssue(
+                "node_output_contract_version_mismatch",
+                f"{path}.output_schema_version",
+                f"expected {expected_version}",
+            )
+        )
 
 
 def _validate_runtime_bindings(
@@ -939,7 +994,7 @@ class DagPlan:
         object.__setattr__(
             self,
             "nodes",
-            _nodes_with_declared_input_contracts(
+            _nodes_with_declared_io_contracts(
                 nodes=self.nodes,
                 control_edges=self.control_edges,
                 terminal_endpoints=self.terminal_endpoints,
@@ -987,7 +1042,7 @@ class DagPlan:
         return replace(self, plan_sha256=canonical_sha256(self.to_payload(include_hash=False)))
 
 
-def _nodes_with_declared_input_contracts(
+def _nodes_with_declared_io_contracts(
     *,
     nodes: tuple[DagPlanNode, ...],
     control_edges: tuple[DagPlanEdge, ...],
@@ -1004,31 +1059,87 @@ def _nodes_with_declared_input_contracts(
     normalized: list[DagPlanNode] = []
     for node in nodes:
         extensions = node.source_extensions.to_value()
-        if not isinstance(extensions, Mapping) or (
-            extensions.get("input_contract_id") is not None
-            or extensions.get("input_schema_id") is not None
-        ):
+        if not isinstance(extensions, Mapping):
             normalized.append(node)
             continue
-        input_contract_id = (
-            DAG_NODE_INPUT_CONTRACT_NONE
-            if node.node_id not in incoming_targets or node.node_id in declared_terminals
-            else DAG_NODE_INPUT_CONTRACT_ACCEPTED_INPUTS
-        )
+        updated = dict(extensions)
+        if (
+            updated.get("input_contract_id") is None
+            and updated.get("input_schema_id") is None
+        ):
+            input_contract_id = (
+                DAG_NODE_INPUT_CONTRACT_NONE
+                if node.node_id not in incoming_targets or node.node_id in declared_terminals
+                else DAG_NODE_INPUT_CONTRACT_ACCEPTED_INPUTS
+            )
+            updated.update(
+                {
+                    "input_contract_id": input_contract_id,
+                    "input_schema_version": "v1",
+                    "input_contract_origin": "compiled_plan_explicit_inference",
+                }
+            )
+        if _declared_output_contract(updated) is None:
+            updated.update(
+                {
+                    "output_contract_id": DAG_NODE_OUTPUT_CONTRACT_COMPAT_OPTIONAL_OBJECT,
+                    "output_schema_version": "v1",
+                    "output_contract_origin": "compiled_plan_legacy_compatibility",
+                }
+            )
         normalized.append(
             replace(
                 node,
-                source_extensions=FrozenJson.from_value(
-                    {
-                        **dict(extensions),
-                        "input_contract_id": input_contract_id,
-                        "input_schema_version": "v1",
-                        "input_contract_origin": "compiled_plan_explicit_inference",
-                    }
-                ),
+                source_extensions=FrozenJson.from_value(updated),
             )
         )
     return tuple(normalized)
+
+
+def node_output_contract_id(node: DagPlanNode) -> str:
+    """Return the trusted output contract declared by a canonical plan node."""
+
+    extensions = node.source_extensions.to_value()
+    if not isinstance(extensions, Mapping):
+        raise DagPlanValidationError(
+            DagPlanValidation(
+                False,
+                (
+                    DagPlanValidationIssue(
+                        "node_source_extensions_invalid",
+                        f"$.nodes[{node.node_id}].source_extensions",
+                    ),
+                ),
+            )
+        )
+    declared = _declared_output_contract(extensions)
+    if declared not in DAG_NODE_OUTPUT_CONTRACT_IDS:
+        code = (
+            "node_output_contract_missing"
+            if declared is None
+            else "node_output_contract_unknown"
+        )
+        raise DagPlanValidationError(
+            DagPlanValidation(
+                False,
+                (
+                    DagPlanValidationIssue(
+                        code,
+                        f"$.nodes[{node.node_id}].source_extensions.output_contract_id",
+                    ),
+                ),
+            )
+        )
+    return declared
+
+
+def _declared_output_contract(extensions: Mapping[str, Any]) -> str | None:
+    declared = (
+        extensions.get("output_contract_id")
+        or extensions.get("output_schema_id")
+        or extensions.get("output_schema")
+    )
+    return declared if isinstance(declared, str) and declared.strip() else None
 
 
 def _require_non_empty_string(value: object, label: str, path: str) -> None:

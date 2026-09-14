@@ -19,8 +19,6 @@ from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.attempt_result import (
     OUTPUT_CONTRACT_ANY_OBJECT,
-    OUTPUT_CONTRACT_IDS,
-    OUTPUT_CONTRACT_NONE,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -47,6 +45,7 @@ from tau_coding.dag_runtime.model import (
     FrozenJson,
     canonical_json,
     canonical_sha256,
+    node_output_contract_id,
     validate_dag_plan,
 )
 from tau_coding.dag_runtime.node_input_manifest import (
@@ -1229,7 +1228,7 @@ def run_dag_plan(
                         result=result,
                         run_store=run_store,
                     )
-                    output_contract_id = _node_output_contract_id(nodes[node_id], result)
+                    output_contract_id = node_output_contract_id(nodes[node_id])
                     try:
                         result, validation = _validate_attempt_result(
                             plan_sha256=plan.plan_sha256,
@@ -1267,6 +1266,13 @@ def run_dag_plan(
                             repeated_signature=repeated_signature,
                         )
                         raw_attempt_result = result
+                        result, validation = _validate_attempt_result(
+                            plan_sha256=plan.plan_sha256,
+                            identity=identity,
+                            node_id=node_id,
+                            result=result,
+                            output_contract_id=output_contract_id,
+                        )
                     if run_store is not None and lease is not None:
                         result = run_store.stage_result(lease, identity.attempt_id, result)
                         _, validation = _validate_attempt_result(
@@ -2562,9 +2568,12 @@ def _recover_incomplete_attempts(
                 identity=identity,
                 node_id=node_id,
                 result=raw_result,
+                output_contract_id=node_output_contract_id(nodes[node_id]),
             )
             run_store.validate_result(lease, identity.attempt_id, validation)
             _inject_fault(fault_injector, "after_result_validated", identity)
+        if stored.state in {"VALIDATED", "OUTPUT_COMMITTED"}:
+            raw_result = _with_recovered_resume_projection(raw_result, resumed=True)
         result = _with_attempt_history(
             raw_result,
             attempt=identity.attempt,
@@ -2736,6 +2745,22 @@ def _recover_incomplete_attempts(
     return None
 
 
+BOUNDARY_INLINE_VALUE_MAX_BYTES = 512
+BOUNDARY_COMMAND_RESULT_MAX_ITEMS = 8
+
+
+def _compact_inline_boundary_value(value: Any) -> Any:
+    encoded = canonical_json(value)
+    byte_count = len(encoded.encode("utf-8"))
+    if byte_count <= BOUNDARY_INLINE_VALUE_MAX_BYTES:
+        return value
+    return {
+        "sha256": canonical_sha256(value),
+        "bytes": byte_count,
+        "truncated": True,
+    }
+
+
 def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
@@ -2743,8 +2768,25 @@ def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
     for key in (
         "command",
         "cmd",
+        "schema",
+        "runtime_backend",
+        "runtime_backend_id",
+        "runtime_endpoint_lease",
+        "runtime_submit_receipt",
+        "runtime_event",
+        "runtime_artifacts",
+        "node_id",
+        "attempt_id",
+        "idempotency_key",
+        "ok",
+        "status",
+        "verdict",
+        "mocked",
+        "live",
+        "provider_live",
         "returncode",
         "exit_code",
+        "termination_cause",
         "timed_out",
         "duration_seconds",
         "receipt_path",
@@ -2756,7 +2798,13 @@ def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
         "stderr_sha256",
     ):
         if key in value:
-            compact[key] = value[key]
+            compact[key] = (
+                value[key]
+                if key in {"runtime_endpoint_lease", "runtime_artifacts"}
+                else _compact_runtime_submit_receipt_for_boundary(value[key])
+                if key == "runtime_submit_receipt"
+                else _compact_inline_boundary_value(value[key])
+            )
     full_result_json = canonical_json(value)
     compact["full_result_sha256"] = canonical_sha256(value)
     compact["full_result_bytes"] = len(full_result_json.encode("utf-8"))
@@ -2771,10 +2819,147 @@ def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
     return compact
 
 
+def _compact_runtime_submit_receipt_for_boundary(value: Any) -> Any:
+    if not isinstance(value, Mapping):
+        return _compact_inline_boundary_value(value)
+    compact: dict[str, Any] = {}
+    for key in (
+        "delivery_status",
+        "dispatch_id",
+        "endpoint_id",
+        "attempt_id",
+        "node_id",
+        "run_id",
+        "submitted_at",
+    ):
+        if key in value:
+            compact[key] = _compact_inline_boundary_value(value[key])
+    full_receipt_json = canonical_json(value)
+    compact["full_submit_receipt_sha256"] = canonical_sha256(value)
+    compact["full_submit_receipt_bytes"] = len(full_receipt_json.encode("utf-8"))
+    return compact
+
+
 def _compact_command_results_for_boundary(value: Any) -> list[dict[str, Any]]:
-    if isinstance(value, list):
-        return [_compact_command_result_for_boundary(item) for item in value]
-    return [_compact_command_result_for_boundary(value)]
+    values = value if isinstance(value, list) else [value]
+    compact = [
+        _compact_command_result_for_boundary(item)
+        for item in values[:BOUNDARY_COMMAND_RESULT_MAX_ITEMS]
+    ]
+    if len(values) > BOUNDARY_COMMAND_RESULT_MAX_ITEMS:
+        compact.append(
+            {
+                "omitted_count": len(values) - BOUNDARY_COMMAND_RESULT_MAX_ITEMS,
+                "full_results_sha256": canonical_sha256(values),
+                "full_results_bytes": len(canonical_json(values).encode("utf-8")),
+            }
+        )
+    return compact
+
+
+def _compact_execution_evidence_for_boundary(value: Any) -> Any:
+    if not isinstance(value, Mapping):
+        return _compact_inline_boundary_value(value)
+    compact: dict[str, Any] = {}
+    for key in (
+        "kind",
+        "command_result_sha256",
+        "runtime_artifact_count",
+        "provider",
+        "model",
+        "provider_live",
+        "live",
+        "mocked",
+    ):
+        if key in value:
+            compact[key] = _compact_inline_boundary_value(value[key])
+    full_evidence_json = canonical_json(value)
+    compact["full_evidence_sha256"] = canonical_sha256(value)
+    compact["full_evidence_bytes"] = len(full_evidence_json.encode("utf-8"))
+    return compact
+
+
+def _compact_transaction_attempt_for_boundary(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
+    compact: dict[str, Any] = {}
+    for key in (
+        "attempt",
+        "attempt_context_path",
+        "attempt_context_sha256",
+        "candidate_manifest_path",
+        "candidate_manifest_sha256",
+        "validation_receipt_path",
+        "review_feedback_path",
+        "review_feedback_sha256",
+        "review_verdict",
+        "review_live",
+        "review_provider_live",
+        "review_model",
+        "producer_live",
+        "producer_provider_live",
+        "producer_provider",
+        "producer_model",
+        "review_revision_signature",
+        "course_correction_receipt_path",
+        "course_correction_trigger",
+    ):
+        if key in value:
+            compact[key] = _compact_inline_boundary_value(value[key])
+    for key in ("producer_execution_evidence", "review_execution_evidence"):
+        if key in value:
+            compact[key] = _compact_execution_evidence_for_boundary(value[key])
+    full_attempt_json = canonical_json(value)
+    compact["full_attempt_sha256"] = canonical_sha256(value)
+    compact["full_attempt_bytes"] = len(full_attempt_json.encode("utf-8"))
+    return compact
+
+
+def _compact_transaction_attempts_for_boundary(value: Any) -> list[dict[str, Any]]:
+    values = value if isinstance(value, list) else [value]
+    compact = [
+        _compact_transaction_attempt_for_boundary(item)
+        for item in values[:BOUNDARY_COMMAND_RESULT_MAX_ITEMS]
+    ]
+    if len(values) > BOUNDARY_COMMAND_RESULT_MAX_ITEMS:
+        compact.append(
+            {
+                "omitted_count": len(values) - BOUNDARY_COMMAND_RESULT_MAX_ITEMS,
+                "full_attempts_sha256": canonical_sha256(values),
+                "full_attempts_bytes": len(canonical_json(values).encode("utf-8")),
+            }
+        )
+    return compact
+
+
+def _compact_dispatch_for_boundary(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
+    compact: dict[str, Any] = {}
+    for key in (
+        "schema",
+        "status",
+        "ok",
+        "stop_reason",
+        "selected_agent",
+        "selected_agent_backend",
+        "dispatch_receipt_path",
+        "command_policy_hash",
+    ):
+        if key in value:
+            compact[key] = value[key]
+    command_results = value.get("command_results")
+    if isinstance(command_results, list):
+        compact["command_results"] = _compact_command_results_for_boundary(command_results)
+    artifacts = value.get("artifacts")
+    if isinstance(artifacts, list):
+        compact["artifacts"] = _compact_inline_boundary_value(
+            [item for item in artifacts if isinstance(item, str)]
+        )
+    full_dispatch_json = canonical_json(value)
+    compact["full_dispatch_sha256"] = canonical_sha256(value)
+    compact["full_dispatch_bytes"] = len(full_dispatch_json.encode("utf-8"))
+    return compact
 
 
 def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str, Any]:
@@ -2789,6 +2974,8 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         diagnostics["scheduler_boundary"] = boundary
     if "workspace_stale_read_state" in normalized:
         diagnostics["workspace_stale_read_state"] = normalized.pop("workspace_stale_read_state")
+    if "stale_read_signals" in normalized:
+        diagnostics["stale_read_signals"] = normalized.pop("stale_read_signals")
     if "alerts" in normalized:
         diagnostics["alerts"] = normalized.pop("alerts")
     if "stop_reason" in normalized:
@@ -2806,6 +2993,9 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "repair_args",
         "repair_args_sha256",
         "transition_evidence",
+        "course_correction_receipt_path",
+        "course_correction_trigger",
+        "course_correction_advisory_only",
     ):
         if key in normalized:
             scheduler_meta[key] = normalized.pop(key)
@@ -2826,6 +3016,7 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "visible_log_path",
         "visible_log_sha256",
         "execution_evidence",
+        "attempt_count",
         "usage",
         "cost_accounting",
         "cost_estimate",
@@ -2837,7 +3028,22 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "work_order_sha256",
         "resumed",
         "command_results",
+        "commands_run",
         "artifacts",
+        "output_contract",
+        "transaction_id",
+        "transaction_state",
+        "producer_provider_live",
+        "reviewer_provider_live",
+        "transaction_receipt_path",
+        "accepted_manifest_path",
+        "accepted_manifest_sha256",
+        "attempts",
+        "producer_execution_evidence",
+        "review_execution_evidence",
+        "validation_receipt_path",
+        "review_feedback_path",
+        "review_feedback_sha256",
         "policy_exceptions",
         "handoff_summary",
         "provider_invoked",
@@ -2851,6 +3057,8 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
             value = normalized.pop(key)
             if key == "command_results":
                 value = _compact_command_results_for_boundary(value)
+            elif key == "attempts":
+                value = _compact_transaction_attempts_for_boundary(value)
             generic_receipt[key] = value
     if generic_receipt:
         extensions["generic_receipt"] = generic_receipt
@@ -2862,7 +3070,10 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "course_correction_artifacts",
     ):
         if key in normalized:
-            runtime_meta[key] = normalized.pop(key)
+            value = normalized.pop(key)
+            if key == "dispatch":
+                value = _compact_dispatch_for_boundary(value)
+            runtime_meta[key] = value
     if runtime_meta:
         extensions["runtime"] = runtime_meta
     if extensions:
@@ -2878,16 +3089,43 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
     generic_receipt = (
         extensions.get("generic_receipt") if isinstance(extensions, Mapping) else None
     )
+    scheduler_meta = extensions.get("scheduler") if isinstance(extensions, Mapping) else None
+    if isinstance(scheduler_meta, Mapping):
+        for key in (
+            "correction_required",
+            "course_correction_receipt_path",
+            "course_correction_trigger",
+            "course_correction_advisory_only",
+            "classification_code",
+            "repair_handler_id",
+            "repair_attempt_budget",
+            "checkpoint_ref",
+            "repair_args_schema",
+            "repair_args",
+            "repair_args_sha256",
+            "transition_evidence",
+        ):
+            if key in scheduler_meta and key not in projected:
+                projected[key] = scheduler_meta[key]
     if not isinstance(generic_receipt, Mapping):
+        if isinstance(extensions, Mapping) and "command_results" in extensions:
+            projected["command_results"] = extensions["command_results"]
         return projected
     for key in (
         "adapter_kind",
         "harness",
+        "role",
         "mocked",
         "live",
         "provider_live",
         "provider_status",
         "provider_verdict",
+        "goal_hash",
+        "workspace_id",
+        "pane_id",
+        "terminal_id",
+        "visible_log_path",
+        "visible_log_sha256",
         "transport_profile",
         "policy_hash",
         "provider_invoked",
@@ -2897,12 +3135,39 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
         "work_order_sha256",
         "usage",
         "cost_estimate",
+        "cost_accounting",
         "resumed",
+        "attempt_count",
+        "started_at",
+        "finished_at",
+        "duration_seconds",
         "command_results",
+        "commands_run",
         "artifacts",
+        "output_contract",
+        "transaction_id",
+        "transaction_state",
+        "producer_provider_live",
+        "reviewer_provider_live",
+        "transaction_receipt_path",
+        "accepted_manifest_path",
+        "accepted_manifest_sha256",
+        "attempts",
+        "producer_execution_evidence",
+        "review_execution_evidence",
+        "validation_receipt_path",
+        "review_feedback_path",
+        "review_feedback_sha256",
+        "execution_evidence",
+        "policy_exceptions",
+        "handoff_summary",
     ):
         if key in generic_receipt and key not in projected:
             projected[key] = generic_receipt[key]
+    if isinstance(extensions, Mapping):
+        command_results = extensions.get("command_results")
+        if command_results is not None:
+            projected["command_results"] = command_results
     return projected
 
 
@@ -2925,17 +3190,6 @@ def _validate_attempt_result(
     return admission.normalized, admission.validation
 
 
-def _node_output_contract_id(node: DagPlanNode, result: Mapping[str, Any]) -> str:
-    extensions = node.source_extensions.to_value()
-    if isinstance(extensions, Mapping):
-        contract = extensions.get("output_contract_id") or extensions.get("output_schema")
-        if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
-            return contract
-    if result.get("accepted_output") is None:
-        return OUTPUT_CONTRACT_NONE
-    return OUTPUT_CONTRACT_ANY_OBJECT
-
-
 def _triaged_blocked_attempt_result(
     *,
     node_id: str,
@@ -2948,6 +3202,26 @@ def _triaged_blocked_attempt_result(
     try:
         triage = admit_triage_classification(classify_tau_failure(signal, layer="tau"))
         triage_code = str(triage.get("code") or TRIAGE_CONTRACT_INVALID_CODE)
+        if (
+            original_code == "dag_attempt_result_pass_verdict_mismatch"
+            and triage_code.startswith("tau_triage_unavailable")
+        ):
+            return attach_boundary_failure(
+                {
+                    "node_id": node_id,
+                    "status": "BLOCKED",
+                    "verdict": _blocked_verdict_for_original_code(original_code),
+                    "errors": [original_code],
+                    "alert_codes": [original_code, boundary.boundary_id],
+                    "retryable": False,
+                    "failure": {
+                        "schema": "tau.internal_failure.v1",
+                        "original_code": original_code,
+                    },
+                },
+                boundary_id=boundary.boundary_id,
+                original_exception=original_exception,
+            )
         repair_handler_id = _allowlisted_triage_repair_handler_id(triage)
         repair_allowed = repair_handler_id is not None
         result: dict[str, Any] = {
@@ -3356,7 +3630,7 @@ def _restore_durable_state(
     for replayed in replay.results:
         node_id = replayed.node_id
         attempt_counts[node_id] = max(attempt_counts.get(node_id, 0), replayed.attempt)
-        results[node_id] = replayed.payload
+        results[node_id] = _with_recovered_resume_projection(replayed.payload, resumed=True)
         if node_id not in result_order:
             result_order.append(node_id)
         resolved.add(node_id)
@@ -3489,6 +3763,7 @@ def _cancel_and_collect_futures(
 ) -> DagRunLease | None:
     if not futures:
         return lease
+    nodes = {node.node_id: node for node in plan.nodes}
     _emit(
         event_sink,
         {
@@ -3527,6 +3802,7 @@ def _cancel_and_collect_futures(
                     identity=identity,
                     node_id=pending_node_id,
                     result=cancelled_result,
+                    output_contract_id=node_output_contract_id(nodes[pending_node_id]),
                 )
             except DagAttemptResultAdmissionError as exc:
                 cancelled_result, validation = _validate_attempt_result(
@@ -3539,6 +3815,7 @@ def _cancel_and_collect_futures(
                         original_code=exc.code,
                         error_path=exc.path,
                     ),
+                    output_contract_id=node_output_contract_id(nodes[pending_node_id]),
                 )
             cancelled_result = run_store.stage_result(lease, identity.attempt_id, cancelled_result)
             _, validation = _validate_attempt_result(
@@ -3546,6 +3823,7 @@ def _cancel_and_collect_futures(
                 identity=identity,
                 node_id=pending_node_id,
                 result=cancelled_result,
+                output_contract_id=node_output_contract_id(nodes[pending_node_id]),
             )
             run_store.validate_result(
                 lease,
@@ -4221,6 +4499,18 @@ def _emit(sink: EventSink | None, event: dict[str, Any]) -> None:
         sink(event)
 
 
+def _with_recovered_resume_projection(
+    result: Mapping[str, Any], *, resumed: bool
+) -> dict[str, Any]:
+    updated = dict(result)
+    extensions = dict(updated.get("extensions") or {})
+    generic_receipt = dict(extensions.get("generic_receipt") or {})
+    generic_receipt["resumed"] = resumed
+    extensions["generic_receipt"] = generic_receipt
+    updated["extensions"] = extensions
+    return updated
+
+
 def _with_attempt_history(
     result: dict[str, Any],
     *,
@@ -4229,13 +4519,26 @@ def _with_attempt_history(
 ) -> dict[str, Any]:
     combined = dict(result)
     adapter_attempt_count = result.get("attempt_count")
+    extensions = result.get("extensions")
+    generic_receipt = (
+        extensions.get("generic_receipt") if isinstance(extensions, Mapping) else None
+    )
+    if not isinstance(adapter_attempt_count, int) and isinstance(generic_receipt, Mapping):
+        generic_attempt_count = generic_receipt.get("attempt_count")
+        if isinstance(generic_attempt_count, int):
+            adapter_attempt_count = generic_attempt_count
     combined["attempt_count"] = (
         adapter_attempt_count if isinstance(adapter_attempt_count, int) else attempt
     )
     command_results: list[Any] = []
     for item in (*prior_results, result):
         extensions = item.get("extensions")
-        values = extensions.get("command_results") if isinstance(extensions, dict) else None
+        generic_receipt = (
+            extensions.get("generic_receipt") if isinstance(extensions, Mapping) else None
+        )
+        values = extensions.get("command_results") if isinstance(extensions, Mapping) else None
+        if values is None and isinstance(generic_receipt, Mapping):
+            values = generic_receipt.get("command_results")
         if isinstance(values, list):
             command_results.extend(values)
     if command_results:
