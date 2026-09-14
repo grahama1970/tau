@@ -1142,7 +1142,8 @@ class SqliteDagRunReader:
     ) -> list[dict[str, Any]]:
         if receipt_kind is None:
             rows = self._connection.execute(
-                """SELECT * FROM receipt_admissions WHERE run_id = ?
+                """SELECT * FROM receipt_admissions
+                   WHERE run_id = ? AND receipt_kind != 'tau.dag_node_dispatch.v1'
                    ORDER BY node_id, attempt_id, receipt_kind""",
                 (run_id,),
             ).fetchall()
@@ -2912,7 +2913,8 @@ class SqliteDagRunStore:
     ) -> list[dict[str, Any]]:
         if receipt_kind is None:
             rows = self._connection.execute(
-                """SELECT * FROM receipt_admissions WHERE run_id = ?
+                """SELECT * FROM receipt_admissions
+                   WHERE run_id = ? AND receipt_kind != 'tau.dag_node_dispatch.v1'
                    ORDER BY node_id, attempt_id, receipt_kind""",
                 (run_id,),
             ).fetchall()

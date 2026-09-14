@@ -1,51 +1,62 @@
-"""tau#348: strict scheduler-to-node dispatch envelope negative fixtures.
-
-The envelope machinery (DagNodeDispatchEnvelopeModel, build/admit/validate in
-node_input_manifest.py) is wired through the scheduler, and real envelopes are
-retained under local/agentic-evals/tau-348-dispatch-envelope/. These fixtures
-prove the identity classes fail closed: any mutated identity field rejects
-BEFORE an adapter could be invoked (validate_node_dispatch_envelope raises),
-and the negative codes are stable and typed.
-"""
+"""tau#348: strict scheduler-to-node dispatch envelope negative fixtures."""
 
 from __future__ import annotations
 
 import copy
-import json
 from pathlib import Path
 
 import pytest
 
-# tau#348: the strict envelope machinery (DagNodeDispatchEnvelopeModel,
-# validate_node_dispatch_envelope, DagNodeDispatchAdmissionError) currently
-# lives in unlanded dag_runtime WIP. Skip cleanly where it is absent so main's
-# collection stays green; the fixtures activate the moment the machinery lands.
-try:
-    from tau_coding.dag_runtime.node_input_manifest import (
-        DagNodeDispatchAdmissionError,
-        validate_node_dispatch_envelope,
-    )
-except ImportError:  # pragma: no cover - machinery not yet on this tree
-    pytest.skip(
-        "tau.dag_node_dispatch.v1 machinery not present in this tree",
-        allow_module_level=True,
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.node_input_manifest import (
+    DagNodeDispatchAdmissionError,
+    validate_node_dispatch_envelope,
+)
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+
+
+def _captured_envelope(tmp_path: Path) -> dict:
+    captured: dict | None = None
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "dispatch-envelope-fixture",
+            "run_dir": str(tmp_path / "run"),
+            "nodes": [
+                {
+                    "node_id": "producer",
+                    "role": "worker",
+                    "command": ["true"],
+                    "depends_on": [],
+                    "accepted_context_from": [],
+                    "receipt_path": str(tmp_path / "producer.json"),
+                    "timeout_seconds": 1,
+                    "max_attempts": 1,
+                }
+            ],
+        },
+        source_path=tmp_path / "dag.json",
     )
 
-_CAPTURED = (
-    Path(__file__).resolve().parents[1]
-    / "local"
-    / "agentic-evals"
-    / "tau-348-dispatch-envelope"
-    / "work"
-    / "fan"
-    / "node-dispatch-envelopes"
-    / "attempt-8d32836f4e503ac869125af600d65bd9.json"
-)
+    def execute(_node: object, _inputs: object, attempt: DagNodeAttempt) -> dict:
+        nonlocal captured
+        captured = dict(attempt.dispatch_envelope or {})
+        return {
+            "node_id": "producer",
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": "producer"},
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+    assert result.status == "PASS"
+    assert captured is not None
+    return captured
 
 
 @pytest.fixture(scope="module")
-def captured() -> dict:
-    return json.loads(_CAPTURED.read_text(encoding="utf-8"))
+def captured(tmp_path_factory: pytest.TempPathFactory) -> dict:
+    return _captured_envelope(tmp_path_factory.mktemp("dispatch-envelope"))
 
 
 def test_captured_envelope_validates_strict(captured: dict) -> None:

@@ -74,7 +74,6 @@ class DagReplayState:
     attempts: tuple[DagReplayAttempt, ...]
     results: tuple[DagReplayResult, ...]
     runtime_projections: tuple[RuntimeStateProjection, ...]
-    repair_categories: tuple[RepairCategoryProjection, ...]
     transition_receipts: tuple[DagCommittedReceipt, ...]
     replay_events: tuple[dict[str, Any], ...]
     deadline_monotonic: tuple[tuple[str, float], ...]
@@ -82,6 +81,7 @@ class DagReplayState:
     lease_epoch: int | None
     lease_expires_at_ms: int | None
     block: dict[str, Any] | None
+    repair_categories: tuple[RepairCategoryProjection, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

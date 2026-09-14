@@ -59,6 +59,37 @@ def _scheduler_boundary_field(result_payload: dict[str, Any], key: str) -> str |
     return value if isinstance(value, str) else None
 
 
+def _result_boundary_projection(result_payload: dict[str, Any]) -> dict[str, str]:
+    projected: dict[str, str] = {}
+    for key in ("boundary_id", "repair_category"):
+        value = result_payload.get(key)
+        if not isinstance(value, str):
+            value = _scheduler_boundary_field(result_payload, key)
+        if isinstance(value, str):
+            projected[key] = value
+    return projected
+
+
+def _public_result_payload(result_payload: dict[str, Any]) -> dict[str, Any]:
+    projected = dict(result_payload)
+    extensions = projected.get("extensions")
+    if not isinstance(extensions, dict):
+        return projected
+    generic = extensions.get("generic_receipt")
+    if isinstance(generic, dict):
+        for key, value in generic.items():
+            projected.setdefault(key, value)
+    scheduler = extensions.get("scheduler")
+    if isinstance(scheduler, dict):
+        for key, value in scheduler.items():
+            projected.setdefault(key, value)
+    runtime = extensions.get("runtime")
+    if isinstance(runtime, dict):
+        for key, value in runtime.items():
+            projected.setdefault(key, value)
+    return projected
+
+
 def load_dag_replay(
     *, run_dir: Path, run_id: str | None = None, at_sequence: int | None = None
 ) -> tuple[DagReplayState, tuple[dict[str, Any], ...]]:
@@ -185,7 +216,9 @@ def build_dag_view_state(
         replay_result = next(
             (item for item in reversed(replay.results) if item.node_id == node_id), None
         )
-        result_payload = replay_result.payload if replay_result is not None else {}
+        result_payload = (
+            _public_result_payload(replay_result.payload) if replay_result is not None else {}
+        )
         attempt_started_at = (
             _attempt_event_created_at(
                 recent_events,
@@ -255,20 +288,11 @@ def build_dag_view_state(
                         if isinstance(result_payload.get("budget_blocker"), dict)
                         else None
                     ),
-                    "boundary_id": (
-                        result_payload.get("boundary_id")
-                        if isinstance(result_payload.get("boundary_id"), str)
-                        else _scheduler_boundary_field(result_payload, "boundary_id")
-                    ),
-                    "repair_category": (
-                        result_payload.get("repair_category")
-                        if isinstance(result_payload.get("repair_category"), str)
-                        else _scheduler_boundary_field(result_payload, "repair_category")
-                    ),
+                    **_result_boundary_projection(result_payload),
                 },
                 "transaction": _transaction_projection(
                     plan_node=plan_node,
-                    replay_result=replay_result.payload if replay_result else None,
+                    replay_result=result_payload if replay_result else None,
                     recent_events=recent_events,
                     scheduler_attempt=attempt.attempt if attempt is not None else None,
                     accepted=accepted,
@@ -1087,6 +1111,14 @@ def _transaction_projection(
 
     if replay_result is not None:
         result_attempts = replay_result.get("attempts")
+        if not isinstance(result_attempts, list):
+            extensions = replay_result.get("extensions")
+            generic_receipt = (
+                extensions.get("generic_receipt") if isinstance(extensions, dict) else None
+            )
+            candidate = generic_receipt.get("attempts") if isinstance(generic_receipt, dict) else None
+            if isinstance(candidate, list):
+                result_attempts = candidate
         if isinstance(result_attempts, list):
             for item in result_attempts:
                 if not isinstance(item, dict) or not isinstance(item.get("attempt"), int):

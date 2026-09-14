@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_viewer.contracts import viewer_capabilities
 from tau_coding.skill_capability_registry import DEFAULT_SKILL_CAPABILITY_REGISTRY
 
@@ -262,9 +263,7 @@ def reconcile_source_inventory(
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
-    resolved = path.expanduser()
-    resolved.parent.mkdir(parents=True, exist_ok=True)
-    resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_durable_json(path.expanduser(), payload)
     return payload
 
 

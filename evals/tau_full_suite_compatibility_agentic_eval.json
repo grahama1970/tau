@@ -1,0 +1,48 @@
+{
+  "version": 2,
+  "skill": "tau-full-suite-compatibility",
+  "trials": 2,
+  "proof_scope": "Tau clean-origin full-suite compatibility after strict attempt-result and scheduler-boundary landings",
+  "claims": {
+    "proves": "A clean origin/main archive overlaid only with the declared tau#359 files and the preserved tau#357 changes runs the retained full pytest suite without failures or errors.",
+    "does_not_prove": "provider/model quality, live browser provider behavior, GitHub mutation, or unreplayed workflows outside the pytest suite."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.full_suite.clean_origin_compatibility",
+      "description": "Tau's clean-origin archive remains compatible with the full retained pytest suite after strict attempt-result admission and scheduler-boundary containment.",
+      "criticality": "critical",
+      "claim_semantics": "protocol",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "clean-origin-overlay-full-suite",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.full_suite.clean_origin_compatibility"],
+      "timeout_seconds": 4200,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-full-suite-compatibility && uv run python scripts/agentic-eval-tau-full-suite-compatibility.py --work local/agentic-evals/tau-full-suite-compatibility/work --out local/agentic-evals/tau-full-suite-compatibility/proof.json --timeout-seconds 3600"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"ok\": true"
+        ],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-full-suite-compatibility/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-full-suite-compatibility/proof.json", "json_pointer": "/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-full-suite-compatibility/proof.json", "json_pointer": "/pytest/exit_code", "equals": 0},
+          {"path": "../local/agentic-evals/tau-full-suite-compatibility/proof.json", "json_pointer": "/pytest/summary/failed", "equals": 0},
+          {"path": "../local/agentic-evals/tau-full-suite-compatibility/proof.json", "json_pointer": "/pytest/summary/errors", "equals": 0}
+        ]
+      }
+    }
+  ]
+}

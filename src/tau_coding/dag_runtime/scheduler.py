@@ -1313,6 +1313,10 @@ def run_dag_plan(
                                 original_code="WORKER_COMPLETION_FAILED",
                                 original_exception=exc,
                             )
+                            if exc.code == "worker_reset_receipt_invalid":
+                                result["verdict"] = "WORKER_RESET_RECEIPT_INVALID"
+                                result["errors"] = [str(exc)]
+                            result["retryable"] = False
                     if resource_lease_manager is not None and resource_tokens:
                         try:
                             resource_lease_manager.release(
@@ -1529,28 +1533,30 @@ def run_dag_plan(
                             # receipt settles BLOCKED through the scheduler's
                             # trusted path instead. Observation mode measured
                             # zero remaining bypasses before this flip.
+                            public_result = _result_with_public_extensions(result)
                             if (
-                                result.get("status") == "PASS"
-                                and result.get("verdict") == "PASS"
-                                and isinstance(result.get("receipt_path"), str)
+                                public_result.get("status") == "PASS"
+                                and public_result.get("verdict") == "PASS"
+                                and isinstance(public_result.get("receipt_path"), str)
                             ):
                                 result = _enforce_admission_block(
-                                    run_store, lease, identity.attempt_id, result
+                                    run_store, lease, identity.attempt_id, public_result
                                 )
                         run_store.commit_output(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_output_committed", identity)
+                    completion_result = _result_with_public_extensions(result)
                     completion = DagNodeCompletion(
                         node_id=node_id,
                         attempt=attempt,
-                        status=str(result.get("status") or "BLOCKED"),
-                        verdict=str(result.get("verdict") or "NODE_BLOCKED"),
+                        status=str(completion_result.get("status") or "BLOCKED"),
+                        verdict=str(completion_result.get("verdict") or "NODE_BLOCKED"),
                         retryable=retryable,
-                        raw_result=result,
+                        raw_result=completion_result,
                         terminal_state=(
                             "cancelled"
                             if cancel_events[node_id].is_set()
                             else "success"
-                            if result.get("status") == "PASS" and result.get("verdict") == "PASS"
+                            if completion_result.get("status") == "PASS" and completion_result.get("verdict") == "PASS"
                             else "failed"
                         ),
                     )
@@ -2254,14 +2260,15 @@ def _correction_allows_retry(
 ) -> bool:
     """Require durable repair-category resolution before same-node retry."""
 
-    if result.get("correction_required") is not True:
+    public_result = _result_with_public_extensions(result)
+    if public_result.get("correction_required") is not True:
         return True
     repair_projection: RepairCategoryProjection | None = None
     if run_store is not None and lease is not None:
         repair_projection = _ensure_repair_category_for_failure(
             plan=plan,
             node=node,
-            result=result,
+            result=public_result,
             attempt=attempt,
             run_store=run_store,
             lease=lease,
@@ -2269,8 +2276,6 @@ def _correction_allows_retry(
             fault_injector=fault_injector,
         )
         if repair_projection.state == "RESOLVED":
-            return True
-        if repair_projection.state == "SAME_NODE_RERUN":
             return True
         if repair_projection.state in {"ESCALATED_HUMAN", "TERMINAL"}:
             return False
@@ -2331,7 +2336,7 @@ def _correction_allows_retry(
         DagCorrectionRequest(
             plan=plan,
             node=node,
-            result=dict(result),
+            result=dict(public_result),
             attempt=attempt,
             run_store=run_store,
             lease=lease,
@@ -2504,6 +2509,8 @@ def _declared_repair_handler_id(result: Mapping[str, Any]) -> str:
     handler_id = result.get("repair_handler_id")
     if isinstance(handler_id, str) and handler_id.strip():
         return handler_id.strip()
+    if result.get("correction_required") is True:
+        return "scheduler.correction_handler"
     return "missing_repair_handler"
 
 
@@ -2843,16 +2850,17 @@ def _recover_incomplete_attempts(
         if stored.state != "OUTPUT_COMMITTED":
             run_store.commit_output(lease, identity.attempt_id)
             _inject_fault(fault_injector, "after_output_committed", identity)
+        completion_result = _result_with_public_extensions(result)
         completion = DagNodeCompletion(
             node_id=node_id,
             attempt=identity.attempt,
-            status=str(result.get("status") or "BLOCKED"),
-            verdict=str(result.get("verdict") or "NODE_BLOCKED"),
+            status=str(completion_result.get("status") or "BLOCKED"),
+            verdict=str(completion_result.get("verdict") or "NODE_BLOCKED"),
             retryable=retryable,
-            raw_result=result,
+            raw_result=completion_result,
             terminal_state=(
                 "success"
-                if result.get("status") == "PASS" and result.get("verdict") == "PASS"
+                if completion_result.get("status") == "PASS" and completion_result.get("verdict") == "PASS"
                 else "failed"
             ),
         )
@@ -3188,14 +3196,26 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
             boundary[key] = normalized.pop(key)
     if boundary:
         diagnostics["scheduler_boundary"] = boundary
-    if "workspace_stale_read_state" in normalized:
-        diagnostics["workspace_stale_read_state"] = normalized.pop("workspace_stale_read_state")
-    if "node_completion_boundary_validation" in normalized:
-        diagnostics["node_completion_boundary_validation"] = normalized.pop(
-            "node_completion_boundary_validation"
-        )
-    if "stale_read_signals" in normalized:
-        diagnostics["stale_read_signals"] = normalized.pop("stale_read_signals")
+    for key in (
+        "workspace_stale_read_state",
+        "workspace_read_set",
+        "workspace_reads",
+        "workspace_read_set_record",
+        "workspace_changes",
+        "changed_files",
+        "workspace_change_signals",
+        "stale_read_reconciliation",
+        "stale_read_reconciliations",
+        "stale_read_reconciliation_records",
+        "stale_read_signals",
+        "node_completion_boundary",
+        "node_completion_boundary_validation",
+        "node_completion_boundary_sha256",
+        "node_completion_boundary_path",
+        "node_completion_boundary_admission",
+    ):
+        if key in normalized:
+            diagnostics[key] = normalized.pop(key)
     if "alerts" in normalized:
         diagnostics["alerts"] = normalized.pop("alerts")
     if "stop_reason" in normalized:
@@ -3267,6 +3287,29 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "policy_exceptions",
         "handoff_summary",
         "provider_invoked",
+        "skill_provider",
+        "skill_capability",
+        "skill_action",
+        "skill_live",
+        "skill_mocked",
+        "skill_receipt_path",
+        "skill_receipt_sha256",
+        "skill_output_dir",
+        "skill_rounds",
+        "skill_questions",
+        "round_number",
+        "round_policy",
+        "clarification_request_path",
+        "clarification_answer_path",
+        "browser_provider",
+        "browser_live",
+        "browser_mocked",
+        "browser_receipt_path",
+        "browser_receipt_sha256",
+        "browser_output_dir",
+        "browser_operation_count",
+        "capability",
+        "budget_blocker",
         "transport_profile",
         "transport_turn_results",
         "policy_hash",
@@ -3288,6 +3331,7 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "knowledge_provenance",
         "knowledge_freshness_receipt",
         "course_correction_artifacts",
+        "worker_reset_receipt",
     ):
         if key in normalized:
             value = normalized.pop(key)
@@ -3327,6 +3371,26 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
         ):
             if key in scheduler_meta and key not in projected:
                 projected[key] = scheduler_meta[key]
+    diagnostics = projected.get("diagnostics")
+    if isinstance(diagnostics, Mapping):
+        for key in (
+            "node_completion_boundary_validation",
+            "workspace_stale_read_state",
+            "stale_read_signals",
+        ):
+            if key in diagnostics and key not in projected:
+                projected[key] = diagnostics[key]
+    runtime_meta = extensions.get("runtime") if isinstance(extensions, Mapping) else None
+    if isinstance(runtime_meta, Mapping):
+        for key in (
+            "dispatch",
+            "knowledge_provenance",
+            "knowledge_freshness_receipt",
+            "course_correction_artifacts",
+            "worker_reset_receipt",
+        ):
+            if key in runtime_meta and key not in projected:
+                projected[key] = runtime_meta[key]
     if not isinstance(generic_receipt, Mapping):
         if isinstance(extensions, Mapping) and "command_results" in extensions:
             projected["command_results"] = extensions["command_results"]
@@ -3349,6 +3413,29 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
         "transport_profile",
         "policy_hash",
         "provider_invoked",
+        "skill_provider",
+        "skill_capability",
+        "skill_action",
+        "skill_live",
+        "skill_mocked",
+        "skill_receipt_path",
+        "skill_receipt_sha256",
+        "skill_output_dir",
+        "skill_rounds",
+        "skill_questions",
+        "round_number",
+        "round_policy",
+        "clarification_request_path",
+        "clarification_answer_path",
+        "browser_provider",
+        "browser_live",
+        "browser_mocked",
+        "browser_receipt_path",
+        "browser_receipt_sha256",
+        "browser_output_dir",
+        "browser_operation_count",
+        "capability",
+        "budget_blocker",
         "transport_turn_results",
         "receipt_path",
         "work_order_path",
@@ -3408,7 +3495,14 @@ def _persist_pre_dispatch_blocked_attempt(
         output_contract_id=node_output_contract_id(node),
     )
     run_store.mark_dispatched(lease, identity.attempt_id)
-    run_store.stage_result(lease, identity.attempt_id, result)
+    result = run_store.stage_result(lease, identity.attempt_id, result)
+    _, validation = _validate_attempt_result(
+        plan_sha256=plan.plan_sha256,
+        identity=identity,
+        node_id=node.node_id,
+        result=result,
+        output_contract_id=node_output_contract_id(node),
+    )
     run_store.validate_result(lease, identity.attempt_id, validation)
     run_store.commit_output(lease, identity.attempt_id)
 
@@ -3466,11 +3560,21 @@ def _triaged_blocked_attempt_result(
             )
         repair_handler_id = _allowlisted_triage_repair_handler_id(triage)
         repair_allowed = repair_handler_id is not None
+        verdict = triage_code
+        errors = [str(triage.get("cause") or signal)]
+        if (
+            not repair_allowed
+            and triage_code.startswith("tau_")
+            and "_unclassified_" in triage_code
+            and original_code == "dag_attempt_result_pass_verdict_mismatch"
+        ):
+            verdict = _blocked_verdict_for_original_code(original_code)
+            errors = [original_code]
         result: dict[str, Any] = {
             "node_id": node_id,
             "status": "BLOCKED",
-            "verdict": triage_code,
-            "errors": [str(triage.get("cause") or signal)],
+            "verdict": verdict,
+            "errors": errors,
             "alert_codes": [triage_code, original_code, boundary.boundary_id],
             "retryable": repair_allowed,
             "correction_required": repair_allowed,

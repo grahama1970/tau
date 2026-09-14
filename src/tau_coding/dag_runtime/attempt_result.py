@@ -187,6 +187,9 @@ def admit_dag_attempt_result(
     if not isinstance(result, Mapping):
         raise DagAttemptResultAdmissionError("dag_attempt_result_not_object", "$")
     raw = dict(result)
+    if raw.get("schema") != DAG_ATTEMPT_RESULT_SCHEMA:
+        raw = _lift_legacy_receipt_fields(raw)
+    raw = _compact_admission_extensions(raw)
     try:
         parsed = DagAttemptResultModel.model_validate(raw)
     except ValidationError as exc:
@@ -260,6 +263,12 @@ def admit_dag_attempt_result(
     }
     if explicit_output_contract or parsed.output_schema_version is not None:
         normalized["output_schema_version"] = output_schema_version
+    for key in ("attempt_count", "scheduler_attempt_id", "scheduler_attempt"):
+        value = getattr(parsed, key)
+        if value is not None:
+            normalized[key] = value
+    if parsed.scheduler_attempts:
+        normalized["scheduler_attempts"] = parsed.scheduler_attempts
     if isinstance(claimed_schema, str) and claimed_schema != DAG_ATTEMPT_RESULT_SCHEMA:
         normalized["source_schema"] = claimed_schema
     try:
@@ -285,6 +294,169 @@ def admit_dag_attempt_result(
             "accepted_output_sha256": accepted_output_hash,
         },
     )
+
+
+def _lift_legacy_receipt_fields(raw: dict[str, Any]) -> dict[str, Any]:
+    allowed = {
+        "schema",
+        "run_id",
+        "plan_sha256",
+        "node_id",
+        "attempt_id",
+        "attempt",
+        "status",
+        "verdict",
+        "retryable",
+        "accepted_output",
+        "accepted_output_sha256",
+        "errors",
+        "alert_codes",
+        "diagnostics",
+        "extensions",
+        "output_contract_id",
+        "output_schema_version",
+        "source_schema",
+        "attempt_count",
+        "scheduler_attempt_id",
+        "scheduler_attempt",
+        "scheduler_attempts",
+    }
+    extras = {key: value for key, value in raw.items() if key not in allowed}
+    if not extras:
+        return raw
+    lifted = {key: value for key, value in raw.items() if key in allowed}
+    extensions = dict(lifted.get("extensions") or {})
+    generic_receipt = dict(extensions.get("generic_receipt") or {})
+    extras = dict(extras)
+    if "command_results" in extras:
+        extras["command_results"] = _compact_legacy_command_results(extras["command_results"])
+    generic_receipt.update(extras)
+    extensions["generic_receipt"] = generic_receipt
+    lifted["extensions"] = extensions
+    return lifted
+
+
+def _compact_admission_extensions(raw: dict[str, Any]) -> dict[str, Any]:
+    extensions = raw.get("extensions")
+    if not isinstance(extensions, Mapping):
+        return raw
+    generic = extensions.get("generic_receipt")
+    if not isinstance(generic, Mapping):
+        return raw
+    updated_extensions = dict(extensions)
+    updated_generic = dict(generic)
+    if "command_results" not in updated_generic and "attempts" not in updated_generic:
+        return raw
+    if "command_results" in updated_generic:
+        updated_generic["command_results"] = _compact_legacy_command_results(
+            updated_generic["command_results"]
+        )
+    if "attempts" in updated_generic:
+        updated_generic["attempts"] = _compact_legacy_attempts(updated_generic["attempts"])
+    updated_extensions["generic_receipt"] = updated_generic
+    projected = {**raw, "extensions": updated_extensions}
+    try:
+        size_probe = (canonical_sha256(projected["extensions"]) + repr(projected["extensions"])).encode(
+            "utf-8"
+        )
+    except RuntimeError:
+        return projected
+    if len(size_probe) <= AUXILIARY_FIELD_MAX_BYTES:
+        return projected
+    if "command_results" in updated_generic:
+        updated_generic["command_results"] = _compact_large_runtime_command_results(
+            updated_generic["command_results"]
+        )
+    updated_extensions["generic_receipt"] = updated_generic
+    return {**raw, "extensions": updated_extensions}
+
+
+def _compact_large_runtime_command_results(value: Any) -> Any:
+    if not isinstance(value, list):
+        return value
+    compacted: list[dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        projected = dict(item)
+        for key in ("runtime_endpoint_lease", "runtime_submit_receipt", "runtime_event"):
+            nested = projected.get(key)
+            if isinstance(nested, Mapping):
+                projected[key] = {
+                    "sha256": canonical_sha256(nested),
+                    "bytes": len(repr(nested).encode("utf-8")),
+                }
+        artifacts = projected.get("runtime_artifacts")
+        if isinstance(artifacts, list):
+            projected["runtime_artifact_count"] = len(artifacts)
+            projected.pop("runtime_artifacts", None)
+        compacted.append(projected)
+    return compacted
+
+
+def _compact_legacy_attempts(value: Any) -> Any:
+    if not isinstance(value, list):
+        return value
+    compacted: list[dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        projected: dict[str, Any] = {}
+        for key in (
+            "attempt",
+            "candidate_manifest_path",
+            "candidate_manifest_sha256",
+            "validation_receipt_path",
+            "review_feedback_path",
+            "review_feedback_sha256",
+            "review_verdict",
+            "review_live",
+            "review_provider_live",
+            "review_provider",
+            "review_model",
+            "producer_live",
+            "producer_provider_live",
+            "producer_provider",
+            "producer_model",
+            "course_correction_receipt_path",
+            "course_correction_trigger",
+        ):
+            if key in item:
+                projected[key] = item[key]
+        for key in ("producer_execution_evidence", "review_execution_evidence"):
+            evidence = item.get(key)
+            if isinstance(evidence, Mapping):
+                projected[key] = {
+                    subkey: evidence[subkey]
+                    for subkey in ("kind", "command_result_sha256")
+                    if subkey in evidence
+                }
+        compacted.append(projected)
+    return compacted
+
+
+def _compact_legacy_command_results(value: Any) -> Any:
+    if not isinstance(value, list):
+        return value
+    compacted: list[dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        projected: dict[str, Any] = dict(item)
+        if "command" in projected:
+            projected["command"] = "[REDACTED]"
+        redacted = False
+        for stream in ("stdout", "stderr"):
+            text = projected.pop(stream, None)
+            if isinstance(text, str):
+                redacted = True
+                encoded = text.encode("utf-8", errors="replace")
+                projected.setdefault(f"{stream}_bytes", len(encoded))
+                projected.setdefault(f"{stream}_sha256", canonical_sha256(text))
+        if redacted:
+            projected["redaction_marker"] = "[REDACTED]"
+        compacted.append(projected)
+    return compacted
 
 
 def normalize_output_contract_id(output_contract_id: str) -> tuple[str, str]:

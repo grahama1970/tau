@@ -637,6 +637,7 @@ def _compete(params: Mapping[str, Any]) -> TemplateExpansion:
         "reviews_node": str(competitors[0]["id"]),
         "requires_goal_hash": True,
     }
+    _require_evidence(judge, "reviewer_verdict")
     nodes = [*competitors, judge]
     edges = [{"from": str(competitor["id"]), "to": str(judge["id"])} for competitor in competitors]
     edges.append({"from": str(judge["id"]), "to": "human"})
@@ -651,6 +652,7 @@ def _plan_execute_verify(params: Mapping[str, Any]) -> TemplateExpansion:
         "reviews_node": executor["id"],
         "requires_goal_hash": True,
     }
+    _require_evidence(verifier, "reviewer_verdict")
     nodes = [
         _with_command_spec(planner, params),
         _with_command_spec(executor, params),
@@ -677,6 +679,7 @@ def _claim_chain_verification(params: Mapping[str, Any]) -> TemplateExpansion:
         "reviews_node": str(claim_steps[-1]["id"]),
         "requires_goal_hash": True,
     }
+    _require_evidence(verifier, "reviewer_verdict")
     nodes = [*claim_steps, verifier]
     edges = [
         {"from": str(claim_steps[index]["id"]), "to": str(claim_steps[index + 1]["id"])}
@@ -752,6 +755,12 @@ def _node_from_value(value: object, *, default_evidence: str) -> dict[str, Any]:
         "max_attempts": max_attempts,
         "required_evidence": evidence,
     }
+
+
+def _require_evidence(node: dict[str, Any], evidence: str) -> None:
+    required = node.setdefault("required_evidence", [])
+    if evidence not in required:
+        required.append(evidence)
 
 
 def _with_command_spec(node: dict[str, Any], params: Mapping[str, Any]) -> dict[str, Any]:
