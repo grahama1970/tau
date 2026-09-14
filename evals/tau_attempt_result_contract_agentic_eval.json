@@ -12,6 +12,7 @@
       "id": "tau.dag_attempt_result.strict_output_contract",
       "description": "Tau DAG producer results cannot smuggle arbitrary top-level fields or undeclared accepted_output shapes across the scheduler boundary.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {"live_e2e": true}
     }
   ],

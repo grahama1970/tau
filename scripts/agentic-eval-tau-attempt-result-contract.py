@@ -81,7 +81,10 @@ def _scheduler_blocks_invalid_successor(tmp_path: Path) -> dict[str, Any]:
                 "role": "producer",
                 "command": ["python", "-c", "print('producer')"],
                 "receipt_path": str(tmp_path / "producer.json"),
-                "extensions": {"output_contract_id": OUTPUT_CONTRACT_SOURCE_NODE},
+                "extensions": {
+                    "output_contract_id": OUTPUT_CONTRACT_SOURCE_NODE,
+                    "output_schema_version": "v1",
+                },
             },
             {
                 "node_id": "consumer",
