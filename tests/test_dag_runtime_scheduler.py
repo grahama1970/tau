@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import ast
+import inspect
+import json
 import threading
 import time
 from dataclasses import replace
@@ -8,9 +11,11 @@ from typing import Any
 
 import pytest
 
+from tau_coding.dag_runtime import boundary_registry, scheduler
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal, FrozenJson, canonical_sha256
 from tau_coding.dag_runtime.node_input_manifest import DagNodeDispatchAdmissionError
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_runtime.transition import (
     AllSuccessTransitionPolicy,
@@ -19,6 +24,138 @@ from tau_coding.dag_runtime.transition import (
     DagRunBlock,
     DagTransitionBatch,
 )
+
+
+def test_scheduler_boundary_registry_is_architecturally_enforced() -> None:
+    registry_ids = {item.boundary_id for item in boundary_registry._BOUNDARIES}
+    for code, boundary_id in boundary_registry._ORIGINAL_CODE_BOUNDARIES.items():
+        assert boundary_registry.boundary_for_original_code(code).boundary_id == boundary_id
+        assert boundary_id in registry_ids
+
+    source = inspect.getsource(scheduler)
+    tree = ast.parse(source)
+    raw_attempt_blocks: list[tuple[str, int]] = []
+    raw_blocked_assignments: list[tuple[str, int]] = []
+    allowed_functions = {
+        "_triaged_blocked_attempt_result",
+        "_blocked_plan_validation_result",
+        "fallback_boundary_failure",
+        "_workspace_stale_read_blocked_result",
+        "_boundary_blocked_result",
+    }
+    parents: dict[ast.AST, ast.AST] = {}
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            parents[child] = parent
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        pairs = {
+            key.value: value
+            for key, value in zip(node.keys, node.values, strict=False)
+            if isinstance(key, ast.Constant) and isinstance(key.value, str)
+        }
+        status = pairs.get("status")
+        if not (
+            isinstance(status, ast.Constant)
+            and status.value == "BLOCKED"
+            and "node_id" in pairs
+        ):
+            continue
+        parent = node
+        function_name = "<module>"
+        while parent in parents:
+            parent = parents[parent]
+            if isinstance(parent, ast.FunctionDef):
+                function_name = parent.name
+                break
+        if function_name not in allowed_functions:
+            raw_attempt_blocks.append((function_name, node.lineno))
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        value = node.value
+        if not (isinstance(value, ast.Constant) and value.value == "BLOCKED"):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Subscript):
+                continue
+            key = target.slice
+            if not (isinstance(key, ast.Constant) and key.value == "status"):
+                continue
+            parent = node
+            function_name = "<module>"
+            while parent in parents:
+                parent = parents[parent]
+                if isinstance(parent, ast.FunctionDef):
+                    function_name = parent.name
+                    break
+            if function_name not in allowed_functions:
+                raw_blocked_assignments.append((function_name, node.lineno))
+    assert raw_attempt_blocks == []
+    assert raw_blocked_assignments == []
+
+
+def test_scheduler_restores_finished_blocked_boundary_metadata_without_redispatch(
+    tmp_path: Path,
+) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "producer")]),
+        source_path=tmp_path / "dag.json",
+    )
+    store = SqliteDagRunStore(tmp_path / "dag.sqlite3")
+
+    def malformed(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "FAIL",
+            "accepted_output": {"source_node_id": node.node_id},
+        }
+
+    first = run_dag_plan(
+        plan,
+        execute_node=malformed,
+        run_store=store,
+        run_id="restore-blocked",
+        allow_lease_takeover=True,
+    )
+    first_boundary = first.node_results[0]["diagnostics"]["scheduler_boundary"]
+
+    redispatched: list[str] = []
+
+    def forbidden(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        redispatched.append(node.node_id)
+        raise AssertionError("finished blocked run redispatched")
+
+    replayed = run_dag_plan(
+        plan,
+        execute_node=forbidden,
+        run_store=store,
+        run_id="restore-blocked",
+        allow_lease_takeover=True,
+    )
+    replayed_boundary = replayed.node_results[0]["diagnostics"]["scheduler_boundary"]
+
+    assert redispatched == []
+    assert replayed.status == "BLOCKED"
+    assert replayed.node_results[0]["node_id"] == "producer"
+    assert replayed_boundary["boundary_id"] == first_boundary["boundary_id"]
+    assert replayed_boundary["repair_category"] == first_boundary["repair_category"]
+    assert (
+        replayed_boundary["failure"]["failure_family"]
+        == first_boundary["failure"]["failure_family"]
+    )
 
 
 def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) -> None:
@@ -218,8 +355,8 @@ def test_scheduler_rejects_invalid_dispatch_before_adapter_execution(
     assert result.status == "BLOCKED"
     assert result.node_results[0]["status"] == "BLOCKED"
     assert "dag_node_dispatch_goal_hash_mismatch" in result.node_results[0]["alert_codes"]
-    assert result.node_results[0]["diagnostics"]["scheduler_boundary"]["failure"]["original_code"] == "dag_node_dispatch_goal_hash_mismatch"
-
+    failure = result.node_results[0]["diagnostics"]["scheduler_boundary"]["failure"]
+    assert failure["original_code"] == "dag_node_dispatch_goal_hash_mismatch"
 
 
 def test_scheduler_blocks_downstream_after_malformed_attempt_result(
@@ -503,6 +640,52 @@ def test_scheduler_does_not_duplicate_command_history_across_retries(tmp_path: P
         {"attempt": 2},
         {"attempt": 3},
     ]
+
+
+def test_scheduler_compacts_large_dispatch_before_attempt_result_admission(
+    tmp_path: Path,
+) -> None:
+    payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    large_dispatch = {
+        "schema": "tau.agent_handoff_command_dispatch_receipt.v1",
+        "status": "COMPLETED",
+        "ok": True,
+        "command_results": [
+            {
+                "command": ["python", "worker.py", "x" * 20_000],
+                "returncode": 0,
+                "stdout": "x" * 40_000,
+                "stderr": "",
+                "runtime_capture": {"stdout": "y" * 40_000},
+            }
+            for _ in range(20)
+        ],
+        "artifacts": [str(tmp_path / f"artifact-{index}.txt") for index in range(200)],
+    }
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        del accepted_inputs, execution
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": node.node_id},
+            "dispatch": large_dispatch,
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "PASS"
+    runtime = result.node_results[0]["extensions"]["runtime"]
+    dispatch = runtime["dispatch"]
+    assert dispatch["full_dispatch_bytes"] > 80_000
+    assert dispatch["full_dispatch_sha256"] == canonical_sha256(large_dispatch)
+    assert "stdout" not in dispatch["command_results"][0]
+    assert dispatch["command_results"][0]["command"]["truncated"] is True
+    assert dispatch["command_results"][-1]["omitted_count"] == 12
+    assert dispatch["artifacts"]["truncated"] is True
+    assert len(json.dumps(result.node_results[0]["extensions"]).encode("utf-8")) < 16_384
 
 
 def test_dag_plan_scheduler_respects_non_retryable_adapter_result(tmp_path: Path) -> None:

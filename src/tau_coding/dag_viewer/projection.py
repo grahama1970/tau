@@ -48,6 +48,17 @@ OPTIONAL_INSPECTOR_SCHEMAS = {
 }
 
 
+def _scheduler_boundary_field(result_payload: dict[str, Any], key: str) -> str | None:
+    diagnostics = result_payload.get("diagnostics")
+    if not isinstance(diagnostics, dict):
+        return None
+    boundary = diagnostics.get("scheduler_boundary")
+    if not isinstance(boundary, dict):
+        return None
+    value = boundary.get(key)
+    return value if isinstance(value, str) else None
+
+
 def load_dag_replay(
     *, run_dir: Path, run_id: str | None = None, at_sequence: int | None = None
 ) -> tuple[DagReplayState, tuple[dict[str, Any], ...]]:
@@ -243,6 +254,16 @@ def build_dag_view_state(
                         result_payload.get("budget_blocker")
                         if isinstance(result_payload.get("budget_blocker"), dict)
                         else None
+                    ),
+                    "boundary_id": (
+                        result_payload.get("boundary_id")
+                        if isinstance(result_payload.get("boundary_id"), str)
+                        else _scheduler_boundary_field(result_payload, "boundary_id")
+                    ),
+                    "repair_category": (
+                        result_payload.get("repair_category")
+                        if isinstance(result_payload.get("repair_category"), str)
+                        else _scheduler_boundary_field(result_payload, "repair_category")
                     ),
                 },
                 "transaction": _transaction_projection(

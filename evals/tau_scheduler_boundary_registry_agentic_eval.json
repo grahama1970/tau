@@ -12,6 +12,7 @@
       "id": "tau.scheduler.boundary_failure_containment",
       "description": "Scheduler boundary failures are classified and recursive failure classification cannot escape as an untyped exception.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {"live_e2e": true}
     }
   ],
@@ -32,6 +33,13 @@
         "exit_code": 0,
         "stdout_contains": [
           "\"status\": \"PASS\"",
+          "\"matrix_covers_expected_boundaries\": true",
+          "\"all_expected_boundaries_matched\": true",
+          "\"no_downstream_calls_after_boundary_block\": true",
+          "\"all_failure_objects_admitted\": true",
+          "\"restart_replay_stable_boundary_category\": true",
+          "\"non_durable_replay_cases_are_explicit\": true",
+          "\"retry_policy_matches_registry\": true",
           "\"recursive_failure_contained\": true",
           "\"registry_has_at_least_10_boundaries\": true"
         ],
@@ -41,6 +49,13 @@
           {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/live", "equals": true},
           {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/installed_cli_registry_schema", "equals": true},
           {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/registry_has_at_least_10_boundaries", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/matrix_covers_expected_boundaries", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/all_expected_boundaries_matched", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/no_downstream_calls_after_boundary_block", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/all_failure_objects_admitted", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/restart_replay_stable_boundary_category", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/non_durable_replay_cases_are_explicit", "equals": true},
+          {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/retry_policy_matches_registry", "equals": true},
           {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/recursive_failure_contained", "equals": true},
           {"path": "../local/agentic-evals/tau-scheduler-boundary-registry/proof.json", "json_pointer": "/checks/recursive_failure_has_tau_code", "equals": true}
         ]

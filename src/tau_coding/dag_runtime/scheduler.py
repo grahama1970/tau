@@ -141,6 +141,27 @@ NodeExecutor = Callable[
 EventSink = Callable[[dict[str, Any]], None]
 
 
+_OPERATIONAL_SCHEDULER_RUN_LEASE_CODES = frozenset(
+    {
+        "lease_acquire_failed",
+        "lease_renew_failed",
+    }
+)
+_OPERATIONAL_RESULT_STORE_COMMIT_CODES = frozenset(
+    {
+        "result_store_commit_failed",
+    }
+)
+
+
+def _is_operational_scheduler_run_lease_error(exc: DagRunStoreError) -> bool:
+    return exc.code in _OPERATIONAL_SCHEDULER_RUN_LEASE_CODES
+
+
+def _is_operational_result_store_commit_error(exc: DagRunStoreError) -> bool:
+    return exc.code in _OPERATIONAL_RESULT_STORE_COMMIT_CODES
+
+
 @dataclass(frozen=True, slots=True)
 class DagCorrectionRequest:
     plan: DagPlan
@@ -222,13 +243,38 @@ def run_dag_plan(
     next_lease_renewal = time.monotonic() + lease_renewal_interval
     if run_store is not None:
         persisted_outcome = run_store.run_outcome(effective_run_id)
-        lease = run_store.acquire_run(
-            plan=plan,
-            run_id=effective_run_id,
-            owner_id=lease_owner or f"tau-scheduler-{uuid.uuid4().hex}",
-            ttl_seconds=lease_ttl_seconds,
-            allow_takeover=allow_lease_takeover,
-        )
+        try:
+            lease = run_store.acquire_run(
+                plan=plan,
+                run_id=effective_run_id,
+                owner_id=lease_owner or f"tau-scheduler-{uuid.uuid4().hex}",
+                ttl_seconds=lease_ttl_seconds,
+                allow_takeover=allow_lease_takeover,
+            )
+        except DagRunStoreError as exc:
+            if not _is_operational_scheduler_run_lease_error(exc):
+                raise
+            blocked = _triaged_blocked_attempt_result(
+                node_id="__scheduler_run_lease__",
+                signal=f"scheduler_run_lease_failure:{exc}",
+                original_code="SCHEDULER_RUN_LEASE_FAILED",
+                original_exception=exc,
+            )
+            return DagSchedulerResult(
+                status="BLOCKED",
+                verdict=str(blocked.get("verdict") or "SCHEDULER_RUN_LEASE_FAILED"),
+                node_results=(_result_with_public_extensions(blocked),),
+                completed_node_ids=(),
+                max_observed_concurrency=0,
+                edge_states=(),
+                terminal_states=(),
+                node_states=tuple(sorted((node.node_id, "pending") for node in plan.nodes)),
+                transition_receipt_paths=(),
+                durable=True,
+                run_id=effective_run_id,
+                lease_epoch=None,
+                replayed_event_count=0,
+            )
         if on_lease_acquired is not None:
             try:
                 on_lease_acquired(lease)
@@ -355,29 +401,42 @@ def run_dag_plan(
             attempt_counts[stored.identity.node_id] = max(
                 attempt_counts.get(stored.identity.node_id, 0), observed_attempt
             )
-        recovery_block = _recover_incomplete_attempts(
-            plan=plan,
-            policy=policy,
-            run_store=run_store,
-            lease=lease,
-            nodes=nodes,
-            node_states=node_states,
-            edge_states=edge_states,
-            terminal_states=terminal_states,
-            deadlines=deadlines,
-            completed=completed,
-            resolved=resolved,
-            results=results,
-            result_order=result_order,
-            scheduled=scheduled,
-            cancel_events=cancel_events,
-            attempt_counts=attempt_counts,
-            attempt_history=attempt_history,
-            transition_receipt_paths=transition_receipt_paths,
-            event_sink=event_sink,
-            fault_injector=fault_injector,
-            correction_handler=correction_handler,
-        )
+        try:
+            _inject_fault(
+                fault_injector,
+                "before_checkpoint_replay_recovery",
+                {"run_id": effective_run_id},
+            )
+            recovery_block = _recover_incomplete_attempts(
+                plan=plan,
+                policy=policy,
+                run_store=run_store,
+                lease=lease,
+                nodes=nodes,
+                node_states=node_states,
+                edge_states=edge_states,
+                terminal_states=terminal_states,
+                deadlines=deadlines,
+                completed=completed,
+                resolved=resolved,
+                results=results,
+                result_order=result_order,
+                scheduled=scheduled,
+                cancel_events=cancel_events,
+                attempt_counts=attempt_counts,
+                attempt_history=attempt_history,
+                transition_receipt_paths=transition_receipt_paths,
+                event_sink=event_sink,
+                fault_injector=fault_injector,
+                correction_handler=correction_handler,
+            )
+        except Exception as exc:
+            recovery_block = _triaged_blocked_attempt_result(
+                node_id="__checkpoint_replay_recovery__",
+                signal=f"checkpoint_replay_recovery_failure:{exc}",
+                original_code="CHECKPOINT_REPLAY_RECOVERY_FAILED",
+                original_exception=exc,
+            )
         open_repair_block = None
         if correction_handler is None:
             open_repair_block = _open_repair_category_block(
@@ -402,7 +461,18 @@ def run_dag_plan(
                     and lease is not None
                     and time.monotonic() >= next_lease_renewal
                 ):
-                    lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    try:
+                        lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    except DagRunStoreError as exc:
+                        if not _is_operational_scheduler_run_lease_error(exc):
+                            raise
+                        blocked_result = _triaged_blocked_attempt_result(
+                            node_id="__scheduler_run_lease__",
+                            signal=f"scheduler_run_lease_renewal_failure:{exc}",
+                            original_code="SCHEDULER_RUN_LEASE_FAILED",
+                            original_exception=exc,
+                        )
+                        break
                     next_lease_renewal = time.monotonic() + lease_renewal_interval
                 if run_store is not None and lease is not None:
                     lease, paused_by_operator, operator_cancel_requested = (
@@ -534,8 +604,14 @@ def run_dag_plan(
                         break
                     attempt_counts[node_id] += 1
                     attempt = attempt_counts[node_id]
-                    start_transition = policy.before_node_start(
-                        _transition_view(
+                    try:
+                        _inject_fault(
+                            fault_injector,
+                            "before_route_join_transition",
+                            {"run_id": effective_run_id, "node_id": node_id},
+                        )
+                        start_transition = policy.before_node_start(
+                            _transition_view(
                             plan=plan,
                             node_states=node_states,
                             edge_states=edge_states,
@@ -544,8 +620,16 @@ def run_dag_plan(
                             deadlines=deadlines,
                         ),
                         node_id,
-                        attempt,
-                    )
+                            attempt,
+                        )
+                    except RuntimeError as exc:
+                        blocked_result = _triaged_blocked_attempt_result(
+                            node_id=node_id,
+                            signal=f"route_join_transition_failure:{exc}",
+                            original_code="ROUTE_JOIN_TRANSITION_FAILED",
+                            original_exception=exc,
+                        )
+                        break
                     _persist_control_transition(
                         plan=plan,
                         run_store=run_store,
@@ -694,6 +778,7 @@ def run_dag_plan(
                                 },
                             )
                             continue
+                        worker_tokens: tuple[ResourceLeaseToken, ...] = ()
                         try:
                             (
                                 worker_tokens,
@@ -724,6 +809,18 @@ def run_dag_plan(
                             )
                             resource_tokens = (*worker_tokens, *resource_tokens)
                         except (ResourceLeaseDenied, WorkerAssignmentError) as exc:
+                            if (
+                                resource_lease_manager is not None
+                                and worker_tokens
+                                and isinstance(exc, ResourceLeaseDenied)
+                            ):
+                                with suppress(Exception):
+                                    resource_lease_manager.release(
+                                        worker_tokens,
+                                        run_store=run_store,
+                                        scheduler_lease=lease,
+                                        reason="resource_lease_acquire_failed",
+                                    )
                             original_code = (
                                 "RESOURCE_LEASE_DENIED"
                                 if isinstance(exc, ResourceLeaseDenied)
@@ -740,6 +837,16 @@ def run_dag_plan(
                                 if isinstance(exc, WorkerAssignmentError)
                                 else original_code
                             )
+                            _persist_pre_dispatch_blocked_attempt(
+                                plan=plan,
+                                node=nodes[node_id],
+                                identity=identity,
+                                result=blocked_result,
+                                run_store=run_store,
+                                lease=lease,
+                            )
+                            results[node_id] = blocked_result
+                            result_order.append(node_id)
                             node_states[node_id] = "blocked"
                             resolved.add(node_id)
                             break
@@ -1155,7 +1262,18 @@ def run_dag_plan(
                         or _lease_close_to_expiry(lease, lease_ttl_seconds)
                     )
                 ):
-                    lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    try:
+                        lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    except DagRunStoreError as exc:
+                        if not _is_operational_scheduler_run_lease_error(exc):
+                            raise
+                        blocked_result = _triaged_blocked_attempt_result(
+                            node_id="__scheduler_run_lease__",
+                            signal=f"scheduler_run_lease_renewal_failure:{exc}",
+                            original_code="SCHEDULER_RUN_LEASE_FAILED",
+                            original_exception=exc,
+                        )
+                        break
                     next_lease_renewal = time.monotonic() + lease_renewal_interval
                 completed_batch: list[tuple[str, DagAttemptIdentity, dict[str, Any]]] = []
                 for future in done:
@@ -1196,11 +1314,19 @@ def run_dag_plan(
                                 original_exception=exc,
                             )
                     if resource_lease_manager is not None and resource_tokens:
-                        resource_lease_manager.release(
-                            resource_tokens,
-                            run_store=run_store,
-                            scheduler_lease=lease,
-                        )
+                        try:
+                            resource_lease_manager.release(
+                                resource_tokens,
+                                run_store=run_store,
+                                scheduler_lease=lease,
+                            )
+                        except (ResourceLeaseDenied, RuntimeError) as exc:
+                            result = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"resource_lease_release_failure:{exc}",
+                                original_code="RESOURCE_LEASE_RELEASE_FAILED",
+                                original_exception=exc,
+                            )
                     completed_batch.append((node_id, identity, result))
 
                 batch_blocked = False
@@ -1274,17 +1400,38 @@ def run_dag_plan(
                             output_contract_id=output_contract_id,
                         )
                     if run_store is not None and lease is not None:
-                        result = run_store.stage_result(lease, identity.attempt_id, result)
-                        _, validation = _validate_attempt_result(
-                            plan_sha256=plan.plan_sha256,
-                            identity=identity,
-                            node_id=node_id,
-                            result=result,
-                            output_contract_id=output_contract_id,
-                        )
-                        _inject_fault(fault_injector, "after_result_staged", identity)
-                        run_store.validate_result(lease, identity.attempt_id, validation)
-                        _inject_fault(fault_injector, "after_result_validated", identity)
+                        try:
+                            _inject_fault(fault_injector, "before_result_staged", identity)
+                            result = run_store.stage_result(lease, identity.attempt_id, result)
+                            _, validation = _validate_attempt_result(
+                                plan_sha256=plan.plan_sha256,
+                                identity=identity,
+                                node_id=node_id,
+                                result=result,
+                                output_contract_id=output_contract_id,
+                            )
+                            _inject_fault(fault_injector, "after_result_staged", identity)
+                            run_store.validate_result(lease, identity.attempt_id, validation)
+                            _inject_fault(fault_injector, "after_result_validated", identity)
+                        except DagRunStoreError as exc:
+                            if not _is_operational_result_store_commit_error(exc):
+                                raise
+                            result = _triaged_blocked_attempt_result(
+                                node_id=node_id,
+                                signal=f"result_store_commit_failure:{exc}",
+                                original_code="RESULT_STORE_COMMIT_FAILED",
+                                original_exception=exc,
+                            )
+                            result, validation = _validate_attempt_result(
+                                plan_sha256=plan.plan_sha256,
+                                identity=identity,
+                                node_id=node_id,
+                                result=result,
+                                output_contract_id=output_contract_id,
+                            )
+                            result = run_store.stage_result(lease, identity.attempt_id, result)
+                            run_store.validate_result(lease, identity.attempt_id, validation)
+                            raw_attempt_result = result
                     result = _with_attempt_history(
                         result,
                         attempt=attempt,
@@ -1407,8 +1554,14 @@ def run_dag_plan(
                             else "failed"
                         ),
                     )
-                    transition = policy.after_node_terminal(
-                        _transition_view(
+                    try:
+                        _inject_fault(
+                            fault_injector,
+                            "before_after_node_terminal_transition",
+                            {"run_id": effective_run_id, "node_id": node_id},
+                        )
+                        transition = policy.after_node_terminal(
+                            _transition_view(
                             plan=plan,
                             node_states=node_states,
                             edge_states=edge_states,
@@ -1416,8 +1569,19 @@ def run_dag_plan(
                             running_node_ids=set(futures.values()),
                             deadlines=deadlines,
                         ),
-                        completion,
-                    )
+                            completion,
+                        )
+                    except RuntimeError as exc:
+                        blocked_result = _triaged_blocked_attempt_result(
+                            node_id=node_id,
+                            signal=f"route_join_transition_failure:{exc}",
+                            original_code="ROUTE_JOIN_TRANSITION_FAILED",
+                            original_exception=exc,
+                        )
+                        node_states[node_id] = "blocked"
+                        resolved.add(node_id)
+                        batch_blocked = True
+                        continue
                     if scheduler_cancelled and transition.block_run is not None:
                         transition = replace(transition, block_run=None)
                     if run_store is not None and lease is not None:
@@ -1488,56 +1652,72 @@ def run_dag_plan(
                         event_sink,
                         {"event": "node_completed", "node_id": node_id, "attempt": attempt},
                     )
-                completion_transition = policy.after_completion_batch(
-                    _transition_view(
+                try:
+                    _inject_fault(
+                        fault_injector,
+                        "before_completion_batch_transition",
+                        {"run_id": effective_run_id},
+                    )
+                    completion_transition = policy.after_completion_batch(
+                        _transition_view(
+                            plan=plan,
+                            node_states=node_states,
+                            edge_states=edge_states,
+                            terminal_states=terminal_states,
+                            running_node_ids=set(futures.values()),
+                            deadlines=deadlines,
+                        )
+                    )
+                except RuntimeError as exc:
+                    blocked_result = _triaged_blocked_attempt_result(
+                        node_id="__route_join_transition__",
+                        signal=f"route_join_transition_failure:{exc}",
+                        original_code="ROUTE_JOIN_TRANSITION_FAILED",
+                        original_exception=exc,
+                    )
+                    batch_blocked = True
+                    completion_transition = None
+                if completion_transition is not None:
+                    _persist_control_transition(
                         plan=plan,
-                        node_states=node_states,
-                        edge_states=edge_states,
-                        terminal_states=terminal_states,
-                        running_node_ids=set(futures.values()),
+                        run_store=run_store,
+                        lease=lease,
+                        event_key="completion-batch",
+                        batch=completion_transition,
                         deadlines=deadlines,
                     )
-                )
-                _persist_control_transition(
-                    plan=plan,
-                    run_store=run_store,
-                    lease=lease,
-                    event_key="completion-batch",
-                    batch=completion_transition,
-                    deadlines=deadlines,
-                )
-                _apply_transition_batch(
-                    plan=plan,
-                    batch=completion_transition,
-                    edge_states=edge_states,
-                    terminal_states=terminal_states,
-                    deadlines=deadlines,
-                )
-                _apply_node_effects(
-                    batch=completion_transition,
-                    nodes=nodes,
-                    node_states=node_states,
-                    resolved=resolved,
-                    completed=completed,
-                    results=results,
-                    result_order=result_order,
-                    scheduled=scheduled,
-                    cancel_events=cancel_events,
-                    futures=futures,
-                    event_sink=event_sink,
-                )
-                transition_receipt_paths.extend(completion_transition.receipt_paths)
-                for transition_event in completion_transition.events:
-                    _emit(event_sink, dict(transition_event))
-                if completion_transition.block_run is not None:
-                    if blocked_result is None:
-                        blocked_result = {
-                            "status": "BLOCKED",
-                            "verdict": completion_transition.block_run.failure_code,
-                            "errors": [completion_transition.block_run.message],
-                            "transition_evidence": completion_transition.block_run.evidence,
-                        }
-                    batch_blocked = True
+                    _apply_transition_batch(
+                        plan=plan,
+                        batch=completion_transition,
+                        edge_states=edge_states,
+                        terminal_states=terminal_states,
+                        deadlines=deadlines,
+                    )
+                    _apply_node_effects(
+                        batch=completion_transition,
+                        nodes=nodes,
+                        node_states=node_states,
+                        resolved=resolved,
+                        completed=completed,
+                        results=results,
+                        result_order=result_order,
+                        scheduled=scheduled,
+                        cancel_events=cancel_events,
+                        futures=futures,
+                        event_sink=event_sink,
+                    )
+                    transition_receipt_paths.extend(completion_transition.receipt_paths)
+                    for transition_event in completion_transition.events:
+                        _emit(event_sink, dict(transition_event))
+                    if completion_transition.block_run is not None:
+                        if blocked_result is None:
+                            blocked_result = {
+                                "status": "BLOCKED",
+                                "verdict": completion_transition.block_run.failure_code,
+                                "errors": [completion_transition.block_run.message],
+                                "transition_evidence": completion_transition.block_run.evidence,
+                            }
+                        batch_blocked = True
                 if batch_blocked:
                     lease = _cancel_and_collect_futures(
                         plan=plan,
@@ -1568,16 +1748,33 @@ def run_dag_plan(
     ordered_results = tuple(
         _result_with_public_extensions(results[node_id]) for node_id in result_order
     )
+    if blocked_result is not None and not any(
+        item.get("node_id") == blocked_result.get("node_id") for item in ordered_results
+    ):
+        ordered_results = (*ordered_results, _result_with_public_extensions(blocked_result))
     if (
         blocked_result is None
         and persisted_outcome is not None
         and persisted_outcome[0] == "BLOCKED"
     ):
-        blocked_result = {
-            "status": "BLOCKED",
-            "verdict": persisted_outcome[1] or "NODE_BLOCKED",
-            "errors": ["blocked verdict restored from durable run state"],
-        }
+        blocked_result = next(
+            (
+                dict(item)
+                for item in reversed(ordered_results)
+                if item.get("status") == "BLOCKED" or item.get("verdict") != "PASS"
+            ),
+            None,
+        )
+    if (
+        blocked_result is None
+        and persisted_outcome is not None
+        and persisted_outcome[0] == "BLOCKED"
+    ):
+        blocked_result = _triaged_blocked_attempt_result(
+            node_id="__durable_run_block__",
+            signal="blocked verdict restored from durable run state",
+            original_code="CHECKPOINT_REPLAY_RECOVERY_FAILED",
+        )
     if blocked_result is not None:
         verdict = str(blocked_result.get("verdict") or "NODE_BLOCKED")
         status = "CANCELLED" if blocked_result.get("status") == "CANCELLED" else "BLOCKED"
@@ -1615,7 +1812,26 @@ def run_dag_plan(
             "after_run_finished",
             {"run_id": effective_run_id, "status": status, "verdict": verdict},
         )
-        run_store.release_lease(lease)
+        try:
+            _inject_fault(
+                fault_injector,
+                "before_cleanup_retention",
+                {"run_id": effective_run_id, "status": status, "verdict": verdict},
+            )
+            run_store.release_lease(lease)
+        except (DagRunStoreError, RuntimeError) as exc:
+            cleanup_result = _triaged_blocked_attempt_result(
+                node_id="__cleanup_retention__",
+                signal=f"cleanup_retention_failure:{exc}",
+                original_code="CLEANUP_RETENTION_FAILED",
+                original_exception=exc,
+            )
+            scheduler_result = replace(
+                scheduler_result,
+                status="BLOCKED",
+                verdict=str(cleanup_result.get("verdict") or "CLEANUP_RETENTION_FAILED"),
+                node_results=(*scheduler_result.node_results, cleanup_result),
+            )
     return scheduler_result
 
 
@@ -2974,6 +3190,10 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         diagnostics["scheduler_boundary"] = boundary
     if "workspace_stale_read_state" in normalized:
         diagnostics["workspace_stale_read_state"] = normalized.pop("workspace_stale_read_state")
+    if "node_completion_boundary_validation" in normalized:
+        diagnostics["node_completion_boundary_validation"] = normalized.pop(
+            "node_completion_boundary_validation"
+        )
     if "stale_read_signals" in normalized:
         diagnostics["stale_read_signals"] = normalized.pop("stale_read_signals")
     if "alerts" in normalized:
@@ -3169,6 +3389,28 @@ def _result_with_public_extensions(result: Mapping[str, Any]) -> dict[str, Any]:
         if command_results is not None:
             projected["command_results"] = command_results
     return projected
+
+
+def _persist_pre_dispatch_blocked_attempt(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    identity: DagAttemptIdentity,
+    result: Mapping[str, Any],
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+) -> None:
+    result, validation = _validate_attempt_result(
+        plan_sha256=plan.plan_sha256,
+        identity=identity,
+        node_id=node.node_id,
+        result=result,
+        output_contract_id=node_output_contract_id(node),
+    )
+    run_store.mark_dispatched(lease, identity.attempt_id)
+    run_store.stage_result(lease, identity.attempt_id, result)
+    run_store.validate_result(lease, identity.attempt_id, validation)
+    run_store.commit_output(lease, identity.attempt_id)
 
 
 def _validate_attempt_result(
@@ -3418,7 +3660,15 @@ def _workspace_stale_read_blocked_result(
         *errors,
     ]
     updated["stale_read_signals"] = [dict(item) for item in signals]
-    return updated
+    updated["failure"] = {
+        "schema": "tau.internal_failure.v1",
+        "original_code": verdict,
+        "classification_code": verdict.lower(),
+    }
+    return attach_boundary_failure(
+        updated,
+        boundary_id=boundary_for_original_code(verdict).boundary_id,
+    )
 
 
 def _enforce_node_completion_boundary(
@@ -3506,7 +3756,12 @@ def _boundary_blocked_result(
     updated["accepted_output"] = None
     updated["errors"] = list(dict.fromkeys(combined_errors))
     updated["alert_codes"] = list(dict.fromkeys(combined_alerts))
-    return updated
+    updated["failure"] = {
+        "schema": "tau.internal_failure.v1",
+        "original_code": "NODE_COMPLETION_BOUNDARY_FAILED",
+        "classification_code": "node_completion_boundary_failed",
+    }
+    return attach_boundary_failure(updated, boundary_id="node_completion_boundary")
 
 
 def _completion_to_payload(completion: DagNodeCompletion) -> dict[str, Any]:
@@ -3783,12 +4038,13 @@ def _cancel_and_collect_futures(
         try:
             cancelled_result = pending.result()
         except CancelledError:
-            cancelled_result = {
-                "node_id": pending_node_id,
-                "status": "BLOCKED",
-                "verdict": "CANCELLED",
-                "errors": ["cancelled before adapter execution"],
-            }
+            cancelled_result = _triaged_blocked_attempt_result(
+                node_id=pending_node_id,
+                signal="cancelled before adapter execution",
+                original_code="ADAPTER_EXECUTION_FAILED",
+            )
+            cancelled_result["verdict"] = "CANCELLED"
+            cancelled_result["errors"] = ["cancelled before adapter execution"]
         except Exception as exc:  # pragma: no cover - defensive boundary.
             cancelled_result = _triaged_blocked_attempt_result(
                 node_id=pending_node_id,
@@ -4030,14 +4286,16 @@ def _complete_worker_for_attempt(
         payload=reset_receipt,
     )
     if reset_receipt.get("status") != "PASS":
-        return {
-            "node_id": node_id,
-            "status": "BLOCKED",
-            "verdict": "WORKER_RESET_FAILED",
-            "errors": list(reset_receipt.get("errors") or ["worker reset failed"]),
-            "retryable": False,
-            "worker_reset_receipt": reset_receipt,
-        }
+        blocked = _triaged_blocked_attempt_result(
+            node_id=node_id,
+            signal="worker reset failed",
+            original_code="WORKER_COMPLETION_FAILED",
+        )
+        blocked["verdict"] = "WORKER_RESET_FAILED"
+        blocked["errors"] = list(reset_receipt.get("errors") or ["worker reset failed"])
+        blocked["retryable"] = False
+        blocked["worker_reset_receipt"] = reset_receipt
+        return blocked
     return result
 
 
@@ -4329,13 +4587,26 @@ def _enforce_admission_block(
         classification="attempted_and_swallowed",
         run_dir=run_store.path.parent,
     )
-    blocked = dict(result)
-    blocked["status"] = "BLOCKED"
-    blocked["verdict"] = "RECEIPT_NOT_ADMITTED"
-    errors = list(blocked.get("errors") or [])
-    errors.append("accepted terminal state refused: receipt was not admitted")
-    blocked["errors"] = errors
-    return blocked
+    errors = [
+        *(item for item in result.get("errors", []) if isinstance(item, str)),
+        "accepted terminal state refused: receipt was not admitted",
+    ]
+    return attach_boundary_failure(
+        {
+            **dict(result),
+            "status": "BLOCKED",
+            "verdict": "RECEIPT_NOT_ADMITTED",
+            "retryable": False,
+            "accepted_output": None,
+            "errors": list(dict.fromkeys(errors)),
+            "failure": {
+                "schema": "tau.internal_failure.v1",
+                "original_code": "dag_attempt_result_receipt_not_admitted",
+                "classification_code": "receipt_not_admitted",
+            },
+        },
+        boundary_id="attempt_result_admission",
+    )
 
 
 def _settle_unrunnable_nodes(
