@@ -19,6 +19,8 @@ from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.attempt_result import (
     OUTPUT_CONTRACT_ANY_OBJECT,
+    OUTPUT_CONTRACT_IDS,
+    OUTPUT_CONTRACT_NONE,
     DagAttemptResultAdmissionError,
     admit_dag_attempt_result,
 )
@@ -45,7 +47,6 @@ from tau_coding.dag_runtime.model import (
     FrozenJson,
     canonical_json,
     canonical_sha256,
-    node_output_contract_id,
     validate_dag_plan,
 )
 from tau_coding.dag_runtime.node_input_manifest import (
@@ -1228,7 +1229,7 @@ def run_dag_plan(
                         result=result,
                         run_store=run_store,
                     )
-                    output_contract_id = node_output_contract_id(nodes[node_id])
+                    output_contract_id = _node_output_contract_id(nodes[node_id], result)
                     try:
                         result, validation = _validate_attempt_result(
                             plan_sha256=plan.plan_sha256,
@@ -2561,7 +2562,6 @@ def _recover_incomplete_attempts(
                 identity=identity,
                 node_id=node_id,
                 result=raw_result,
-                output_contract_id=node_output_contract_id(nodes[node_id]),
             )
             run_store.validate_result(lease, identity.attempt_id, validation)
             _inject_fault(fault_injector, "after_result_validated", identity)
@@ -2736,22 +2736,6 @@ def _recover_incomplete_attempts(
     return None
 
 
-BOUNDARY_INLINE_VALUE_MAX_BYTES = 512
-BOUNDARY_COMMAND_RESULT_MAX_ITEMS = 8
-
-
-def _compact_inline_boundary_value(value: Any) -> Any:
-    encoded = canonical_json(value)
-    byte_count = len(encoded.encode("utf-8"))
-    if byte_count <= BOUNDARY_INLINE_VALUE_MAX_BYTES:
-        return value
-    return {
-        "sha256": canonical_sha256(value),
-        "bytes": byte_count,
-        "truncated": True,
-    }
-
-
 def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
@@ -2772,7 +2756,7 @@ def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
         "stderr_sha256",
     ):
         if key in value:
-            compact[key] = _compact_inline_boundary_value(value[key])
+            compact[key] = value[key]
     full_result_json = canonical_json(value)
     compact["full_result_sha256"] = canonical_sha256(value)
     compact["full_result_bytes"] = len(full_result_json.encode("utf-8"))
@@ -2788,50 +2772,9 @@ def _compact_command_result_for_boundary(value: Any) -> dict[str, Any]:
 
 
 def _compact_command_results_for_boundary(value: Any) -> list[dict[str, Any]]:
-    values = value if isinstance(value, list) else [value]
-    compact = [
-        _compact_command_result_for_boundary(item)
-        for item in values[:BOUNDARY_COMMAND_RESULT_MAX_ITEMS]
-    ]
-    if len(values) > BOUNDARY_COMMAND_RESULT_MAX_ITEMS:
-        compact.append(
-            {
-                "omitted_count": len(values) - BOUNDARY_COMMAND_RESULT_MAX_ITEMS,
-                "full_results_sha256": canonical_sha256(values),
-                "full_results_bytes": len(canonical_json(values).encode("utf-8")),
-            }
-        )
-    return compact
-
-
-def _compact_dispatch_for_boundary(value: Any) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        return {"type": type(value).__name__, "sha256": canonical_sha256(value)}
-    compact: dict[str, Any] = {}
-    for key in (
-        "schema",
-        "status",
-        "ok",
-        "stop_reason",
-        "selected_agent",
-        "selected_agent_backend",
-        "dispatch_receipt_path",
-        "command_policy_hash",
-    ):
-        if key in value:
-            compact[key] = value[key]
-    command_results = value.get("command_results")
-    if isinstance(command_results, list):
-        compact["command_results"] = _compact_command_results_for_boundary(command_results)
-    artifacts = value.get("artifacts")
-    if isinstance(artifacts, list):
-        compact["artifacts"] = _compact_inline_boundary_value(
-            [item for item in artifacts if isinstance(item, str)]
-        )
-    full_dispatch_json = canonical_json(value)
-    compact["full_dispatch_sha256"] = canonical_sha256(value)
-    compact["full_dispatch_bytes"] = len(full_dispatch_json.encode("utf-8"))
-    return compact
+    if isinstance(value, list):
+        return [_compact_command_result_for_boundary(item) for item in value]
+    return [_compact_command_result_for_boundary(value)]
 
 
 def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str, Any]:
@@ -2919,10 +2862,7 @@ def _canonicalize_attempt_result_boundary(result: Mapping[str, Any]) -> dict[str
         "course_correction_artifacts",
     ):
         if key in normalized:
-            value = normalized.pop(key)
-            if key == "dispatch":
-                value = _compact_dispatch_for_boundary(value)
-            runtime_meta[key] = value
+            runtime_meta[key] = normalized.pop(key)
     if runtime_meta:
         extensions["runtime"] = runtime_meta
     if extensions:
@@ -2983,6 +2923,17 @@ def _validate_attempt_result(
         output_contract_id=output_contract_id,
     )
     return admission.normalized, admission.validation
+
+
+def _node_output_contract_id(node: DagPlanNode, result: Mapping[str, Any]) -> str:
+    extensions = node.source_extensions.to_value()
+    if isinstance(extensions, Mapping):
+        contract = extensions.get("output_contract_id") or extensions.get("output_schema")
+        if isinstance(contract, str) and contract in OUTPUT_CONTRACT_IDS:
+            return contract
+    if result.get("accepted_output") is None:
+        return OUTPUT_CONTRACT_NONE
+    return OUTPUT_CONTRACT_ANY_OBJECT
 
 
 def _triaged_blocked_attempt_result(
@@ -3538,7 +3489,6 @@ def _cancel_and_collect_futures(
 ) -> DagRunLease | None:
     if not futures:
         return lease
-    nodes = {node.node_id: node for node in plan.nodes}
     _emit(
         event_sink,
         {
@@ -3577,7 +3527,6 @@ def _cancel_and_collect_futures(
                     identity=identity,
                     node_id=pending_node_id,
                     result=cancelled_result,
-                    output_contract_id=node_output_contract_id(nodes[pending_node_id]),
                 )
             except DagAttemptResultAdmissionError as exc:
                 cancelled_result, validation = _validate_attempt_result(
@@ -3590,7 +3539,6 @@ def _cancel_and_collect_futures(
                         original_code=exc.code,
                         error_path=exc.path,
                     ),
-                    output_contract_id=node_output_contract_id(nodes[pending_node_id]),
                 )
             cancelled_result = run_store.stage_result(lease, identity.attempt_id, cancelled_result)
             _, validation = _validate_attempt_result(
@@ -3598,7 +3546,6 @@ def _cancel_and_collect_futures(
                 identity=identity,
                 node_id=pending_node_id,
                 result=cancelled_result,
-                output_contract_id=node_output_contract_id(nodes[pending_node_id]),
             )
             run_store.validate_result(
                 lease,
