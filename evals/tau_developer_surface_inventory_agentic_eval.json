@@ -12,6 +12,7 @@
       "id": "tau.developer_surface.stub_inventory_truthfulness",
       "description": "Developer-visible stub/degraded surfaces are classified and fail closed when a normal route gains an unclassified placeholder marker.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {"live_e2e": true}
     }
   ],
