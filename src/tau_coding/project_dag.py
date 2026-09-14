@@ -781,7 +781,7 @@ def _project_dag_resume_watchdog_journal(
     phase = payload.get("phase")
     if phase not in {"retryable", "releasing", "settled", "running"}:
         raise RuntimeError("watchdog journal is not in a retry-safe phase")
-    if payload.get("tau_settled") is not True:
+    if phase in {"releasing", "settled"} and payload.get("tau_settled") is not True:
         raise RuntimeError("watchdog journal has not settled the prior Tau run")
     if phase == "running":
         event = payload.get("lease_event")

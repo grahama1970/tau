@@ -68,6 +68,60 @@ def test_provider_live_requires_accepted_live_provider_route_receipt() -> None:
     assert project_dag._accepted_provider_live(response) is False
 
 
+@pytest.mark.parametrize(
+    ("phase", "tau_settled", "admitted"),
+    [
+        ("retryable", False, True),
+        ("running", False, True),
+        ("uncertain", False, False),
+        ("releasing", False, False),
+        ("settled", False, False),
+        ("settled", True, True),
+    ],
+)
+def test_project_dag_resume_watchdog_journal_admission_by_phase(
+    tmp_path: Path, phase: str, tau_settled: bool, admitted: bool
+) -> None:
+    contract = project_dag.validate_dag_contract(
+        project_dag.load_dag_contract_payload(_write_contract(tmp_path))
+    )
+    journal = tmp_path / f"watchdog-{phase}-{tau_settled}.json"
+    payload: dict[str, object] = {
+        "schema": "agent_skills.project_watchdog.primary_operation.v2",
+        "phase": phase,
+        "tau_settled": tau_settled,
+        "lease_released": False,
+    }
+    if phase == "running":
+        payload.update(
+            {
+                "lease_event": {
+                    "id": 1,
+                    "event": "labeled",
+                    "actor": "project-watchdog",
+                    "created_at": "2026-09-14T00:00:00Z",
+                },
+                "lease_actor": "project-watchdog",
+                "owner_token": "abc123",
+                "lease_agent": "project-watchdog-abc123",
+            }
+        )
+    journal.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+
+    if admitted:
+        result = project_dag._project_dag_resume_watchdog_journal(
+            journal, contract=contract, receipt_dir=tmp_path / "ask" / "run" / "run"
+        )
+        assert result is not None
+        assert result["phase"] == phase
+        assert result["tau_settled"] is tau_settled
+    else:
+        with pytest.raises(RuntimeError):
+            project_dag._project_dag_resume_watchdog_journal(
+                journal, contract=contract, receipt_dir=tmp_path / "ask" / "run" / "run"
+            )
+
+
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
