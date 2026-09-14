@@ -157,6 +157,7 @@ from tau_coding.tui.config import (
     DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
     DEFAULT_AUTOMATIC_TUI_THEME_SETTING,
     TAU_DARK_THEME,
+    TUI_CONFIG_SAFE_SETTINGS,
     ProjectTuiSettings,
     TuiKeybindings,
     TuiQueueDrainMode,
@@ -165,6 +166,7 @@ from tau_coding.tui.config import (
     available_tui_theme_names,
     load_project_tui_settings,
     load_tui_settings,
+    mutate_allowlisted_tui_setting,
     project_tui_settings_path,
     save_project_tui_settings,
     save_tui_settings,
@@ -2750,21 +2752,27 @@ class SettingsPickerScreen(ModalScreen[None]):
         apply_settings: Callable[[TuiSettings], None],
         thinking_levels: Sequence[ThinkingLevel] = THINKING_LEVELS,
         keybindings: TuiKeybindings | None = None,
+        allowed_keys: Sequence[SettingsPickerKey] | None = None,
+        title: str = "Settings",
+        initial_search: str = "",
     ) -> None:
         super().__init__()
         self.settings = settings
         self.apply_settings = apply_settings
         self.thinking_levels = tuple(thinking_levels) or THINKING_LEVELS
         self.keybindings = keybindings or TuiKeybindings()
-        self.search_value = ""
-        self.filtered_items = _settings_picker_items(settings)
+        self.allowed_keys = tuple(allowed_keys) if allowed_keys is not None else None
+        self.title = title
+        self.search_value = initial_search
+        self.filtered_items = _settings_picker_items(settings, allowed_keys=self.allowed_keys)
 
     def compose(self) -> ComposeResult:
         """Compose the settings picker."""
         with Vertical(id="settings-picker"):
-            yield Static("Settings", id="settings-picker-title")
+            yield Static(self.title, id="settings-picker-title")
             yield SettingsPickerSearchInput(
                 placeholder="Search settings",
+                value=self.search_value,
                 id="settings-picker-search",
             )
             yield ListView(
@@ -2889,7 +2897,7 @@ class SettingsPickerScreen(ModalScreen[None]):
 
     def _refresh_settings_list(self, index: int) -> None:
         self.filtered_items = _filter_settings_picker_items(
-            _settings_picker_items(self.settings),
+            _settings_picker_items(self.settings, allowed_keys=self.allowed_keys),
             self.search_value,
         )
         settings_list = self.query_one("#settings-picker-list", ListView)
@@ -7912,6 +7920,9 @@ class TauTuiApp(App[None]):
 
     def _continue_after_startup_setup(self) -> None:
         """Continue normal startup actions after any first-run setup screen."""
+        if _truthy_env("TAU_TUI_CONFIG_PROOF_OPEN"):
+            self.call_after_refresh(self._open_safe_config_picker)
+            return
         if self.startup_resume_picker:
             self.call_after_refresh(self.action_open_session_picker)
             return
@@ -8291,6 +8302,8 @@ class TauTuiApp(App[None]):
                 self._open_scoped_models_picker()
             if command.settings_picker_requested:
                 self._open_settings_picker()
+            if command.safe_config_picker_requested:
+                self._open_safe_config_picker()
             if command.config_picker_requested:
                 self._open_config_map()
             if command.images_picker_requested:
@@ -8714,6 +8727,33 @@ class TauTuiApp(App[None]):
     def _settings_picker_settings_changed(self, settings: TuiSettings) -> None:
         self._set_tui_settings(settings)
 
+    def _safe_config_picker_settings_changed(self, settings: TuiSettings) -> None:
+        changed_keys = [
+            key
+            for key in _safe_config_picker_keys()
+            if getattr(self.tui_settings, key) != getattr(settings, key)
+        ]
+        if not changed_keys:
+            return
+        key = changed_keys[0]
+        value = getattr(settings, key)
+        receipt = mutate_allowlisted_tui_setting(
+            key,
+            value,
+            actor_id=f"human:tui:{os.environ.get('USER', 'operator')}",
+        )
+        if not receipt.get("accepted"):
+            reason = ", ".join(str(item) for item in receipt.get("errors", ())) or "unknown error"
+            self._notify(f"Config write rejected: {reason}", severity="error")
+            return
+        try:
+            readback = load_tui_settings()
+        except Exception as exc:  # noqa: BLE001 - readback is the authority for this surface
+            self._notify(f"Config write readback failed: {exc}", severity="error")
+            return
+        self._set_tui_settings(readback, persist=False)
+        self._notify(f"Config saved: {key}")
+
     def _open_settings_picker(self) -> None:
         self.push_screen(
             SettingsPickerScreen(
@@ -8722,6 +8762,20 @@ class TauTuiApp(App[None]):
                 thinking_levels=tuple(getattr(self.session, "available_thinking_levels", ()))
                 or THINKING_LEVELS,
                 keybindings=self.tui_settings.keybindings,
+            )
+        )
+
+    def _open_safe_config_picker(self) -> None:
+        self.push_screen(
+            SettingsPickerScreen(
+                self.tui_settings,
+                apply_settings=self._safe_config_picker_settings_changed,
+                thinking_levels=tuple(getattr(self.session, "available_thinking_levels", ()))
+                or THINKING_LEVELS,
+                keybindings=self.tui_settings.keybindings,
+                allowed_keys=_safe_config_picker_keys(),
+                title="Config",
+                initial_search=os.environ.get("TAU_TUI_CONFIG_PROOF_QUERY", ""),
             )
         )
 
@@ -13127,8 +13181,29 @@ def _theme_picker_label(theme_setting: str, *, current_theme: str) -> str:
     return f"{marker} {theme_setting}"
 
 
-def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, ...]:
-    return (
+def _safe_config_picker_keys() -> tuple[SettingsPickerKey, ...]:
+    ordered: tuple[SettingsPickerKey, ...] = (
+        "theme",
+        "show_images",
+        "auto_resize_images",
+        "image_width_cells",
+        "sidebar_position",
+        "show_hardware_cursor",
+        "show_terminal_progress",
+        "auto_copy_selection",
+        "quiet_startup",
+        "collapse_changelog",
+        "turn_notification",
+    )
+    return tuple(key for key in ordered if key in TUI_CONFIG_SAFE_SETTINGS)
+
+
+def _settings_picker_items(
+    settings: TuiSettings,
+    *,
+    allowed_keys: Sequence[SettingsPickerKey] | None = None,
+) -> tuple[SettingsPickerItem, ...]:
+    items = (
         SettingsPickerItem(
             key="theme",
             label="Theme",
@@ -13300,6 +13375,10 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="Resize large images before they are sent to providers",
         ),
     )
+    if allowed_keys is None:
+        return items
+    allowed = set(allowed_keys)
+    return tuple(item for item in items if item.key in allowed)
 
 
 def _settings_picker_label(item: SettingsPickerItem) -> str:
@@ -16824,7 +16903,10 @@ def run_pty_proof_real_app() -> None:
 
     os.environ.setdefault("TAU_TUI_PTY_PROOF", "1")
     cwd = Path.cwd()
-    app = TauTuiApp(cast(CodingSession, _PtyProofRealAppSession(cwd=cwd)))
+    app = TauTuiApp(
+        cast(CodingSession, _PtyProofRealAppSession(cwd=cwd)),
+        tui_settings=load_tui_settings(),
+    )
     app.run()
 
 

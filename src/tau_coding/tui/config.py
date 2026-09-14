@@ -1,8 +1,12 @@
 """Durable Textual TUI configuration for Tau."""
 
+import fcntl
+import hashlib
 import os
+import tempfile
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field, fields
+from contextlib import contextmanager, suppress
+from dataclasses import dataclass, field, fields, replace
 from json import JSONDecodeError, dumps, loads
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -26,6 +30,25 @@ class TuiConfigError(ValueError):
 
 class TuiThemeError(ValueError):
     """Raised when a TUI theme definition is invalid."""
+
+
+TUI_CONFIG_MUTATION_RECEIPT_SCHEMA = "tau.tui_config_mutation_receipt.v1"
+TUI_CONFIG_FAIL_BEFORE_REPLACE_ENV = "TAU_TUI_CONFIG_FAIL_BEFORE_REPLACE"
+TUI_CONFIG_SAFE_SETTINGS = frozenset(
+    {
+        "theme",
+        "show_images",
+        "auto_resize_images",
+        "image_width_cells",
+        "sidebar_position",
+        "show_hardware_cursor",
+        "show_terminal_progress",
+        "auto_copy_selection",
+        "quiet_startup",
+        "collapse_changelog",
+        "turn_notification",
+    }
+)
 
 
 type TurnNotificationMode = Literal["off", "bell", "desktop"]
@@ -1050,9 +1073,93 @@ def load_tui_settings(paths: TauPaths | None = None) -> TuiSettings:
 def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> Path:
     """Persist durable TUI settings and return the written path."""
     path = tui_settings_path(paths)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(dumps(settings.to_json(), indent=2) + "\n", encoding="utf-8")
+    _atomic_write_text(path, dumps(settings.to_json(), indent=2) + "\n")
     return path
+
+
+def mutate_allowlisted_tui_setting(
+    key: str,
+    value: object,
+    *,
+    paths: TauPaths | None = None,
+    actor_id: str = "tau:tui",
+) -> dict[str, Any]:
+    """Mutate one safe TUI setting through the durable allowlist contract."""
+    path = tui_settings_path(paths)
+    if key not in TUI_CONFIG_SAFE_SETTINGS:
+        return _tui_config_mutation_receipt(
+            key=key,
+            value=value,
+            actor_id=actor_id,
+            accepted=False,
+            status="BLOCKED",
+            errors=("tui_setting_not_allowlisted",),
+            path=path,
+        )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with _exclusive_file_lock(path.with_suffix(path.suffix + ".lock")):
+        before_text = _read_text_if_exists(path)
+        try:
+            raw = loads(before_text) if before_text.strip() else {}
+        except JSONDecodeError as exc:
+            return _tui_config_mutation_receipt(
+                key=key,
+                value=value,
+                actor_id=actor_id,
+                accepted=False,
+                status="BLOCKED",
+                errors=(f"invalid_existing_tui_config:{exc}",),
+                path=path,
+                before_text=before_text,
+            )
+        if not isinstance(raw, dict):
+            return _tui_config_mutation_receipt(
+                key=key,
+                value=value,
+                actor_id=actor_id,
+                accepted=False,
+                status="BLOCKED",
+                errors=("existing_tui_config_not_object",),
+                path=path,
+                before_text=before_text,
+            )
+
+        try:
+            current = tui_settings_from_json(raw)
+            parsed_value = _parse_allowlisted_tui_setting_value(key, value)
+            updated = replace(current, **{key: parsed_value})
+            updated_raw = dict(raw)
+            updated_raw[key] = getattr(updated, key)
+            tui_settings_from_json(updated_raw)
+            _atomic_write_text(path, dumps(updated_raw, indent=2, sort_keys=True) + "\n")
+            readback = load_tui_settings(paths)
+            if getattr(readback, key) != getattr(updated, key):
+                raise TuiConfigError("tui_config_readback_mismatch")
+        except TuiConfigError as exc:
+            return _tui_config_mutation_receipt(
+                key=key,
+                value=value,
+                actor_id=actor_id,
+                accepted=False,
+                status="BLOCKED",
+                errors=(str(exc),),
+                path=path,
+                before_text=before_text,
+            )
+
+        after_text = _read_text_if_exists(path)
+        return _tui_config_mutation_receipt(
+            key=key,
+            value=value,
+            actor_id=actor_id,
+            accepted=True,
+            status="PASS",
+            errors=(),
+            path=path,
+            before_text=before_text,
+            after_text=after_text,
+        )
 
 
 def load_project_tui_settings(
@@ -1076,8 +1183,7 @@ def save_project_tui_settings(
 ) -> Path:
     """Persist project-local TUI settings and return the written path."""
     path = project_tui_settings_path(cwd, paths)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(dumps(settings.to_json(), indent=2) + "\n", encoding="utf-8")
+    _atomic_write_text(path, dumps(settings.to_json(), indent=2) + "\n")
     return path
 
 
@@ -1309,6 +1415,121 @@ def _warn_unknown_tui_settings_fields(data: dict[str, Any]) -> None:
             RuntimeWarning,
             stacklevel=2,
         )
+
+
+def _parse_allowlisted_tui_setting_value(key: str, value: object) -> object:
+    if key == "theme":
+        return _theme_name(value)
+    if key in {
+        "show_images",
+        "auto_resize_images",
+        "show_hardware_cursor",
+        "show_terminal_progress",
+        "auto_copy_selection",
+        "quiet_startup",
+        "collapse_changelog",
+    }:
+        return _bool_setting(value, key)
+    if key == "image_width_cells":
+        return _image_width_cells(value)
+    if key == "sidebar_position":
+        return _sidebar_position(value)
+    if key == "turn_notification":
+        return _turn_notification_mode(value)
+    raise TuiConfigError("tui_setting_not_allowlisted")
+
+
+def _tui_config_mutation_receipt(
+    *,
+    key: str,
+    value: object,
+    actor_id: str,
+    accepted: bool,
+    status: Literal["PASS", "BLOCKED"],
+    errors: Sequence[str],
+    path: Path,
+    before_text: str = "",
+    after_text: str = "",
+) -> dict[str, Any]:
+    return {
+        "schema": TUI_CONFIG_MUTATION_RECEIPT_SCHEMA,
+        "status": status,
+        "ok": accepted,
+        "accepted": accepted,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "actor_id": actor_id,
+        "setting": key,
+        "value": value,
+        "path": str(path),
+        "errors": list(errors),
+        "before_sha256": _sha256_text(before_text),
+        "after_sha256": _sha256_text(after_text),
+        "unknown_key_rule": "preserve",
+        "write_contract": {
+            "allowlisted": key in TUI_CONFIG_SAFE_SETTINGS,
+            "lock_path": str(path.with_suffix(path.suffix + ".lock")),
+            "temporary_file_directory": str(path.parent),
+            "atomic_replace": True,
+            "readback_after_replace": accepted,
+        },
+    }
+
+
+def _read_text_if_exists(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
+
+
+def _sha256_text(text: str) -> str | None:
+    if not text:
+        return None
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+@contextmanager
+def _exclusive_file_lock(path: Path) -> Any:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+", encoding="utf-8") as lock_file:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            dir=path.parent,
+            encoding="utf-8",
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temp_file:
+            temp_path = Path(temp_file.name)
+            temp_file.write(text)
+            temp_file.flush()
+            os.fsync(temp_file.fileno())
+        if os.environ.get(TUI_CONFIG_FAIL_BEFORE_REPLACE_ENV) == "1":
+            raise TuiConfigError("injected failure before atomic replace")
+        temp_path.replace(path)
+        with suppress(OSError):
+            directory_fd = os.open(path.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+    except Exception:
+        if temp_path is not None:
+            with suppress(OSError):
+                temp_path.unlink()
+        raise
 
 
 def _bool_setting(value: object, field_name: str) -> bool:
