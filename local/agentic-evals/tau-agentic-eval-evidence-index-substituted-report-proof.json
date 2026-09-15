@@ -5,7 +5,7 @@
     "report_digest_mismatch",
     "report_repo_sha_mismatch"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-vjunqa_3/index.json",
   "live": true,
   "mocked": false,
   "mode": "substituted-report",
@@ -43,16 +43,17 @@
         "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-substituted-report-vjunqa_3/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
+      "ignored_mutable_status_porcelain": "",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/repo",
-      "sha": "bbcaff549d1fa62689c36bbc2a142e28bd65171f",
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-vjunqa_3/repo",
+      "sha": "4b6a31e63d1fd285ec0687a50de82288d7c1b26c",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:15c58b0f4fbd1d7823f77665acbec5306e1aadf7332abcaf0abe0d3dd2a7332f",
+    "index_sha256": "sha256:e3740b1aa1aa4e2effada3e43b7aa79f985b6c1aef56f8ac493ac7c4b6b4481c",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -70,8 +71,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-7qpowjew/repo",
-      "sha": "bbcaff549d1fa62689c36bbc2a142e28bd65171f"
+      "root": "/tmp/tau-agentic-eval-evidence-substituted-report-vjunqa_3/repo",
+      "sha": "4b6a31e63d1fd285ec0687a50de82288d7c1b26c"
     },
     "report_count": 15,
     "require_clean": false,
@@ -86,6 +87,7 @@
     },
     "schema": "tau.agentic_eval_evidence_verification.v1",
     "status": "FAIL",
+    "ticket_proof_bundle_count": 44,
     "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
   },
   "verifier_exit_code": 1

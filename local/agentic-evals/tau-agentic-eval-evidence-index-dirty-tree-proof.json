@@ -5,7 +5,7 @@
     "dirty_tree_mismatch",
     "report_digest_mismatch"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-pvnqil64/index.json",
   "live": true,
   "mocked": false,
   "mode": "dirty-tree",
@@ -44,16 +44,17 @@
         "path": "local/agentic-evals/codebase-ingest-agentic-evals-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-dirty-tree-pvnqil64/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
+      "ignored_mutable_status_porcelain": "",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/repo",
-      "sha": "6b548e4fe3209c09997c4a2aa9760d5ad65ec612",
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-pvnqil64/repo",
+      "sha": "1e0aa95b7750dc6d9e3740d1588eec4ac51a073e",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:f6d4af6da94204d01a4f5cee24c441968e99c691e024b31b5adf96cceb70a583",
+    "index_sha256": "sha256:88e14808729b6432fdb486a5d53618d879c3e5b2406f432e7594933401db094e",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -71,8 +72,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-gu07di2v/repo",
-      "sha": "6b548e4fe3209c09997c4a2aa9760d5ad65ec612"
+      "root": "/tmp/tau-agentic-eval-evidence-dirty-tree-pvnqil64/repo",
+      "sha": "1e0aa95b7750dc6d9e3740d1588eec4ac51a073e"
     },
     "report_count": 15,
     "require_clean": true,
@@ -87,6 +88,7 @@
     },
     "schema": "tau.agentic_eval_evidence_verification.v1",
     "status": "FAIL",
+    "ticket_proof_bundle_count": 44,
     "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
   },
   "verifier_exit_code": 1

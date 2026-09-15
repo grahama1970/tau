@@ -4,7 +4,7 @@
   "failure_codes": [
     "artifact_missing"
   ],
-  "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-jhh1mne9/index.json",
+  "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-lhaf4z6k/index.json",
   "live": true,
   "mocked": false,
   "mode": "deleted-artifact",
@@ -32,16 +32,17 @@
         "path": "local/agentic-evals/reconciliation-report.json"
       }
     ],
-    "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-jhh1mne9/index.json",
+    "index_path": "/tmp/tau-agentic-eval-evidence-deleted-artifact-lhaf4z6k/index.json",
     "index_repo": {
       "dirty_tree": false,
       "dirty_tree_declaration": "clean",
+      "ignored_mutable_status_porcelain": "",
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-jhh1mne9/repo",
-      "sha": "4f2f12b0be775067e38e65bd2efe3fc2bcc00f6e",
+      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-lhaf4z6k/repo",
+      "sha": "10753c20b4fe9dfae84db745dfcbd72f38fce4fd",
       "status_porcelain": ""
     },
-    "index_sha256": "sha256:1c0840e49cda21bdf292d69716249f7a63c6784aa29e28ba34ba39cf39fcf92d",
+    "index_sha256": "sha256:19d0d1855e17a8846a9c3651715630157898ad55019e3ccffe5098f43a2675fe",
     "live": false,
     "mocked": false,
     "ok": false,
@@ -59,8 +60,8 @@
     "repo": {
       "dirty_tree": true,
       "ref": "main",
-      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-jhh1mne9/repo",
-      "sha": "4f2f12b0be775067e38e65bd2efe3fc2bcc00f6e"
+      "root": "/tmp/tau-agentic-eval-evidence-deleted-artifact-lhaf4z6k/repo",
+      "sha": "10753c20b4fe9dfae84db745dfcbd72f38fce4fd"
     },
     "report_count": 15,
     "require_clean": false,
@@ -75,6 +76,7 @@
     },
     "schema": "tau.agentic_eval_evidence_verification.v1",
     "status": "FAIL",
+    "ticket_proof_bundle_count": 44,
     "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
   },
   "verifier_exit_code": 1

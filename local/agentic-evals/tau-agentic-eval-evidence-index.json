@@ -3,55 +3,55 @@
   "artifact_count": 21,
   "artifacts": [
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/reconciliation-report.json",
-      "bytes": 185291,
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/reconciliation-report.json",
+      "bytes": 205632,
       "path": "local/agentic-evals/reconciliation-report.json",
       "reported_sha256_values": [
-        "sha256:03fe18d29e1dbc1c09eb9790c24f0c57a8b9a9c202dd23a8939eb2a2ce31af64",
-        "sha256:a84218c714a66ee1ddca9460495ee2dd23d483b358d63e9f93e73ad604ed3f9e"
+        "sha256:8822797366e2d6546844950847abcfa9f1439dc5c243d96f353c96681ce8ddb5",
+        "sha256:e83f02318ac4593e5d4063083a80bd921e4dd9f0a831ed2daf784641668d7d7e"
       ],
       "reports": [
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/reconciliation-report.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t00"
+          "trial_id": "f3da85abf473-c000-t00"
         },
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/reconciliation-report.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t01"
+          "trial_id": "f3da85abf473-c000-t01"
         }
       ],
-      "sha256": "sha256:a84218c714a66ee1ddca9460495ee2dd23d483b358d63e9f93e73ad604ed3f9e"
+      "sha256": "sha256:e83f02318ac4593e5d4063083a80bd921e4dd9f0a831ed2daf784641668d7d7e"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/source-inventory.json",
-      "bytes": 72392,
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/source-inventory.json",
+      "bytes": 78876,
       "path": "local/agentic-evals/source-inventory.json",
       "reported_sha256_values": [
-        "sha256:9f141a3e5c2272623d6350c2abb8511210a71a5624f25d9d9cae8d1120e31ea8",
-        "sha256:a39cf1f863d9466f81d3fac013c2948e94765532f0f68035792b290427a84797"
+        "sha256:588f5d8e42d32453798073bc9d8d14251a99bb090531ef32918d3ce7d3c1159e",
+        "sha256:fe82a26d7130f86d3f6e75e1370c384bef424f88053ff0de72f3d4d9561eb1b0"
       ],
       "reports": [
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/source-inventory.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t00"
+          "trial_id": "f3da85abf473-c000-t00"
         },
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/source-inventory.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t01"
+          "trial_id": "f3da85abf473-c000-t01"
         }
       ],
-      "sha256": "sha256:a39cf1f863d9466f81d3fac013c2948e94765532f0f68035792b290427a84797"
+      "sha256": "sha256:fe82a26d7130f86d3f6e75e1370c384bef424f88053ff0de72f3d4d9561eb1b0"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-core-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-core-proof.json",
       "bytes": 2420,
       "path": "local/agentic-evals/tau-core-proof.json",
       "reported_sha256_values": [
@@ -75,7 +75,7 @@
       "sha256": "sha256:2e247f30697f029d9019145a8ed85d5e0f723b101472b4bb329d477f972384e0"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
       "bytes": 7528,
       "path": "local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
       "reported_sha256_values": [
@@ -99,7 +99,7 @@
       "sha256": "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
       "bytes": 7528,
       "path": "local/agentic-evals/tau-dag-ladder-rung1-proof.json",
       "reported_sha256_values": [
@@ -123,7 +123,7 @@
       "sha256": "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-failure-path-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-failure-path-proof.json",
       "bytes": 7600,
       "path": "local/agentic-evals/tau-discord-failure-path-proof.json",
       "reported_sha256_values": [
@@ -147,7 +147,7 @@
       "sha256": "sha256:57727de81241391a8526c1ab8a286f3ae6dbb4fc3abc6408ff05c187811e3942"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-idempotency-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-idempotency-proof.json",
       "bytes": 6099,
       "path": "local/agentic-evals/tau-discord-idempotency-proof.json",
       "reported_sha256_values": [
@@ -171,7 +171,7 @@
       "sha256": "sha256:c5a495c1752ae846b15ea60f768e9ff22ddaf4fe654869d278b0a1f8d8ec99d5"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-unblock-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-unblock-proof.json",
       "bytes": 3861,
       "path": "local/agentic-evals/tau-discord-unblock-proof.json",
       "reported_sha256_values": [
@@ -195,168 +195,168 @@
       "sha256": "sha256:9cbaa3800297bd8eb2915fc0764b20ae77658441a05e423ceed1953dd95a270c"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
-      "bytes": 771,
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+      "bytes": 778,
       "path": "local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
       "reported_sha256_values": [
-        "sha256:8cf62b2a2b461cdc33734fe0cd25becb34a458a7dd61ab1d305b7da2d3b9cf5c"
+        "sha256:b59a0616b96ae1e1844091c5b92c11a2ddb61430c2d6b549cf861ff0cbffbc6b"
       ],
       "reports": [
         {
           "case": "duplicate-feature-owner-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c003-t00"
+          "trial_id": "f3da85abf473-c003-t00"
         },
         {
           "case": "duplicate-feature-owner-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c003-t01"
+          "trial_id": "f3da85abf473-c003-t01"
         }
       ],
-      "sha256": "sha256:8cf62b2a2b461cdc33734fe0cd25becb34a458a7dd61ab1d305b7da2d3b9cf5c"
+      "sha256": "sha256:b59a0616b96ae1e1844091c5b92c11a2ddb61430c2d6b549cf861ff0cbffbc6b"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
       "bytes": 1012,
       "path": "local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
       "reported_sha256_values": [
-        "sha256:0aed7e4995411f96a58cb0ec7d2ee77085f7b7d9ceb0e4e5dadb26cf266f3f23"
+        "sha256:a1d8c02ba540e3cab6d80377fae0fd4fea532357363a459f8afc126d2994dff1"
       ],
       "reports": [
         {
           "case": "missing-capability-claim-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c006-t00"
+          "trial_id": "f3da85abf473-c006-t00"
         },
         {
           "case": "missing-capability-claim-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c006-t01"
+          "trial_id": "f3da85abf473-c006-t01"
         }
       ],
-      "sha256": "sha256:0aed7e4995411f96a58cb0ec7d2ee77085f7b7d9ceb0e4e5dadb26cf266f3f23"
+      "sha256": "sha256:a1d8c02ba540e3cab6d80377fae0fd4fea532357363a459f8afc126d2994dff1"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
       "bytes": 726,
       "path": "local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
       "reported_sha256_values": [
-        "sha256:d4c1acb811db7fceafbdd0774fb188e6fe927ffb998f1f7d0892d737349dd016"
+        "sha256:27320df4b89031f6a99b163d1dbc90c80985feede503fba3fcf6c6890a30dd5c"
       ],
       "reports": [
         {
           "case": "missing-retained-report-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c004-t00"
+          "trial_id": "f3da85abf473-c004-t00"
         },
         {
           "case": "missing-retained-report-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c004-t01"
+          "trial_id": "f3da85abf473-c004-t01"
         }
       ],
-      "sha256": "sha256:d4c1acb811db7fceafbdd0774fb188e6fe927ffb998f1f7d0892d737349dd016"
+      "sha256": "sha256:27320df4b89031f6a99b163d1dbc90c80985feede503fba3fcf6c6890a30dd5c"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
       "bytes": 992,
       "path": "local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
       "reported_sha256_values": [
-        "sha256:908e74dd4c2cd7079ecaf86ae175a4a302c76969d5bc927d20d5b32ff5f98577"
+        "sha256:836aa923f4546cc4c199dd0abad7aadb140d9672ebdd492943ce77518355b10c"
       ],
       "reports": [
         {
           "case": "orphan-eval-manifest-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c002-t00"
+          "trial_id": "f3da85abf473-c002-t00"
         },
         {
           "case": "orphan-eval-manifest-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c002-t01"
+          "trial_id": "f3da85abf473-c002-t01"
         }
       ],
-      "sha256": "sha256:908e74dd4c2cd7079ecaf86ae175a4a302c76969d5bc927d20d5b32ff5f98577"
+      "sha256": "sha256:836aa923f4546cc4c199dd0abad7aadb140d9672ebdd492943ce77518355b10c"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-proof.json",
       "bytes": 442,
       "path": "local/agentic-evals/tau-feature-coverage-proof.json",
       "reported_sha256_values": [
-        "sha256:85fcd8aa9485bf7f9f7106cc47657f7eb31e6c4b220590215bd17537601e6813"
+        "sha256:f3e03e52b52c7d0422d60da92a2ad48e2963b06d1503b2419e62ad45ebb20a91"
       ],
       "reports": [
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/tau-feature-coverage-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t00"
+          "trial_id": "f3da85abf473-c000-t00"
         },
         {
           "case": "source-inventory-reconciliation-passes-current-mapped-set",
           "reference": "../local/agentic-evals/tau-feature-coverage-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c000-t01"
+          "trial_id": "f3da85abf473-c000-t01"
         }
       ],
-      "sha256": "sha256:85fcd8aa9485bf7f9f7106cc47657f7eb31e6c4b220590215bd17537601e6813"
+      "sha256": "sha256:f3e03e52b52c7d0422d60da92a2ad48e2963b06d1503b2419e62ad45ebb20a91"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
       "bytes": 680,
       "path": "local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
       "reported_sha256_values": [
-        "sha256:ecd0544d1f6cfd675da07b0ef8e55fe2f02c37f8d438d44d5c52dd03c581d9fd"
+        "sha256:b399925ed168319e3c0074cb4d91c37fe134af1439aea3ec643c32d635ccbeb3"
       ],
       "reports": [
         {
           "case": "stale-waiver-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c005-t00"
+          "trial_id": "f3da85abf473-c005-t00"
         },
         {
           "case": "stale-waiver-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c005-t01"
+          "trial_id": "f3da85abf473-c005-t01"
         }
       ],
-      "sha256": "sha256:ecd0544d1f6cfd675da07b0ef8e55fe2f02c37f8d438d44d5c52dd03c581d9fd"
+      "sha256": "sha256:b399925ed168319e3c0074cb4d91c37fe134af1439aea3ec643c32d635ccbeb3"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
       "bytes": 776,
       "path": "local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
       "reported_sha256_values": [
-        "sha256:ef5f9d48119405db7a17074f5b64c43fb642a27f5acb825f37b1fcbc00ec6792"
+        "sha256:b5690373ebef09b868aa87681bd5133854cfdf3f96a28a18005f7e286bf5b6cd"
       ],
       "reports": [
         {
           "case": "unmanifested-cli-command-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c001-t00"
+          "trial_id": "f3da85abf473-c001-t00"
         },
         {
           "case": "unmanifested-cli-command-is-rejected",
           "reference": "../local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
           "report": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-          "trial_id": "0cb7698d3f1b-c001-t01"
+          "trial_id": "f3da85abf473-c001-t01"
         }
       ],
-      "sha256": "sha256:ef5f9d48119405db7a17074f5b64c43fb642a27f5acb825f37b1fcbc00ec6792"
+      "sha256": "sha256:b5690373ebef09b868aa87681bd5133854cfdf3f96a28a18005f7e286bf5b6cd"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-ledger-trace-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-ledger-trace-proof.json",
       "bytes": 532,
       "path": "local/agentic-evals/tau-ledger-trace-proof.json",
       "reported_sha256_values": [
@@ -380,7 +380,7 @@
       "sha256": "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-pipeline-self-repair-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-pipeline-self-repair-proof.json",
       "bytes": 1567,
       "path": "local/agentic-evals/tau-pipeline-self-repair-proof.json",
       "reported_sha256_values": [
@@ -404,7 +404,7 @@
       "sha256": "sha256:8a02e5da1c5b303ffb3a6494d88d53dfc5f1eceffe2fb45148bf9a22a00b0feb"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-repair-overlay-browser-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-repair-overlay-browser-proof.json",
       "bytes": 6255,
       "path": "local/agentic-evals/tau-repair-overlay-browser-proof.json",
       "reported_sha256_values": [
@@ -428,8 +428,8 @@
       "sha256": "sha256:2f42bbce15faf2d1c0982c913ab5592de853ca15fd236ef197c3336a5ae37963"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-same-node-rerun-proof.json",
-      "bytes": 13382,
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-same-node-rerun-proof.json",
+      "bytes": 5659,
       "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
       "reported_sha256_values": [
         "sha256:ddf76c25bd0facc40476868caa73b15a99213e42d6cff2016248fbf780d37171",
@@ -449,10 +449,10 @@
           "trial_id": "86ef3747c57d-c000-t01"
         }
       ],
-      "sha256": "sha256:12ad2e7ead382555ac6f69e82ba397f726a6ab7c1ca6b85b4fd314c61f7bfba6"
+      "sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
       "bytes": 824,
       "path": "local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
       "reported_sha256_values": [
@@ -476,7 +476,7 @@
       "sha256": "sha256:396dcb30c366577f935571db79c10db415dad58012da47682be4a33faadef00d"
     },
     {
-      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-terminal-dag-watch-proof.json",
+      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-terminal-dag-watch-proof.json",
       "bytes": 1790,
       "path": "local/agentic-evals/tau-terminal-dag-watch-proof.json",
       "reported_sha256_values": [
@@ -506,19 +506,18 @@
       "reason": "self_referential_verifier_report_excluded_from_milestone_index"
     }
   ],
-  "generated_at": "2026-08-30T18:07:16.970310Z",
+  "generated_at": "2026-09-15T04:59:38.297465Z",
   "generating_command": [
+    "uv",
+    "run",
+    "tau",
     "proof-index",
     "agentic-evals",
     "build",
-    "--repo",
-    ".",
     "--out",
-    "local/agentic-evals/tau-agentic-eval-evidence-index.json",
-    "--milestone-id",
-    "tau-agentic-evals"
+    "local/agentic-evals/tau-agentic-eval-evidence-index.json"
   ],
-  "index_sha256": "sha256:b05f8bfb31dd72b3646d442b500e7b46020a68469e2120c9ff257d8e598d724c",
+  "index_sha256": "sha256:0bc7018b2baf00192012667895c81a3d1e29b4a6bb3c09806e773381bc9a4882",
   "index_version": 1,
   "milestone_id": "tau-agentic-evals",
   "ok": true,
@@ -540,9 +539,10 @@
   "repo": {
     "dirty_tree": false,
     "dirty_tree_declaration": "clean",
+    "ignored_mutable_status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json",
     "ref": "main",
-    "root": "/home/graham/workspace/experiments/tau",
-    "sha": "f97bf84be97bcd221ed3c4192cee8ed2602d0e31",
+    "root": "/tmp/tau-329-origin-clean.hy0Fzl/repo",
+    "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
     "status_porcelain": ""
   },
   "report_count": 15,
@@ -766,9 +766,9 @@
     },
     {
       "agentic_evals_runner_version": "agentic_evals.report.v2",
-      "bytes": 19708,
+      "bytes": 19691,
       "case_count": 7,
-      "fixture_sha256": "sha256:888549ca16c4f722ab000d961fbef31d535cb380eed3c30752ae832a070e9a8d",
+      "fixture_sha256": "sha256:62d728d401f08f613e3ca1e6c5c961a110dcdc11791beaffc51ff1be89da485e",
       "generating_commands": [
         [
           "bash",
@@ -810,10 +810,10 @@
       "mocked": false,
       "path": "local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
       "readiness": "READY",
-      "repo_ref": "watchdog/issue-329",
-      "repo_sha": "702e42631dbfab544bf8fbc386aec5d40ac7cfbb",
+      "repo_ref": "main",
+      "repo_sha": "f3b7ac5a1ce370309eb6119f39b730a13838df75",
       "schema": "agentic_evals.report.v2",
-      "sha256": "sha256:f57e8ed1d6d6d15acbca828e6a0a9d75b1057af77265ec5a739bba64713fac44",
+      "sha256": "sha256:52a725b51138c403451354acc2298f6abe95445ebec0b047e688845737f5749e",
       "skill": null,
       "source_manifest": "evals/tau_feature_coverage_agentic_eval.json",
       "trial_count": 14
@@ -985,5 +985,654 @@
   ],
   "schema": "tau.agentic_eval_evidence_index.v1",
   "status": "PASS",
+  "ticket_proof_bundle_count": 44,
+  "ticket_proof_bundles": [
+    {
+      "artifact_hashes": {},
+      "bytes": 2817,
+      "issue": 186,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:e756a42048a35768b89425446851f3d0e37492a016282d8fdb9d210d671dc591",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 663,
+      "issue": 187,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:e503753b09af8d34f3651fe4a161022dc8a12fb2805988f794b11697279e0c36",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 780,
+      "issue": 188,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:f3e6338a86f0ce71eabae79aae9738f896fba6de2df695ebcb2793551df4d07f",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 853,
+      "issue": 189,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:180987b20e5ba6ef560e2520b62faf067102434c4f649df5f46dba054b481cba",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 877,
+      "issue": 190,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:91051e5678b5eb3c01fe196c55bcbcef750a08d680f38771f638d80d2e7c0ce3",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 984,
+      "issue": 191,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:bdd7a65655ef2f97880e66b0c3bf670dbb5e331b12a2833800fd7130ee417ecf",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 1401,
+      "issue": 192,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-192-project-profile-conformance-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:d7b7a7eab06c7e2b02bcb130466340bdf2363d44b03b8a05480127b4cb3b3087",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 1991,
+      "issue": 193,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:34fe24364410f2d333151f447dca1ef63a27c4fa4a56d35ea6ec882f36769cbd",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2030,
+      "issue": 194,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-194-security-audit-conformance-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:fb654cbdea6ab2f5159b452f9d61963ac16c88168ce03a97717812b0e74b0e2b",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2722,
+      "issue": 195,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-195-runtime-handshake-20260727/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:f69a3c64cb05e9e11dce65e9c89a92149f6174c07aae7f9fc92923cad0a8dc1d",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 5374,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-211-clean-wheel-completion-20260728T152212Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:8406a4ee83fa4c3cf4e81ef7fd0aa121c5beb9d9a41ef31a1458d4ae875e8382",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 5110,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-222-governed-skill-live-proofs-20260728T155857Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:bc34f2be22e1eae92ef0f1312cc1ce600ad9e12d2b39ad39ebdea5b1c967bf42",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2563,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-223-chatterbox-voice-render-20260728T213642Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:d9947c9fee4e2c8e3148e5db16ed799627c0f1ed768d6d8a75e42bfa210c82b9",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 4416,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-224-project-status-20260728T153534Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:7092cf4c465c0b0bc94f40301e1a7a5aae0dbdb07a77c3f148cb0d175f59a5ad",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3858,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-225-hardening-conformance-audit-20260728T211301Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:f2c76df5e9ed510cadb5dd47eb7c39ef2af70be42429116d26db37657734988c",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2343,
+      "issue": 288,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-288-voice-render-v2-final-20260802/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:4d957068859b75c9ecb11fba36f5c14270835acb880f86f45960798382e79c68",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 530,
+      "issue": 291,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-291-canonical-plan-admission/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:7055cb306007e8d22d3f83e86d75d5162e307a14da2c1bec075808b096ef8ff5",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 508,
+      "issue": 292,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-292-context-lineage-hashes/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:8703f0c01cc5d18869c1cbac86b48398676b4d73e3896b1c80c121f1a17e5f08",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2854,
+      "issue": 293,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-293-attempt-result-admission/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:a2f9a7ca94cb3770f24d8f2e9e9512e1f2f568efac1cb23c7b394f7616118406",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 4043,
+      "issue": 294,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-294-transition-replay-validation/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:8825a86c2969b80a44c7c7d05f99fac7c44f8e909bb1f05fb778bf17b6329975",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 4477,
+      "issue": 295,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-295-artifact-reference-provenance/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:907abc1372b961c435c0507fd881beffe1d58f8b992051c80b7378cb807b47bf",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3154,
+      "issue": 296,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-296-public-dag-contracts/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:0cd365c0642bfc46ad02678de117fa334bc42f7f7732b40214ea43ef2e81c603",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2570,
+      "issue": 297,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-297-deep-immutability/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:1f2efcfb3e82b9cc846010b9502b8cddd6cbe983b4d84aaec5977dfe3a919fdb",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2328,
+      "issue": 298,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-298-adversarial-contract-conformance/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 37583,
+      "issue": 304,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:397ce58b75aa4de88c26aad5da32bd41f59bb6c5856136bbeec51dd44d0fe418",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 5733,
+      "issue": 305,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-305-acceptance-attestation-20260830T192020Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:555677a199483bb84c7a6ab11b5240d7c873df6555bb900fc5cc249d1611edbe",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {
+        "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json": "sha256:61438c2c92739f6dcbee303d3adadfd9cf09bf2fadab87b5dd0ebc7cc18031de",
+        "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json": "sha256:9991da2577f9bcb47dbcd04869e5882ce495b85a27bb1cac36cd810391792ea6",
+        "local/agentic-evals/tau-operator-action-inbox-proof.json": "sha256:61438c2c92739f6dcbee303d3adadfd9cf09bf2fadab87b5dd0ebc7cc18031de"
+      },
+      "bytes": 6284,
+      "issue": 314,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:09184c5d62f2ce072790548a8b8af8eb0182c580b4e785b4d225cca37e1d6e81",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PUBLISHED_READY_TO_CLOSE"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2659,
+      "issue": 315,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-315-herdr-runtime-agent-nodes-20260830T204841Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:c09692c4506975d60e99df7defb3b5f0ec978b870eb85c78dc92bbd201e70818",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2568,
+      "issue": 316,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "ACCEPTED"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 9642,
+      "issue": 317,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:fe5b80aa4c4d30ecc919721d3549434be8e62948916ee4443e1204f789331b72",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "READY_PENDING_FINALIZER_LANDING"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3791,
+      "issue": 319,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:58f69633bdbb00806cbd2948a0c5e3e4ebacb8222b823be6f1e391255d246808",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {
+        "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+        "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
+        "/home/graham/workspace/experiments/tau/evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
+      },
+      "bytes": 9838,
+      "issue": 321,
+      "issue_dependencies": {
+        "314_live_state_readback": {
+          "closedAt": "2026-09-15T02:13:00Z",
+          "state": "CLOSED",
+          "stateReason": "COMPLETED"
+        },
+        "316_live_state_readback": {
+          "state": "OPEN",
+          "stateReason": "REOPENED"
+        },
+        "316_parent_child_lineage": "not_required_for_321_base_projection_until_316_closed",
+        "316_requirement": "314 must be CLOSED before 316 closure evidence is accepted"
+      },
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json",
+      "reviewer_run_addressed": "2e94d54e-39c1-4a8a-bd14-bb75816ce765",
+      "sha256": "sha256:21c3c716713d0518c1b4d971aa0a17abf76d1fd122646996a1e0bec1726b2e5e",
+      "source_file_hashes": {
+        "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75",
+        "scripts/agentic-eval-tau-memory-episode-projection.py": "sha256:8f97bb75ac768900f3edce0c6be8eeedb5f54ef40da39e4753a43bc744e2290f",
+        "src/tau_coding/dag_runtime/memory_projection.py": "sha256:9b257c2836931a514da3f1e80e4580b9ebc29c23e13fa4a7d8102821e1974af3",
+        "src/tau_coding/dag_runtime/run_store.py": "sha256:ddbafe81ca152cee9b5c5ac0b9bafdc1a0f6650d13d77be2ebad01c03d2ad4c3",
+        "tests/test_dag_runtime_memory_projection.py": "sha256:5c1cec151ff8e4a8c99e963bc2e24606d56502835f39ff99db04e6e389c1fa47"
+      },
+      "source_revision": {
+        "head_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+        "ref": "main",
+        "repo": "grahama1970/tau"
+      },
+      "status": "ACCEPTED"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 953,
+      "issue": 331,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2673,
+      "issue": 332,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:f3c8e5e2c998c8ca4ccdc7ee370e72e86aece1a6910fbe036e77483c211eeeda",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 6031,
+      "issue": 333,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-333-ledger-audit-projection-20260830T164658Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:9e714105c31141379679d6befe8c4d0ba19b640564b2a9f324194ddeba3467af",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 1771,
+      "issue": 334,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:ce7a4548d1ceee596e8bca8b32f2ef325bc611be8c18d2b751683b4c48278dfb",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 1730,
+      "issue": 335,
+      "issue_dependencies": {},
+      "live": null,
+      "mocked": null,
+      "path": "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:3948762a00ad14c133a0a4cf1991519f132716ddf5f92402907e8857815e0534",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3011,
+      "issue": 336,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-336-visual-review-evidence-20260831T105945Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:006cd9fe89063e274b4b551ffb7cca4ecde3e86f1bcd2005356ab7273d393e62",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3122,
+      "issue": 336,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-336-visual-review-receipt-enforcement-20260831T111946Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:24c93263c5cc8fbb7cf4c95bab194dc24831e21c5cf2d3f8730b2b52bf6d51c6",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PASS"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 3280,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2662,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": false,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-72-p11-security-unit-conformance-20260729T0019Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:a0ff736d4fe4eefbe9a5c42c7550d4c749dfb1f523d108a920d25608228c1d57",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PROVEN"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2807,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:712cca62770fc02e2967ea323a84bff35fc8483c32864a23686b9778ff773d95",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PROVEN"
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2731,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-72-p8-sprite-unit-conformance-20260729T0013Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:18d68ecdbf53589d14cd1533bc601f97c2f6d7d37307e16d6f0bcc99c507e781",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": null
+    },
+    {
+      "artifact_hashes": {},
+      "bytes": 2231,
+      "issue": null,
+      "issue_dependencies": {},
+      "live": true,
+      "mocked": false,
+      "path": "docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/closure-evidence.json",
+      "reviewer_run_addressed": null,
+      "sha256": "sha256:620e3ec9b2379f0819fe7ab341bb6c5ec65ce24f7c9bfc00c1a011a21f6afb43",
+      "source_file_hashes": {},
+      "source_revision": null,
+      "status": "PROVEN"
+    }
+  ],
   "verifier_version": "tau.agentic_eval_evidence_verifier.v1"
 }

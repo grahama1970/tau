@@ -1,10 +1,10 @@
 {
   "schema": "agentic_evals.report.v2",
   "source": "evals/tau_agentic_eval_evidence_index_agentic_eval.json",
-  "run_id": "16ebe79c8922",
-  "fixture_sha256": "sha256:612289cdd4219e278d7da305b0a84f949265a767c4e894f08eb3b744266df045",
+  "run_id": "57a4b736ca63",
+  "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
   "repo": {
-    "sha": "bf9f470818978af15f4549a64cd06353455b0974",
+    "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
     "ref": "main"
   },
   "mocked": false,
@@ -55,6 +55,7 @@
         "exempt_evidence": [],
         "exemptions": [],
         "unqualified_live_cases": [],
+        "ineligible_supporting_cases": [],
         "supporting_cases": [
           "retained-agentic-eval-evidence-index-verifies",
           "mutated-report-is-rejected",
@@ -67,7 +68,7 @@
   },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-30T18:06:23.989916+00:00",
+  "generated_at": "2026-09-15T05:00:38.095021+00:00",
   "case_count": 5,
   "required_case_count": 5,
   "outcome_counts": {
@@ -83,15 +84,83 @@
       "flaky": false,
       "name": "retained-agentic-eval-evidence-index-verifies",
       "type": "positive",
-      "case_id": "16ebe79c8922-c000",
+      "case_id": "57a4b736ca63-c000",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode positive --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+        "test_source_sha256": "sha256:b11ae9a4148f38262d1ce03b59b26a4ed1e7539c12b92ce0b00ca70d01e0dde5",
+        "oracle_sha256": "sha256:0275bc4a4c04430f9fb8db6debdba2da6521cd84ad1f101ad560066ad6d255ed",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:b6f77148fd65da1995378df18",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:b11ae9a4148f38262d1ce03b59b26a4ed1e7539c12b92ce0b00ca70d01e0dde5",
+      "oracle_sha256": "sha256:0275bc4a4c04430f9fb8db6debdba2da6521cd84ad1f101ad560066ad6d255ed",
+      "application_identity": {
+        "repo": {
+          "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "live_e2e",
       "effective_evidence_class": "live_e2e",
       "live_qualified": true,
@@ -103,39 +172,139 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 703.312,
+      "avg_latency_ms": 1357.253,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": null, \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\", \"status\": \"PASS\"}\n",
-          "stderr": "",
-          "duration_ms": 699.82,
+          "stderr": "Using CPython 3.14.3\nCreating virtual environment at: .venv\n   Building tau @ file:///tmp/tau-329-origin-clean.hy0Fzl/repo\n      Built tau @ file:///tmp/tau-329-origin-clean.hy0Fzl/repo\nInstalled 36 packages in 132ms\n",
+          "duration_ms": 2043.931,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c000-t00",
+          "trial_id": "57a4b736ca63-c000-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:b261c30ad50aec73a328b52357d3181037ecc2908a774075ac3affc1b1b43239",
-            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:35afac924aeff2c926c3e8e9ce0ebdf2f467f710b6a986c9f63baaab9f012cba",
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:7e37f347637eb1fd33f1017a04f6ed92123e3c7ba8d41e36d87df3948faa686c"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:99b84e4906c617f939ea48ce45ae47601836cdfa858b73aff6c6926738cf456e",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:1123ce3c94d1c070d0cb122d35af7a09733687845ce069d8e38caa8ddfdbe387",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:7de44cbcad45a29d3adf56573b0df9058acac5dbfadbc88ad387e89c8285aaf2"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:b11ae9a4148f38262d1ce03b59b26a4ed1e7539c12b92ce0b00ca70d01e0dde5",
+            "oracle_sha256": "sha256:0275bc4a4c04430f9fb8db6debdba2da6521cd84ad1f101ad560066ad6d255ed",
+            "generation_id": "sha256:b6f77148fd65da1995378df18",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": null, \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 706.803,
+          "duration_ms": 670.574,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c000-t01",
+          "trial_id": "57a4b736ca63-c000-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:49c15b42ddb7bb57a05c449a977c988fbe5db3e88e32047abbe298848993d0cb",
-            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:935541c1a0b051e0f047a161b74b1bf21dcfa9e336a003a263a41d0a7a5b899c",
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:756e6fe32744be87ef7af38301b50b054b4e18a6fec8c53200d4f83d6a32ca15"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json": "sha256:293c57886defa8b980522b93b94e18269e93cc2537968dd2cd2d1d72e6cc3471",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index.json": "sha256:098eecc13bd916813a6dd5a2c8579e0691843bec8aead59fffbf45638bd75eb2",
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json": "sha256:9f92d03e8787caa5d6c70b7d142ef9425b1b3c0ac4b03b2f6ff92e23ad34f85b"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:b11ae9a4148f38262d1ce03b59b26a4ed1e7539c12b92ce0b00ca70d01e0dde5",
+            "oracle_sha256": "sha256:0275bc4a4c04430f9fb8db6debdba2da6521cd84ad1f101ad560066ad6d255ed",
+            "generation_id": "sha256:b6f77148fd65da1995378df18",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -144,15 +313,83 @@
       "flaky": false,
       "name": "mutated-report-is-rejected",
       "type": "adversarial",
-      "case_id": "16ebe79c8922-c001",
+      "case_id": "57a4b736ca63-c001",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode mutated-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+        "test_source_sha256": "sha256:3b64044ebe49095663c1ba3e4b4f18677f6324b5a3a715d414b60830a19a0c0a",
+        "oracle_sha256": "sha256:18ea86bae2a7ad4f160406aa94658696fb3d8428111d5c8f3b71cb3ee2a86f6d",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:801c87c5233661120ba325fea",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:3b64044ebe49095663c1ba3e4b4f18677f6324b5a3a715d414b60830a19a0c0a",
+      "oracle_sha256": "sha256:18ea86bae2a7ad4f160406aa94658696fb3d8428111d5c8f3b71cb3ee2a86f6d",
+      "application_identity": {
+        "repo": {
+          "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
@@ -164,35 +401,135 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 13354.428,
+      "avg_latency_ms": 7293.565,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"report_digest_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13484.524,
+          "duration_ms": 7259.034,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c001-t00",
+          "trial_id": "57a4b736ca63-c001-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:5d97d83b685e0d3a9cd47416910721c210e6a51eb0a6bcd32f146c208f42d0fc"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:013a556e6db18b563f357b13394a19a95d77a55f4df5c408a1134b283b5e15c8"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:3b64044ebe49095663c1ba3e4b4f18677f6324b5a3a715d414b60830a19a0c0a",
+            "oracle_sha256": "sha256:18ea86bae2a7ad4f160406aa94658696fb3d8428111d5c8f3b71cb3ee2a86f6d",
+            "generation_id": "sha256:801c87c5233661120ba325fea",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"report_digest_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13224.332,
+          "duration_ms": 7328.096,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c001-t01",
+          "trial_id": "57a4b736ca63-c001-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:de416d17622488902b7f29d736c76ca8d5cde1d63bf1e75c4ed8cb1a198aa6fe"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json": "sha256:2e7b2b0b15afbe9086764222325e94ea035e6f0b6b1edc03c776e976f1b60001"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:3b64044ebe49095663c1ba3e4b4f18677f6324b5a3a715d414b60830a19a0c0a",
+            "oracle_sha256": "sha256:18ea86bae2a7ad4f160406aa94658696fb3d8428111d5c8f3b71cb3ee2a86f6d",
+            "generation_id": "sha256:801c87c5233661120ba325fea",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -201,15 +538,83 @@
       "flaky": false,
       "name": "substituted-report-from-wrong-sha-is-rejected",
       "type": "adversarial",
-      "case_id": "16ebe79c8922-c002",
+      "case_id": "57a4b736ca63-c002",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode substituted-report --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+        "test_source_sha256": "sha256:c6cadf40c3a05d67b7a418fa54acbe3036a4c2abbcb5de63c9c6dcf329067c03",
+        "oracle_sha256": "sha256:b7d81ef9eb6534f87443d4ab23ea2c8dd482f94de6dacf3e2d2d005148e24d49",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:d7a372c06f2856b394338b641",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:c6cadf40c3a05d67b7a418fa54acbe3036a4c2abbcb5de63c9c6dcf329067c03",
+      "oracle_sha256": "sha256:b7d81ef9eb6534f87443d4ab23ea2c8dd482f94de6dacf3e2d2d005148e24d49",
+      "application_identity": {
+        "repo": {
+          "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
@@ -221,35 +626,135 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 13399.519,
+      "avg_latency_ms": 7443.199,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"report_repo_sha_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13487.881,
+          "duration_ms": 7377.342,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c002-t00",
+          "trial_id": "57a4b736ca63-c002-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:1225a998d377235e178408cc3ecd82425c22dd4b373885a99a3d95ea74454837"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:011067522d255378ed6dc52a76e8d64763070f8aeb7811870166a562db61015a"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:c6cadf40c3a05d67b7a418fa54acbe3036a4c2abbcb5de63c9c6dcf329067c03",
+            "oracle_sha256": "sha256:b7d81ef9eb6534f87443d4ab23ea2c8dd482f94de6dacf3e2d2d005148e24d49",
+            "generation_id": "sha256:d7a372c06f2856b394338b641",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"report_repo_sha_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13311.158,
+          "duration_ms": 7509.057,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c002-t01",
+          "trial_id": "57a4b736ca63-c002-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:7b7a0c1632ffa0dbd0b91bff7d3b1af1b2ef1a9373730142e15c7792b6b8e38d"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json": "sha256:824f981bdd3734fae0e0b89b4a13d71a57211bee725838b82736e4b6f4c1b82d"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:c6cadf40c3a05d67b7a418fa54acbe3036a4c2abbcb5de63c9c6dcf329067c03",
+            "oracle_sha256": "sha256:b7d81ef9eb6534f87443d4ab23ea2c8dd482f94de6dacf3e2d2d005148e24d49",
+            "generation_id": "sha256:d7a372c06f2856b394338b641",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -258,15 +763,83 @@
       "flaky": false,
       "name": "deleted-artifact-is-rejected",
       "type": "adversarial",
-      "case_id": "16ebe79c8922-c003",
+      "case_id": "57a4b736ca63-c003",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode deleted-artifact --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+        "test_source_sha256": "sha256:8c5a244287065a451e80defc5d76b3d576a40243f7d45dee588c25d4c9569624",
+        "oracle_sha256": "sha256:10945c2fc4087487c3c11ebf823082daa11831f6f2173be559ae27d437c3fefa",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:2c27ddde6e4a00a16d151f181",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:8c5a244287065a451e80defc5d76b3d576a40243f7d45dee588c25d4c9569624",
+      "oracle_sha256": "sha256:10945c2fc4087487c3c11ebf823082daa11831f6f2173be559ae27d437c3fefa",
+      "application_identity": {
+        "repo": {
+          "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
@@ -278,35 +851,135 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 13174.231,
+      "avg_latency_ms": 7473.298,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"artifact_missing\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13088.073,
+          "duration_ms": 7434.168,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c003-t00",
+          "trial_id": "57a4b736ca63-c003-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:6230d1bc310b73fe5cbeffa5db92107afa9ea028f5f6e6cb3e02bf0c9f0dee0f"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:1a4e4efb141c47d0eddb7bcfb9192beab6676a5bc00e3b11f6c570bed7a378f3"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:8c5a244287065a451e80defc5d76b3d576a40243f7d45dee588c25d4c9569624",
+            "oracle_sha256": "sha256:10945c2fc4087487c3c11ebf823082daa11831f6f2173be559ae27d437c3fefa",
+            "generation_id": "sha256:2c27ddde6e4a00a16d151f181",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"artifact_missing\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13260.389,
+          "duration_ms": 7512.429,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c003-t01",
+          "trial_id": "57a4b736ca63-c003-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:c6649d86514773baf3b87c735ab580240480a1f799015b19e062273a5b1c3472"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json": "sha256:565e3ef40d40c19124a417baace6b911eff09a6f764617ccb87e933102682098"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:8c5a244287065a451e80defc5d76b3d576a40243f7d45dee588c25d4c9569624",
+            "oracle_sha256": "sha256:10945c2fc4087487c3c11ebf823082daa11831f6f2173be559ae27d437c3fefa",
+            "generation_id": "sha256:2c27ddde6e4a00a16d151f181",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -315,15 +988,83 @@
       "flaky": false,
       "name": "dirty-tree-is-rejected",
       "type": "adversarial",
-      "case_id": "16ebe79c8922-c004",
+      "case_id": "57a4b736ca63-c004",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-agentic-eval-evidence-index.py --mode dirty-tree --repo . --out local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+        "test_source_sha256": "sha256:0c2de52ef36e89c7cc3f427720e58a91a3dce3cc7075ecc953e58e3c54a0e479",
+        "oracle_sha256": "sha256:7d374606e8bd7fe0907e41fe1130abb56b79e21e74a342c02b891afad2d888ef",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:deee1f1407ed05b22c17789d9",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:0c2de52ef36e89c7cc3f427720e58a91a3dce3cc7075ecc953e58e3c54a0e479",
+      "oracle_sha256": "sha256:7d374606e8bd7fe0907e41fe1130abb56b79e21e74a342c02b891afad2d888ef",
+      "application_identity": {
+        "repo": {
+          "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
@@ -335,35 +1076,135 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 13335.294,
+      "avg_latency_ms": 7609.546,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"dirty_tree_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13196.105,
+          "duration_ms": 7586.873,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c004-t00",
+          "trial_id": "57a4b736ca63-c004-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:3ced6c6149287048080e9c115e51f31007acf778338439952072ed5fc19749fe"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:b744b14ed0019c020f20fd9edddfc2fdef331e5ab17c428097c9a15e20c2fe40"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:0c2de52ef36e89c7cc3f427720e58a91a3dce3cc7075ecc953e58e3c54a0e479",
+            "oracle_sha256": "sha256:7d374606e8bd7fe0907e41fe1130abb56b79e21e74a342c02b891afad2d888ef",
+            "generation_id": "sha256:deee1f1407ed05b22c17789d9",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "{\"expected_failure_code\": \"dirty_tree_mismatch\", \"proof\": \"local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 13474.483,
+          "duration_ms": 7632.219,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "16ebe79c8922-c004-t01",
+          "trial_id": "57a4b736ca63-c004-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:2cbc8886b50a9221081d1eb670b97c3515bc97c22a5e0211a43dbb5e189a37c6"
+            "../local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json": "sha256:93506131f669cb38320c0b47a1eacd746a791eedba65246b1e43899f90a0d3ad"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:cde8e1dc0343ca8235a7deebcaab098e6181378e9eff04752d3dd6355bfc8820",
+            "test_source_sha256": "sha256:0c2de52ef36e89c7cc3f427720e58a91a3dce3cc7075ecc953e58e3c54a0e479",
+            "oracle_sha256": "sha256:7d374606e8bd7fe0907e41fe1130abb56b79e21e74a342c02b891afad2d888ef",
+            "generation_id": "sha256:deee1f1407ed05b22c17789d9",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     }
