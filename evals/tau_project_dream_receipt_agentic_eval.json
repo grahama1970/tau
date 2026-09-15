@@ -1,0 +1,115 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau project-dream terminal receipt, promotion policy, deterministic replay validation, proof index, and static report rendering",
+  "claims": {
+    "proves": "Tau can validate tau.project_dream_receipt.v1 from retained hash-bound artifacts, accept shadow/no-change/review/promoted/rolled-back terminal receipts, reject adversarial policy/approval/CAS/boundary/aggregate/telemetry/reference claims, and render project-dream evidence through proof-index and static-report paths.",
+    "does_not_prove": "The synthesized project knowledge is semantically true, production Graph Memory persistence, provider/model quality, or human identity beyond referenced approval receipts."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.project_dream_receipt.replayable_promotion_policy",
+      "description": "Project-dream receipts are deterministic, hash-bound, policy-gated, and cannot claim promotion without approval when required, Graph Memory CAS success, independent head readback, correct effect count, and explicit non-claims.",
+      "claim_semantics": "protocol",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "project-dream-positive-terminal-receipts-and-reporting",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.project_dream_receipt.replayable_promotion_policy"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-project-dream-receipt.py --out local/agentic-evals/tau-project-dream-receipt/proof.json"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/report_contains_project_dream_gate_chain",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/proof_index_contains_project_dream_receipts",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/proof.json",
+            "json_pointer": "/errors",
+            "equals": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "project-dream-adversarial-replay-fixtures-retained",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.project_dream_receipt.replayable_promotion_policy"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-project-dream-receipt.py --out local/agentic-evals/tau-project-dream-receipt/adversarial-proof.json"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/adversarial-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/adversarial-proof.json",
+            "json_pointer": "/adversarial_cases/0/validation_status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-dream-receipt/adversarial-proof.json",
+            "json_pointer": "/errors",
+            "equals": []
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "attempt_id": "attempt-001",
+  "checked_at": "2026-09-15T19:35:01.256976Z",
+  "error_count": 1,
+  "errors": [
+    "dream worker transcript cannot be independent source evidence"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "project_dream_schema": "tau.project_dream_receipt.v1",
+  "project_id": "tau",
+  "proof_scope": {
+    "does_not_prove": [
+      "The synthesized project knowledge is semantically true.",
+      "Provider/model quality.",
+      "Production Graph Memory persistence beyond referenced CAS receipts.",
+      "Human identity verification beyond referenced approval receipts."
+    ],
+    "proves": [
+      "Tau replay-validated the project-dream receipt from hash-bound artifacts.",
+      "Tau checked project-dream policy, approval, CAS/head readback, effect-count, and data-boundary gates deterministically."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/project-dream-receipt.json",
+  "receipt_sha256": "sha256:74b5ff860090688333ab25a9ba7e28c6b792985a6552cb3a0acbd547b32862d0",
+  "run_id": "run-dream-worker-transcript",
+  "schema": "tau.project_dream_validation_receipt.v1",
+  "status": "BLOCKED",
+  "terminal_status": "SHADOW_STAGED",
+  "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/validation-receipt.json"
+}

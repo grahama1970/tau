@@ -1,0 +1,9 @@
+{
+  "allowed_paths": [
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/mutated-evidence-hash"
+  ],
+  "allowed_projects": [
+    "tau"
+  ],
+  "schema": "tau.data_boundary.v1"
+}

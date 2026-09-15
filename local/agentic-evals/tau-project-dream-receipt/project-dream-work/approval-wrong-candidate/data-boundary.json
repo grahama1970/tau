@@ -1,0 +1,9 @@
+{
+  "allowed_paths": [
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate"
+  ],
+  "allowed_projects": [
+    "tau"
+  ],
+  "schema": "tau.data_boundary.v1"
+}

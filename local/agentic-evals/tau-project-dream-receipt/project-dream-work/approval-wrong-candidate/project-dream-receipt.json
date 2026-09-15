@@ -1,0 +1,146 @@
+{
+  "accepted_effect_count": 1,
+  "accepted_effects": [
+    {
+      "project_id": "tau",
+      "type": "graph_memory_cas"
+    }
+  ],
+  "aggregate": {
+    "expected_candidate_count": 1,
+    "expected_terminal_row_count": 1,
+    "observed_candidate_count": 1,
+    "observed_terminal_row_count": 1
+  },
+  "approval_receipt": {
+    "path": "approval.json",
+    "schema": "tau.project_dream_approval_receipt.v1",
+    "sha256": "sha256:29c71fedb79e57f6dddf232f7cb7e14147b999276e0bb39b90daa0bb8a684e5a"
+  },
+  "archival_compaction": {
+    "path": "archival-compaction.json",
+    "schema": "tau.archival_compaction.v1",
+    "sha256": "sha256:85095e2ebf21da7500b62a91a499075a575fb9c87987a7645a248c356a782593"
+  },
+  "attempt_id": "attempt-001",
+  "candidate": {
+    "path": "candidate.json",
+    "schema": "tau.project_dream_candidate.v1",
+    "sha256": "sha256:b6293f9188296694cdc662db31672068cdee2e32b8a49d8b1d057e077da61862"
+  },
+  "candidate_digest": "sha256:4355ea5be077261b8491c446dfdf5bcc353d32726009339fa0754ddc5d902e04",
+  "code_ingest": {
+    "coverage_scope": "full",
+    "git_commit": "abc123",
+    "path": "code-ingest.json",
+    "reconciliation_eligible": true,
+    "schema": "tau.code_ingest_manifest.v1",
+    "sha256": "sha256:e3d72a0f92e2e4c6fc3236eca8a7848f4f384e6ea360e5f4472f6e64d205d3e9"
+  },
+  "command_spec": {
+    "path": "command-spec.json",
+    "schema": "tau.opencode_command_spec.v1",
+    "sha256": "sha256:9eda38f807995f022d9d1586b9ce39323985b8483cd2cc3de19f53dbd7e1956c"
+  },
+  "data_boundary": {
+    "path": "data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:852cd7a2a310904da21a1eed9755d23541508cfbf8aa6699039c6c48328412c4"
+  },
+  "deterministic_validation": {
+    "path": "validation.json",
+    "schema": "tau.project_dream_deterministic_validation.v1",
+    "sha256": "sha256:343d71ca56327f54764a67d6e576fd11148013c017fcf8962c6adf879a66dc83"
+  },
+  "effects": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate/head-readback.json",
+      "project_id": "tau",
+      "type": "project_topic_head"
+    }
+  ],
+  "evidence_packet": {
+    "path": "evidence-packet.json",
+    "schema": "tau.evidence_packet.v1",
+    "sha256": "sha256:eaadb4bb15a88ea10a25f8796b8c4db8a76048cd8b91d3b0a4041f0f1efeb291"
+  },
+  "expected_head": {
+    "after_digest": "sha256:after",
+    "after_generation": 2,
+    "before_digest": "sha256:before",
+    "before_generation": 1
+  },
+  "explicit_non_claims": [
+    "A receipt does not prove semantic truth.",
+    "Model agreement is not a trust anchor.",
+    "Receipt existence is not a trust anchor."
+  ],
+  "first_failed_gate": null,
+  "head_readback": {
+    "path": "head-readback.json",
+    "schema": "graph_memory.project_topic_head_readback.v1",
+    "sha256": "sha256:824c5c080c38221fe06111bbb81db930cc567e1d9b7f2644d34f7a4d60db007e"
+  },
+  "immutable_goal_hash": "sha256:goal",
+  "policy_profile": {
+    "path": "policy-profile.json",
+    "schema": "tau.policy_profile.v1",
+    "sha256": "sha256:415402d06a21a7a9867e8ce3fd3c19e2e51fe18fc1a0137c3a2e423bf3ecbf3d"
+  },
+  "project_id": "tau",
+  "project_state": {
+    "path": "project-state.json",
+    "schema": "tau.project_state.v1",
+    "sha256": "sha256:a8139b45870415ecb454cb3e866ba2a5d5a149654a7f090e10523c3bd5c47bbf"
+  },
+  "promotion_policy": {
+    "decision": "approved_by_human",
+    "human_approval_required": true,
+    "policy_class": "human_approval_required"
+  },
+  "promotion_receipt": {
+    "path": "promotion.json",
+    "schema": "graph_memory.project_topic_promotion_receipt.v1",
+    "sha256": "sha256:f2f302fde633ae3da3b7082f37badf7e763d4690e35cda6cc4299a85938ad66b"
+  },
+  "prompt_schema_policy": {
+    "path": "prompt-policy.json",
+    "schema": "tau.prompt_schema_policy.v1",
+    "sha256": "sha256:4bd82ef716ae0c4620aec86745065cfc71f6888badec668ec66b9a219ae51a05"
+  },
+  "proof_scope": "project-memory dream receipt replay",
+  "provider": {
+    "model": "deterministic",
+    "provider": "fixture"
+  },
+  "provider_readiness": {
+    "path": "provider-readiness.json",
+    "schema": "tau.provider_readiness_receipt.v1",
+    "sha256": "sha256:b1e847a14ab1e1465da40371170affe4300d693d3d17d59b39b10ad8c5292333"
+  },
+  "raw_model_output": {
+    "path": "raw-model-output.json",
+    "schema": "tau.raw_model_output.v1",
+    "sha256": "sha256:6ee6ae6c1492938527d1278b5d00cd09600e894f17ee1fb39c7e2a84262af9d9"
+  },
+  "run_id": "run-approval-wrong-candidate",
+  "schema": "tau.project_dream_receipt.v1",
+  "stage_response": {
+    "path": "stage-response.json",
+    "schema": "graph_memory.project_topic_stage_receipt.v1",
+    "sha256": "sha256:fd96e62102c714b631d260568d1af24639d96350eba2dbe1b9a1cb2ece109e67"
+  },
+  "telemetry": {
+    "cost_usd": null,
+    "duration_ms": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "status": "unknown"
+  },
+  "terminal_status": "PROMOTED",
+  "transcript_corpus": {
+    "path": "transcript-corpus.json",
+    "schema": "tau.transcript_corpus.v1",
+    "sha256": "sha256:74b8e6f5f810c3f3d3782549c64465d36af65f4fab7ba11643732a27cfdda43b"
+  }
+}

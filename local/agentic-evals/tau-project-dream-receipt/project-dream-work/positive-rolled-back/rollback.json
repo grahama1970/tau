@@ -1,0 +1,4 @@
+{
+  "deletes_intervening_history": false,
+  "schema": "graph_memory.project_topic_rollback_receipt.v1"
+}

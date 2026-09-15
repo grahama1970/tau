@@ -1,0 +1,4 @@
+{
+  "input_digest": "sha256:input",
+  "schema": "tau.evidence_packet.v1"
+}

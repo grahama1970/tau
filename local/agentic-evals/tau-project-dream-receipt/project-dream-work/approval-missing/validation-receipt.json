@@ -1,0 +1,37 @@
+{
+  "attempt_id": "attempt-001",
+  "checked_at": "2026-09-15T19:35:01.230752Z",
+  "error_count": 5,
+  "errors": [
+    "approval_receipt ref is required",
+    "approval_receipt.decision must be approved",
+    "approval_receipt.project_id does not match receipt project_id",
+    "approval_receipt.candidate_digest does not match receipt candidate_digest",
+    "approval_receipt.expires_at must be an ISO timestamp"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "project_dream_schema": "tau.project_dream_receipt.v1",
+  "project_id": "tau",
+  "proof_scope": {
+    "does_not_prove": [
+      "The synthesized project knowledge is semantically true.",
+      "Provider/model quality.",
+      "Production Graph Memory persistence beyond referenced CAS receipts.",
+      "Human identity verification beyond referenced approval receipts."
+    ],
+    "proves": [
+      "Tau replay-validated the project-dream receipt from hash-bound artifacts.",
+      "Tau checked project-dream policy, approval, CAS/head readback, effect-count, and data-boundary gates deterministically."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/project-dream-receipt.json",
+  "receipt_sha256": "sha256:1a5d34d655b390af5489ac71ec6181c54178d5a8f15a714a91b51f9bc0e35d47",
+  "run_id": "run-approval-missing",
+  "schema": "tau.project_dream_validation_receipt.v1",
+  "status": "BLOCKED",
+  "terminal_status": "PROMOTED",
+  "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/validation-receipt.json"
+}

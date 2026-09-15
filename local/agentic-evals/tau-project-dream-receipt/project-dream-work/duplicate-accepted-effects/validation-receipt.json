@@ -1,0 +1,34 @@
+{
+  "attempt_id": "attempt-001",
+  "checked_at": "2026-09-15T19:35:01.250909Z",
+  "error_count": 2,
+  "errors": [
+    "accepted_effect_count mismatch: expected 2, observed 1",
+    "PROMOTED requires exactly one accepted effect"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "project_dream_schema": "tau.project_dream_receipt.v1",
+  "project_id": "tau",
+  "proof_scope": {
+    "does_not_prove": [
+      "The synthesized project knowledge is semantically true.",
+      "Provider/model quality.",
+      "Production Graph Memory persistence beyond referenced CAS receipts.",
+      "Human identity verification beyond referenced approval receipts."
+    ],
+    "proves": [
+      "Tau replay-validated the project-dream receipt from hash-bound artifacts.",
+      "Tau checked project-dream policy, approval, CAS/head readback, effect-count, and data-boundary gates deterministically."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/project-dream-receipt.json",
+  "receipt_sha256": "sha256:8b105df86644fdd5e0b29e474c41748d8a417bf6d9cb3084afaa6bb65d6a09a1",
+  "run_id": "run-duplicate-accepted-effects",
+  "schema": "tau.project_dream_validation_receipt.v1",
+  "status": "BLOCKED",
+  "terminal_status": "PROMOTED",
+  "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/validation-receipt.json"
+}

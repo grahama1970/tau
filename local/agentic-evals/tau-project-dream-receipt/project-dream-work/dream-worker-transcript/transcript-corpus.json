@@ -1,0 +1,4 @@
+{
+  "includes_dream_worker_transcript": true,
+  "schema": "tau.transcript_corpus.v1"
+}

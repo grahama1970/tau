@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-09-15T19:35:01.321277Z",
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Complete sandbox enforcement.",
+      "Human identity verification unless a provenance receipt exists.",
+      "Provider/model semantic quality.",
+      "Memory fact truth.",
+      "Evidence-case sufficiency for closure.",
+      "DAG or swarm trustworthiness."
+    ],
+    "proves": [
+      "Tau rendered a static HTML report from existing run-status and run artifacts.",
+      "Tau included explicit non-claims in the rendered report."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/run-report.html.receipt.json",
+  "receipt_sha256_excludes_self": true,
+  "report_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/run-report.html",
+  "report_sha256": "sha256:43f67d57b74aa2de2966a57b216d0a2f12c5bd30a3bad0c8bbb01aae6d0b1c4a",
+  "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work",
+  "schema": "tau.run_report_receipt.v1",
+  "section_count": 11,
+  "sections": [
+    "goal",
+    "policy",
+    "data-boundary",
+    "memory-intent",
+    "evidence-case",
+    "dag-steps",
+    "coding-evidence",
+    "receipts",
+    "decisions",
+    "project-dream",
+    "non-claims"
+  ],
+  "source_artifacts": [],
+  "source_status": {
+    "artifact_count": 0,
+    "detected_type": "unknown",
+    "schema": "tau.run_status.v1",
+    "status": "MISSING"
+  },
+  "status": "PASS",
+  "unsigned_receipt_preimage_sha256": "sha256:e2d404430aba36abf291d0608536840398d21b4aa7a9b71c6b56a8270397de9a"
+}

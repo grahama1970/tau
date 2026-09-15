@@ -129,7 +129,7 @@ def _report_sections(
         "dag_receipt": dag_receipt or None,
     }
     coding_evidence = run_status.get("coding_evidence", {})
-    return [
+    sections = [
         {"id": "goal", "title": "Goal", "payload": goal},
         {"id": "policy", "title": "Policy", "payload": policy},
         {"id": "data-boundary", "title": "Data Boundary", "payload": boundary},
@@ -139,8 +139,15 @@ def _report_sections(
         {"id": "coding-evidence", "title": "Coding Evidence", "payload": coding_evidence},
         {"id": "receipts", "title": "Receipts", "payload": receipts},
         {"id": "decisions", "title": "Blocked / Allowed Decisions", "payload": decisions},
-        {"id": "non-claims", "title": "Non-Claims", "payload": NON_CLAIMS},
     ]
+    project_dream = _project_dream_summary(run_dir)
+    if project_dream["receipts"]:
+        sections.append(
+            {"id": "project-dream", "title": "Project Dream Gate Chain", "payload": project_dream}
+        )
+    sections.append({"id": "non-claims", "title": "Non-Claims", "payload": NON_CLAIMS})
+    return sections
+
 
 def _render_html(
     *,
@@ -242,6 +249,49 @@ def _render_section(section: dict[str, Any]) -> str:
         f"    <pre>{escape(payload)}</pre>\n"
         "  </section>"
     )
+
+
+def _project_dream_summary(run_dir: Path) -> dict[str, Any]:
+    receipts = []
+    for path in sorted(run_dir.rglob("*.json")):
+        payload = _read_optional_json(path)
+        if payload.get("schema") not in {
+            "tau.project_dream_receipt.v1",
+            "tau.project_dream_validation_receipt.v1",
+        }:
+            continue
+        receipts.append(
+            {
+                "path": str(path),
+                "sha256": f"sha256:{_sha256(path)}",
+                "schema": payload.get("schema"),
+                "status": payload.get("terminal_status") or payload.get("status"),
+                "ok": payload.get("ok"),
+                "first_failed_gate": payload.get("first_failed_gate"),
+                "promotion_policy": payload.get("promotion_policy"),
+                "accepted_effect_count": payload.get("accepted_effect_count"),
+                "non_claims": payload.get("explicit_non_claims")
+                or payload.get("proof_scope", {}).get("does_not_prove"),
+            }
+        )
+    return {
+        "receipts": receipts,
+        "gate_chain": [
+            "policy_profile",
+            "data_boundary",
+            "evidence_packet",
+            "deterministic_validation",
+            "stage_response",
+            "approval_receipt",
+            "promotion_receipt",
+            "head_readback",
+            "rollback_receipt",
+        ],
+        "non_claims": [
+            "A valid project-dream receipt does not prove the synthesized knowledge is true.",
+            "Model agreement, node success, and receipt existence are not trust anchors.",
+        ],
+    }
 
 
 def _load_contract(dag_receipt: dict[str, Any]) -> tuple[dict[str, Any], Path | None]:

@@ -1,0 +1,6 @@
+{
+  "coverage_scope": "full",
+  "git_commit": "abc123",
+  "reconciliation_eligible": true,
+  "schema": "tau.code_ingest_manifest.v1"
+}

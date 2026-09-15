@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tau Run Report - MISSING</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #f7f7f4;
+      color: #181814;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    header {
+      border-bottom: 2px solid #222;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0 0 8px;
+      letter-spacing: 0;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .pill {
+      border: 1px solid #777;
+      border-radius: 4px;
+      padding: 4px 8px;
+      background: #fff;
+    }
+    section {
+      margin: 20px 0;
+      padding: 0 0 18px;
+      border-bottom: 1px solid #ccc;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+    pre {
+      overflow-x: auto;
+      white-space: pre-wrap;
+      background: #fff;
+      border: 1px solid #d2d2cc;
+      border-radius: 6px;
+      padding: 12px;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tau Run Report</h1>
+    <div class="meta">
+      <span class="pill">status: MISSING</span>
+      <span class="pill">type: unknown</span>
+      <span class="pill">run: /home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work</span>
+    </div>
+  </header>
+  <section id="goal">
+    <h2>Goal</h2>
+    <pre>{}</pre>
+  </section>
+  <section id="policy">
+    <h2>Policy</h2>
+    <pre>null</pre>
+  </section>
+  <section id="data-boundary">
+    <h2>Data Boundary</h2>
+    <pre>null</pre>
+  </section>
+  <section id="memory-intent">
+    <h2>Memory Intent</h2>
+    <pre>null</pre>
+  </section>
+  <section id="evidence-case">
+    <h2>Evidence Case</h2>
+    <pre>null</pre>
+  </section>
+  <section id="dag-steps">
+    <h2>DAG Steps</h2>
+    <pre>{
+  &quot;edges&quot;: [],
+  &quot;entry_node&quot;: null,
+  &quot;nodes&quot;: [],
+  &quot;terminal_nodes&quot;: null
+}</pre>
+  </section>
+  <section id="coding-evidence">
+    <h2>Coding Evidence</h2>
+    <pre>{
+  &quot;does_not_prove&quot;: [
+    &quot;Code correctness.&quot;,
+    &quot;Worker truthfulness.&quot;,
+    &quot;Live provider execution.&quot;,
+    &quot;Closure.&quot;
+  ],
+  &quot;receipt_count&quot;: 0,
+  &quot;receipts&quot;: [],
+  &quot;supported_schemas&quot;: [
+    &quot;tau.code_patch_receipt.v1&quot;,
+    &quot;tau.code_runner_worker_receipt.v1&quot;,
+    &quot;tau.commit_plan_receipt.v1&quot;,
+    &quot;tau.course_correction.v1&quot;,
+    &quot;tau.debug_session_receipt.v1&quot;,
+    &quot;tau.debugger_skill_adapter_receipt.v1&quot;,
+    &quot;tau.evidence_case_acquisition_receipt.v1&quot;,
+    &quot;tau.evidence_case_skill_adapter_receipt.v1&quot;,
+    &quot;tau.github_read_receipt.v1&quot;,
+    &quot;tau.lsp_diagnostics_receipt.v1&quot;,
+    &quot;tau.lsp_rename_receipt.v1&quot;,
+    &quot;tau.lsp_symbol_receipt.v1&quot;,
+    &quot;tau.memory_intent_acquisition_receipt.v1&quot;,
+    &quot;tau.omp_worker_doctor_receipt.v1&quot;,
+    &quot;tau.omp_worker_launch_receipt.v1&quot;,
+    &quot;tau.omp_worker_receipt.v1&quot;,
+    &quot;tau.orchestration_reliability_receipt.v1&quot;,
+    &quot;tau.research_skill_adapter_receipt.v1&quot;,
+    &quot;tau.review_code_skill_adapter_receipt.v1&quot;,
+    &quot;tau.review_findings.v1&quot;,
+    &quot;tau.scillm_worker_launch_receipt.v1&quot;,
+    &quot;tau.scillm_worker_receipt.v1&quot;,
+    &quot;tau.skill_composition_redteam_receipt.v1&quot;,
+    &quot;tau.test_run_receipt.v1&quot;
+  ]
+}</pre>
+  </section>
+  <section id="receipts">
+    <h2>Receipts</h2>
+    <pre>{
+  &quot;artifacts&quot;: {},
+  &quot;dag_receipt&quot;: null,
+  &quot;run_dir&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work&quot;
+}</pre>
+  </section>
+  <section id="decisions">
+    <h2>Blocked / Allowed Decisions</h2>
+    <pre>{
+  &quot;alerts&quot;: [],
+  &quot;dag_error&quot;: null,
+  &quot;status&quot;: &quot;MISSING&quot;,
+  &quot;verdict&quot;: null
+}</pre>
+  </section>
+  <section id="project-dream">
+    <h2>Project Dream Gate Chain</h2>
+    <pre>{
+  &quot;gate_chain&quot;: [
+    &quot;policy_profile&quot;,
+    &quot;data_boundary&quot;,
+    &quot;evidence_packet&quot;,
+    &quot;deterministic_validation&quot;,
+    &quot;stage_response&quot;,
+    &quot;approval_receipt&quot;,
+    &quot;promotion_receipt&quot;,
+    &quot;head_readback&quot;,
+    &quot;rollback_receipt&quot;
+  ],
+  &quot;non_claims&quot;: [
+    &quot;A valid project-dream receipt does not prove the synthesized knowledge is true.&quot;,
+    &quot;Model agreement, node success, and receipt existence are not trust anchors.&quot;
+  ],
+  &quot;receipts&quot;: [
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/aggregate-terminal-row-omitted/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:e0a584ea5c15b53cef0391c88e0dfc23aa5750cd991a17e35bea146e6746558f&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/aggregate-terminal-row-omitted/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:04d36a8c2fb762493089b380161b35566932aa4498d51f99de3c17d5e2fc8876&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-expired/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:6ab0a947c3a4170f5f6ffc6146e4b2b18eacbcf935f69c22e0bc4a65f51efb9c&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-expired/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:9b86427ba629935ce0745136042331a104edf4c09cf8fd6382732880d62d2f49&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:1a5d34d655b390af5489ac71ec6181c54178d5a8f15a714a91b51f9bc0e35d47&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:9f8cddf770fd910d8d4ff57544616e8f6ea1b33c7425522f040731a7c46474b3&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:444280489e766a76294b0b5827e5f21ae4d9288efe489e6b1ffa6b33e39b2e0f&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:2295586fef69c59c361f3e6ce09f91b22efc3e21e25ef6938419a3b6a2fe54b3&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-project/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:af2a2006bd919f5c13376ddcdedf9b5e4f9e569a0057b890dcf01d302d0f74c4&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-project/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:7def2ce8f5809311de5b42d7ee9cddc5199f36d3ceb5e3ea752a6054b9f6f84a&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cas-conflict/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:234ee89a4bbd0eccfc5741cb80461e34c008891e23def32e01cef1cc355e6d6e&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cas-conflict/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:9f62aa2943439c9d257aab1c840b156c865298b2fe0836f4dabd5615778c9af1&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/contradictory-stage-ref/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:69aca2ec5c64346fb291fd163771a73d0bdb31ab6d5db5dda5e6729107a8cf21&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/contradictory-stage-ref/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:4de4cd9aefcf55e5aba10e21d26c5b93aa04145cb14a796e458bf8ac6acd517a&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cross-project-escape/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:d7cb702ad7caa1f017cef6a13248c348b5bb27406e47bb8166eac60ef20ec175&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cross-project-escape/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a2a4dd7fb4ba8a0964126f2d8ba1919def0ba6d4397586a5a3afa5b130ff7551&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:74b5ff860090688333ab25a9ba7e28c6b792985a6552cb3a0acbd547b32862d0&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:31f7159aac0f0f8fcd1cea4538cfa0973520c981a6305e5a6c2a6848c2c8f8d6&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 2,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:8b105df86644fdd5e0b29e474c41748d8a417bf6d9cb3084afaa6bb65d6a09a1&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:3e4badfcef149f2cd28f7cef2dd0207faa94d230e66480f3040c3c9ecff37c32&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/false-promoted/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:2a9f9cef906c8f5c748df8d97434aef2acc4ac1cae83f0d97fe9ded20b367039&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/false-promoted/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:879f800271a88bea2a56f3ca4a1e6f4d635e558e4d5e522ba1de0d48707b7f70&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/head-after-mismatch/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:34f1812696fb9f7421194f6b0cd301a121773bdb3381ec2fa34912488a3915bd&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/head-after-mismatch/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:c7a88d9d83a2562a5e2bed5833d86ef5e0293cd5f0a650ecf091f884c283e33b&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/incremental-deprecation/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:2e32c45439ef87610f249c87248d2e8082a0190897b685dc0c113268ec9051e1&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/incremental-deprecation/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:32edf239332ac7afb252aa36ef3d4983b9071da54199802d5804929dfdb4a8a1&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/mutated-evidence-hash/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:b6b8da804471af65dbb548f3cf462513e676c24c4ee407ecea4e871d32ded67f&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/mutated-evidence-hash/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:0c9162364772df759cc5f93bb3d5143a8e41f8893e386bd413d7ee1e5089906e&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-no-change/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:ee2e27c33e97b4631ce979279b1e333f22508335b3e36c1d29becf0e8b7e603f&quot;,
+      &quot;status&quot;: &quot;NO_CHANGE&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: true,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-no-change/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:8447d15cad6dd04d07144bf9086ddf6fe32a8d741489ca1bd4db3c69d0622d3c&quot;,
+      &quot;status&quot;: &quot;NO_CHANGE&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-promoted/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;approved_by_human&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a1ef3e6c79d950028e04779fd3432682beb8bb0999d58c827490d293b48f2a95&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: true,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-promoted/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:97291bbc1dcf48be8e6b97f373685e427db214838a651bd97e30550aa460d3c9&quot;,
+      &quot;status&quot;: &quot;PROMOTED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-review/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;requires_human_approval&quot;,
+        &quot;human_approval_required&quot;: true,
+        &quot;policy_class&quot;: &quot;human_approval_required&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:b721900fe257178a151d8fb806fa12558c38f203f2d8bb6d49a4e88480902e8a&quot;,
+      &quot;status&quot;: &quot;NEEDS_HUMAN_REVIEW&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: true,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-review/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:c121228ad70b3a5bc6ca6fc991e7e0b954da370a2abf2463c97b60f1e4a7df9c&quot;,
+      &quot;status&quot;: &quot;NEEDS_HUMAN_REVIEW&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-rolled-back/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a76a4020c713ac4b3719fdf10651820f0e4dc5a656a1befef44ade779d46cfc7&quot;,
+      &quot;status&quot;: &quot;ROLLED_BACK&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: true,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-rolled-back/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a2eca552f57ec418e3b8278f65b18bfc3d8dbf74ace3ae81afcaa29f3d07b0f4&quot;,
+      &quot;status&quot;: &quot;ROLLED_BACK&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-shadow/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a427db1e0f98426551ab089b314c91e6f44a056a41f23d5d4823471e8fd1089f&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: true,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-shadow/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:45e41b0ef8d32cb64511f05e57d1321228fe08a97596c1a7f11768e92bdce8ba&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 1,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/rollback-deletes-history/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:28916003c150a0f3ce77d6b029747261779cb1aee9b6ddb27e1f5fb8f0fdb3a8&quot;,
+      &quot;status&quot;: &quot;ROLLED_BACK&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/rollback-deletes-history/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:3f3aece23492947972921f6068ad8e8f3d87c3d80a0c3f25c009b479bed2e5a8&quot;,
+      &quot;status&quot;: &quot;ROLLED_BACK&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/telemetry-unknown-zero/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:6c9b39cb9e4dd587ec6d20c94521b08f3770fd82056954c9ae4f75043ff851b8&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/telemetry-unknown-zero/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:a15a2adbacd2821ffea45af9bbba1535dc434354aa00af398c89a14a47d74ce7&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: 0,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;A receipt does not prove semantic truth.&quot;,
+        &quot;Model agreement is not a trust anchor.&quot;,
+        &quot;Receipt existence is not a trust anchor.&quot;
+      ],
+      &quot;ok&quot;: null,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/undeclared-command-capability/project-dream-receipt.json&quot;,
+      &quot;promotion_policy&quot;: {
+        &quot;decision&quot;: &quot;shadow_only&quot;,
+        &quot;human_approval_required&quot;: false,
+        &quot;policy_class&quot;: &quot;shadow_only&quot;
+      },
+      &quot;schema&quot;: &quot;tau.project_dream_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:2784f4f52ca94669d4eef132b2c1e2b6fb769d38c49f6c52a1463590a7969f62&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    },
+    {
+      &quot;accepted_effect_count&quot;: null,
+      &quot;first_failed_gate&quot;: null,
+      &quot;non_claims&quot;: [
+        &quot;The synthesized project knowledge is semantically true.&quot;,
+        &quot;Provider/model quality.&quot;,
+        &quot;Production Graph Memory persistence beyond referenced CAS receipts.&quot;,
+        &quot;Human identity verification beyond referenced approval receipts.&quot;
+      ],
+      &quot;ok&quot;: false,
+      &quot;path&quot;: &quot;/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/undeclared-command-capability/validation-receipt.json&quot;,
+      &quot;promotion_policy&quot;: null,
+      &quot;schema&quot;: &quot;tau.project_dream_validation_receipt.v1&quot;,
+      &quot;sha256&quot;: &quot;sha256:48c1977994b1dac47f463fe303620ae4fdd40209b1433624d0c13348bc664879&quot;,
+      &quot;status&quot;: &quot;SHADOW_STAGED&quot;
+    }
+  ]
+}</pre>
+  </section>
+  <section id="non-claims">
+    <h2>Non-Claims</h2>
+    <pre>[
+  &quot;ITAR compliance.&quot;,
+  &quot;Export-control legal sufficiency.&quot;,
+  &quot;Complete sandbox enforcement.&quot;,
+  &quot;Human identity verification unless a provenance receipt exists.&quot;,
+  &quot;Provider/model semantic quality.&quot;,
+  &quot;Memory fact truth.&quot;,
+  &quot;Evidence-case sufficiency for closure.&quot;,
+  &quot;DAG or swarm trustworthiness.&quot;
+]</pre>
+  </section>
+</main>
+</body>
+</html>

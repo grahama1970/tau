@@ -1,0 +1,318 @@
+{
+  "adversarial_cases": [
+    {
+      "error": null,
+      "expected_error": "evidence_packet.sha256 mismatch",
+      "name": "mutated-evidence-hash",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/mutated-evidence-hash/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/mutated-evidence-hash/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "undeclared capabilities",
+      "name": "undeclared-command-capability",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/undeclared-command-capability/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/undeclared-command-capability/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "PROMOTED requires exactly one accepted effect",
+      "name": "false-promoted",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/false-promoted/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/false-promoted/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "approval_receipt ref is required",
+      "name": "approval-missing",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-missing/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "approval_receipt.project_id",
+      "name": "approval-wrong-project",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-project/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-project/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "approval_receipt.candidate_digest",
+      "name": "approval-wrong-candidate",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-wrong-candidate/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "approval_receipt is expired",
+      "name": "approval-expired",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-expired/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/approval-expired/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "Graph Memory CAS",
+      "name": "cas-conflict",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cas-conflict/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cas-conflict/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "head mismatch",
+      "name": "head-after-mismatch",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/head-after-mismatch/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/head-after-mismatch/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "accepted_effect_count mismatch",
+      "name": "duplicate-accepted-effects",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/duplicate-accepted-effects/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "incremental ingest",
+      "name": "incremental-deprecation",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/incremental-deprecation/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/incremental-deprecation/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "dream worker transcript",
+      "name": "dream-worker-transcript",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/dream-worker-transcript/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "escapes data boundary",
+      "name": "cross-project-escape",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cross-project-escape/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/cross-project-escape/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "terminal_row_count mismatch",
+      "name": "aggregate-terminal-row-omitted",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/aggregate-terminal-row-omitted/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/aggregate-terminal-row-omitted/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "rollback must not delete",
+      "name": "rollback-deletes-history",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/rollback-deletes-history/project-dream-receipt.json",
+      "terminal_status": "ROLLED_BACK",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/rollback-deletes-history/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "must be unknown/null",
+      "name": "telemetry-unknown-zero",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/telemetry-unknown-zero/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/telemetry-unknown-zero/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    },
+    {
+      "error": null,
+      "expected_error": "stage_response.candidate_digest",
+      "name": "contradictory-stage-ref",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/contradictory-stage-ref/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/contradictory-stage-ref/validation-receipt.json",
+      "validation_status": "BLOCKED"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "positive_cases": [
+    {
+      "error": null,
+      "expected_error": null,
+      "name": "positive-shadow",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-shadow/project-dream-receipt.json",
+      "terminal_status": "SHADOW_STAGED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-shadow/validation-receipt.json",
+      "validation_status": "PASS"
+    },
+    {
+      "error": null,
+      "expected_error": null,
+      "name": "positive-no-change",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-no-change/project-dream-receipt.json",
+      "terminal_status": "NO_CHANGE",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-no-change/validation-receipt.json",
+      "validation_status": "PASS"
+    },
+    {
+      "error": null,
+      "expected_error": null,
+      "name": "positive-review",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-review/project-dream-receipt.json",
+      "terminal_status": "NEEDS_HUMAN_REVIEW",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-review/validation-receipt.json",
+      "validation_status": "PASS"
+    },
+    {
+      "error": null,
+      "expected_error": null,
+      "name": "positive-promoted",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-promoted/project-dream-receipt.json",
+      "terminal_status": "PROMOTED",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-promoted/validation-receipt.json",
+      "validation_status": "PASS"
+    },
+    {
+      "error": null,
+      "expected_error": null,
+      "name": "positive-rolled-back",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-rolled-back/project-dream-receipt.json",
+      "terminal_status": "ROLLED_BACK",
+      "validation_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/positive-rolled-back/validation-receipt.json",
+      "validation_status": "PASS"
+    }
+  ],
+  "proof_index_contains_project_dream_receipts": true,
+  "proof_index_receipt": {
+    "created_at": "2026-09-15T16:47:08.438138Z",
+    "error_count": 0,
+    "errors": [],
+    "indexed_receipt_count": 75,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "output_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/proof-index.jsonl",
+    "output_sha256": "sha256:8393562064ab04d160a450b77e7d7eb97cf2bf9cfa1c2b0fcd98cc23e42f036c",
+    "proof_scope": {
+      "does_not_prove": [
+        "Receipt semantic truth.",
+        "Provider/model semantic quality.",
+        "Live GitHub mutation.",
+        "Production Memory persistence."
+      ],
+      "proves": [
+        "Tau receipt-like JSON artifacts were scanned deterministically.",
+        "The proof index JSONL was written with stable path, hash, status, and boundary fields."
+      ]
+    },
+    "proofs_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work",
+    "provider_live": false,
+    "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/proof-index.receipt.json",
+    "schema": "tau.proof_index_build_receipt.v1",
+    "schema_counts": {
+      "tau.project_dream_approval_receipt.v1": 9,
+      "tau.project_dream_receipt.v1": 22,
+      "tau.project_dream_validation_receipt.v1": 22,
+      "tau.provider_readiness_receipt.v1": 22
+    },
+    "status": "PASS",
+    "status_counts": {
+      "BLOCKED": 17,
+      "None": 53,
+      "PASS": 5
+    },
+    "warning_count": 0,
+    "warnings": []
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "The model-generated project knowledge is semantically true.",
+      "Production Graph Memory persistence.",
+      "Provider/model quality."
+    ],
+    "proves": [
+      "Tau validates project-dream receipts from retained hash-bound fixtures.",
+      "Tau rejects adversarial promotion, approval, CAS, boundary, aggregate, telemetry, and contradictory-reference claims.",
+      "Tau proof-index and static-report paths retain project-dream gate-chain and non-claim evidence."
+    ]
+  },
+  "provider_live": false,
+  "report_contains_project_dream_gate_chain": true,
+  "run_report_receipt": {
+    "checked_at": "2026-09-15T16:47:08.457162Z",
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "proof_scope": {
+      "does_not_prove": [
+        "ITAR compliance.",
+        "Export-control legal sufficiency.",
+        "Complete sandbox enforcement.",
+        "Human identity verification unless a provenance receipt exists.",
+        "Provider/model semantic quality.",
+        "Memory fact truth.",
+        "Evidence-case sufficiency for closure.",
+        "DAG or swarm trustworthiness."
+      ],
+      "proves": [
+        "Tau rendered a static HTML report from existing run-status and run artifacts.",
+        "Tau included explicit non-claims in the rendered report."
+      ]
+    },
+    "provider_live": false,
+    "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/run-report.html.receipt.json",
+    "receipt_sha256_excludes_self": true,
+    "report_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/run-report.html",
+    "report_sha256": "sha256:8543e97d414a05af465ac1e33fb4f670309f71417a8c82a0806e5fd247bdfb67",
+    "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work",
+    "schema": "tau.run_report_receipt.v1",
+    "section_count": 11,
+    "sections": [
+      "goal",
+      "policy",
+      "data-boundary",
+      "memory-intent",
+      "evidence-case",
+      "dag-steps",
+      "coding-evidence",
+      "receipts",
+      "decisions",
+      "project-dream",
+      "non-claims"
+    ],
+    "source_artifacts": [],
+    "source_status": {
+      "artifact_count": 0,
+      "detected_type": "unknown",
+      "schema": "tau.run_status.v1",
+      "status": "MISSING"
+    },
+    "status": "PASS",
+    "unsigned_receipt_preimage_sha256": "sha256:8bee54d4fb347245d65dc510df634e8b40d94b656ee1de6cdaf58e1f83d87a4b"
+  },
+  "schema": "tau.project_dream_agentic_eval_proof.v1",
+  "status": "PASS"
+}

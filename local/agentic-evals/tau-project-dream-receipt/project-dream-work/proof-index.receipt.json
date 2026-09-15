@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-09-15T19:35:01.299555Z",
+  "error_count": 0,
+  "errors": [],
+  "indexed_receipt_count": 75,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "output_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/proof-index.jsonl",
+  "output_sha256": "sha256:b43345522fc314f27506252b7716513e2c517e55e175752e3f259e100195dcde",
+  "proof_scope": {
+    "does_not_prove": [
+      "Receipt semantic truth.",
+      "Provider/model semantic quality.",
+      "Live GitHub mutation.",
+      "Production Memory persistence."
+    ],
+    "proves": [
+      "Tau receipt-like JSON artifacts were scanned deterministically.",
+      "The proof index JSONL was written with stable path, hash, status, and boundary fields."
+    ]
+  },
+  "proofs_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work",
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-dream-receipt/project-dream-work/proof-index.receipt.json",
+  "schema": "tau.proof_index_build_receipt.v1",
+  "schema_counts": {
+    "tau.project_dream_approval_receipt.v1": 9,
+    "tau.project_dream_receipt.v1": 22,
+    "tau.project_dream_validation_receipt.v1": 22,
+    "tau.provider_readiness_receipt.v1": 22
+  },
+  "status": "PASS",
+  "status_counts": {
+    "BLOCKED": 17,
+    "None": 53,
+    "PASS": 5
+  },
+  "warning_count": 0,
+  "warnings": []
+}

@@ -1,0 +1,9 @@
+{
+  "declared_capabilities": [
+    "filesystem.read"
+  ],
+  "schema": "tau.opencode_command_spec.v1",
+  "uses_capabilities": [
+    "filesystem.read"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "candidate_digest": "sha256:other",
+  "decision": "approved",
+  "expires_at": "2999-01-01T00:00:00Z",
+  "project_id": "tau",
+  "schema": "tau.project_dream_approval_receipt.v1"
+}

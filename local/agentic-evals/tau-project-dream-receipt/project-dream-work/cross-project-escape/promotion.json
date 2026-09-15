@@ -1,0 +1,10 @@
+{
+  "candidate_digest": "sha256:ae12b25d48d7df69c8476e4324466163711be49da918050e51c5b9c10249cb07",
+  "cas_outcome": "APPLIED",
+  "head_after_digest": "sha256:after",
+  "head_after_generation": 2,
+  "head_before_digest": "sha256:before",
+  "head_before_generation": 1,
+  "schema": "graph_memory.project_topic_promotion_receipt.v1",
+  "status": "PASS"
+}
