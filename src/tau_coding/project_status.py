@@ -63,6 +63,8 @@ _FIVE_WORKFLOWS = (
     "approved-release-bundle",
     "durable-repository-qualification",
 )
+_RUNTIME_SECURITY_GATE_PATH_PREFIXES = ("src/", "scripts/")
+_RUNTIME_SECURITY_GATE_FILES = {"pyproject.toml"}
 
 UNKNOWN = "UNKNOWN"
 
@@ -100,6 +102,40 @@ def _git(repo: Path, *args: str) -> str | None:
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
     return result.stdout.strip()
+
+
+def _share_security_receipt_commit_coverage(
+    repo: Path, *, receipt_commit: object, current_commit: str
+) -> dict[str, Any]:
+    observed: dict[str, Any] = {
+        "receipt_source_is_ancestor": False,
+        "runtime_source_paths_changed": [],
+    }
+    if not isinstance(receipt_commit, str) or not receipt_commit or current_commit == UNKNOWN:
+        return observed
+    observed["receipt_source_is_ancestor"] = (
+        _git(repo, "merge-base", "--is-ancestor", receipt_commit, current_commit) is not None
+    )
+    if not observed["receipt_source_is_ancestor"]:
+        return observed
+    changed = _git(repo, "diff", "--name-only", f"{receipt_commit}..{current_commit}", "--")
+    if changed is None:
+        observed["receipt_source_is_ancestor"] = False
+        return observed
+    changed_paths = [path for path in changed.splitlines() if path]
+    runtime_paths = [
+        path
+        for path in changed_paths
+        if path in _RUNTIME_SECURITY_GATE_FILES
+        or path.startswith(_RUNTIME_SECURITY_GATE_PATH_PREFIXES)
+    ]
+    observed.update(
+        {
+            "changed_paths_since_receipt_source": changed_paths,
+            "runtime_source_paths_changed": runtime_paths,
+        }
+    )
+    return observed
 
 
 def _digest_file(path: Path) -> str | None:
@@ -553,19 +589,27 @@ def evaluate_developer_share_status(
             share_security_receipt = None
         if isinstance(share_security_receipt, dict):
             share_security_counts = share_security_receipt.get("counts") or {}
+            receipt_source_commit = share_security_receipt.get("source_commit")
+            coverage = _share_security_receipt_commit_coverage(
+                repo,
+                receipt_commit=receipt_source_commit,
+                current_commit=current_commit,
+            )
             share_security_observed.update(
                 {
                     "receipt_status": share_security_receipt.get("status"),
                     "share_readiness": share_security_receipt.get("share_readiness"),
                     "unresolved_blockers": share_security_counts.get("unresolved_blockers"),
-                    "receipt_source_commit": share_security_receipt.get("source_commit"),
+                    "receipt_source_commit": receipt_source_commit,
+                    **coverage,
                 }
             )
             share_security_pass = (
                 share_security_receipt.get("status") == "PASS"
                 and share_security_receipt.get("share_readiness") == "READY"
                 and share_security_counts.get("unresolved_blockers") == 0
-                and share_security_receipt.get("source_commit") == current_commit
+                and coverage["receipt_source_is_ancestor"] is True
+                and coverage["runtime_source_paths_changed"] == []
             )
     add(
         "share_security_gate_receipt_current_and_clean",
@@ -573,8 +617,8 @@ def evaluate_developer_share_status(
         source="docs/proofs/tickets/issue-343-security-gate/security-gate.json",
         observed=share_security_observed,
         next_command=(
-            "run the issue #343 security gate verification "
-            "(write_issue_343_security_gate_verification) for this exact commit and retain the receipt"
+            "run the issue #343 security gate verification, retain the receipt, "
+            "and ensure later commits touch no scanned runtime source"
         ),
     )
     proof_index = status.get("proof_index", {})

@@ -54,7 +54,10 @@ def _write_passing_share_security_receipt(root: Path) -> None:
     receipt.write_text("{}", encoding="utf-8")
     subprocess.run(["git", "-C", str(root), "add", str(receipt)], check=True)
     subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "fixture receipt"], check=True)
-    subprocess.run(["git", "-C", str(root), "update-index", "--skip-worktree", str(receipt)], check=True)
+    subprocess.run(
+        ["git", "-C", str(root), "update-index", "--skip-worktree", str(receipt)],
+        check=True,
+    )
     commit = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
         capture_output=True, text=True, check=True,
@@ -128,6 +131,32 @@ def _init_repo(root: Path) -> None:
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _commit_all(root: Path, message: str) -> str:
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "commit",
+            "-q",
+            "-m",
+            message,
+        ],
+        check=True,
+    )
+    return subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
 
 
 def test_deterministic_apart_from_timestamp(tmp_path: Path) -> None:
@@ -478,38 +507,116 @@ def test_package_description_reflects_control_plane_product() -> None:
     assert "minimalist pi-style coding-agent harness" not in description
 
 
-def test_share_security_gate_blocks_when_receipt_missing() -> None:
+def test_share_security_gate_blocks_when_receipt_missing(tmp_path: Path) -> None:
     """tau#343: no retained security-gate receipt => share NOT_READY, gate fails."""
-    import tempfile
-    from pathlib import Path
-    from tau_coding.project_status import evaluate_developer_share_status
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    status = {
+        "git": {"commit": "x" * 40, "clean_tree": True},
+        "github": {"open_critical_issues": [], "freshness": "FRESH"},
+    }
+    result = evaluate_developer_share_status(status, repo)
+    gate = next(
+        g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean"
+    )
+    assert gate["state"] == "FAIL"
+    assert result["readiness"] == "NOT_READY"
 
-    with tempfile.TemporaryDirectory() as tmp:
-        repo = Path(tmp) / "repo"
-        repo.mkdir()
-        status = {"git": {"commit": "x" * 40, "clean_tree": True}, "github": {"open_critical_issues": [], "freshness": "FRESH"}}
-        result = evaluate_developer_share_status(status, repo)
-        gate = next(g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean")
-        assert gate["state"] == "FAIL"
-        assert result["readiness"] == "NOT_READY"
+
+def test_share_security_gate_accepts_ancestor_receipt_with_proof_only_diff(tmp_path: Path) -> None:
+    """tau#343: retaining the proof receipt must not invalidate its source scan."""
+    _init_repo(tmp_path)
+    scanned_commit = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    _write_json(
+        tmp_path / "docs" / "proofs" / "tickets" / "issue-343-security-gate" / "security-gate.json",
+        {
+            "status": "PASS",
+            "share_readiness": "READY",
+            "source_commit": scanned_commit,
+            "counts": {"unresolved_blockers": 0, "reconciled": True},
+        },
+    )
+    current_commit = _commit_all(tmp_path, "retain issue 343 receipt")
+    status = {
+        "git": {"commit": current_commit, "clean_tree": True},
+        "github": {"open_critical_issues": [], "freshness": "FRESH"},
+    }
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+
+    gate = next(
+        g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean"
+    )
+    assert gate["state"] == "PASS"
+    assert gate["observed"]["receipt_source_is_ancestor"] is True
+    assert gate["observed"]["runtime_source_paths_changed"] == []
 
 
-def test_share_security_gate_blocks_on_unresolved_blockers() -> None:
+def test_share_security_gate_blocks_ancestor_receipt_after_source_change(tmp_path: Path) -> None:
+    """tau#343: an ancestor receipt is stale once scanned runtime source changes."""
+    _init_repo(tmp_path)
+    scanned_commit = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    _write_json(
+        tmp_path / "docs" / "proofs" / "tickets" / "issue-343-security-gate" / "security-gate.json",
+        {
+            "status": "PASS",
+            "share_readiness": "READY",
+            "source_commit": scanned_commit,
+            "counts": {"unresolved_blockers": 0, "reconciled": True},
+        },
+    )
+    (tmp_path / "src" / "tau_coding" / "new_runtime.py").write_text(
+        "# source changed\n",
+        encoding="utf-8",
+    )
+    current_commit = _commit_all(tmp_path, "change scanned source after receipt")
+    status = {
+        "git": {"commit": current_commit, "clean_tree": True},
+        "github": {"open_critical_issues": [], "freshness": "FRESH"},
+    }
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+
+    gate = next(
+        g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean"
+    )
+    assert gate["state"] == "FAIL"
+    assert gate["observed"]["receipt_source_is_ancestor"] is True
+    assert gate["observed"]["runtime_source_paths_changed"] == ["src/tau_coding/new_runtime.py"]
+
+
+def test_share_security_gate_blocks_on_unresolved_blockers(tmp_path: Path) -> None:
     """tau#343: retained receipt with unresolved blockers => gate fails."""
-    import json
-    import tempfile
-    from pathlib import Path
-    from tau_coding.project_status import evaluate_developer_share_status
-
-    with tempfile.TemporaryDirectory() as tmp:
-        repo = Path(tmp) / "repo"
-        receipt_dir = repo / "docs" / "proofs" / "tickets" / "issue-343-security-gate"
-        receipt_dir.mkdir(parents=True)
-        (receipt_dir / "security-gate.json").write_text(json.dumps({
-            "status": "BLOCKED", "share_readiness": "BLOCKED", "source_commit": "x" * 40,
-            "counts": {"unresolved_blockers": 2, "reconciled": True},
-        }))
-        status = {"git": {"commit": "x" * 40, "clean_tree": True}, "github": {"open_critical_issues": [], "freshness": "FRESH"}}
-        result = evaluate_developer_share_status(status, repo)
-        gate = next(g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean")
-        assert gate["state"] == "FAIL"
+    repo = tmp_path / "repo"
+    receipt_dir = repo / "docs" / "proofs" / "tickets" / "issue-343-security-gate"
+    receipt_dir.mkdir(parents=True)
+    (receipt_dir / "security-gate.json").write_text(
+        json.dumps(
+            {
+                "status": "BLOCKED",
+                "share_readiness": "BLOCKED",
+                "source_commit": "x" * 40,
+                "counts": {"unresolved_blockers": 2, "reconciled": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    status = {
+        "git": {"commit": "x" * 40, "clean_tree": True},
+        "github": {"open_critical_issues": [], "freshness": "FRESH"},
+    }
+    result = evaluate_developer_share_status(status, repo)
+    gate = next(
+        g for g in result["gates"] if g["id"] == "share_security_gate_receipt_current_and_clean"
+    )
+    assert gate["state"] == "FAIL"
