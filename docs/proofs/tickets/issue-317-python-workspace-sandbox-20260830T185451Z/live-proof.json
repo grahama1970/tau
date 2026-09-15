@@ -4,9 +4,9 @@
       "artifact": {
         "bytes": 696,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab-execution-turn-5-export.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570-execution-turn-5-export.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab"
+        "sha256": "sha256:7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570"
       },
       "exports": {
         "answer": 42,
@@ -21,12 +21,12 @@
     "artifact": {
       "bytes": 696,
       "media_type": "application/json",
-      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab-execution-turn-5-export.json",
+      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570-execution-turn-5-export.json",
       "schema": "tau.host_artifact_ref.v1",
-      "sha256": "sha256:8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab"
+      "sha256": "sha256:7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570"
     },
     "errors": [],
-    "execution_receipt_sha256": "sha256:f06b5bb9056b0b3f7c3d0aeb7125564a954514c3ef2203ce34fef89e38e645bd",
+    "execution_receipt_sha256": "sha256:00949ed5dab339da0e185427c011b76679fd01f5f7d370efd67028b27ce336a6",
     "schema": "tau.python_workspace_artifact_admission_receipt.v1",
     "status": "PASS"
   },
@@ -40,6 +40,7 @@
     "sandbox_denials_recorded": true,
     "snapshot_restore_reports_non_restorable": true,
     "stale_snapshot_rejection": true,
+    "tau_native_agent_three_model_turns": true,
     "three_turn_persistence": true,
     "workspace_ready": true
   },
@@ -48,8 +49,8 @@
     "inlined_python_namespace": null,
     "schema": "tau.provider_context_after_compaction.v1",
     "workspace_handle": {
-      "endpoint_id": "docker-python-workspace:generation-7fde802c343148ec9a50a3fb",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "endpoint_id": "docker-python-workspace:generation-0d811c3824654eb761e99f70",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "schema": "tau.python_workspace_handle.v1",
       "state_dir": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace",
       "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
@@ -62,10 +63,10 @@
       "duplicate_execution_id_conflict"
     ],
     "execution_id": "turn-5-export",
-    "execution_request_sha256": "sha256:35e931a565793fcbb87ffaec3f2383947c2c5c9b21d88066956f97c6858bad4d",
+    "execution_request_sha256": "sha256:7bbc1651aee6ef867592e8ac9fb5bc37fe4dac859e39031274b407ca3227e058",
     "exports": null,
-    "finished_at": "2026-08-30T18:51:28.879Z",
-    "generation_id": "generation-7fde802c343148ec9a50a3fb",
+    "finished_at": "2026-09-15T03:11:51.448Z",
+    "generation_id": "generation-0d811c3824654eb761e99f70",
     "idempotent_replay": false,
     "limits": {
       "max_artifact_bytes": 1000000,
@@ -78,12 +79,12 @@
     "output_artifact": {
       "bytes": 523,
       "media_type": "application/json",
-      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/fee1566ea2ad31d56738f80232b279a86603972ba6b82a1a0118a0434e3d2fb7-execution-turn-5-export.json",
+      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/417f8aa752907fc546fcd94d776c017236988981e5b1ed820360c176db6e5795-execution-turn-5-export.json",
       "schema": "tau.host_artifact_ref.v1",
-      "sha256": "sha256:fee1566ea2ad31d56738f80232b279a86603972ba6b82a1a0118a0434e3d2fb7"
+      "sha256": "sha256:417f8aa752907fc546fcd94d776c017236988981e5b1ed820360c176db6e5795"
     },
     "schema": "tau.python_execution_receipt.v1",
-    "started_at": "2026-08-30T18:51:28.879Z",
+    "started_at": "2026-09-15T03:11:51.448Z",
     "status": "BLOCKED",
     "stderr": "",
     "stderr_truncated": false,
@@ -97,7 +98,7 @@
     "effects_admitted": false,
     "errors": [],
     "execution_id": "turn-5-export",
-    "execution_request_sha256": "sha256:da654bb6209f45f993bf7644f26dda52c54d42fd9719dd28b4da37f795c36191",
+    "execution_request_sha256": "sha256:1bc718f90299dc27f203675de6fd1f40bc80abdbe93d4c4d3022499b43941f4c",
     "exports": {
       "answer": 42,
       "items": [
@@ -106,8 +107,8 @@
         3
       ]
     },
-    "finished_at": "2026-08-30T18:51:28.878Z",
-    "generation_id": "generation-7fde802c343148ec9a50a3fb",
+    "finished_at": "2026-09-15T03:11:51.447Z",
+    "generation_id": "generation-0d811c3824654eb761e99f70",
     "idempotent_replay": true,
     "limits": {
       "max_artifact_bytes": 1000000,
@@ -120,12 +121,12 @@
     "output_artifact": {
       "bytes": 695,
       "media_type": "application/json",
-      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/94cdf0e12c2154e9b27ab46c8591daddd14570fecc1f808b489c820bb268bd20-execution-turn-5-export.json",
+      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/fe936a50cca5bf279eea04ef2a6eb8976912ae9239dafd7f279209d2e21d7f06-execution-turn-5-export.json",
       "schema": "tau.host_artifact_ref.v1",
-      "sha256": "sha256:94cdf0e12c2154e9b27ab46c8591daddd14570fecc1f808b489c820bb268bd20"
+      "sha256": "sha256:fe936a50cca5bf279eea04ef2a6eb8976912ae9239dafd7f279209d2e21d7f06"
     },
     "schema": "tau.python_execution_receipt.v1",
-    "started_at": "2026-08-30T18:51:28.878Z",
+    "started_at": "2026-09-15T03:11:51.447Z",
     "status": "OK",
     "stderr": "",
     "stderr_truncated": false,
@@ -140,12 +141,12 @@
       "effects_admitted": false,
       "errors": [],
       "execution_id": "turn-4-after-compaction",
-      "execution_request_sha256": "sha256:8d15f8ff04a7aa917db5d3b006f536832027dd0ebaa9a659818442684472e202",
+      "execution_request_sha256": "sha256:ae812bd389184bb26465e3c09a9cd09686a169844978de6404bf0d278feb47d3",
       "exports": {
         "after_compaction": 44.0
       },
-      "finished_at": "2026-08-30T18:51:28.876Z",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "finished_at": "2026-09-15T03:11:51.445Z",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "idempotent_replay": false,
       "limits": {
         "max_artifact_bytes": 1000000,
@@ -158,12 +159,12 @@
       "output_artifact": {
         "bytes": 647,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/d7cdb904c28de0fee4e5845fed4e45c54c776bfa6d92e283b364d58708b0fbc8-execution-turn-4-after-compaction.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/504eabddcfca66fe325a9e051f87a5d840a5777f4a3d1346d192ee989af230d8-execution-turn-4-after-compaction.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:d7cdb904c28de0fee4e5845fed4e45c54c776bfa6d92e283b364d58708b0fbc8"
+        "sha256": "sha256:504eabddcfca66fe325a9e051f87a5d840a5777f4a3d1346d192ee989af230d8"
       },
       "schema": "tau.python_execution_receipt.v1",
-      "started_at": "2026-08-30T18:51:28.876Z",
+      "started_at": "2026-09-15T03:11:51.445Z",
       "status": "OK",
       "stderr": "",
       "stderr_truncated": false,
@@ -177,7 +178,7 @@
       "effects_admitted": false,
       "errors": [],
       "execution_id": "turn-5-export",
-      "execution_request_sha256": "sha256:da654bb6209f45f993bf7644f26dda52c54d42fd9719dd28b4da37f795c36191",
+      "execution_request_sha256": "sha256:1bc718f90299dc27f203675de6fd1f40bc80abdbe93d4c4d3022499b43941f4c",
       "exports": {
         "answer": 42,
         "items": [
@@ -186,8 +187,8 @@
           3
         ]
       },
-      "finished_at": "2026-08-30T18:51:28.877Z",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "finished_at": "2026-09-15T03:11:51.446Z",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "idempotent_replay": false,
       "limits": {
         "max_artifact_bytes": 1000000,
@@ -200,12 +201,12 @@
       "output_artifact": {
         "bytes": 696,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab-execution-turn-5-export.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570-execution-turn-5-export.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:8359e61e08a85a6254549ada19b2cec8ce7fee45a7dbd304b25b1e98a56160ab"
+        "sha256": "sha256:7cdd4612889ad998e3f67e1b6ec144ad569c51ec4626d8af6b1dbdce5bea6570"
       },
       "schema": "tau.python_execution_receipt.v1",
-      "started_at": "2026-08-30T18:51:28.877Z",
+      "started_at": "2026-09-15T03:11:51.446Z",
       "status": "OK",
       "stderr": "",
       "stderr_truncated": false,
@@ -219,10 +220,10 @@
       "effects_admitted": false,
       "errors": [],
       "execution_id": "turn-1",
-      "execution_request_sha256": "sha256:8826402d2d82dc296d30489c7489f1b8a267de4957b976309260d1eff58fbdf4",
+      "execution_request_sha256": "sha256:b02f1332fa0e3d24ebae79010ffa3aa0c864bbc39ae559e1a277df7b8f6cee37",
       "exports": null,
-      "finished_at": "2026-08-30T18:51:28.874Z",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "finished_at": "2026-09-15T03:11:51.443Z",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "idempotent_replay": false,
       "limits": {
         "max_artifact_bytes": 1000000,
@@ -235,12 +236,12 @@
       "output_artifact": {
         "bytes": 596,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/b3ecdd6a2ddf98a596fb25ce26765080cd0429b7f36bf8e6d5a41b3d9e24a13a-execution-turn-1.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/fb8544ed094048d49bea943cd7f1a2d5b42526627f71d6a96104f50fb83317ec-execution-turn-1.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:b3ecdd6a2ddf98a596fb25ce26765080cd0429b7f36bf8e6d5a41b3d9e24a13a"
+        "sha256": "sha256:fb8544ed094048d49bea943cd7f1a2d5b42526627f71d6a96104f50fb83317ec"
       },
       "schema": "tau.python_execution_receipt.v1",
-      "started_at": "2026-08-30T18:51:28.874Z",
+      "started_at": "2026-09-15T03:11:51.442Z",
       "status": "OK",
       "stderr": "",
       "stderr_truncated": false,
@@ -254,14 +255,14 @@
       "effects_admitted": false,
       "errors": [],
       "execution_id": "turn-2",
-      "execution_request_sha256": "sha256:c435e9766d863d4a0637c83042a31f56e1d2bdc2b25b50b903ed6466de5e565d",
+      "execution_request_sha256": "sha256:75eea4f927f381c1a69b89d93da3003e450997fbf87b1677e4c8224fea10224a",
       "exports": {
         "helper_result": 43.0,
         "turn": 2,
         "value": 40
       },
-      "finished_at": "2026-08-30T18:51:28.875Z",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "finished_at": "2026-09-15T03:11:51.443Z",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "idempotent_replay": false,
       "limits": {
         "max_artifact_bytes": 1000000,
@@ -274,12 +275,12 @@
       "output_artifact": {
         "bytes": 663,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/a7481591ca4e81977f9144469d6654eb01662c71544e4bbab5a08887690e67c1-execution-turn-2.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/5664863cc85f7fb79af6c6b7b0f7a7229d023fbb860f2644da20fc3e43ffb5af-execution-turn-2.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:a7481591ca4e81977f9144469d6654eb01662c71544e4bbab5a08887690e67c1"
+        "sha256": "sha256:5664863cc85f7fb79af6c6b7b0f7a7229d023fbb860f2644da20fc3e43ffb5af"
       },
       "schema": "tau.python_execution_receipt.v1",
-      "started_at": "2026-08-30T18:51:28.874Z",
+      "started_at": "2026-09-15T03:11:51.443Z",
       "status": "OK",
       "stderr": "",
       "stderr_truncated": false,
@@ -293,13 +294,13 @@
       "effects_admitted": false,
       "errors": [],
       "execution_id": "turn-3",
-      "execution_request_sha256": "sha256:708caa863d688023159dfc11cba82b64e2253e87b4071f7f3a9a531eda70efe7",
+      "execution_request_sha256": "sha256:6ad864fbf8363846309130d78a4a22ae089168ddee1d7e4d83b1776537535868",
       "exports": {
         "printed_pass": true,
         "settlement_claim": "candidate-only"
       },
-      "finished_at": "2026-08-30T18:51:28.876Z",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "finished_at": "2026-09-15T03:11:51.444Z",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "idempotent_replay": false,
       "limits": {
         "max_artifact_bytes": 1000000,
@@ -312,12 +313,12 @@
       "output_artifact": {
         "bytes": 664,
         "media_type": "application/json",
-        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/6fa613f39b3c827ab642b6bba69662a4d92e87eb461707f2941a6bab28939d40-execution-turn-3.json",
+        "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/130c7ab31e9bfc998022dc57aa2d44baa6208a83bc330489f8711302c1f2e03f-execution-turn-3.json",
         "schema": "tau.host_artifact_ref.v1",
-        "sha256": "sha256:6fa613f39b3c827ab642b6bba69662a4d92e87eb461707f2941a6bab28939d40"
+        "sha256": "sha256:130c7ab31e9bfc998022dc57aa2d44baa6208a83bc330489f8711302c1f2e03f"
       },
       "schema": "tau.python_execution_receipt.v1",
-      "started_at": "2026-08-30T18:51:28.875Z",
+      "started_at": "2026-09-15T03:11:51.444Z",
       "status": "OK",
       "stderr": "",
       "stderr_truncated": false,
@@ -335,7 +336,7 @@
   "kill_receipt": {
     "action": "shutdown",
     "errors": [],
-    "generation_id": "generation-7fde802c343148ec9a50a3fb",
+    "generation_id": "generation-0d811c3824654eb761e99f70",
     "schema": "tau.python_workspace_control_receipt.v1",
     "status": "STOPPED",
     "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
@@ -357,7 +358,7 @@
   "provider_live": false,
   "restore_receipt": {
     "errors": [],
-    "generation_id": "generation-3be1a42906dcc54db93e1bf9",
+    "generation_id": "generation-38140b6bb006dfe0fb7353c3",
     "non_restorable_values": {
       "Path": "type",
       "helper": "function:helper",
@@ -369,7 +370,7 @@
       "workspace_value"
     ],
     "schema": "tau.python_workspace_snapshot_restore_receipt.v1",
-    "snapshot_sha256": "sha256:65f1aef6e3de300f09a3b5866522b6941cdd6fff4ff576f23dd7664363d6518c",
+    "snapshot_sha256": "sha256:b19c8bf78ca1df6e3bd9ec1e5afee34f694c0c0978ab899a020072bcd764e873",
     "status": "OK",
     "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
   },
@@ -378,13 +379,13 @@
     "effects_admitted": false,
     "errors": [],
     "execution_id": "restore-readback",
-    "execution_request_sha256": "sha256:ea69299abb5fd423a129df57412424628f5f0a69aef3ca6f48388cdff0846264",
+    "execution_request_sha256": "sha256:70164591cce5fafb7a9f045e90cd1061db40db8cb4898e0bc005c9ea052a8cba",
     "exports": {
       "helper_restored": false,
       "workspace_value": 40
     },
-    "finished_at": "2026-08-30T18:51:34.352Z",
-    "generation_id": "generation-3be1a42906dcc54db93e1bf9",
+    "finished_at": "2026-09-15T03:11:56.901Z",
+    "generation_id": "generation-38140b6bb006dfe0fb7353c3",
     "idempotent_replay": false,
     "limits": {
       "max_artifact_bytes": 1000000,
@@ -397,12 +398,12 @@
     "output_artifact": {
       "bytes": 670,
       "media_type": "application/json",
-      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/restored/artifacts/bcefd35b441b8db8f18db56385f80e9bcc1343b0f9af84e6c2da428b7c821950-execution-restore-readback.json",
+      "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/restored/artifacts/8d4ae415c1473a677640d5aa376174cee48d822e2f9ca6621b28a70cc86ecf14-execution-restore-readback.json",
       "schema": "tau.host_artifact_ref.v1",
-      "sha256": "sha256:bcefd35b441b8db8f18db56385f80e9bcc1343b0f9af84e6c2da428b7c821950"
+      "sha256": "sha256:8d4ae415c1473a677640d5aa376174cee48d822e2f9ca6621b28a70cc86ecf14"
     },
     "schema": "tau.python_execution_receipt.v1",
-    "started_at": "2026-08-30T18:51:34.352Z",
+    "started_at": "2026-09-15T03:11:56.901Z",
     "status": "OK",
     "stderr": "",
     "stderr_truncated": false,
@@ -414,14 +415,14 @@
   "restored_start_receipt": {
     "backend": "docker",
     "endpoint": {
-      "endpoint_id": "docker-python-workspace:generation-3be1a42906dcc54db93e1bf9",
-      "generation_id": "generation-3be1a42906dcc54db93e1bf9",
+      "endpoint_id": "docker-python-workspace:generation-38140b6bb006dfe0fb7353c3",
+      "generation_id": "generation-38140b6bb006dfe0fb7353c3",
       "schema": "tau.python_workspace_handle.v1",
       "state_dir": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/restored",
       "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
     },
     "errors": [],
-    "generation_id": "generation-3be1a42906dcc54db93e1bf9",
+    "generation_id": "generation-38140b6bb006dfe0fb7353c3",
     "ordinary_tau_startup_cost": "none_until_workspace_requested",
     "package_manifest": {
       "backend": "docker",
@@ -446,7 +447,7 @@
     "process_identity": {
       "container_cwd": "/",
       "docker_command_sha256": "sha256:7064b3f8024dfed9e1b705a02357020c6be3b08279ec61bb8dab0a7b410a8aaf",
-      "host_pid": 112939,
+      "host_pid": 2703445,
       "worker_env_keys": [
         "LC_CTYPE",
         "PATH",
@@ -469,7 +470,7 @@
   "restored_stop_receipt": {
     "action": "shutdown",
     "errors": [],
-    "generation_id": "generation-3be1a42906dcc54db93e1bf9",
+    "generation_id": "generation-38140b6bb006dfe0fb7353c3",
     "schema": "tau.python_workspace_control_receipt.v1",
     "status": "STOPPED",
     "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
@@ -477,9 +478,9 @@
   "schema": "tau.python_workspace_issue317_live_proof.v1",
   "snapshot": {
     "attempt_id": "attempt-1",
-    "created_at": "2026-08-30T18:51:28.878Z",
+    "created_at": "2026-09-15T03:11:51.447Z",
     "data_boundary_sha256": "sha256:85d5ac9f7ce7629e09850ad239c3a4d6c6e5bfbb0844de18a50003780ba294c4",
-    "generation_id": "generation-7fde802c343148ec9a50a3fb",
+    "generation_id": "generation-0d811c3824654eb761e99f70",
     "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
     "package_manifest_sha256": "sha256:8e95a8da0fae2415c2dd0e9bf27d1eb13dacb9ded2a0eb57ebe4245e02301bd5",
     "plan_hash": "sha256:ae72e9b1c195aa5620d3ff72ff0f213a720caf5786f9569f8577fa6873254601",
@@ -489,7 +490,7 @@
     "serializable_state": {
       "workspace_value": 40
     },
-    "sha256": "sha256:65f1aef6e3de300f09a3b5866522b6941cdd6fff4ff576f23dd7664363d6518c",
+    "sha256": "sha256:b19c8bf78ca1df6e3bd9ec1e5afee34f694c0c0978ab899a020072bcd764e873",
     "snapshot_id": "issue-317",
     "unsupported_state": {
       "Path": "type",
@@ -518,17 +519,329 @@
     ]
   },
   "status": "PASS",
+  "tau_native_agent": {
+    "schema": "tau.python_workspace_tau_native_agent_proof.v1",
+    "session_compaction": {
+      "compaction_entries": 1,
+      "context_message_count": 1,
+      "handle_retained": true,
+      "hidden_state_embedded": false,
+      "schema": "tau.python_workspace_session_compaction_proof.v1"
+    },
+    "settlement": {
+      "attempt": 1,
+      "attempt_id": "attempt-agent-1",
+      "blockers": [],
+      "evidence": {},
+      "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+      "grounding": null,
+      "harness": "tau_native_agent_loop",
+      "journal_head_sha256": "sha256:2dbf5c3bf2090abe5b2353f7d5b17e554f2fa95ecf7c6ad5f9ed235665efed36",
+      "journal_length": 12,
+      "node_id": "python-workspace-agent-node",
+      "plan_sha256": "sha256:ae72e9b1c195aa5620d3ff72ff0f213a720caf5786f9569f8577fa6873254601",
+      "proof_boundary": {
+        "model_done_claim_is_not_settlement": true,
+        "provider_completion_is_not_settlement": true,
+        "settlement_requires_required_evidence": true
+      },
+      "rejected_tool_requests": 0,
+      "run_id": "issue-317-live-agent",
+      "schema": "tau.agent_node_settlement.v1",
+      "sha256": "sha256:9928df1c52b0a18ee6c35a4fa0d5f349927e6ba3dc85bd9d852d74d368acdb12",
+      "state": "completed",
+      "tool_effect_receipt_sha256s": [
+        "sha256:54510ed13872504f346e205d98afe697f0149e35f7333d1923d9441c0bfe043f",
+        "sha256:9b291435b9997f57fa92d9a0cb3fb92bc8b874e20ae5743609c76b5773ec7e1e",
+        "sha256:1461d5d576b777748664d716080261cca44450a9b8b74f9abaf28e7fbdbf04b3"
+      ],
+      "turn_receipt_sha256s": [
+        "sha256:d19a66cfdd7a434616fb8271210631b828c66618c979a05b0f90c578d0fbd36b",
+        "sha256:429df15f5f683f4ec473a398a528297482b31526f7f7d508b8c6edf8ad786c80",
+        "sha256:76a8767f4bc3b723fc6db8b834826d8d77c3e8d13ce56cdd3ee6f5fea7b28467",
+        "sha256:645494899417da63539aa4c45337eadfdd91bc77ac191fd726481885f08077ed"
+      ],
+      "turns": 4
+    },
+    "tool_effect_receipts": [
+      {
+        "effect_content": "{\"execution_id\": \"agent-turn-1\", \"exports\": {\"host_process_state\": true, \"network\": true, \"provider_auth\": true, \"ssh_keys\": true, \"undeclared_host_path\": true}, \"stdout\": \"agent turn1 42.0\\n\"}",
+        "effect_sha256": "sha256:8986c6c8ba6199d460f9ce0b7408f3afc0e071f0830272eae00bbbbde84de765",
+        "error": null,
+        "idempotency_sha256": "sha256:e6cb9cc98b60a8714c7fe926a75d7cd22db060633d28d1a8c601ca5e8c72a30a",
+        "ok": true,
+        "schema": "tau.tool_effect_receipt.v1",
+        "sha256": "sha256:54510ed13872504f346e205d98afe697f0149e35f7333d1923d9441c0bfe043f",
+        "tool_request": {
+          "arguments": {
+            "code": "import math\nworkspace_value = 40\ndef helper(x):\n    return math.sqrt(x) + workspace_value\nprint('agent turn1', helper(4))\n",
+            "execution_id": "agent-turn-1"
+          },
+          "attempt": 1,
+          "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+          "node_id": "python-workspace-agent-node",
+          "request_index": 1,
+          "run_id": "issue-317-live-agent",
+          "schema": "tau.tool_request.v1",
+          "tool_name": "python_workspace_execute"
+        },
+        "tool_request_sha256": "sha256:c6da6e4b7c5276cfb50d6d0a8d2eb3a169d75e1a6f7819b1f07ba679e3225be2"
+      },
+      {
+        "effect_content": "{\"execution_id\": \"agent-turn-2\", \"exports\": {\"turn2_helper\": 43.0}, \"stdout\": \"agent turn2 43.0\\n\"}",
+        "effect_sha256": "sha256:674fc6aa30bb24a7d25b72171df67542418d9c2ec591fc4aa0fd0f3f155f714b",
+        "error": null,
+        "idempotency_sha256": "sha256:06e30b75bee96c696206bc9b8ad4f34dfbbafd4a5dbde7c499d02c17e17307f2",
+        "ok": true,
+        "schema": "tau.tool_effect_receipt.v1",
+        "sha256": "sha256:9b291435b9997f57fa92d9a0cb3fb92bc8b874e20ae5743609c76b5773ec7e1e",
+        "tool_request": {
+          "arguments": {
+            "code": "print('agent turn2', helper(9))\ntau_exports = {'turn2_helper': helper(9)}\n",
+            "execution_id": "agent-turn-2"
+          },
+          "attempt": 1,
+          "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+          "node_id": "python-workspace-agent-node",
+          "request_index": 2,
+          "run_id": "issue-317-live-agent",
+          "schema": "tau.tool_request.v1",
+          "tool_name": "python_workspace_execute"
+        },
+        "tool_request_sha256": "sha256:cf896991d64148a3483efb16778da872400d34dd5fdaffbec6dfbefde230636b"
+      },
+      {
+        "effect_content": "{\"execution_id\": \"agent-turn-3-after-compaction\", \"exports\": {\"after_compaction\": 45.0}, \"stdout\": \"agent after compaction 45.0\\n\"}",
+        "effect_sha256": "sha256:3a1755bf3964bf47a12df1d16ccf74450e26561ef47535bfba1776644fa03826",
+        "error": null,
+        "idempotency_sha256": "sha256:307641b9ff7644497fa62555e04923d4bd3375ac01a209f603f68db44099077b",
+        "ok": true,
+        "schema": "tau.tool_effect_receipt.v1",
+        "sha256": "sha256:1461d5d576b777748664d716080261cca44450a9b8b74f9abaf28e7fbdbf04b3",
+        "tool_request": {
+          "arguments": {
+            "code": "print('agent after compaction', helper(25))\ntau_exports = {'after_compaction': helper(25)}\n",
+            "execution_id": "agent-turn-3-after-compaction"
+          },
+          "attempt": 1,
+          "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+          "node_id": "python-workspace-agent-node",
+          "request_index": 3,
+          "run_id": "issue-317-live-agent",
+          "schema": "tau.tool_request.v1",
+          "tool_name": "python_workspace_execute"
+        },
+        "tool_request_sha256": "sha256:3964a563408100596258236ce36e099733b7f28a5c670ab860e8228741f7cd0f"
+      }
+    ],
+    "turn_receipts": [
+      {
+        "assistant_text": "",
+        "attempt": 1,
+        "finish_reason": "tool_calls",
+        "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+        "node_id": "python-workspace-agent-node",
+        "run_id": "issue-317-live-agent",
+        "schema": "tau.agent_turn_receipt.v1",
+        "sha256": "sha256:d19a66cfdd7a434616fb8271210631b828c66618c979a05b0f90c578d0fbd36b",
+        "tool_calls": [
+          {
+            "id": "call-agent-turn-1",
+            "name": "python_workspace_execute"
+          }
+        ],
+        "tool_executions": 1,
+        "turn": 1
+      },
+      {
+        "assistant_text": "",
+        "attempt": 1,
+        "finish_reason": "tool_calls",
+        "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+        "node_id": "python-workspace-agent-node",
+        "run_id": "issue-317-live-agent",
+        "schema": "tau.agent_turn_receipt.v1",
+        "sha256": "sha256:429df15f5f683f4ec473a398a528297482b31526f7f7d508b8c6edf8ad786c80",
+        "tool_calls": [
+          {
+            "id": "call-agent-turn-2",
+            "name": "python_workspace_execute"
+          }
+        ],
+        "tool_executions": 1,
+        "turn": 2
+      },
+      {
+        "assistant_text": "",
+        "attempt": 1,
+        "finish_reason": "tool_calls",
+        "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+        "node_id": "python-workspace-agent-node",
+        "run_id": "issue-317-live-agent",
+        "schema": "tau.agent_turn_receipt.v1",
+        "sha256": "sha256:76a8767f4bc3b723fc6db8b834826d8d77c3e8d13ce56cdd3ee6f5fea7b28467",
+        "tool_calls": [
+          {
+            "id": "call-agent-turn-3-after-compaction",
+            "name": "python_workspace_execute"
+          }
+        ],
+        "tool_executions": 1,
+        "turn": 3
+      },
+      {
+        "assistant_text": "Workspace proof complete with admitted receipts.",
+        "attempt": 1,
+        "finish_reason": "stop",
+        "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+        "node_id": "python-workspace-agent-node",
+        "run_id": "issue-317-live-agent",
+        "schema": "tau.agent_turn_receipt.v1",
+        "sha256": "sha256:645494899417da63539aa4c45337eadfdd91bc77ac191fd726481885f08077ed",
+        "tool_calls": [],
+        "tool_executions": 0,
+        "turn": 4
+      }
+    ],
+    "workspace_execution_count": 3,
+    "workspace_execution_receipts": [
+      {
+        "code_sha256": "sha256:ed5f87c9fb8ea586d00bcf87fcbee55c01ba803f5baa8c08bc44794e1e53e66d",
+        "effects_admitted": false,
+        "errors": [],
+        "execution_id": "agent-turn-1",
+        "execution_request_sha256": "sha256:582b37c3881126b3f243514a5e681e310a026d0ed27905a96281d8de7fb5ef6c",
+        "exports": {
+          "host_process_state": true,
+          "network": true,
+          "provider_auth": true,
+          "ssh_keys": true,
+          "undeclared_host_path": true
+        },
+        "finished_at": "2026-09-15T03:11:51.457Z",
+        "generation_id": "generation-0d811c3824654eb761e99f70",
+        "idempotent_replay": false,
+        "limits": {
+          "max_artifact_bytes": 1000000,
+          "max_stderr_bytes": 16000,
+          "max_stdout_bytes": 16000,
+          "memory_limit": "256m",
+          "process_limit": 64,
+          "timeout_seconds": 5
+        },
+        "output_artifact": {
+          "bytes": 756,
+          "media_type": "application/json",
+          "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/3a73938670cce441fd75dcfd4b7b16a88d6c87adeae7077d0f73db6e2bac2e3a-execution-agent-turn-1.json",
+          "schema": "tau.host_artifact_ref.v1",
+          "sha256": "sha256:3a73938670cce441fd75dcfd4b7b16a88d6c87adeae7077d0f73db6e2bac2e3a"
+        },
+        "schema": "tau.python_execution_receipt.v1",
+        "started_at": "2026-09-15T03:11:51.456Z",
+        "status": "OK",
+        "stderr": "",
+        "stderr_truncated": false,
+        "stdout": "agent turn1 42.0\n",
+        "stdout_truncated": false,
+        "tau_admission_status": "not_admitted",
+        "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
+      },
+      {
+        "code_sha256": "sha256:665d7338657484d7d596cd64195538d01bd300a9b30af641805234e9437c6019",
+        "effects_admitted": false,
+        "errors": [],
+        "execution_id": "agent-turn-2",
+        "execution_request_sha256": "sha256:39f0945961bc8f4fd5f015bff06e1a02c2e04a9fc2d15c7928233c3915b9d55c",
+        "exports": {
+          "turn2_helper": 43.0
+        },
+        "finished_at": "2026-09-15T03:11:51.508Z",
+        "generation_id": "generation-0d811c3824654eb761e99f70",
+        "idempotent_replay": false,
+        "limits": {
+          "max_artifact_bytes": 1000000,
+          "max_stderr_bytes": 16000,
+          "max_stdout_bytes": 16000,
+          "memory_limit": "256m",
+          "process_limit": 64,
+          "timeout_seconds": 5
+        },
+        "output_artifact": {
+          "bytes": 638,
+          "media_type": "application/json",
+          "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/0c7a440a77febb5dc6f2988bf18eac5613ca692e2dc1c9f9f56830eb99f448ea-execution-agent-turn-2.json",
+          "schema": "tau.host_artifact_ref.v1",
+          "sha256": "sha256:0c7a440a77febb5dc6f2988bf18eac5613ca692e2dc1c9f9f56830eb99f448ea"
+        },
+        "schema": "tau.python_execution_receipt.v1",
+        "started_at": "2026-09-15T03:11:51.507Z",
+        "status": "OK",
+        "stderr": "",
+        "stderr_truncated": false,
+        "stdout": "agent turn2 43.0\n",
+        "stdout_truncated": false,
+        "tau_admission_status": "not_admitted",
+        "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
+      },
+      {
+        "code_sha256": "sha256:5e5b356f59b1b346b74c5c67486b803f7b65378f53d141bf7899e9984b552d94",
+        "effects_admitted": false,
+        "errors": [],
+        "execution_id": "agent-turn-3-after-compaction",
+        "execution_request_sha256": "sha256:a5fddfd084ea7739da8fd3d28411927ea827fd3fc31335ff125ae2a009944e74",
+        "exports": {
+          "after_compaction": 45.0
+        },
+        "finished_at": "2026-09-15T03:11:51.559Z",
+        "generation_id": "generation-0d811c3824654eb761e99f70",
+        "idempotent_replay": false,
+        "limits": {
+          "max_artifact_bytes": 1000000,
+          "max_stderr_bytes": 16000,
+          "max_stdout_bytes": 16000,
+          "memory_limit": "256m",
+          "process_limit": 64,
+          "timeout_seconds": 5
+        },
+        "output_artifact": {
+          "bytes": 670,
+          "media_type": "application/json",
+          "path": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace/artifacts/a7338a082359715b3657cf71396220eb5907a438770589cb28fc6d2ca5f79607-execution-agent-turn-3-after-compaction.json",
+          "schema": "tau.host_artifact_ref.v1",
+          "sha256": "sha256:a7338a082359715b3657cf71396220eb5907a438770589cb28fc6d2ca5f79607"
+        },
+        "schema": "tau.python_execution_receipt.v1",
+        "started_at": "2026-09-15T03:11:51.558Z",
+        "status": "OK",
+        "stderr": "",
+        "stderr_truncated": false,
+        "stdout": "agent after compaction 45.0\n",
+        "stdout_truncated": false,
+        "tau_admission_status": "not_admitted",
+        "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
+      }
+    ],
+    "workspace_exports": {
+      "after_compaction": 45.0,
+      "host_process_state": true,
+      "network": true,
+      "provider_auth": true,
+      "ssh_keys": true,
+      "turn2_helper": 43.0,
+      "undeclared_host_path": true
+    }
+  },
   "workspace_receipt": {
     "backend": "docker",
     "endpoint": {
-      "endpoint_id": "docker-python-workspace:generation-7fde802c343148ec9a50a3fb",
-      "generation_id": "generation-7fde802c343148ec9a50a3fb",
+      "endpoint_id": "docker-python-workspace:generation-0d811c3824654eb761e99f70",
+      "generation_id": "generation-0d811c3824654eb761e99f70",
       "schema": "tau.python_workspace_handle.v1",
       "state_dir": "/home/graham/workspace/experiments/tau/artifacts/issue-317-agentic-eval/workspace",
       "workspace_request_sha256": "sha256:a3e6c5c4e2080aee8df2027ff63f719166b29737bbe2796a50240ba3d26dc446"
     },
     "errors": [],
-    "generation_id": "generation-7fde802c343148ec9a50a3fb",
+    "generation_id": "generation-0d811c3824654eb761e99f70",
     "ordinary_tau_startup_cost": "none_until_workspace_requested",
     "package_manifest": {
       "backend": "docker",
@@ -553,7 +866,7 @@
     "process_identity": {
       "container_cwd": "/",
       "docker_command_sha256": "sha256:33ea764445898c16403cb0834a1c630ff0aad85bea3444a46cf34759ec5c0ca9",
-      "host_pid": 112314,
+      "host_pid": 2702435,
       "worker_env_keys": [
         "LC_CTYPE",
         "PATH",

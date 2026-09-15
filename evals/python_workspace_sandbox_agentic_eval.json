@@ -39,6 +39,21 @@
             "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
             "json_pointer": "/checks/pass_stdout_cannot_settle",
             "equals": true
+          },
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/checks/tau_native_agent_three_model_turns",
+            "equals": true
+          },
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/tau_native_agent/session_compaction/handle_retained",
+            "equals": true
+          },
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/tau_native_agent/session_compaction/hidden_state_embedded",
+            "equals": false
           }
         ]
       },
@@ -71,8 +86,9 @@
   "capability_claims": [
     {
       "id": "tau.python_workspace_sandbox.lifecycle_and_admission",
-      "description": "Tau can run an optional Docker-sandboxed persistent Python workspace with snapshot restore, admission gating, stale-snapshot rejection, duplicate execution protection, and no ambient host/network authority.",
+      "description": "Tau can run an optional Docker-sandboxed persistent Python workspace from a Tau-native agent node across repeated model turns and compaction, with snapshot restore, admission gating, stale-snapshot rejection, duplicate execution protection, and no ambient host/network authority.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {
         "live_e2e": 1,
         "fault_injected_deterministic": 1

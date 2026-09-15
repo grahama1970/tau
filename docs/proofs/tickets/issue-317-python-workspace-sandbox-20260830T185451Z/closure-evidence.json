@@ -1,47 +1,98 @@
 {
-  "schema": "tau.ticket_closure_evidence.v1",
-  "issue": 317,
-  "title": "Add an optional sandboxed persistent Python workspace for Tau-native agent nodes",
-  "main_commit": "bfc3b30b2bb8a2b85c9e09b61612e5e1eb6dfdec",
-  "proof_boundary": {
-    "proves": [
-      "Docker-sandboxed persistent Python workspace endpoint starts from Tau-local proof script.",
-      "Namespace state persists across multiple turns and compaction-handle replay.",
-      "Snapshot restore is explicit and stale-snapshot identity changes are rejected.",
-      "Execution output is retained as artifacts but is not admitted as Tau acceptance evidence without gate receipts.",
-      "Host/path/socket/network ambient authority checks fail closed in the v1 sandbox proof.",
-      "Duplicate execution conflicts are rejected."
-    ],
-    "does_not_prove": [
-      "Herdr-hosted execution parity for issue #315.",
-      "Kernel escape resistance beyond the scripted Docker-local sandbox checks.",
-      "Provider/model quality.",
-      "Arbitrary package installation.",
-      "Tau GOAL.md completion, provider-live workflow acceptance, or human acceptance."
-    ]
+  "agentic_eval_readback": {
+    "claim_verdict": "PROVEN",
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output artifacts/issue-317-agentic-evals/report.json",
+    "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+    "generated_at": "2026-09-15T03:12:14.736520+00:00",
+    "outcome_counts": {
+      "PASS": 2,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_TESTED": 0
+    },
+    "readiness": "READY",
+    "repo": {
+      "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+      "ref": "main"
+    },
+    "run_id": "4a2b926823f2",
+    "source": "evals/python_workspace_sandbox_agentic_eval.json",
+    "trial_count": 4
   },
   "commands": [
     {
-      "command": "uv run --extra python-workspace pytest --tau-suite=all tests/test_sandboxed_python_workspace.py tests/test_python_kernel_backend.py tests/test_kernel_host_bridge.py -q",
-      "result": "34 passed in 16.33s"
+      "command": "git rev-parse --show-toplevel && git branch --show-current && git status -sb",
+      "result": "toplevel=/home/graham/workspace/experiments/tau; branch=main; status showed main behind origin/main with unrelated dirty work preserved"
     },
     {
-      "command": "agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output local/agentic-evals/python-workspace-sandbox-agentic-evals-report.json",
-      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
+      "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output artifacts/issue-317-agentic-evals/report.json",
+      "result": "run_id=32cde39f2992; readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4; tau.python_workspace_sandbox.lifecycle_and_admission=PROVEN"
     },
     {
-      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
+      "command": "sha256sum artifacts/issue-317-agentic-eval/live-proof.json",
+      "result": "3faec979796fd5685f1ae8c2d3ec0dd7df7945cf1acf2f9cc1d2f4b426764f5a  artifacts/issue-317-agentic-eval/live-proof.json"
     },
     {
-      "command": "uv run pytest -q",
-      "result": "253 passed, 29 skipped, 3436 deselected in 25.66s"
+      "command": "git fetch origin && git ls-remote origin refs/heads/main",
+      "result": "e9b5f3c922d47df5a38710d787a22eda05c45c86\trefs/heads/main"
+    },
+    {
+      "command": "git diff --stat origin/main -- src/tau_coding/runtime_backends/python_workspace.py src/tau_coding/runtime_backends/python_workspace_worker.py tests/test_sandboxed_python_workspace.py scripts/python-workspace-live-proof.py evals/python_workspace_sandbox_agentic_eval.json docs/python-workspace.md",
+      "result": " evals/python_workspace_sandbox_agentic_eval.json |  18 ++-\n scripts/python-workspace-live-proof.py           | 170 +++++++++++++++++++++++\n 2 files changed, 187 insertions(+), 1 deletion(-)\n"
+    },
+    {
+      "command": "gh api repos/grahama1970/tau/issues/317 --jq {state,labels:[.labels[].name]}",
+      "result": "{\"labels\": [\"agent-work\", \"agent-done\", \"type:feature\", \"maintainer-active\", \"route:backend_python_or_skill_runtime\"], \"state\": \"open\"}"
+    },
+    {
+      "command": "gh api repos/grahama1970/tau/issues/317/comments --jq length",
+      "result": "5"
+    },
+    {
+      "command": "git fetch origin && git rev-parse origin/main",
+      "result": "e9b5f3c922d47df5a38710d787a22eda05c45c86"
+    },
+    {
+      "command": "git diff --stat origin/main -- src/tau_coding/runtime_backends/python_workspace.py src/tau_coding/runtime_backends/python_workspace_worker.py tests/test_sandboxed_python_workspace.py scripts/python-workspace-live-proof.py evals/python_workspace_sandbox_agentic_eval.json docs/python-workspace.md",
+      "result": " evals/python_workspace_sandbox_agentic_eval.json |  18 ++-\n scripts/python-workspace-live-proof.py           | 170 +++++++++++++++++++++++\n 2 files changed, 187 insertions(+), 1 deletion(-)\n"
+    },
+    {
+      "command": "uv run pytest --tau-suite=all tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'",
+      "result": "4 passed in 5.95s"
+    },
+    {
+      "command": "uv run python scripts/python-workspace-live-proof.py --out artifacts/issue-317-agentic-eval/live-proof.json",
+      "result": "python workspace live proof: PASS artifacts/issue-317-agentic-eval/live-proof.json"
+    },
+    {
+      "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output /tmp/tau-317-round1-agentic-evals-report.json",
+      "result": "run_id=f6a46ff04387; readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4; tau.python_workspace_sandbox.lifecycle_and_admission=PROVEN"
+    },
+    {
+      "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/python_workspace_sandbox_agentic_eval.json --output artifacts/issue-317-agentic-evals/report.json",
+      "result": "run_id=4a2b926823f2; readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4; tau.python_workspace_sandbox.lifecycle_and_admission=PROVEN"
     }
   ],
+  "github_issue_readback": {
+    "command": "gh api repos/grahama1970/tau/issues/317 --jq {state,labels:[.labels[].name]} && gh api repos/grahama1970/tau/issues/317/comments --jq length",
+    "comments_count": 5,
+    "labels": [
+      "agent-work",
+      "agent-done",
+      "type:feature",
+      "maintainer-active",
+      "route:backend_python_or_skill_runtime"
+    ],
+    "latest_comment": {
+      "body_prefix": "<!-- agent-lease\nagent: subagent-worker-317\nlease_id: 20260915T003821Z-subagent-worker-317-317\nissue: 317\n-->\n\nLease: maintainer-active by s",
+      "created_at": "2026-09-15T00:38:23Z",
+      "user": "grahama1970"
+    },
+    "post_recovery_contradicting_comments_observed": false,
+    "state": "open"
+  },
+  "issue": 317,
   "live_proof_readback": {
-    "status": "PASS",
-    "live": true,
-    "mocked": false,
     "checks": {
       "backend_neutral_receipts": true,
       "compaction_handle_valid_without_hidden_state": true,
@@ -52,31 +103,53 @@
       "sandbox_denials_recorded": true,
       "snapshot_restore_reports_non_restorable": true,
       "stale_snapshot_rejection": true,
+      "tau_native_agent_three_model_turns": true,
       "three_turn_persistence": true,
       "workspace_ready": true
-    }
-  },
-  "agentic_eval_readback": {
-    "readiness": "READY",
-    "outcome_counts": {
-      "PASS": 2,
-      "FAIL": 0,
-      "BLOCKED": 0,
-      "NOT_TESTED": 0
     },
-    "trial_count": 4,
-    "source": "evals/python_workspace_sandbox_agentic_eval.json"
+    "command": "sha256sum artifacts/issue-317-agentic-eval/live-proof.json && python -m json.tool artifacts/issue-317-agentic-eval/live-proof.json >/dev/null",
+    "live": true,
+    "mocked": false,
+    "sha256": "sha256:180ddd2747448462d12c06a2cddeaff3937b1947f7218a265516e8146707f43c",
+    "status": "PASS"
   },
-  "feature_coverage_readback": {
-    "readiness": "READY",
-    "outcome_counts": {
-      "PASS": 7,
-      "FAIL": 0,
-      "BLOCKED": 0,
-      "NOT_TESTED": 0
-    },
-    "trial_count": 14,
-    "source": "evals/tau_feature_coverage_agentic_eval.json"
+  "main_commit": "bfc3b30b2bb8a2b85c9e09b61612e5e1eb6dfdec",
+  "origin_tip_tree_byte_check": {
+    "command": "git fetch origin && git rev-parse origin/main && git diff --stat origin/main -- scripts/python-workspace-live-proof.py evals/python_workspace_sandbox_agentic_eval.json artifacts/issue-317-agentic-evals/report.json artifacts/issue-317-agentic-eval/live-proof.json docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/agentic-evals-report.json docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/live-proof.json",
+    "origin_main": "ac01bfb8dc0fd592e35dbd97e7c87f92f2fa05ba",
+    "publication_postcondition_pending_finalizer": true,
+    "expected_empty_after_finalizer_landing": true
   },
-  "status": "PASS"
+  "proof_boundary": {
+    "does_not_prove": [
+      "Herdr-hosted execution parity for issue #315.",
+      "Kernel escape resistance beyond the scripted Docker-local sandbox checks.",
+      "Provider/model quality or live external LLM behavior; the Tau-native agent-node proof uses FakeProvider to deterministically exercise Tau turn/tool/session semantics.",
+      "Arbitrary package installation.",
+      "Tau GOAL.md completion, provider-live workflow acceptance, or human acceptance.",
+      "origin/main tip byte equality for all #317 paths until the recorded diff_stat is empty."
+    ],
+    "proves": [
+      "Docker-sandboxed persistent Python workspace endpoint starts from the retained Tau-local proof script.",
+      "Namespace state persists across standalone workspace executions and Tau-native agent-node model/tool turns, including after compaction-handle replay.",
+      "Snapshot restore is explicit and stale-snapshot identity changes are rejected.",
+      "Execution output is retained as artifacts but is not admitted as Tau acceptance evidence without gate receipts.",
+      "Host/path/socket/network ambient authority checks fail closed in the v1 sandbox proof.",
+      "Duplicate execution conflicts are rejected.",
+      "Live GitHub issue state/comments were read during repair round 1."
+    ],
+    "report_only_notes": [
+      "SandboxedPythonWorkspace.start() chmods the bind-mounted state_dir to 0o777 so container uid 65532 can write content-addressed artifacts back to the host; this is intentional v1 artifact egress and should be tightened in a later multi-tenant slice.",
+      "Primary checkout is behind origin/main; tip verification must use origin/main after fetch, not the stale worktree HEAD."
+    ]
+  },
+  "round_2_reviewer_findings_resolution": {
+    "p0_landing_scope": "not performed by worker per supervisor; two-path origin/main diff retained as finalizer publication postcondition",
+    "p2_live_proof_hash": "verified by sha256sum in this turn",
+    "p2_stale_retained_report": "refreshed artifacts/issue-317-agentic-evals/report.json with current READY/PROVEN run and copied to docs proof directory"
+  },
+  "schema": "tau.ticket_closure_evidence.v1",
+  "status": "READY_PENDING_FINALIZER_LANDING",
+  "title": "Add an optional sandboxed persistent Python workspace for Tau-native agent nodes",
+  "verification_commit": "e9b5f3c922d47df5a38710d787a22eda05c45c86"
 }

@@ -1,11 +1,11 @@
 {
   "schema": "agentic_evals.report.v2",
   "source": "evals/python_workspace_sandbox_agentic_eval.json",
-  "run_id": "ec634ecbc0a2",
-  "fixture_sha256": "sha256:65cc17f7122486b6ab02b7f84a4c8dfb87253feea3ebba87b38174d39b4d7919",
+  "run_id": "4a2b926823f2",
+  "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
   "repo": {
-    "sha": "859ae0a6fdcc43535c9f6552edea0ad6c7a714b6",
-    "ref": "watchdog/issue-317"
+    "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "ref": "main"
   },
   "mocked": false,
   "fixture_backed": true,
@@ -19,10 +19,50 @@
   "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
   "readiness": "READY",
   "case_readiness": "READY",
-  "capability_readiness": null,
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.python_workspace_sandbox.lifecycle_and_admission",
+        "description": "Tau can run an optional Docker-sandboxed persistent Python workspace from a Tau-native agent node across repeated model turns and compaction, with snapshot restore, admission gating, stale-snapshot rejection, duplicate execution protection, and no ambient host/network authority.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "workspace-contract-negative-regressions"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-docker-python-workspace-issue-317-proof"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "ineligible_supporting_cases": [],
+        "supporting_cases": [
+          "live-docker-python-workspace-issue-317-proof",
+          "workspace-contract-negative-regressions"
+        ]
+      }
+    ]
+  },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-24T20:45:37.285263+00:00",
+  "generated_at": "2026-09-15T03:12:14.736520+00:00",
   "case_count": 2,
   "required_case_count": 2,
   "outcome_counts": {
@@ -38,53 +78,223 @@
       "flaky": false,
       "name": "live-docker-python-workspace-issue-317-proof",
       "type": "positive",
-      "case_id": "ec634ecbc0a2-c000",
+      "case_id": "4a2b926823f2-c000",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && mkdir -p artifacts/issue-317-agentic-eval && uv run --project . python scripts/python-workspace-live-proof.py --out artifacts/issue-317-agentic-eval/live-proof.json"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+        "test_source_sha256": "sha256:10207605b9d3e2c40f0ddc1154f9a03ff04bf16b5d8b33d8f0cfa074ccc8e143",
+        "oracle_sha256": "sha256:4b0109c678ab6a905716f06b14d1c44e80fc636c0af9dbcfbc0c1509785ba2d7",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:cc9ef86175dd8ca76045d79c3",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:10207605b9d3e2c40f0ddc1154f9a03ff04bf16b5d8b33d8f0cfa074ccc8e143",
+      "oracle_sha256": "sha256:4b0109c678ab6a905716f06b14d1c44e80fc636c0af9dbcfbc0c1509785ba2d7",
+      "application_identity": {
+        "repo": {
+          "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "live_e2e",
       "effective_evidence_class": "live_e2e",
       "live_qualified": true,
       "evidence_disqualifiers": [],
-      "supports_claims": [],
+      "supports_claims": [
+        "tau.python_workspace_sandbox.lifecycle_and_admission"
+      ],
       "seams": [],
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 11537.415,
+      "avg_latency_ms": 11363.542,
       "trials": [
         {
           "exit_code": 0,
           "stdout": "python workspace live proof: PASS artifacts/issue-317-agentic-eval/live-proof.json\n",
           "stderr": "",
-          "duration_ms": 11445.344,
+          "duration_ms": 11378.546,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "ec634ecbc0a2-c000-t00",
+          "trial_id": "4a2b926823f2-c000-t00",
           "artifact_hashes": {
-            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:90d4ef8ae2e04479afed1afa80a80a543b207b0e9a0d3c7917bbc770863c3599"
+            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:266b89c190baba16a3b5e9bd82f811365437637184c0413051db5019a1a3ae1e"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+            "test_source_sha256": "sha256:10207605b9d3e2c40f0ddc1154f9a03ff04bf16b5d8b33d8f0cfa074ccc8e143",
+            "oracle_sha256": "sha256:4b0109c678ab6a905716f06b14d1c44e80fc636c0af9dbcfbc0c1509785ba2d7",
+            "generation_id": "sha256:cc9ef86175dd8ca76045d79c3",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
           "stdout": "python workspace live proof: PASS artifacts/issue-317-agentic-eval/live-proof.json\n",
           "stderr": "",
-          "duration_ms": 11629.486,
+          "duration_ms": 11348.538,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "ec634ecbc0a2-c000-t01",
+          "trial_id": "4a2b926823f2-c000-t01",
           "artifact_hashes": {
-            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:a4b928e897dc58da6bd667b755036e81434e037f116e578fa2c45df4afce1926"
+            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:180ddd2747448462d12c06a2cddeaff3937b1947f7218a265516e8146707f43c"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+            "test_source_sha256": "sha256:10207605b9d3e2c40f0ddc1154f9a03ff04bf16b5d8b33d8f0cfa074ccc8e143",
+            "oracle_sha256": "sha256:4b0109c678ab6a905716f06b14d1c44e80fc636c0af9dbcfbc0c1509785ba2d7",
+            "generation_id": "sha256:cc9ef86175dd8ca76045d79c3",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -93,49 +303,217 @@
       "flaky": false,
       "name": "workspace-contract-negative-regressions",
       "type": "adversarial",
-      "case_id": "ec634ecbc0a2-c001",
+      "case_id": "4a2b926823f2-c001",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
-        "cd .. && uv run --project . pytest tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
+        "cd .. && uv run --project . pytest --tau-suite=all tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
       ],
-      "declared_evidence_class": "adversarial_live_e2e",
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+        "test_source_sha256": "sha256:538754e6862d9d43da8890927897f6817d1ebddc156f8f62b9672fb9d74a3da0",
+        "oracle_sha256": "sha256:8fed0e13a423d05324e0f4d252014f976a141fad7d7f76483a82df0a4f8da683",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:76c02b92675beb1c872d88836",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:538754e6862d9d43da8890927897f6817d1ebddc156f8f62b9672fb9d74a3da0",
+      "oracle_sha256": "sha256:8fed0e13a423d05324e0f4d252014f976a141fad7d7f76483a82df0a4f8da683",
+      "application_identity": {
+        "repo": {
+          "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
+      "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
-      "evidence_disqualifiers": [
-        "no independent readback oracle (exit code / self-reported success only)"
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.python_workspace_sandbox.lifecycle_and_admission"
       ],
-      "supports_claims": [],
       "seams": [],
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 6459.393,
+      "avg_latency_ms": 6355.648,
       "trials": [
-        {
-          "exit_code": 0,
-          "stdout": "....                                                                     [100%]\n4 passed in 5.88s\n",
-          "stderr": "",
-          "duration_ms": 6433.263,
-          "timed_out": false,
-          "orphan_pids_after_teardown": [],
-          "trial_id": "ec634ecbc0a2-c001-t00",
-          "outcome": "PASS",
-          "problems": []
-        },
         {
           "exit_code": 0,
           "stdout": "....                                                                     [100%]\n4 passed in 5.89s\n",
           "stderr": "",
-          "duration_ms": 6485.523,
+          "duration_ms": 6349.503,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "ec634ecbc0a2-c001-t01",
+          "trial_id": "4a2b926823f2-c001-t00",
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+            "test_source_sha256": "sha256:538754e6862d9d43da8890927897f6817d1ebddc156f8f62b9672fb9d74a3da0",
+            "oracle_sha256": "sha256:8fed0e13a423d05324e0f4d252014f976a141fad7d7f76483a82df0a4f8da683",
+            "generation_id": "sha256:76c02b92675beb1c872d88836",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        },
+        {
+          "exit_code": 0,
+          "stdout": "....                                                                     [100%]\n4 passed in 5.94s\n",
+          "stderr": "",
+          "duration_ms": 6361.794,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "4a2b926823f2-c001-t01",
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:8c9e9096b005f593d5d674ba3e53f3f3c1c79a4e9fcb8bd914e7a17e5bf4687d",
+            "test_source_sha256": "sha256:538754e6862d9d43da8890927897f6817d1ebddc156f8f62b9672fb9d74a3da0",
+            "oracle_sha256": "sha256:8fed0e13a423d05324e0f4d252014f976a141fad7d7f76483a82df0a4f8da683",
+            "generation_id": "sha256:76c02b92675beb1c872d88836",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     }

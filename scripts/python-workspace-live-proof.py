@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import copy
 import json
 import shutil
@@ -10,6 +11,11 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from tau_agent import AgentTool, AgentToolResult, AssistantMessage, ToolCall, UserMessage
+from tau_agent.session.entries import CompactionEntry, CustomEntry, MessageEntry
+from tau_agent.session.memory import SessionState
+from tau_ai import FakeProvider, ProviderResponseEndEvent, ProviderResponseStartEvent
+from tau_coding.dag_runtime.agent_node import AgentNodeRun, ToolPolicy
 from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.runtime_backends.python_workspace import (
     DEFAULT_WORKSPACE_IMAGE,
@@ -95,6 +101,7 @@ def main() -> int:
             "sandbox-denial",
             _sandbox_denial_code(host_pid=__import__("os").getpid()),
         )
+        tau_native_agent = asyncio.run(_run_tau_native_workspace_agent(workspace))
     finally:
         kill_receipt = workspace.stop()
 
@@ -139,6 +146,8 @@ def main() -> int:
             compacted_context["hidden_state_embedded"] is False
             and "workspace_value" not in json.dumps(compacted_context)
             and "turn4 44.0" in receipts["after_compaction"]["stdout"]
+            and tau_native_agent["session_compaction"]["handle_retained"] is True
+            and tau_native_agent["session_compaction"]["hidden_state_embedded"] is False
         ),
         "export_requires_artifact_admission": (
             pre_admission["accepted"] is False
@@ -174,6 +183,14 @@ def main() -> int:
             and receipts["turn1"]["schema"] == "tau.python_execution_receipt.v1"
             and snapshot["schema"] == "tau.python_workspace_snapshot.v1"
         ),
+        "tau_native_agent_three_model_turns": (
+            tau_native_agent["settlement"]["schema"] == "tau.agent_node_settlement.v1"
+            and tau_native_agent["settlement"]["state"] == "completed"
+            and tau_native_agent["settlement"]["turns"] >= 4
+            and tau_native_agent["workspace_execution_count"] >= 3
+            and tau_native_agent["workspace_exports"]["turn2_helper"] == 43.0
+            and tau_native_agent["workspace_exports"]["after_compaction"] == 45.0
+        ),
     }
     proof = {
         "schema": "tau.python_workspace_issue317_live_proof.v1",
@@ -189,6 +206,7 @@ def main() -> int:
         "workspace_receipt": workspace_receipt,
         "compacted_context": compacted_context,
         "execution_receipts": receipts,
+        "tau_native_agent": tau_native_agent,
         "pre_admission": pre_admission,
         "admission_receipt": admission,
         "snapshot": snapshot,
@@ -213,6 +231,158 @@ def main() -> int:
     args.out.write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"python workspace live proof: {proof['status']} {args.out}")
     return 0 if proof["status"] == "PASS" else 2
+
+
+async def _run_tau_native_workspace_agent(workspace: SandboxedPythonWorkspace) -> dict[str, Any]:
+    workspace_receipts: list[dict[str, Any]] = []
+
+    async def _execute_python(arguments: Any, signal: Any = None) -> AgentToolResult:
+        del signal
+        execution_id = str(arguments["execution_id"])
+        receipt = workspace.execute(execution_id, str(arguments["code"]))
+        workspace_receipts.append(receipt)
+        return AgentToolResult(
+            tool_call_id="",
+            name="python_workspace_execute",
+            ok=receipt["status"] == "OK",
+            content=json.dumps(
+                {
+                    "execution_id": execution_id,
+                    "stdout": receipt["stdout"],
+                    "exports": receipt.get("exports"),
+                },
+                sort_keys=True,
+            ),
+            data={"python_execution_receipt_sha256": receipt["output_artifact"]["sha256"]},
+        )
+
+    tool = AgentTool(
+        name="python_workspace_execute",
+        description="Execute bounded Python in the current Tau workspace.",
+        input_schema={
+            "type": "object",
+            "required": ["execution_id", "code"],
+            "properties": {
+                "execution_id": {"type": "string"},
+                "code": {"type": "string"},
+            },
+        },
+        executor=_execute_python,
+    )
+    provider = FakeProvider(
+        [
+            _tool_stream(
+                "agent-turn-1",
+                "\n".join(
+                    [
+                        "import math",
+                        "workspace_value = 40",
+                        "def helper(x):",
+                        "    return math.sqrt(x) + workspace_value",
+                        "print('agent turn1', helper(4))",
+                        "",
+                    ]
+                ),
+            ),
+            _tool_stream(
+                "agent-turn-2",
+                "print('agent turn2', helper(9))\ntau_exports = {'turn2_helper': helper(9)}\n",
+            ),
+            _tool_stream(
+                "agent-turn-3-after-compaction",
+                "\n".join(
+                    [
+                        "print('agent after compaction', helper(25))",
+                        "tau_exports = {'after_compaction': helper(25)}",
+                        "",
+                    ]
+                ),
+            ),
+            _text_stream("Workspace proof complete with admitted receipts."),
+        ]
+    )
+    work_order = {
+        "schema": "tau.agent_node.v1",
+        "run_id": "issue-317-live-agent",
+        "node_id": "python-workspace-agent-node",
+        "attempt_id": "attempt-agent-1",
+        "attempt": 1,
+        "goal_hash": workspace.request.goal_hash,
+        "plan_sha256": workspace.request.plan_hash,
+        "model": "fake",
+        "required_evidence": [],
+    }
+    run = AgentNodeRun(
+        work_order=work_order,
+        policy=ToolPolicy(goal_hash=workspace.request.goal_hash, allowed_tools=(tool.name,)),
+        provider=provider,
+        tools=[tool],
+        max_turns=5,
+    )
+    compaction = _session_compaction_for_workspace(workspace)
+    await run.run("Use the Python workspace across turns, then continue after compaction.")
+    settlement = run.settle()
+    exports: dict[str, Any] = {}
+    for receipt in workspace_receipts:
+        if isinstance(receipt.get("exports"), dict):
+            exports.update(receipt["exports"])
+    return {
+        "schema": "tau.python_workspace_tau_native_agent_proof.v1",
+        "settlement": settlement,
+        "turn_receipts": run.turn_receipts,
+        "tool_effect_receipts": run.tool_effect_receipts,
+        "workspace_execution_receipts": workspace_receipts,
+        "workspace_execution_count": len(workspace_receipts),
+        "workspace_exports": exports,
+        "session_compaction": compaction,
+    }
+
+
+def _session_compaction_for_workspace(workspace: SandboxedPythonWorkspace) -> dict[str, Any]:
+    first = MessageEntry(id="m1", message=UserMessage(content="workspace started"))
+    second = MessageEntry(id="m2", message=AssistantMessage(content="workspace handle recorded"))
+    handle_entry = CustomEntry(namespace="tau.python_workspace", data={"handle": workspace.handle})
+    compaction = CompactionEntry(
+        summary="Compacted prior turns. Retain only tau.python_workspace handle entry.",
+        replaces_entry_ids=[first.id, second.id],
+    )
+    state = SessionState.from_entries([first, second, handle_entry, compaction])
+    compacted_text = "\n".join(message.content for message in state.messages)
+    return {
+        "schema": "tau.python_workspace_session_compaction_proof.v1",
+        "compaction_entries": len(state.compaction_entries),
+        "context_message_count": len(state.messages),
+        "handle_retained": state.custom_entries[-1].data.get("handle") == workspace.handle,
+        "hidden_state_embedded": (
+            "workspace_value" in compacted_text or "def helper" in compacted_text
+        ),
+    }
+
+
+def _tool_stream(execution_id: str, code: str) -> list[Any]:
+    return [
+        ProviderResponseStartEvent(model="fake"),
+        ProviderResponseEndEvent(
+            message=AssistantMessage(
+                content="",
+                tool_calls=[
+                    ToolCall(
+                        id=f"call-{execution_id}",
+                        name="python_workspace_execute",
+                        arguments={"execution_id": execution_id, "code": code},
+                    )
+                ],
+            ),
+            finish_reason="tool_calls",
+        ),
+    ]
+
+
+def _text_stream(text: str) -> list[Any]:
+    return [
+        ProviderResponseStartEvent(model="fake"),
+        ProviderResponseEndEvent(message=AssistantMessage(content=text), finish_reason="stop"),
+    ]
 
 
 def _request(image: str) -> SandboxedPythonWorkspaceRequest:
