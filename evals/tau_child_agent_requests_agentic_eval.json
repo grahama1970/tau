@@ -1,6 +1,7 @@
 {
   "capability_claims": [
     {
+      "claim_semantics": "protocol",
       "criticality": "critical",
       "description": "Model-facing child-agent requests are validated, fan-out/depth bounded, byte-idempotently admitted, compiled into Tau child DAG specs, joined by receipt handles, and steerable through agent-actionable operator requests.",
       "evidence_required": {
@@ -69,6 +70,31 @@
             "equals": "reviewer",
             "json_pointer": "/child_runs/2/role",
             "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/bare_pass_rejected",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/projection_has_parent_child_edges",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/projection_has_terminal_contributions",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/projection_has_herdr_children",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
+          },
+          {
+            "equals": true,
+            "json_pointer": "/required_rejections_passed",
+            "path": "../local/agentic-evals/tau-child-agent-requests-proof.json"
           }
         ],
         "exit_code": 0,
@@ -110,7 +136,7 @@
   ],
   "claims": {
     "does_not_prove": "Semantic quality of external provider answers, UI pane rendering, Herdr pane adoption, or a real paid-provider child session.",
-    "proves": "Tau admits model-facing child-agent requests through a bounded policy, assigns durable child handles idempotently, compiles requests into executable Tau child DAG specs, joins accepted receipt results, and emits child instruction/cancel requests as agent-actionable operator actions rather than human blockers."
+    "proves": "Tau admits model-facing child-agent requests through a bounded policy, assigns durable child handles idempotently, compiles requests into executable Tau child DAG specs, rejects bare child PASS/confidence without declared evidence, joins accepted receipt results, projects parent/child terminal contribution state, and emits child instruction/cancel requests as agent-actionable operator actions rather than human blockers."
   },
   "proof_scope": "Tau model-facing child-agent request admission, bounded child DAG compilation, handle registry, and agent-actionable steering requests",
   "skill": "tau",

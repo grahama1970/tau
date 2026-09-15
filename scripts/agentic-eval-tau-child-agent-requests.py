@@ -21,7 +21,10 @@ from tau_coding.child_agent_requests import (  # noqa: E402
     CHILD_AGENT_REQUEST_SCHEMA,
     ChildAgentRegistry,
     ChildAgentRequestError,
+    build_child_agent_projection,
     child_instruction_operator_action,
+    child_terminal_admission_errors,
+    normalize_child_agent_request,
 )
 
 
@@ -69,7 +72,14 @@ def _request(idx: int) -> dict[str, Any]:
             "allow_network": False,
             "require_receipt": True,
         },
-        "join": {"join_id": "issue316-join", "policy": "all_pass"},
+        "join": {
+            "join_id": "issue316-join",
+            "policy": "all_pass",
+            "output_schema": "tau.child_agent_test_output.v1",
+            "required_evidence": [
+                {"json_pointer": "/accepted_output/message", "equals": "child dag executed"}
+            ],
+        },
         "fanout_index": idx,
     }
 
@@ -103,8 +113,79 @@ def main() -> int:
     if not conflict_rejected:
         errors.append("idempotency_conflict_not_rejected")
 
+    rejection_cases: dict[str, dict[str, Any]] = {}
+    depth = _request(0)
+    depth["request_id"] = "issue316-depth"
+    depth["parent"] = {**depth["parent"], "depth": 1}
+    rejection_cases["child_agent_depth_exceeded"] = depth
+    path = _request(0)
+    path["request_id"] = "issue316-path"
+    path["requested"] = {"paths": ["/etc"]}
+    rejection_cases["child_agent_path_not_allowed"] = path
+    skill = _request(0)
+    skill["request_id"] = "issue316-skill"
+    skill["requested"] = {"skills": ["unsafe-skill"]}
+    rejection_cases["child_agent_skill_not_allowed"] = skill
+    data = _request(0)
+    data["request_id"] = "issue316-data"
+    data["requested"] = {"data_classes": ["secret"]}
+    rejection_cases["child_agent_data_classification_not_allowed"] = data
+    tool = _request(0)
+    tool["request_id"] = "issue316-tool"
+    tool["requested"] = {"tools": ["write"]}
+    rejection_cases["child_agent_tool_not_allowed"] = tool
+    model = _request(0)
+    model["request_id"] = "issue316-model"
+    model["requested"] = {"models": ["unapproved-model"]}
+    rejection_cases["child_agent_model_not_allowed"] = model
+    capability = _request(0)
+    capability["request_id"] = "issue316-model-capability"
+    capability["requested"] = {"model_capabilities": ["vision"]}
+    rejection_cases["child_agent_model_capability_not_allowed"] = capability
+    side_effect = _request(0)
+    side_effect["request_id"] = "issue316-side-effect"
+    side_effect["requested"] = {"side_effects": ["network.write"]}
+    rejection_cases["child_agent_side_effect_not_allowed"] = side_effect
+    sibling = _request(0)
+    sibling["request_id"] = "issue316-sibling"
+    sibling["requested"] = {"sibling_context_from": ["child-run-other"]}
+    rejection_cases["child_agent_sibling_context_not_allowed"] = sibling
+    attempts = _request(0)
+    attempts["request_id"] = "issue316-attempts"
+    attempts["budgets"] = {"max_depth": 1, "max_turns": 1, "max_attempts": 2}
+    rejection_cases["child_agent_attempt_budget_exceeded"] = attempts
+    tokens = _request(0)
+    tokens["request_id"] = "issue316-tokens"
+    tokens["parent"] = {**tokens["parent"], "cumulative_tokens": 9, "max_cumulative_tokens": 10}
+    tokens["budgets"] = {"max_depth": 1, "max_tokens": 2}
+    rejection_cases["child_agent_cumulative_token_budget_exceeded"] = tokens
+    cost = _request(0)
+    cost["request_id"] = "issue316-cost"
+    cost["parent"] = {**cost["parent"], "cumulative_cost_usd": 1.0, "max_cumulative_cost_usd": 1.5}
+    cost["budgets"] = {"max_depth": 1, "max_cost_usd": 1.0}
+    rejection_cases["child_agent_cumulative_cost_budget_exceeded"] = cost
+    time = _request(0)
+    time["request_id"] = "issue316-time"
+    time["parent"] = {**time["parent"], "elapsed_seconds": 9, "max_cumulative_seconds": 10}
+    time["budgets"] = {"max_depth": 1, "timeout_seconds": 2}
+    rejection_cases["child_agent_cumulative_time_budget_exceeded"] = time
+
+    rejection_codes: list[str] = []
+    for expected_code, rejection_request in rejection_cases.items():
+        try:
+            normalize_child_agent_request(rejection_request, parent_run_id="issue316-parent")
+        except ChildAgentRequestError as exc:
+            rejection_codes.append(exc.code)
+        if expected_code not in rejection_codes:
+            errors.append(f"rejection_code_missing:{expected_code}")
+    required_rejections_passed = set(rejection_cases) <= set(rejection_codes)
+
     env = dict(os.environ)
-    env["PYTHONPATH"] = str(SRC) if not env.get("PYTHONPATH") else f"{SRC}{os.pathsep}{env['PYTHONPATH']}"
+    env["PYTHONPATH"] = (
+        str(SRC) if not env.get("PYTHONPATH") else f"{SRC}{os.pathsep}{env['PYTHONPATH']}"
+    )
+    for handle in handles:
+        Path(handle.result_receipt_path).unlink(missing_ok=True)
     pre_settlement_results = registry.accepted_results()
     processes = []
     for handle in handles:
@@ -130,7 +211,9 @@ def main() -> int:
         stdout_path.write_text(stdout, encoding="utf-8")
         stderr_path.write_text(stderr, encoding="utf-8")
         receipt_path = Path(handle.result_receipt_path)
-        receipt = json.loads(receipt_path.read_text(encoding="utf-8")) if receipt_path.is_file() else {}
+        receipt = (
+            json.loads(receipt_path.read_text(encoding="utf-8")) if receipt_path.is_file() else {}
+        )
         registry.record_terminal(handle.handle_id, receipt=receipt)
         child_runs.append(
             {
@@ -146,7 +229,9 @@ def main() -> int:
             }
         )
         if process.returncode != 0 or receipt.get("status") != "PASS":
-            errors.append(f"child_failed:{handle.handle_id}:{process.returncode}:{receipt.get('status')}")
+            errors.append(
+                f"child_failed:{handle.handle_id}:{process.returncode}:{receipt.get('status')}"
+            )
 
     instruction_action = child_instruction_operator_action(
         handles[0],
@@ -171,6 +256,28 @@ def main() -> int:
     if len(accepted) != 3:
         errors.append(f"accepted_result_count:{len(accepted)}")
 
+    bare_pass = {
+        "status": "PASS",
+        "verdict": "PASS",
+        "confidence": 1.0,
+        "accepted_output": {"message": "child dag executed"},
+    }
+    bare_pass_errors = child_terminal_admission_errors(handles[0], bare_pass)
+    bare_pass_rejected = bool(bare_pass_errors)
+    if not bare_pass_rejected:
+        errors.append("bare_child_pass_admitted_without_required_evidence")
+
+    projection = build_child_agent_projection(restarted_registry)
+    projection_has_parent_child_edges = len(projection["viewer"]["edges"]) == 3
+    projection_has_terminal_contributions = len(projection["viewer"]["terminal_contributions"]) == 3
+    projection_has_herdr_children = len(projection["herdr"]["child_agents"]) == 3
+    if not projection_has_parent_child_edges:
+        errors.append("projection_missing_parent_child_edges")
+    if not projection_has_terminal_contributions:
+        errors.append("projection_missing_terminal_contributions")
+    if not projection_has_herdr_children:
+        errors.append("projection_missing_herdr_children")
+
     follow_up_registry = ChildAgentRegistry(parent_run_id=handles[0].child_run_id, max_children=1)
     follow_up_request = _request(0)
     follow_up_request["request_id"] = "issue316-alpha-followup"
@@ -187,6 +294,7 @@ def main() -> int:
     }
     follow_up_request["budgets"] = {"max_depth": 2, "max_turns": 1, "timeout_seconds": 30}
     follow_up = follow_up_registry.admit(follow_up_request, run_root=work / "followup")
+    Path(follow_up.result_receipt_path).unlink(missing_ok=True)
     follow_up_completed = subprocess.run(
         ["uv", "run", "tau", "dag-run", follow_up.dag_spec_path, "--no-resume"],
         cwd=REPO_ROOT,
@@ -211,12 +319,27 @@ def main() -> int:
         "live": True,
         "provider_live": False,
         "proof_boundary": {
-            "proves": "model-facing child requests are admitted idempotently, compiled into bounded Tau child DAG specs, executed through the installed tau dag-run path, and joined by durable receipt handles",
-            "does_not_prove": "semantic quality of external provider answers, UI pane rendering, or a real paid-provider child session",
+            "proves": (
+                "model-facing child requests are admitted idempotently, compiled into bounded "
+                "Tau child DAG specs, executed through the installed tau dag-run path, and "
+                "joined by durable receipt handles"
+            ),
+            "does_not_prove": (
+                "semantic quality of external provider answers, UI pane rendering, or a real "
+                "paid-provider child session"
+            ),
         },
         "registry": registry.to_payload(),
         "byte_idempotent_duplicate": byte_idempotent_duplicate,
         "idempotency_conflict_rejected": conflict_rejected,
+        "rejection_codes": sorted(rejection_codes),
+        "required_rejections_passed": required_rejections_passed,
+        "bare_pass_rejected": bare_pass_rejected,
+        "bare_pass_admission_errors": bare_pass_errors,
+        "projection": projection,
+        "projection_has_parent_child_edges": projection_has_parent_child_edges,
+        "projection_has_terminal_contributions": projection_has_terminal_contributions,
+        "projection_has_herdr_children": projection_has_herdr_children,
         "launched_child_dags_before_waiting": True,
         "pre_settlement_result_count": len(pre_settlement_results),
         "reconstructed_same_handles_after_restart": reconstructed_same_handles,

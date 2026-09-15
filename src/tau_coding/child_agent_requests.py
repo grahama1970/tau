@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from tau_coding.dag_runtime.model import canonical_sha256
 
@@ -21,6 +22,7 @@ CHILD_AGENT_REQUEST_SCHEMA = "tau.child_agent_request.v1"
 CHILD_AGENT_HANDLE_SCHEMA = "tau.child_agent_handle.v1"
 CHILD_AGENT_REGISTRY_SCHEMA = "tau.child_agent_registry.v1"
 CHILD_AGENT_PROOF_SCHEMA = "tau.child_agent_compilation_proof.v1"
+CHILD_AGENT_PROJECTION_SCHEMA = "tau.child_agent_projection.v1"
 GENERIC_DAG_SPEC_SCHEMA = "tau.generic_dag_spec.v1"
 GENERIC_DAG_NODE_RECEIPT_SCHEMA = "tau.generic_dag_node_receipt.v1"
 OPERATOR_ACTION_REQUEST_SCHEMA = "tau.operator_action_request.v1"
@@ -58,6 +60,9 @@ class ChildAgentPolicy:
     allowed_skills: tuple[str, ...] = ()
     allowed_data_classes: tuple[str, ...] = ()
     allowed_models: tuple[str, ...] = ()
+    allowed_model_capabilities: tuple[str, ...] = ()
+    allowed_side_effects: tuple[str, ...] = ()
+    allowed_sibling_context_from: tuple[str, ...] = ()
     allow_network: bool = False
     require_receipt: bool = True
 
@@ -79,6 +84,7 @@ class ChildAgentHandle:
     result_receipt_path: str
     status: str = "ADMITTED"
     operator_action_ids: tuple[str, ...] = field(default_factory=tuple)
+    join_policy: dict[str, Any] = field(default_factory=dict)
 
     def to_payload(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -91,9 +97,13 @@ class ChildAgentRegistry:
 
     def __init__(self, *, parent_run_id: str, max_children: int = 8) -> None:
         if not _nonempty(parent_run_id):
-            raise ChildAgentRequestError("child_agent_parent_run_id_required", "parent_run_id is required")
+            raise ChildAgentRequestError(
+                "child_agent_parent_run_id_required", "parent_run_id is required"
+            )
         if max_children < 1:
-            raise ChildAgentRequestError("child_agent_max_children_invalid", "max_children must be >= 1")
+            raise ChildAgentRequestError(
+                "child_agent_max_children_invalid", "max_children must be >= 1"
+            )
         self.parent_run_id = parent_run_id
         self.max_children = max_children
         self._handles_by_id: dict[str, ChildAgentHandle] = {}
@@ -146,7 +156,11 @@ class ChildAgentRegistry:
         handle = self.inspect(handle_id)
         status = str(receipt.get("status") or "UNKNOWN")
         updated = ChildAgentHandle(
-            **{**asdict(handle), "status": status, "operator_action_ids": handle.operator_action_ids}
+            **{
+                **asdict(handle),
+                "status": status,
+                "operator_action_ids": handle.operator_action_ids,
+            }
         )
         self._handles_by_id[handle_id] = updated
         return updated
@@ -164,7 +178,7 @@ class ChildAgentRegistry:
             if not receipt_path.is_file():
                 continue
             payload = json.loads(receipt_path.read_text(encoding="utf-8"))
-            if payload.get("status") == "PASS":
+            if not child_terminal_admission_errors(handle, payload):
                 results.append(
                     {
                         "handle_id": handle.handle_id,
@@ -186,9 +200,11 @@ class ChildAgentRegistry:
         }
 
     @classmethod
-    def from_payload(cls, payload: Mapping[str, Any]) -> "ChildAgentRegistry":
+    def from_payload(cls, payload: Mapping[str, Any]) -> ChildAgentRegistry:
         if payload.get("schema") != CHILD_AGENT_REGISTRY_SCHEMA:
-            raise ChildAgentRequestError("child_agent_registry_schema_invalid", "invalid registry schema")
+            raise ChildAgentRequestError(
+                "child_agent_registry_schema_invalid", "invalid registry schema"
+            )
         registry = cls(
             parent_run_id=str(payload["parent_run_id"]),
             max_children=int(payload.get("max_children") or 8),
@@ -209,6 +225,9 @@ class ChildAgentRegistry:
                 result_receipt_path=str(raw["result_receipt_path"]),
                 status=str(raw.get("status") or "ADMITTED"),
                 operator_action_ids=tuple(str(item) for item in raw.get("operator_action_ids", [])),
+                join_policy=dict(raw.get("join_policy", {}))
+                if isinstance(raw.get("join_policy"), Mapping)
+                else {},
             )
             registry._handles_by_id[handle.handle_id] = handle
             registry._handle_by_idempotency_key[handle.request_id] = handle.handle_id
@@ -225,14 +244,20 @@ def normalize_child_agent_request(
     """Validate and canonicalize a model-facing child-agent request."""
 
     if request.get("schema") != CHILD_AGENT_REQUEST_SCHEMA:
-        raise ChildAgentRequestError("child_agent_request_schema_invalid", "invalid child request schema")
+        raise ChildAgentRequestError(
+            "child_agent_request_schema_invalid", "invalid child request schema"
+        )
     request_id = _required_id(request, "request_id")
     idempotency_key = str(request.get("idempotency_key") or request_id)
     if not _ALLOWED_ID.fullmatch(idempotency_key):
-        raise ChildAgentRequestError("child_agent_idempotency_key_invalid", "invalid idempotency_key")
+        raise ChildAgentRequestError(
+            "child_agent_idempotency_key_invalid", "invalid idempotency_key"
+        )
     parent = _required_mapping(request, "parent")
     if str(parent.get("run_id") or "") != parent_run_id:
-        raise ChildAgentRequestError("child_agent_parent_mismatch", "parent run_id does not match registry")
+        raise ChildAgentRequestError(
+            "child_agent_parent_mismatch", "parent run_id does not match registry"
+        )
     parent_node_id = _required_id(parent, "node_id")
     task = _required_mapping(request, "task")
     role = str(request.get("role") or "").strip()
@@ -241,16 +266,24 @@ def normalize_child_agent_request(
     prompt = str(task.get("prompt") or "")
     summary = str(task.get("summary") or "").strip()
     if not summary:
-        raise ChildAgentRequestError("child_agent_task_summary_required", "task.summary is required")
+        raise ChildAgentRequestError(
+            "child_agent_task_summary_required", "task.summary is required"
+        )
     if not prompt.strip():
         raise ChildAgentRequestError("child_agent_task_prompt_required", "task.prompt is required")
     budgets = _normalize_budgets(request.get("budgets", {}))
     if int(parent.get("depth", 0)) + 1 > budgets.max_depth:
-        raise ChildAgentRequestError("child_agent_depth_exceeded", "child request exceeds max_depth")
+        raise ChildAgentRequestError(
+            "child_agent_depth_exceeded", "child request exceeds max_depth"
+        )
     if int(request.get("fanout_index", 0)) >= max_children:
-        raise ChildAgentRequestError("child_agent_fanout_index_exceeded", "fanout_index exceeds registry max_children")
+        raise ChildAgentRequestError(
+            "child_agent_fanout_index_exceeded", "fanout_index exceeds registry max_children"
+        )
     if len(prompt.encode("utf-8")) > budgets.max_prompt_bytes:
-        raise ChildAgentRequestError("child_agent_prompt_too_large", "task.prompt exceeds max_prompt_bytes")
+        raise ChildAgentRequestError(
+            "child_agent_prompt_too_large", "task.prompt exceeds max_prompt_bytes"
+        )
     policy = _normalize_policy(request.get("policy", {}))
     requested = _normalize_requested_grants(request.get("requested", {}))
     _validate_requested_subset(
@@ -271,6 +304,26 @@ def normalize_child_agent_request(
     _validate_requested_subset(
         requested.get("models", []), policy.allowed_models, "model", allow_empty_policy=True
     )
+    _validate_requested_subset(
+        requested.get("model_capabilities", []),
+        policy.allowed_model_capabilities,
+        "model_capability",
+        allow_empty_policy=True,
+    )
+    _validate_requested_subset(
+        requested.get("side_effects", []),
+        policy.allowed_side_effects,
+        "side_effect",
+        allow_empty_policy=True,
+    )
+    if requested.get("sibling_context_from"):
+        _validate_requested_subset(
+            requested.get("sibling_context_from", []),
+            policy.allowed_sibling_context_from,
+            "sibling_context",
+            allow_empty_policy=True,
+        )
+    _validate_cumulative_budgets(parent, budgets)
     parent_lineage = {
         "run_id": parent_run_id,
         "node_id": parent_node_id,
@@ -291,7 +344,7 @@ def normalize_child_agent_request(
         "requested": requested,
         "budgets": budgets.to_payload(),
         "policy": policy.to_payload(),
-        "join": dict(request.get("join", {})) if isinstance(request.get("join"), Mapping) else {},
+        "join": _normalize_join_policy(request.get("join", {})),
         "fanout_index": int(request.get("fanout_index", 0)),
     }
 
@@ -344,7 +397,15 @@ def compile_child_agent_dag_spec(
                         "allowed_skills": list(policy.get("allowed_skills", [])),
                         "allowed_data_classes": list(policy.get("allowed_data_classes", [])),
                         "allowed_models": list(policy.get("allowed_models", [])),
+                        "allowed_model_capabilities": list(
+                            policy.get("allowed_model_capabilities", [])
+                        ),
+                        "allowed_side_effects": list(policy.get("allowed_side_effects", [])),
+                        "allowed_sibling_context_from": list(
+                            policy.get("allowed_sibling_context_from", [])
+                        ),
                         "requested": dict(normalized_request.get("requested", {})),
+                        "join_policy": dict(normalized_request.get("join", {})),
                         "requires_receipt": bool(policy.get("require_receipt", True)),
                     }
                 },
@@ -389,6 +450,110 @@ def child_cancel_operator_action(
     )
 
 
+def child_terminal_admission_errors(
+    handle: ChildAgentHandle, receipt: Mapping[str, Any]
+) -> list[str]:
+    """Return stable reasons a child receipt cannot enter parent context."""
+
+    errors: list[str] = []
+    if receipt.get("status") != "PASS":
+        errors.append("child_agent_terminal_status_not_pass")
+    if receipt.get("verdict") == "PASS" and not handle.join_policy.get("required_evidence"):
+        errors.append("child_agent_required_evidence_missing")
+    policy = str(handle.join_policy.get("policy") or "")
+    if policy not in {"all_pass", "any_pass"}:
+        errors.append("child_agent_join_policy_unsupported")
+    output_schema = str(handle.join_policy.get("output_schema") or "")
+    if output_schema:
+        output = receipt.get("accepted_output")
+        if not isinstance(output, Mapping) or output.get("schema") != output_schema:
+            errors.append("child_agent_output_schema_mismatch")
+    for evidence in handle.join_policy.get("required_evidence", []):
+        if not isinstance(evidence, Mapping):
+            errors.append("child_agent_required_evidence_invalid")
+            continue
+        pointer = str(evidence.get("json_pointer") or "")
+        found, value = _json_pointer(receipt, pointer)
+        if not found:
+            errors.append("child_agent_required_evidence_missing")
+        elif "equals" in evidence and value != evidence["equals"]:
+            errors.append("child_agent_required_evidence_mismatch")
+    return errors
+
+
+def build_child_agent_projection(registry: ChildAgentRegistry) -> dict[str, Any]:
+    """Project retained handles into viewer/Herdr-neutral parent-child records."""
+
+    nodes = [
+        {
+            "id": registry.parent_run_id,
+            "kind": "parent_run",
+            "authoritative": False,
+        }
+    ]
+    edges: list[dict[str, Any]] = []
+    terminal_contributions: list[dict[str, Any]] = []
+    herdr_children: list[dict[str, Any]] = []
+    for handle in registry.handles:
+        nodes.append(
+            {
+                "id": handle.child_run_id,
+                "kind": "child_agent_run",
+                "handle_id": handle.handle_id,
+                "role": handle.role,
+                "status": handle.status,
+                "authoritative": False,
+            }
+        )
+        edges.append(
+            {
+                "source": handle.parent_run_id,
+                "target": handle.child_run_id,
+                "kind": "child_agent",
+                "handle_id": handle.handle_id,
+            }
+        )
+        receipt_path = Path(handle.result_receipt_path)
+        receipt = (
+            json.loads(receipt_path.read_text(encoding="utf-8")) if receipt_path.is_file() else {}
+        )
+        errors = (
+            child_terminal_admission_errors(handle, receipt)
+            if receipt
+            else ["child_agent_receipt_missing"]
+        )
+        contribution_state = "CONTRIBUTED" if not errors else "REJECTED" if receipt else "PENDING"
+        terminal_contributions.append(
+            {
+                "handle_id": handle.handle_id,
+                "child_run_id": handle.child_run_id,
+                "state": contribution_state,
+                "admission_errors": errors,
+                "receipt_path": str(receipt_path),
+            }
+        )
+        herdr_children.append(
+            {
+                "parent_run_id": handle.parent_run_id,
+                "child_run_id": handle.child_run_id,
+                "handle_id": handle.handle_id,
+                "role": handle.role,
+                "terminal_contribution_state": contribution_state,
+            }
+        )
+    return {
+        "schema": CHILD_AGENT_PROJECTION_SCHEMA,
+        "parent_run_id": registry.parent_run_id,
+        "viewer": {
+            "nodes": nodes,
+            "edges": edges,
+            "terminal_contributions": terminal_contributions,
+        },
+        "herdr": {"child_agents": herdr_children},
+        "clients_authoritative": False,
+    }
+
+
 def _operator_action(
     handle: ChildAgentHandle,
     *,
@@ -399,7 +564,9 @@ def _operator_action(
     journal_head_sha256: str,
 ) -> dict[str, Any]:
     if not _ALLOWED_ID.fullmatch(action_request_id):
-        raise ChildAgentRequestError("child_agent_operator_action_id_invalid", "invalid action_request_id")
+        raise ChildAgentRequestError(
+            "child_agent_operator_action_id_invalid", "invalid action_request_id"
+        )
     return {
         "schema": OPERATOR_ACTION_REQUEST_SCHEMA,
         "action_request_id": action_request_id,
@@ -440,6 +607,9 @@ def _make_handle(
         task_summary=str(task["summary"]),
         dag_spec_path=str(child_root / "dag.json"),
         result_receipt_path=str(child_root / "receipt.json"),
+        join_policy=dict(normalized.get("join", {}))
+        if isinstance(normalized.get("join"), Mapping)
+        else {},
     )
 
 
@@ -470,7 +640,9 @@ def _normalize_budgets(raw: object) -> ChildAgentBudgets:
     ):
         raise ChildAgentRequestError("child_agent_budget_invalid", "budgets must be positive")
     if budgets.max_attempts > budgets.max_turns:
-        raise ChildAgentRequestError("child_agent_attempt_budget_exceeded", "max_attempts exceeds max_turns")
+        raise ChildAgentRequestError(
+            "child_agent_attempt_budget_exceeded", "max_attempts exceeds max_turns"
+        )
     return budgets
 
 
@@ -487,6 +659,19 @@ def _normalize_policy(raw: object) -> ChildAgentPolicy:
             _bounded_str_list(raw.get("allowed_data_classes", []), "allowed_data_classes")
         ),
         allowed_models=tuple(_bounded_str_list(raw.get("allowed_models", []), "allowed_models")),
+        allowed_model_capabilities=tuple(
+            _bounded_str_list(
+                raw.get("allowed_model_capabilities", []), "allowed_model_capabilities"
+            )
+        ),
+        allowed_side_effects=tuple(
+            _bounded_str_list(raw.get("allowed_side_effects", []), "allowed_side_effects")
+        ),
+        allowed_sibling_context_from=tuple(
+            _bounded_str_list(
+                raw.get("allowed_sibling_context_from", []), "allowed_sibling_context_from"
+            )
+        ),
         allow_network=bool(raw.get("allow_network", False)),
         require_receipt=bool(raw.get("require_receipt", True)),
     )
@@ -496,14 +681,86 @@ def _normalize_requested_grants(raw: object) -> dict[str, list[str]]:
     if raw is None:
         raw = {}
     if not isinstance(raw, Mapping):
-        raise ChildAgentRequestError("child_agent_requested_grants_invalid", "requested must be an object")
+        raise ChildAgentRequestError(
+            "child_agent_requested_grants_invalid", "requested must be an object"
+        )
     return {
         "tools": _bounded_str_list(raw.get("tools", []), "requested_tools"),
         "paths": _bounded_str_list(raw.get("paths", []), "requested_paths"),
         "skills": _bounded_str_list(raw.get("skills", []), "requested_skills"),
         "data_classes": _bounded_str_list(raw.get("data_classes", []), "requested_data_classes"),
         "models": _bounded_str_list(raw.get("models", []), "requested_models"),
+        "model_capabilities": _bounded_str_list(
+            raw.get("model_capabilities", []), "requested_model_capabilities"
+        ),
+        "side_effects": _bounded_str_list(raw.get("side_effects", []), "requested_side_effects"),
+        "sibling_context_from": _bounded_str_list(
+            raw.get("sibling_context_from", []), "requested_sibling_context_from"
+        ),
     }
+
+
+def _normalize_join_policy(raw: object) -> dict[str, Any]:
+    if raw is None:
+        raw = {}
+    if not isinstance(raw, Mapping):
+        raise ChildAgentRequestError("child_agent_join_policy_invalid", "join must be an object")
+    policy = str(raw.get("policy") or "").strip()
+    if policy not in {"all_pass", "any_pass"}:
+        raise ChildAgentRequestError(
+            "child_agent_join_policy_invalid", "join.policy must be all_pass or any_pass"
+        )
+    required_evidence = raw.get("required_evidence", [])
+    if not isinstance(required_evidence, list) or len(required_evidence) > 16:
+        raise ChildAgentRequestError(
+            "child_agent_required_evidence_invalid", "join.required_evidence must be a bounded list"
+        )
+    normalized_evidence: list[dict[str, Any]] = []
+    for item in required_evidence:
+        if not isinstance(item, Mapping) or not str(item.get("json_pointer") or "").startswith("/"):
+            raise ChildAgentRequestError(
+                "child_agent_required_evidence_invalid", "required evidence needs json_pointer"
+            )
+        evidence = {"json_pointer": str(item["json_pointer"])}
+        if "equals" in item:
+            evidence["equals"] = item["equals"]
+        normalized_evidence.append(evidence)
+    return {
+        "join_id": str(raw.get("join_id") or ""),
+        "policy": policy,
+        "output_schema": str(raw.get("output_schema") or ""),
+        "required_evidence": normalized_evidence,
+    }
+
+
+def _validate_cumulative_budgets(parent: Mapping[str, Any], budgets: ChildAgentBudgets) -> None:
+    cumulative_tokens = int(parent.get("cumulative_tokens", 0) or 0)
+    max_cumulative_tokens = parent.get("max_cumulative_tokens")
+    if max_cumulative_tokens is not None and cumulative_tokens + budgets.max_tokens > int(
+        max_cumulative_tokens
+    ):
+        raise ChildAgentRequestError(
+            "child_agent_cumulative_token_budget_exceeded",
+            "child request exceeds cumulative token budget",
+        )
+    cumulative_cost = float(parent.get("cumulative_cost_usd", 0.0) or 0.0)
+    max_cumulative_cost = parent.get("max_cumulative_cost_usd")
+    if max_cumulative_cost is not None and cumulative_cost + budgets.max_cost_usd > float(
+        max_cumulative_cost
+    ):
+        raise ChildAgentRequestError(
+            "child_agent_cumulative_cost_budget_exceeded",
+            "child request exceeds cumulative cost budget",
+        )
+    elapsed_seconds = int(parent.get("elapsed_seconds", 0) or 0)
+    max_cumulative_seconds = parent.get("max_cumulative_seconds")
+    if max_cumulative_seconds is not None and elapsed_seconds + budgets.timeout_seconds > int(
+        max_cumulative_seconds
+    ):
+        raise ChildAgentRequestError(
+            "child_agent_cumulative_time_budget_exceeded",
+            "child request exceeds cumulative time budget",
+        )
 
 
 def _validate_requested_subset(
@@ -532,26 +789,36 @@ def _bounded_str_list(raw: object, field_name: str) -> list[str]:
     if raw is None:
         return []
     if not isinstance(raw, list):
-        raise ChildAgentRequestError(f"child_agent_{field_name}_invalid", f"{field_name} must be a list")
+        raise ChildAgentRequestError(
+            f"child_agent_{field_name}_invalid", f"{field_name} must be a list"
+        )
     values = [str(item) for item in raw]
     if len(values) > 32:
-        raise ChildAgentRequestError(f"child_agent_{field_name}_too_large", f"{field_name} is too large")
+        raise ChildAgentRequestError(
+            f"child_agent_{field_name}_too_large", f"{field_name} is too large"
+        )
     if any(not value.strip() or len(value) > 256 for value in values):
-        raise ChildAgentRequestError(f"child_agent_{field_name}_invalid", f"{field_name} contains invalid values")
+        raise ChildAgentRequestError(
+            f"child_agent_{field_name}_invalid", f"{field_name} contains invalid values"
+        )
     return values
 
 
 def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[str, Any]:
     value = payload.get(field_name)
     if not isinstance(value, Mapping):
-        raise ChildAgentRequestError(f"child_agent_{field_name}_required", f"{field_name} is required")
+        raise ChildAgentRequestError(
+            f"child_agent_{field_name}_required", f"{field_name} is required"
+        )
     return value
 
 
 def _required_id(payload: Mapping[str, Any], field_name: str) -> str:
     value = str(payload.get(field_name) or "").strip()
     if not _ALLOWED_ID.fullmatch(value):
-        raise ChildAgentRequestError(f"child_agent_{field_name}_invalid", f"{field_name} must be a stable id")
+        raise ChildAgentRequestError(
+            f"child_agent_{field_name}_invalid", f"{field_name} must be a stable id"
+        )
     return value
 
 
@@ -569,7 +836,11 @@ def _default_child_receipt_writer(receipt_path: str, handle_id: str, *, goal_has
         "live": True,
         "provider_live": False,
         "goal_hash": goal_hash,
-        "accepted_output": {"handle_id": handle_id, "message": "child dag executed"},
+        "accepted_output": {
+            "schema": "tau.child_agent_test_output.v1",
+            "handle_id": handle_id,
+            "message": "child dag executed",
+        },
         "artifacts": [],
         "commands_run": [],
         "policy_exceptions": [],
@@ -585,6 +856,26 @@ def _default_child_receipt_writer(receipt_path: str, handle_id: str, *, goal_has
         "path.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\\n', encoding='utf-8')\n"
         "print(json.dumps(payload, sort_keys=True))\n"
     )
+
+
+def _json_pointer(payload: Mapping[str, Any], pointer: str) -> tuple[bool, Any]:
+    if not pointer.startswith("/"):
+        return False, None
+    current: Any = payload
+    for raw_part in pointer.split("/")[1:]:
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, Mapping):
+            if part not in current:
+                return False, None
+            current = current[part]
+        elif isinstance(current, list) and part.isdigit():
+            index = int(part)
+            if index >= len(current):
+                return False, None
+            current = current[index]
+        else:
+            return False, None
+    return True, current
 
 
 def _sha256(path: Path) -> str:
