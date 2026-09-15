@@ -1,20 +1,20 @@
 {
   "agentic_evals_runner_version": "agentic_evals.report.v2",
-  "artifact_count": 21,
+  "artifact_count": 28,
   "failure_codes": [],
   "failure_count": 0,
   "failures": [],
-  "index_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-agentic-eval-evidence-index.json",
+  "index_path": "/tmp/tau-t1-rebuild-mMjA18/repo/local/agentic-evals/tau-agentic-eval-evidence-index.json",
   "index_repo": {
     "dirty_tree": false,
     "dirty_tree_declaration": "clean",
-    "ignored_mutable_status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "ignored_mutable_status_porcelain": "",
     "ref": "main",
-    "root": "/tmp/tau-329-origin-clean.hy0Fzl/repo",
-    "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
+    "root": "/tmp/tau-t1-rebuild-mMjA18/repo",
+    "sha": "7a4e007bdcb8111544484a0b7ac2c12087d0e34a",
     "status_porcelain": ""
   },
-  "index_sha256": "sha256:098eecc13bd916813a6dd5a2c8579e0691843bec8aead59fffbf45638bd75eb2",
+  "index_sha256": "sha256:6d83f0714f202548d6cc5886166511cb6b7b79c17ad4f43fd6ec1b1a053d3118",
   "live": false,
   "mocked": false,
   "ok": true,
@@ -32,12 +32,12 @@
   "repo": {
     "dirty_tree": true,
     "ref": "main",
-    "root": "/tmp/tau-329-origin-clean.hy0Fzl/repo",
-    "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665"
+    "root": "/tmp/tau-t1-rebuild-mMjA18/repo",
+    "sha": "7a4e007bdcb8111544484a0b7ac2c12087d0e34a"
   },
   "report_count": 15,
-  "require_clean": false,
-  "require_current_sha": false,
+  "require_clean": true,
+  "require_current_sha": true,
   "require_live_reports": true,
   "retained_reports_live_readback": {
     "all_unmocked": true,
