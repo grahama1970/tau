@@ -1,7 +1,7 @@
 {
   "cancelled": false,
   "command": [
-    "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+    "/tmp/tau-rung1-clean-b2bw4hd2/checkout/.venv/bin/python",
     "-m",
     "tau_coding.workflows.nodes.repository_readiness",
     "publish",

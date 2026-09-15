@@ -4,11 +4,11 @@
       {
         "kind": "repository_readiness_validation",
         "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
-        "sha256": "sha256:34eb155f250fdfb297f96b06ec89dda1c31ec007ec1fdc8d808fd6dd37dfc005"
+        "sha256": "sha256:68799b3bd1a73534744079834be24eb6e11b95d72cdd8eb028a8d89ed2b57bdd"
       }
     ],
     "dirty": false,
-    "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+    "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
     "require_clean": true,
     "schema": "tau.repository_readiness_validation.v1",
     "status": "PASS",
@@ -18,7 +18,7 @@
     {
       "kind": "repository_readiness_validation",
       "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
-      "sha256": "sha256:34eb155f250fdfb297f96b06ec89dda1c31ec007ec1fdc8d808fd6dd37dfc005"
+      "sha256": "sha256:68799b3bd1a73534744079834be24eb6e11b95d72cdd8eb028a8d89ed2b57bdd"
     }
   ],
   "commands_run": [
@@ -26,7 +26,7 @@
   ],
   "errors": [],
   "execution_evidence": {
-    "command_result_sha256": "sha256:936d98b8c05c55ff996c4843b84f13411b74f6353434c4fbde85422088bd612e",
+    "command_result_sha256": "sha256:e937431b6464b08d22aa457726100e416701b98f65bdf1406f12d2e1065190d1",
     "kind": "local_subprocess",
     "returncode": 0,
     "runtime_artifact_count": 4,
@@ -34,7 +34,7 @@
     "runtime_event_state": "EXITED",
     "runtime_submit_delivery_status": "CONFIRMED"
   },
-  "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+  "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
   "handoff_summary": "Repository readiness validation passed and may be published.",
   "live": true,
   "mocked": false,

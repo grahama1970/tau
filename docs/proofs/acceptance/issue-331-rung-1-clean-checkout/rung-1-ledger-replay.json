@@ -8,7 +8,7 @@
     "validate-readiness",
     "publish-readiness"
   ],
-  "run_id": "repository-readiness-271d3456fab7",
+  "run_id": "repository-readiness-c51f959facff",
   "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
   "status": "PASS",
   "verdict": "PASS"

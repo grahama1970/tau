@@ -1,7 +1,7 @@
 {
   "confidence": "PROCESS",
-  "endpoint_lease_sha256": "sha256:e380a7f5b5a16d7a098f5a24fdb40c63e5eee44299e8a3aeb4be0507cef078cc",
-  "event_id": "local-event:12923bda79efe2001dc251a9",
+  "endpoint_lease_sha256": "sha256:7dccfb58ff7d1cefcf6f349b4d22e98d6f33b6832cc7cbe74533c5b1d248c8f5",
+  "event_id": "local-event:58cc5e95a08611c91abbc42a",
   "event_type": "RUNTIME_ENDPOINT_EXITED",
   "liveness": "DEAD",
   "observation": {
@@ -9,8 +9,8 @@
     "returncode": 0,
     "timed_out": false
   },
-  "observed_at": "2026-08-29T18:51:15.534222+00:00",
-  "run_id": "repository-readiness-271d3456fab7",
+  "observed_at": "2026-09-02T21:46:03.179480+00:00",
+  "run_id": "repository-readiness-c51f959facff",
   "schema": "tau.runtime_event.v1",
   "source": "local",
   "state": "EXITED"

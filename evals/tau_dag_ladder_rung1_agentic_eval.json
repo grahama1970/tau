@@ -4,14 +4,15 @@
   "trials": 2,
   "proof_scope": "Tau canonical packaged DAG ladder manifest and rung-1 clean-checkout proof",
   "claims": {
-    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, artifact digest readback, and negative artifact mutation detection.",
+    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, retained dag-progress/events/ledger/result artifacts, ledger replay, verifier PASS receipt, and negative mutation detection.",
     "does_not_prove": "Rungs 2-5 execute from clean checkout, provider-live execution, dynamic React Flow progress, or human acceptance of the full GOAL.md outcome."
   },
   "capability_claims": [
     {
       "id": "tau.dag_ladder.rung1_clean_checkout",
-      "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with independent artifact readback and negative controls.",
+      "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with retained runtime artifacts, ledger replay, verifier receipt, and negative controls.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {"live_e2e": true, "fault_injected_deterministic": true}
     }
   ],
@@ -38,7 +39,15 @@
           {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/ladder_manifest/rung_count", "equals": 5},
           {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/status", "equals": "PASS"},
           {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/result_schema", "equals": "tau.repository_readiness_report.v1"},
-          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/repository_dirty", "equals": false}
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/repository_dirty", "equals": false},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/goal_hash_preserved", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/ledger_replay/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json", "json_pointer": "/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json", "json_pointer": "/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json", "min_bytes": 1},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl", "min_bytes": 1},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json", "min_bytes": 1},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json", "json_pointer": "/status", "equals": "READY"}
         ]
       }
     },
@@ -59,8 +68,10 @@
         "stdout_contains": ["\"status\": \"PASS\""],
         "artifacts": [
           {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/ok", "equals": true},
-          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/controls/0/detected", "equals": true},
-          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/controls/1/detected", "equals": true}
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/verifier_status", "equals": "FAIL"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json", "json_pointer": "/status", "equals": "PASS"}
         ]
       }
     }

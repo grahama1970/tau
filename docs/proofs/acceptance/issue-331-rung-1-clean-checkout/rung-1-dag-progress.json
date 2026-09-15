@@ -41,10 +41,10 @@
     "will_reuse_valid_pass_receipts": true
   },
   "run_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run",
-  "run_id": "repository-readiness-271d3456fab7",
+  "run_id": "repository-readiness-c51f959facff",
   "schema": "tau.generic_dag_checkpoint.v1",
   "spec_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json",
   "status": "PASS",
-  "timestamp": "2026-08-29T18:51:16Z",
+  "timestamp": "2026-09-02T21:46:04Z",
   "verdict": "PASS"
 }

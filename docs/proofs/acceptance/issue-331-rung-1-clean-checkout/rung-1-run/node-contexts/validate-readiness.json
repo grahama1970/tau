@@ -5,19 +5,19 @@
         {
           "kind": "repository_inspection",
           "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
-          "sha256": "sha256:dd61c8c2381ee4cd9df273514d18b8f5d1a8629b0dc64ea2a2db9e0250a75fcf"
+          "sha256": "sha256:e5667cb3d11a3468ba06018f75632137742c2b4cdf206c9b94b518d2a08e575d"
         }
       ],
       "branch": "",
       "diff_check_passed": true,
       "dirty": false,
-      "head_sha": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
-      "repo_path": "/tmp/tau-rung1-clean-oefxw8by/checkout",
+      "head_sha": "588e5171c28df288dbce75feeaeae4d546bfb1af",
+      "repo_path": "/tmp/tau-rung1-clean-b2bw4hd2/checkout",
       "schema": "tau.repository_inspection.v1",
       "summary": "Repository inspection completed."
     }
   ],
   "node_id": "validate-readiness",
-  "run_id": "repository-readiness-271d3456fab7",
+  "run_id": "repository-readiness-c51f959facff",
   "schema": "tau.generic_dag_node_context.v1"
 }

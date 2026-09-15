@@ -1,7 +1,7 @@
 {
   "details": {
     "goal_hashes": [
-      "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6"
+      "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1"
     ],
     "ledger_replay": {
       "admission_count": 6,
@@ -13,7 +13,7 @@
         "validate-readiness",
         "publish-readiness"
       ],
-      "run_id": "repository-readiness-271d3456fab7",
+      "run_id": "repository-readiness-c51f959facff",
       "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
       "status": "PASS",
       "verdict": "PASS"
@@ -36,5 +36,5 @@
     "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
     "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json"
   ],
-  "verified_at": "2026-08-29T18:51:17.701964Z"
+  "verified_at": "2026-09-02T21:46:05.295914Z"
 }

@@ -10,16 +10,22 @@
       "workflow_id": "repository-readiness",
       "title": "Repository Readiness",
       "topology": "LINEAR",
-      "acceptance_boundary": "A clean checkout is inspected through the packaged workflow command, the clean-worktree policy passes, the workflow writes a tau.repository_readiness_report.v1 useful result, and the run receipt plus artifact digests are independently read back.",
+      "acceptance_boundary": "A clean checkout is inspected through the packaged workflow command, the clean-worktree policy passes, the workflow writes a tau.repository_readiness_report.v1 useful result, retained dag-progress/events/ledger/result artifacts are read back, one goal hash is preserved across request/DAG/receipts/result, and the retained ledger replay plus verifier receipt pass.",
       "proof_required": [
         "clean checkout bootstrap log",
+        "retained ladder-manifest.json",
         "workflow receipt with mocked=false and live=true",
         "tau.repository_readiness_report.v1 result",
         "tau.generic_dag_run_receipt.v1 run receipt",
+        "retained rung-1 dag-progress/events/ledger/result artifacts",
+        "tau.dag_ladder_rung1_ledger_replay.v1 PASS receipt",
+        "tau.dag_ladder_rung1_verifier_receipt.v1 PASS receipt",
         "artifact digest readback",
-        "negative mutation and missing-artifact controls"
+        "negative mutation and missing-event/artifact controls"
       ],
-      "current_state": "PROOF_TARGET_FOR_ISSUE_331"
+      "current_state": "READY_FOR_ISSUE_331_RUNG_1_BOUNDARY",
+      "retained_proof": "docs/proofs/acceptance/issue-331-rung-1-clean-checkout/proof-receipt.json",
+      "agentic_eval_report": "docs/proofs/acceptance/issue-331-rung-1-agentic-evals-report.json"
     },
     {
       "rung": 2,
