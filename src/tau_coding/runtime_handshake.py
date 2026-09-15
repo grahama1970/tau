@@ -13,7 +13,7 @@ from tau_coding import __version__
 from tau_coding.external_workspace import agent_skills_root
 
 RUNTIME_HANDSHAKE_SCHEMA = "tau.runtime_handshake.v1"
-_DEFAULT_TAU_WRAPPER = Path.home() / "workspace/experiments/agent-skills/skills/tau/run.sh"
+_DEFAULT_TAU_WRAPPER = agent_skills_root() / "skills/tau/run.sh"
 
 _PROVEN_RUNTIME_COMMANDS = {
     "doctor": "doctor",
@@ -153,7 +153,7 @@ def _wrapper_tau_root() -> Path:
         return Path(env_root).expanduser().resolve()
     if _looks_like_tau_checkout(Path.cwd()):
         return Path.cwd().resolve()
-    return (Path.home() / "workspace/experiments/tau").resolve()
+    return Path(__file__).resolve().parents[2]
 
 
 def _wrapper_resolution_source() -> str:
@@ -161,7 +161,7 @@ def _wrapper_resolution_source() -> str:
         return "env:TAU_ROOT"
     if _looks_like_tau_checkout(Path.cwd()):
         return "cwd"
-    return "default-home"
+    return "package-root"
 
 
 def _looks_like_tau_checkout(path: Path) -> bool:

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.external_workspace import agent_skills_root
 
 AGENT_HANDOFF_SCHEMA = "tau.agent_handoff.v1"
 TICKET_HANDOFF_CONTEXT_SCHEMA = "tau.ticket_repair_handoff_context.v1"
@@ -444,10 +445,7 @@ def _cleanup_worktree(repo_path: Path, source_worktree: Path, branch: str) -> di
 
 
 def _run_worktree_audit(repo_path: Path) -> dict[str, Any]:
-    script = Path(
-        "/home/graham/workspace/experiments/agent-skills/skills/"
-        "best-practices-github-ticket/scripts/audit-worktrees.sh"
-    )
+    script = agent_skills_root() / "skills/best-practices-github-ticket/scripts/audit-worktrees.sh"
     if not script.is_file():
         return {"status": "BLOCKED", "error": "audit_worktrees_script_missing"}
     proc = subprocess.run(

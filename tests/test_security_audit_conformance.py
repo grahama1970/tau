@@ -1,12 +1,14 @@
 import json
 from pathlib import Path
 
+from tau_coding import security_audit_conformance as sac
 from tau_coding.security_audit_conformance import (
     ACTION,
     API_MUTATING_REQUEST_RECEIPT_SCHEMA,
     AUDIT_LEDGER_VERIFICATION_SCHEMA,
     TARGET_ID,
     TARGET_LINEAGE,
+    _disposition_for_security_finding,
     _evaluate_api_mutating_request,
     _rbac_policy,
     _token_sha256,
@@ -191,6 +193,102 @@ def test_audit_ledger_verifier_blocks_tampered_entry(
     assert verification["status"] == "BLOCKED"
     assert verification["entry_count"] == 2
     assert verification["errors"] == ["line 1 entry_hash mismatch"]
+
+
+def test_developer_share_gate_does_not_allowlist_runtime_synthetic_secret(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "src" / "service.py"
+    source.parent.mkdir(parents=True)
+    source.write_text('api_key = "synthetic-but-runtime"\n', encoding="utf-8")
+    row = {
+        "source": "gitleaks",
+        "issue": "hardcoded_secret",
+        "severity": "critical",
+        "file": "src/service.py",
+        "line": 1,
+        "rule": "generic-api-key",
+        "description": "controlled scanner finding",
+        "evidence": 'api_key = "synthetic-but-runtime"',
+        "finding_hash": "sha256:test",
+    }
+
+    disposition = _disposition_for_security_finding(tmp_path, row)
+
+    assert disposition["disposition"] == "REAL_SECRET"
+    assert disposition["allowlist_rationale"] is None
+    assert disposition["disposition_evidence"]["blocking"] is True
+
+
+def test_developer_share_gate_classifies_retained_proof_secret_as_documentation(
+    tmp_path: Path,
+) -> None:
+    proof = tmp_path / "docs" / "proofs" / "tickets" / "issue-1" / "receipt.json"
+    proof.parent.mkdir(parents=True)
+    proof.write_text('{"token": "lease-24b3a804c7cb4f4da5fb493699417142"}\n', encoding="utf-8")
+    row = {
+        "source": "gitleaks",
+        "issue": "hardcoded_secret",
+        "severity": "critical",
+        "file": "docs/proofs/tickets/issue-1/receipt.json",
+        "line": 1,
+        "rule": "generic-api-key",
+        "description": "controlled scanner finding",
+        "evidence": proof.read_text(encoding="utf-8").strip(),
+        "finding_hash": "sha256:test",
+    }
+
+    disposition = _disposition_for_security_finding(tmp_path, row)
+
+    assert disposition["disposition"] == "DOCUMENTATION_EXAMPLE"
+    assert disposition["disposition_evidence"]["source_backed"] is True
+    assert disposition["disposition_evidence"]["blocking"] is False
+
+
+def test_issue_343_verification_blocks_when_exact_commit_gate_blocks(
+    tmp_path: Path, monkeypatch
+) -> None:
+    blocked_exact = {
+        "share_readiness": "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "inputs": {"clean_checkout": True},
+        "counts": {
+            "reconciled": True,
+            "unresolved_blockers": 1,
+            "dispositions": 1,
+            "findings": 1,
+            "by_disposition": {"HARDCODED_RUNTIME_PATH": 1},
+        },
+        "dispositions": [],
+        "scan_hashes": {"findings_sha256": "sha256:test"},
+        "what_was_checked": ["controlled"],
+        "runtime_python_path_scan": {"scanned": True},
+    }
+    monkeypatch.setattr(sac, "write_developer_share_security_gate", lambda *a, **k: blocked_exact)
+    monkeypatch.setattr(
+        sac,
+        "run_developer_share_security_gate_self_test",
+        lambda mode, output: {
+            "clean-passes": {
+                "clean_gate_exit_code": 0,
+                "clean_share_readiness": "READY",
+                "clean_receipt": str(output.with_suffix(".clean-gate.json")),
+            },
+            "seeded-blocks": {
+                "seeded_gate_exit_code": 1,
+                "seeded_dispositions": ["REAL_SECRET", "HARDCODED_RUNTIME_PATH"],
+                "seeded_receipt": str(output.with_suffix(".seeded-gate.json")),
+            },
+        }[mode],
+    )
+
+    receipt = sac.write_issue_343_security_gate_verification(
+        tmp_path, source_commit="candidate", output=tmp_path / "verification.json"
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["checks"]["exact_commit_gate_passes"] is False
 
 
 def _approval_gate_receipt(*, status: str) -> dict[str, object]:

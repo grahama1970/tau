@@ -219,19 +219,14 @@ def admit_triage_classification(
         return _contract_invalid(str(exc), layer=layer)
 
 
-#: Canonical installed-skills fallback. The watchdog -> ask -> tau execution
-#: environment carries none of the TAU_* skills-root variables, so without this
-#: default every boundary failure mints tau_triage_unavailable (observed
-#: 2026-09-10 across agent-skills#1616/#1618/#1619/#1641 and tau#343).
 def _default_triage_runner_candidates() -> tuple[Path, ...]:
-    # Skills tree relocated to ~/.agents/skills (2026-09); probe the moved
-    # canonical location first, then the legacy ~/.pi path, so a tree move
-    # cannot mint tau_triage_unavailable across every boundary failure
-    # (observed again 2026-09-13 on tau#348 after the relocation).
-    return (
-        Path.home() / ".agents" / "skills" / "triage-error" / "run.sh",
-        Path.home() / ".pi" / "agent" / "skills" / "triage-error" / "run.sh",
-    )
+    """Return packaged fallback runners that are safe for installed wheels.
+
+    Tau must not depend on operator-home skill checkouts when installed from a
+    wheel. Keep this hook empty unless a future fallback resolves through a
+    package resource or another non-machine-local installation contract.
+    """
+    return ()
 
 
 def _triage_runner() -> Path | None:

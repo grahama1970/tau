@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "skill": "tau-developer-share-security-gate",
+  "trials": 2,
+  "proof_scope": "Tau developer-share security gate for issue #343",
+  "claims": {
+    "proves": "The issue #343 share-security gate scans an exact clean candidate commit, dispositions every finding, blocks controlled fake credential/runtime-path seeds, passes controlled clean input, and reports live unmocked receipt evidence.",
+    "does_not_prove": "Formal security certification, credential revocation, third-party dependency vulnerability coverage, provider/model quality, or human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.developer_share.security_gate",
+      "description": "Developer-share readiness is blocked unless current security-scan findings have reconciled dispositions and no REAL_SECRET or HARDCODED_RUNTIME_PATH blockers remain.",
+      "claim_semantics": "protocol",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "developer-share-security-gate-current-candidate",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.developer_share.security_gate"],
+      "timeout_seconds": 600,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-343-security-gate/current && uv run python scripts/agentic-eval-tau-developer-share-security-gate.py --work local/agentic-evals/tau-343-security-gate/current/work --out local/agentic-evals/tau-343-security-gate/current/proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"ok\": true", "\"schema\": \"tau.developer_share_security_gate_agentic_eval.v1\"", "\"unresolved_blockers\": 0"],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/exact_commit_gate_ready", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/dispositions_reconcile", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/runtime_paths_not_required", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/controlled_seed_blocks", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/controlled_clean_passes", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/verification_passes", "equals": true},
+          {"path": "../local/agentic-evals/tau-343-security-gate/current/proof.json", "json_pointer": "/checks/live_unmocked", "equals": true}
+        ]
+      }
+    }
+  ]
+}

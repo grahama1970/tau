@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from tau_coding.course_correction import build_course_correction_receipt
+from tau_coding.external_workspace import scillm_root
 from tau_coding.policy_profile import (
     DATA_BOUNDARY_SCHEMA,
     POLICY_PROFILE_SCHEMA,
@@ -2022,7 +2023,7 @@ def _local_scillm_auth_token() -> tuple[str | None, str]:
         env_paths = (
             cwd / ".env",
             cwd.parent / "scillm" / ".env",
-            Path.home() / "workspace" / "experiments" / "scillm" / ".env",
+            scillm_root() / ".env",
         )
     for path in env_paths:
         value = _read_env_token(path)

@@ -15,14 +15,14 @@ from pathlib import Path
 from shutil import which
 from typing import Any
 
+from tau_coding.external_workspace import agent_skills_root
+
 BROWSER_CDP_PROOF_SCHEMA = "tau.browser_cdp_proof.v1"
 BROWSER_DAG_NODE_SCHEMA = "tau.browser_dag_node.v1"
 BROWSER_DAG_RECEIPT_SCHEMA = "tau.browser_dag_receipt.v1"
 GENERIC_DAG_NODE_RECEIPT_SCHEMA = "tau.generic_dag_node_receipt.v1"
 DEFAULT_BROWSER_PROOF_RUN_ID = "tau-browser-cdp-proof"
-DEFAULT_SURF_WRAPPER = (
-    Path.home() / "workspace/experiments/agent-skills/skills/surf/run.sh"
-)
+DEFAULT_SURF_WRAPPER = agent_skills_root() / "skills/surf/run.sh"
 
 
 @dataclass(frozen=True)

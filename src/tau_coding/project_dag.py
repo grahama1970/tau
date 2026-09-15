@@ -53,6 +53,7 @@ from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
     load_agent_dispatch_command_spec,
@@ -7113,7 +7114,7 @@ def _validate_pipeline_self_repair_ledger_for_rerun(
 ) -> dict[str, Any]:
     script = str(
         _pipeline_repair_policy_value(contract, "run_sh")
-        or Path.home() / ".pi" / "agent" / "skills" / "pipeline-self-repair" / "run.sh"
+        or agent_skills_root() / "skills/pipeline-self-repair/run.sh"
     )
     command = [
         script,
@@ -7819,7 +7820,7 @@ def _ops_discord_notify_command(
 ) -> list[str]:
     policy = _pipeline_repair_discord_policy(contract)
     script = str(
-        policy.get("run_sh") or Path.home() / ".pi" / "agent" / "skills" / "ops-discord" / "run.sh"
+        policy.get("run_sh") or agent_skills_root() / "skills/ops-discord/run.sh"
     )
     title = str(policy.get("title") or f"Tau repair needs human adjudication: {node.node_id}")
     content = "\n".join(
@@ -7902,7 +7903,7 @@ def _pipeline_self_repair_record_command(
 ) -> list[str]:
     script = str(
         _pipeline_repair_policy_value(contract, "run_sh")
-        or Path.home() / ".pi" / "agent" / "skills" / "pipeline-self-repair" / "run.sh"
+        or agent_skills_root() / "skills/pipeline-self-repair/run.sh"
     )
     goal_project = str(_pipeline_repair_policy_value(contract, "goal_project") or "tau")
     repo = str(_pipeline_repair_policy_value(contract, "repo") or contract.target.get("repo") or "")
