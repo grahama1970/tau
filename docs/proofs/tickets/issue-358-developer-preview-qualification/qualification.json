@@ -1,0 +1,118 @@
+{
+  "artifact_hashes": {
+    "agentic-evals-report.json": "sha256:4332d8095d481f80b828fa01cf89fe4bb73b6f67aac7a0c1337a919d4c3fac39",
+    "current-state.json": "sha256:448924683a4b3d11867b68ff3ba42566b4cd88059b147f17c4f33cd996ce0c6d",
+    "current-state.md": "sha256:4010d1d7abe128935d06273a6676dfee1a766e568e81383f0e99502a3dd08695",
+    "developer-share-status.json": "sha256:40479b48d0776709a4164ec15748c5c3d1d0157650b7cbff0c05f9eed1ca0692",
+    "issue-343-verification.json": "sha256:557b7e9d2e36b56d6bade45c9328b4baa4218231fa777f33cd308f5dad7d3d1d",
+    "open-issues-live.json": "sha256:965fa1e83ea2af25170d356059e36fd8db797b03140a82b9052eee56cdd4f385"
+  },
+  "candidate_paths": [
+    "docs/status/CURRENT_STATE.json",
+    "docs/status/CURRENT_STATE.md",
+    "docs/status/github-snapshot.json",
+    "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+    "local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "local/agentic-evals/tau-developer-share-status/proof.json",
+    "evals/tau_developer_share_status_agentic_eval.json",
+    "scripts/agentic-eval-tau-developer-share-status.py",
+    "docs/proofs/tickets/issue-358-developer-preview-qualification/"
+  ],
+  "eval_fixture_repairs_required": [
+    "evals/tau_developer_share_status_agentic_eval.json: added claim_semantics=protocol (live runner load-gates critical claims on it)",
+    "scripts/agentic-eval-tau-developer-share-status.py: synthetic fixture now satisfies the tau#343 share-security receipt gate and the tau#351 surface-inventory gate; retained eval deterministically FAILED at origin/main before this repair (fixture predated both gates; the 2026-09-15T06:04Z retained proof was produced by pre-gate code)"
+  ],
+  "issue": "grahama1970/tau#358",
+  "lease": {
+    "agent": "worker-tau-358-155305",
+    "comment": "https://github.com/grahama1970/tau/issues/358#issuecomment-5687203091",
+    "lease_id": "20260915T195306Z-worker-tau-358-155305-358"
+  },
+  "prerequisites": {
+    "all_closed": true,
+    "blocked_by": [
+      "grahama1970/tau#348",
+      "grahama1970/tau#350",
+      "grahama1970/tau#329",
+      "grahama1970/tau#304",
+      "grahama1970/tau#335"
+    ],
+    "verified_via": "gh issue view per ticket, state=CLOSED, 2026-09-15"
+  },
+  "proof_boundary": {
+    "does_not_prove": "Human acceptance (#354), resolution of the open-issue gate, a producer for developer_share_evidence, or behavior beyond the evaluated inputs.",
+    "live": true,
+    "mocked": false,
+    "proves": "The existing project-status/developer-share/readiness proof path was executed against exact revision 2ee17893d (origin/main tip + evidence/eval-fixture refresh); build/render/verify PASS; retained eval READY; share-security receipt PASS at the qualified revision; verdict is machine-readable NOT_READY with an explicit gate list.",
+    "provider_live": false
+  },
+  "qualification_revision": {
+    "clean_checkout": "/tmp/tau-358-qualification (disposable local clone, detached at tip; evidence refresh committed as two candidate commits 7e6cd9651 + 2ee17893d, NOT pushed)",
+    "origin_main_tip": "407aeae3c064953580bafc24f6f152f724ab9ee1",
+    "qualified_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+    "runtime_source_paths_changed_since_tip": [
+      "evals/tau_developer_share_status_agentic_eval.json (eval fixture repair)",
+      "scripts/agentic-eval-tau-developer-share-status.py (synthetic fixture repair)"
+    ]
+  },
+  "required_proof_results": {
+    "live_github_readback": "/tmp/tau-open-issues-live.json: open = [358, 354, 320, 9]; branch protection API 404 (unprotected)",
+    "project_status_build": "PASS (status PASS, digest sha256:83a9887e6da8ddaed1fa67b5660aa6eebce369bb55090279d890b1447720796f)",
+    "project_status_render": "PASS (same semantic_content_digest)",
+    "project_status_verify": "PASS (errors: [])",
+    "retained_agentic_eval": {
+      "command": "skills/agentic-evals/run.sh run evals/tau_developer_share_status_agentic_eval.json --output /tmp/tau-developer-share-status-agentic-eval.json",
+      "fixture_sha256": "sha256:e32992c3320084614a30a9842965d32ed361ab354dadf1ffdc0953a01857ca7e",
+      "live": true,
+      "mocked": false,
+      "outcomes": {
+        "BLOCKED": 0,
+        "FAIL": 0,
+        "NOT_TESTED": 0,
+        "PASS": 1
+      },
+      "readiness": "READY",
+      "trials": 2
+    }
+  },
+  "route": "ops_or_scheduler",
+  "schema": "tau.issue_358_developer_preview_qualification.v1",
+  "title": "Qualify Tau experimental developer preview after existing readiness blockers land",
+  "verdict": {
+    "failing_gates": [
+      "no_unresolved_critical_security_findings",
+      "agentic_eval_evidence_index_pass",
+      "clean_checkout_installed_wheel_launch_proof_present",
+      "viewer_browser_proof_present",
+      "repair_self_heal_proof_present",
+      "human_acceptance_matches_goal"
+    ],
+    "gate_states": {
+      "agentic_eval_evidence_index_pass": "FAIL",
+      "canonical_status_clean_tree": "PASS",
+      "clean_checkout_installed_wheel_launch_proof_present": "FAIL",
+      "developer_surface_inventory_clean": "PASS",
+      "five_canonical_workflows_present": "PASS",
+      "github_snapshot_fresh": "PASS",
+      "human_acceptance_matches_goal": "FAIL",
+      "no_unresolved_critical_security_findings": "FAIL",
+      "proof_index_structurally_valid": "PASS",
+      "repair_self_heal_proof_present": "FAIL",
+      "share_security_gate_receipt_current_and_clean": "PASS",
+      "status_source_commit_current": "PASS",
+      "status_source_fresh": "PASS",
+      "viewer_browser_proof_present": "FAIL"
+    },
+    "readiness": "NOT_READY",
+    "schema": "tau.developer_share_status.v1",
+    "source_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2"
+  },
+  "verdict_causes": {
+    "agentic_eval_evidence_index_pass": "Retained issue-#321 bundle binds ABSOLUTE artifact paths (/home/graham/workspace/experiments/tau/...) whose worktree bytes drifted from the revision-bound digests. Committed tip bytes DO match the bundle; verification on this machine reads the dirty primary worktree. Blocker belongs to issue #321 receipt hygiene (relative paths), reproduced here.",
+    "clean_checkout_installed_wheel_launch_proof_present": "No producer exists: nothing at origin/main writes status.developer_share_evidence; the three evidence gates are structurally FAIL on any real build.",
+    "human_acceptance_matches_goal": "PENDING_HUMAN_SIGNATURE (issue #354); non-waivable, excluded from machine blockers per design.",
+    "no_unresolved_critical_security_findings": "Live open issues {9, 320, 354, 358}; project convention (issue #224 proof) counts all open issues. #358 self-blocks by design; #354 is the human-acceptance ticket.",
+    "repair_self_heal_proof_present": "Same as above.",
+    "viewer_browser_proof_present": "Same as above."
+  }
+}

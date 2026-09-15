@@ -12,7 +12,8 @@
       "id": "tau.developer_share.status_gate_aggregation",
       "description": "Developer-share readiness is a typed gate matrix and cannot pass by stale or missing evidence.",
       "criticality": "critical",
-      "evidence_required": {"live_e2e": true}
+      "evidence_required": {"live_e2e": true},
+      "claim_semantics": "protocol"
     }
   ],
   "cases": [

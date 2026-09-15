@@ -1,0 +1,408 @@
+{
+  "current_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+  "failing_gates": [
+    "no_unresolved_critical_security_findings",
+    "agentic_eval_evidence_index_pass",
+    "clean_checkout_installed_wheel_launch_proof_present",
+    "viewer_browser_proof_present",
+    "repair_self_heal_proof_present",
+    "human_acceptance_matches_goal"
+  ],
+  "gates": [
+    {
+      "id": "status_source_fresh",
+      "next_command": null,
+      "observed": [],
+      "source": "docs/status/CURRENT_STATE.json source_digests",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "status_source_commit_current",
+      "next_command": null,
+      "observed": {
+        "current_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+        "status_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2"
+      },
+      "source": "git rev-parse HEAD",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "canonical_status_clean_tree",
+      "next_command": null,
+      "observed": {
+        "current_clean_tree": true,
+        "status_clean_tree": true
+      },
+      "source": "git status --porcelain and status.git.clean_tree",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "github_snapshot_fresh",
+      "next_command": null,
+      "observed": "FRESH",
+      "source": "docs/status/github-snapshot.json",
+      "state": "PASS",
+      "waivable": true,
+      "waiver": null
+    },
+    {
+      "id": "no_unresolved_critical_security_findings",
+      "next_command": "resolve the owning security ticket before developer sharing",
+      "observed": [
+        {
+          "number": 358,
+          "title": "Qualify Tau experimental developer preview after existing readiness blockers land"
+        },
+        {
+          "number": 354,
+          "title": "Requalify the five-DAG immutable goal from one clean exact share commit after repair-boundary hardening"
+        },
+        {
+          "number": 320,
+          "title": "Package a project-memory-dream DAG with bounded OpenCode synthesis"
+        },
+        {
+          "number": 9,
+          "title": "Tau explicit issue-comment apply proof"
+        }
+      ],
+      "source": "github.open_critical_issues",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "share_security_gate_receipt_current_and_clean",
+      "next_command": null,
+      "observed": {
+        "changed_paths_since_receipt_source": [
+          "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+          "docs/status/github-snapshot.json",
+          "local/agentic-evals/tau-agentic-eval-evidence-index.json"
+        ],
+        "receipt": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+        "receipt_present": true,
+        "receipt_source_commit": "7e6cd96514ce6d79a6e1c57d9aa48499cd3fbd97",
+        "receipt_source_is_ancestor": true,
+        "receipt_status": "PASS",
+        "runtime_source_paths_changed": [],
+        "share_readiness": "READY",
+        "unresolved_blockers": 0
+      },
+      "source": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "proof_index_structurally_valid",
+      "next_command": null,
+      "observed": {
+        "count": 44,
+        "digest": "sha256:8ea6368bd99a0602f38f5e83bbe2c4e3742e2d85e5420c6177e4d67ee631c046",
+        "entries": [
+          {
+            "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
+            "sha256": "sha256:e756a42048a35768b89425446851f3d0e37492a016282d8fdb9d210d671dc591"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/closure-evidence.json",
+            "sha256": "sha256:e503753b09af8d34f3651fe4a161022dc8a12fb2805988f794b11697279e0c36"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/closure-evidence.json",
+            "sha256": "sha256:f3e6338a86f0ce71eabae79aae9738f896fba6de2df695ebcb2793551df4d07f"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/closure-evidence.json",
+            "sha256": "sha256:180987b20e5ba6ef560e2520b62faf067102434c4f649df5f46dba054b481cba"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/closure-evidence.json",
+            "sha256": "sha256:91051e5678b5eb3c01fe196c55bcbcef750a08d680f38771f638d80d2e7c0ce3"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/closure-evidence.json",
+            "sha256": "sha256:bdd7a65655ef2f97880e66b0c3bf670dbb5e331b12a2833800fd7130ee417ecf"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-192-project-profile-conformance-20260727/closure-evidence.json",
+            "sha256": "sha256:d7b7a7eab06c7e2b02bcb130466340bdf2363d44b03b8a05480127b4cb3b3087"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/closure-evidence.json",
+            "sha256": "sha256:34fe24364410f2d333151f447dca1ef63a27c4fa4a56d35ea6ec882f36769cbd"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-194-security-audit-conformance-20260727/closure-evidence.json",
+            "sha256": "sha256:fb654cbdea6ab2f5159b452f9d61963ac16c88168ce03a97717812b0e74b0e2b"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-195-runtime-handshake-20260727/closure-evidence.json",
+            "sha256": "sha256:f69a3c64cb05e9e11dce65e9c89a92149f6174c07aae7f9fc92923cad0a8dc1d"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-211-clean-wheel-completion-20260728T152212Z/closure-evidence.json",
+            "sha256": "sha256:8406a4ee83fa4c3cf4e81ef7fd0aa121c5beb9d9a41ef31a1458d4ae875e8382"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-222-governed-skill-live-proofs-20260728T155857Z/closure-evidence.json",
+            "sha256": "sha256:bc34f2be22e1eae92ef0f1312cc1ce600ad9e12d2b39ad39ebdea5b1c967bf42"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-223-chatterbox-voice-render-20260728T213642Z/closure-evidence.json",
+            "sha256": "sha256:d9947c9fee4e2c8e3148e5db16ed799627c0f1ed768d6d8a75e42bfa210c82b9"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-224-project-status-20260728T153534Z/closure-evidence.json",
+            "sha256": "sha256:7092cf4c465c0b0bc94f40301e1a7a5aae0dbdb07a77c3f148cb0d175f59a5ad"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-225-hardening-conformance-audit-20260728T211301Z/closure-evidence.json",
+            "sha256": "sha256:f2c76df5e9ed510cadb5dd47eb7c39ef2af70be42429116d26db37657734988c"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-288-voice-render-v2-final-20260802/closure-evidence.json",
+            "sha256": "sha256:4d957068859b75c9ecb11fba36f5c14270835acb880f86f45960798382e79c68"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-291-canonical-plan-admission/closure-evidence.json",
+            "sha256": "sha256:7055cb306007e8d22d3f83e86d75d5162e307a14da2c1bec075808b096ef8ff5"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-292-context-lineage-hashes/closure-evidence.json",
+            "sha256": "sha256:8703f0c01cc5d18869c1cbac86b48398676b4d73e3896b1c80c121f1a17e5f08"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-293-attempt-result-admission/closure-evidence.json",
+            "sha256": "sha256:a2f9a7ca94cb3770f24d8f2e9e9512e1f2f568efac1cb23c7b394f7616118406"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-294-transition-replay-validation/closure-evidence.json",
+            "sha256": "sha256:8825a86c2969b80a44c7c7d05f99fac7c44f8e909bb1f05fb778bf17b6329975"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-295-artifact-reference-provenance/closure-evidence.json",
+            "sha256": "sha256:907abc1372b961c435c0507fd881beffe1d58f8b992051c80b7378cb807b47bf"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-296-public-dag-contracts/closure-evidence.json",
+            "sha256": "sha256:0cd365c0642bfc46ad02678de117fa334bc42f7f7732b40214ea43ef2e81c603"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-297-deep-immutability/closure-evidence.json",
+            "sha256": "sha256:1f2efcfb3e82b9cc846010b9502b8cddd6cbe983b4d84aaec5977dfe3a919fdb"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-298-adversarial-contract-conformance/closure-evidence.json",
+            "sha256": "sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/closure-evidence.json",
+            "sha256": "sha256:397ce58b75aa4de88c26aad5da32bd41f59bb6c5856136bbeec51dd44d0fe418"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-305-acceptance-attestation-20260830T192020Z/closure-evidence.json",
+            "sha256": "sha256:555677a199483bb84c7a6ab11b5240d7c873df6555bb900fc5cc249d1611edbe"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json",
+            "sha256": "sha256:09184c5d62f2ce072790548a8b8af8eb0182c580b4e785b4d225cca37e1d6e81"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-315-herdr-runtime-agent-nodes-20260830T204841Z/closure-evidence.json",
+            "sha256": "sha256:c09692c4506975d60e99df7defb3b5f0ec978b870eb85c78dc92bbd201e70818"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json",
+            "sha256": "sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json",
+            "sha256": "sha256:fe5b80aa4c4d30ecc919721d3549434be8e62948916ee4443e1204f789331b72"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/closure-evidence.json",
+            "sha256": "sha256:58f69633bdbb00806cbd2948a0c5e3e4ebacb8222b823be6f1e391255d246808"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json",
+            "sha256": "sha256:21c3c716713d0518c1b4d971aa0a17abf76d1fd122646996a1e0bec1726b2e5e"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
+            "sha256": "sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/closure-evidence.json",
+            "sha256": "sha256:f3c8e5e2c998c8ca4ccdc7ee370e72e86aece1a6910fbe036e77483c211eeeda"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-333-ledger-audit-projection-20260830T164658Z/closure-evidence.json",
+            "sha256": "sha256:9e714105c31141379679d6befe8c4d0ba19b640564b2a9f324194ddeba3467af"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/closure-evidence.json",
+            "sha256": "sha256:ce7a4548d1ceee596e8bca8b32f2ef325bc611be8c18d2b751683b4c48278dfb"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/closure-evidence.json",
+            "sha256": "sha256:3948762a00ad14c133a0a4cf1991519f132716ddf5f92402907e8857815e0534"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-336-visual-review-evidence-20260831T105945Z/closure-evidence.json",
+            "sha256": "sha256:006cd9fe89063e274b4b551ffb7cca4ecde3e86f1bcd2005356ab7273d393e62"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-336-visual-review-receipt-enforcement-20260831T111946Z/closure-evidence.json",
+            "sha256": "sha256:24c93263c5cc8fbb7cf4c95bab194dc24831e21c5cf2d3f8730b2b52bf6d51c6"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
+            "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-72-p11-security-unit-conformance-20260729T0019Z/closure-evidence.json",
+            "sha256": "sha256:a0ff736d4fe4eefbe9a5c42c7550d4c749dfb1f523d108a920d25608228c1d57"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/closure-evidence.json",
+            "sha256": "sha256:712cca62770fc02e2967ea323a84bff35fc8483c32864a23686b9778ff773d95"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-72-p8-sprite-unit-conformance-20260729T0013Z/closure-evidence.json",
+            "sha256": "sha256:18d68ecdbf53589d14cd1533bc601f97c2f6d7d37307e16d6f0bcc99c507e781"
+          },
+          {
+            "path": "docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/closure-evidence.json",
+            "sha256": "sha256:620e3ec9b2379f0819fe7ab341bb6c5ec65ce24f7c9bfc00c1a011a21f6afb43"
+          }
+        ]
+      },
+      "source": "docs/proofs/tickets/*/closure-evidence.json",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "agentic_eval_evidence_index_pass",
+      "next_command": "rebuild the retained agentic-eval evidence index after repairing failures",
+      "observed": {
+        "artifact_count": 28,
+        "failure_codes": [
+          "ticket_proof_artifact_digest_mismatch"
+        ],
+        "ok": false,
+        "present": true,
+        "report_count": 15,
+        "retained_reports_live_readback": {
+          "all_unmocked": true,
+          "count": 15,
+          "live": true,
+          "mocked": false,
+          "ready": true
+        },
+        "sha256": "sha256:b0b692a97340aef07b7de4297cd48429ceba9e0cb961d5706e4ef2aa286f86a2",
+        "source": "local/agentic-evals/tau-agentic-eval-evidence-index.json",
+        "status": "FAIL"
+      },
+      "source": "local/agentic-evals/tau-agentic-eval-evidence-index.json",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "five_canonical_workflows_present",
+      "next_command": null,
+      "observed": {
+        "all_present": true,
+        "available": {
+          "approved-release-bundle": true,
+          "durable-repository-qualification": true,
+          "repository-evidence-map": true,
+          "repository-readiness": true,
+          "tau-operator-reference": true
+        },
+        "expected": [
+          "repository-readiness",
+          "tau-operator-reference",
+          "repository-evidence-map",
+          "approved-release-bundle",
+          "durable-repository-qualification"
+        ],
+        "source": "src/tau_coding/workflows/definitions/"
+      },
+      "source": "src/tau_coding/workflows/definitions/",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "developer_surface_inventory_clean",
+      "next_command": null,
+      "observed": {
+        "bug_stub_count": 0,
+        "status": "PASS",
+        "unclassified_count": 0
+      },
+      "source": "developer_surface_inventory",
+      "state": "PASS",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "clean_checkout_installed_wheel_launch_proof_present",
+      "next_command": "run the focused proof owner for clean_checkout_installed_wheel_launch",
+      "observed": "UNKNOWN",
+      "source": "developer_share_evidence.clean_checkout_installed_wheel_launch",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "viewer_browser_proof_present",
+      "next_command": "run the focused proof owner for viewer_browser",
+      "observed": "UNKNOWN",
+      "source": "developer_share_evidence.viewer_browser",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "repair_self_heal_proof_present",
+      "next_command": "run the focused proof owner for repair_self_heal",
+      "observed": "UNKNOWN",
+      "source": "developer_share_evidence.repair_self_heal",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    },
+    {
+      "id": "human_acceptance_matches_goal",
+      "next_command": "obtain the explicit GOAL.md human acceptance attestation",
+      "observed": "PENDING_HUMAN_SIGNATURE",
+      "source": "GOAL.md + human_acceptance",
+      "state": "FAIL",
+      "waivable": false,
+      "waiver": null
+    }
+  ],
+  "proof_boundary": {
+    "does_not_prove": "Runtime correctness, provider quality, or human acceptance.",
+    "live": true,
+    "mocked": false,
+    "proves": "Existing share-readiness inputs were evaluated without regenerating evidence.",
+    "provider_live": false
+  },
+  "readiness": "NOT_READY",
+  "repo": "/tmp/tau-358-qualification",
+  "schema": "tau.developer_share_status.v1",
+  "source_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+  "status": "PASS"
+}

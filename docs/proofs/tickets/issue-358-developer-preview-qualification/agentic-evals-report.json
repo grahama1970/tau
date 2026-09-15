@@ -1,0 +1,294 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "/tmp/tau-358-qualification/evals/tau_developer_share_status_agentic_eval.json",
+  "run_id": "a3d1c468428c",
+  "fixture_sha256": "sha256:e32992c3320084614a30a9842965d32ed361ab354dadf1ffdc0953a01857ca7e",
+  "repo": {
+    "sha": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+    "ref": "HEAD"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau developer-share readiness gate aggregation",
+  "claims": {
+    "proves": "developer-share status fails closed on source mismatch, dirty canonical status generation, stale GitHub snapshot, failing agentic-eval index, unresolved critical security findings, missing viewer/repair proofs, and missing human acceptance; it also exposes a read-only installed-wheel status command.",
+    "does_not_prove": "Provider/model quality, real repository immutable-goal completion, security certification, or actual human acceptance."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.developer_share.status_gate_aggregation",
+        "description": "Developer-share readiness is a typed gate matrix and cannot pass by stale or missing evidence.",
+        "criticality": "critical",
+        "required_evidence": [
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "developer-share-status-gate-matrix"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "ineligible_supporting_cases": [],
+        "supporting_cases": [
+          "developer-share-status-gate-matrix"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-09-15T20:19:56.601918+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "developer-share-status-gate-matrix",
+      "type": "adversarial",
+      "case_id": "a3d1c468428c-c000",
+      "required": true,
+      "outcome": "PASS",
+      "observed_outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf local/agentic-evals/tau-developer-share-status && uv run python scripts/agentic-eval-tau-developer-share-status.py --work local/agentic-evals/tau-developer-share-status/work --out local/agentic-evals/tau-developer-share-status/proof.json"
+      ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:e32992c3320084614a30a9842965d32ed361ab354dadf1ffdc0953a01857ca7e",
+        "test_source_sha256": "sha256:f39cd5cb0b24947635d82be821493cd83a5ef4064237835b8d1004ee1877f7b7",
+        "oracle_sha256": "sha256:ad4c8b4c60abafa0f5c695da4bf5fc9b0231477f3786d0b317a86dbf31dfe288",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:3ebe8c71ed8ab5df26e7cf7cb",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+            "ref": "HEAD"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:f39cd5cb0b24947635d82be821493cd83a5ef4064237835b8d1004ee1877f7b7",
+      "oracle_sha256": "sha256:ad4c8b4c60abafa0f5c695da4bf5fc9b0231477f3786d0b317a86dbf31dfe288",
+      "application_identity": {
+        "repo": {
+          "sha": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+          "ref": "HEAD"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.developer_share.status_gate_aggregation"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 10636.854,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"cases\": {\n    \"dirty_tree\": {\n      \"current_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\",\n      \"failing_gates\": [\n        \"canonical_status_clean_tree\",\n        \"human_acceptance_matches_goal\"\n      ],\n      \"gates\": [\n        {\n          \"id\": \"status_source_fresh\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"docs/status/CURRENT_STATE.json source_digests\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"status_source_commit_current\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\",\n            \"status_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\"\n          },\n          \"source\": \"git rev-parse HEAD\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"canonical_status_clean_tree\",\n          \"next_command\": \"land or remove unrelated changes before generating share status\",\n          \"observed\": {\n            \"current_clean_tree\": false,\n            \"status_clean_tree\": true\n          },\n          \"source\": \"git status --porcelain and status.git.clean_tree\",\n          \"state\": \"FAIL\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"github_snapshot_fresh\",\n          \"next_command\": null,\n          \"observed\": \"FRESH\",\n          \"source\": \"docs/status/github-snapshot.json\",\n          \"state\": \"PASS\",\n          \"waivable\": true,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"no_unresolved_critical_security_findings\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"github.open_critical_issues\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"share_security_gate_receipt_current_and_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"changed_paths_since_receipt_source\": [\n              \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\"\n            ],\n            \"receipt\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n            \"receipt_present\": true,\n            \"receipt_source_commit\": \"00463e404535a4025196a2cb8d87da4c6038d67d\",\n            \"receipt_source_is_ancestor\": true,\n            \"receipt_status\": \"PASS\",\n            \"runtime_source_paths_changed\": [],\n            \"share_readiness\": \"READY\",\n            \"unresolved_blockers\": 0\n          },\n          \"source\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"proof_index_structurally_valid\",\n          \"next_command\": null,\n          \"observed\": {\n            \"count\": 1,\n            \"digest\": \"sha256:cab9f4b314d6a47a55ddf1e882005b8f89b9519fb44362c8bedee73428c18761\",\n            \"entries\": [\n              {\n                \"path\": \"docs/proofs/tickets/issue-1-demo/closure-evidence.json\",\n                \"sha256\": \"sha256:2ad4bff2d98bedec55e12da9c8670f2ab3f5f6891b7c8412ae3e4539d363727c\"\n              }\n            ]\n          },\n          \"source\": \"docs/proofs/tickets/*/closure-evidence.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"agentic_eval_evidence_index_pass\",\n          \"next_command\": null,\n          \"observed\": {\n            \"ok\": true,\n            \"status\": \"PASS\"\n          },\n          \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"five_canonical_workflows_present\",\n          \"next_command\": null,\n          \"observed\": {\n            \"all_present\": true,\n            \"available\": {\n              \"approved-release-bundle\": true,\n              \"durable-repository-qualification\": true,\n              \"repository-evidence-map\": true,\n              \"repository-readiness\": true,\n              \"tau-operator-reference\": true\n            },\n            \"expected\": [\n              \"repository-readiness\",\n              \"tau-operator-reference\",\n              \"repository-evidence-map\",\n              \"approved-release-bundle\",\n              \"durable-repository-qualification\"\n            ],\n            \"source\": \"src/tau_coding/workflows/definitions/\"\n          },\n          \"source\": \"src/tau_coding/workflows/definitions/\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"developer_surface_inventory_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"bug_stub_count\": 0,\n            \"status\": \"PASS\",\n            \"unclassified_count\": 0\n          },\n          \"source\": \"developer_surface_inventory\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"viewer_browser_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.viewer_browser\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"repair_self_heal_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.repair_self_heal\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"human_acceptance_matches_goal\",\n          \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n          \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n          \"source\": \"GOAL.md + human_acceptance\",\n          \"state\": \"FAIL\",\n          \"waivable\": false,\n          \"waiver\": null\n        }\n      ],\n      \"proof_boundary\": {\n        \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n        \"live\": true,\n        \"mocked\": false,\n        \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n        \"provider_live\": false\n      },\n      \"readiness\": \"NOT_READY\",\n      \"repo\": \"/tmp/tau-358-qualification/local/agentic-evals/tau-developer-share-status/work/fixture-repo\",\n      \"schema\": \"tau.developer_share_status.v1\",\n      \"source_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\",\n      \"status\": \"PASS\"\n    },\n    \"eval_index_fail\": {\n      \"current_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\",\n      \"failing_gates\": [\n        \"agentic_eval_evidence_index_pass\",\n        \"human_acceptance_matches_goal\"\n      ],\n      \"gates\": [\n        {\n          \"id\": \"status_source_fresh\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"docs/status/CURRENT_STATE.json source_digests\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"status_source_commit_current\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\",\n            \"status_commit\": \"41b1bbc9332c7ca209ec7815119230872991720c\"\n          },\n          \"source\": \"git rev-parse HEAD\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"canonical_status_clean_tree\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_clean_tree\": true,\n            \"status_clean_tree\": true\n          },\n          \"source\": \"git status --porcelain and status.git.clean_tree\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"github_snapshot_fresh\",\n          \"next_command\": null,\n          \"observed\": \"FRESH\",\n          \"source\": \"docs/status/github-snapshot.json\",\n          \"state\": \"PASS\",\n          \"waivable\": true,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"no_unresolved_critical_security_findings\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"github.open_critical_issues\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"share_security_gate_receipt_current_and_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"changed_paths_since_receipt_source\": [\n              \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\"\n            ],\n            \"receipt\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n            \"receipt_present\": true,\n            \"receipt_source_commit\": \"00463e404535a4025196a2cb8d87da4c6038d67d\",\n            \"receipt_source_is_ancestor\": true,\n            \"receipt_status\": \"PASS\",\n            \"runtime_source_paths_changed\": [],\n            \"share_readiness\": \"READY\",\n            \"unresolved_blockers\": 0\n          },\n          \"source\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"proof_index_structurally_valid\",\n          \"next_command\": null,\n          \"observed\": {\n            \"count\": 1,\n            \"digest\": \"sha256:cab9f4b314d6a47a55ddf1e882005b8f89b9519fb44362c8bedee73428c18761\",\n            \"entries\": [\n              {\n                \"path\": \"docs/proofs/tickets/issue-1-demo/closure-evidence.json\",\n                \"sha256\": \"sha256:2ad4bff2d98bedec55e12da9c8670f2ab3f5f6891b7c8412ae3e4539d3\n...[103114 chars omitted]...\n },\n            {\n              \"path\": \"docs/proofs/tickets/issue-298-adversarial-contract-conformance/closure-evidence.json\",\n              \"sha256\": \"sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/closure-evidence.json\",\n              \"sha256\": \"sha256:397ce58b75aa4de88c26aad5da32bd41f59bb6c5856136bbeec51dd44d0fe418\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-305-acceptance-attestation-20260830T192020Z/closure-evidence.json\",\n              \"sha256\": \"sha256:555677a199483bb84c7a6ab11b5240d7c873df6555bb900fc5cc249d1611edbe\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json\",\n              \"sha256\": \"sha256:508ffdd16fb4cce96306c44d50bbb2c54059125f8189750c1558971b902409c8\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-315-herdr-runtime-agent-nodes-20260830T204841Z/closure-evidence.json\",\n              \"sha256\": \"sha256:c09692c4506975d60e99df7defb3b5f0ec978b870eb85c78dc92bbd201e70818\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json\",\n              \"sha256\": \"sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json\",\n              \"sha256\": \"sha256:61c40efc5300d2c63af4672ff7d34c2b68d8d77a16a9a921f02c0804be83b48c\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/closure-evidence.json\",\n              \"sha256\": \"sha256:58f69633bdbb00806cbd2948a0c5e3e4ebacb8222b823be6f1e391255d246808\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json\",\n              \"sha256\": \"sha256:147d8e70bcc37a9486fe8ec68dccd00cf5b95b3e0d1b3fef9096546b1fcc57c1\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json\",\n              \"sha256\": \"sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/closure-evidence.json\",\n              \"sha256\": \"sha256:f3c8e5e2c998c8ca4ccdc7ee370e72e86aece1a6910fbe036e77483c211eeeda\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-333-ledger-audit-projection-20260830T164658Z/closure-evidence.json\",\n              \"sha256\": \"sha256:9e714105c31141379679d6befe8c4d0ba19b640564b2a9f324194ddeba3467af\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/closure-evidence.json\",\n              \"sha256\": \"sha256:ce7a4548d1ceee596e8bca8b32f2ef325bc611be8c18d2b751683b4c48278dfb\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/closure-evidence.json\",\n              \"sha256\": \"sha256:3948762a00ad14c133a0a4cf1991519f132716ddf5f92402907e8857815e0534\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-336-visual-review-evidence-20260831T105945Z/closure-evidence.json\",\n              \"sha256\": \"sha256:006cd9fe89063e274b4b551ffb7cca4ecde3e86f1bcd2005356ab7273d393e62\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-336-visual-review-receipt-enforcement-20260831T111946Z/closure-evidence.json\",\n              \"sha256\": \"sha256:24c93263c5cc8fbb7cf4c95bab194dc24831e21c5cf2d3f8730b2b52bf6d51c6\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json\",\n              \"sha256\": \"sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p11-security-unit-conformance-20260729T0019Z/closure-evidence.json\",\n              \"sha256\": \"sha256:a0ff736d4fe4eefbe9a5c42c7550d4c749dfb1f523d108a920d25608228c1d57\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/closure-evidence.json\",\n              \"sha256\": \"sha256:712cca62770fc02e2967ea323a84bff35fc8483c32864a23686b9778ff773d95\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p8-sprite-unit-conformance-20260729T0013Z/closure-evidence.json\",\n              \"sha256\": \"sha256:18d68ecdbf53589d14cd1533bc601f97c2f6d7d37307e16d6f0bcc99c507e781\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/closure-evidence.json\",\n              \"sha256\": \"sha256:620e3ec9b2379f0819fe7ab341bb6c5ec65ce24f7c9bfc00c1a011a21f6afb43\"\n            }\n          ]\n        },\n        \"source\": \"docs/proofs/tickets/*/closure-evidence.json\",\n        \"state\": \"PASS\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"agentic_eval_evidence_index_pass\",\n        \"next_command\": \"rebuild the retained agentic-eval evidence index after repairing failures\",\n        \"observed\": {\n          \"artifact_count\": 21,\n          \"failure_codes\": [\n            \"artifact_digest_mismatch\",\n            \"artifact_reported_digest_mismatch\",\n            \"report_digest_mismatch\",\n            \"report_identity_mismatch\",\n            \"report_repo_sha_mismatch\"\n          ],\n          \"ok\": false,\n          \"present\": true,\n          \"report_count\": 15,\n          \"retained_reports_live_readback\": {\n            \"all_unmocked\": true,\n            \"count\": 15,\n            \"live\": true,\n            \"mocked\": false,\n            \"ready\": true\n          },\n          \"sha256\": \"sha256:f306e269ccafc0b36a728e82395faa531fa4668bb2bcd00afb7544a452eba2ad\",\n          \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n          \"status\": \"FAIL\"\n        },\n        \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"five_canonical_workflows_present\",\n        \"next_command\": null,\n        \"observed\": {\n          \"all_present\": true,\n          \"available\": {\n            \"approved-release-bundle\": true,\n            \"durable-repository-qualification\": true,\n            \"repository-evidence-map\": true,\n            \"repository-readiness\": true,\n            \"tau-operator-reference\": true\n          },\n          \"expected\": [\n            \"repository-readiness\",\n            \"tau-operator-reference\",\n            \"repository-evidence-map\",\n            \"approved-release-bundle\",\n            \"durable-repository-qualification\"\n          ],\n          \"source\": \"src/tau_coding/workflows/definitions/\"\n        },\n        \"source\": \"src/tau_coding/workflows/definitions/\",\n        \"state\": \"PASS\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"developer_surface_inventory_clean\",\n        \"next_command\": \"tau developer-share stub-inventory --json --repo <repo>\",\n        \"observed\": {\n          \"bug_stub_count\": \"UNKNOWN\",\n          \"status\": \"UNKNOWN\",\n          \"unclassified_count\": \"UNKNOWN\"\n        },\n        \"source\": \"developer_surface_inventory\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n        \"next_command\": \"run the focused proof owner for clean_checkout_installed_wheel_launch\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"viewer_browser_proof_present\",\n        \"next_command\": \"run the focused proof owner for viewer_browser\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.viewer_browser\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"repair_self_heal_proof_present\",\n        \"next_command\": \"run the focused proof owner for repair_self_heal\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.repair_self_heal\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"human_acceptance_matches_goal\",\n        \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n        \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n        \"source\": \"GOAL.md + human_acceptance\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      }\n    ],\n    \"proof_boundary\": {\n      \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n      \"live\": true,\n      \"mocked\": false,\n      \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n      \"provider_live\": false\n    },\n    \"readiness\": \"NOT_READY\",\n    \"repo\": \"/tmp/tau-358-qualification\",\n    \"schema\": \"tau.developer_share_status.v1\",\n    \"source_commit\": \"9ed328fb3b682ee075a7e6eca266faa44c774f4b\",\n    \"status\": \"PASS\"\n  },\n  \"issue\": 352,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Provider quality, runtime proof freshness beyond supplied inputs, or human acceptance for the real repository.\",\n    \"proves\": \"Developer-share status fails closed on stale/missing inputs and exposes a read-only installed-wheel status command.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.developer_share_status_proof.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 11282.542,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "a3d1c468428c-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-developer-share-status/proof.json": "sha256:bb4fdaed06551e43977c344c6e14327bcb0e8fb0e7ccedccf69100cc3599cdd1"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:e32992c3320084614a30a9842965d32ed361ab354dadf1ffdc0953a01857ca7e",
+            "test_source_sha256": "sha256:f39cd5cb0b24947635d82be821493cd83a5ef4064237835b8d1004ee1877f7b7",
+            "oracle_sha256": "sha256:ad4c8b4c60abafa0f5c695da4bf5fc9b0231477f3786d0b317a86dbf31dfe288",
+            "generation_id": "sha256:3ebe8c71ed8ab5df26e7cf7cb",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+                "ref": "HEAD"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"cases\": {\n    \"dirty_tree\": {\n      \"current_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\",\n      \"failing_gates\": [\n        \"canonical_status_clean_tree\",\n        \"human_acceptance_matches_goal\"\n      ],\n      \"gates\": [\n        {\n          \"id\": \"status_source_fresh\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"docs/status/CURRENT_STATE.json source_digests\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"status_source_commit_current\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\",\n            \"status_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\"\n          },\n          \"source\": \"git rev-parse HEAD\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"canonical_status_clean_tree\",\n          \"next_command\": \"land or remove unrelated changes before generating share status\",\n          \"observed\": {\n            \"current_clean_tree\": false,\n            \"status_clean_tree\": true\n          },\n          \"source\": \"git status --porcelain and status.git.clean_tree\",\n          \"state\": \"FAIL\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"github_snapshot_fresh\",\n          \"next_command\": null,\n          \"observed\": \"FRESH\",\n          \"source\": \"docs/status/github-snapshot.json\",\n          \"state\": \"PASS\",\n          \"waivable\": true,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"no_unresolved_critical_security_findings\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"github.open_critical_issues\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"share_security_gate_receipt_current_and_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"changed_paths_since_receipt_source\": [\n              \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\"\n            ],\n            \"receipt\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n            \"receipt_present\": true,\n            \"receipt_source_commit\": \"3c927cac3fcae703acaf9658445863d596279200\",\n            \"receipt_source_is_ancestor\": true,\n            \"receipt_status\": \"PASS\",\n            \"runtime_source_paths_changed\": [],\n            \"share_readiness\": \"READY\",\n            \"unresolved_blockers\": 0\n          },\n          \"source\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"proof_index_structurally_valid\",\n          \"next_command\": null,\n          \"observed\": {\n            \"count\": 1,\n            \"digest\": \"sha256:cab9f4b314d6a47a55ddf1e882005b8f89b9519fb44362c8bedee73428c18761\",\n            \"entries\": [\n              {\n                \"path\": \"docs/proofs/tickets/issue-1-demo/closure-evidence.json\",\n                \"sha256\": \"sha256:2ad4bff2d98bedec55e12da9c8670f2ab3f5f6891b7c8412ae3e4539d363727c\"\n              }\n            ]\n          },\n          \"source\": \"docs/proofs/tickets/*/closure-evidence.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"agentic_eval_evidence_index_pass\",\n          \"next_command\": null,\n          \"observed\": {\n            \"ok\": true,\n            \"status\": \"PASS\"\n          },\n          \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"five_canonical_workflows_present\",\n          \"next_command\": null,\n          \"observed\": {\n            \"all_present\": true,\n            \"available\": {\n              \"approved-release-bundle\": true,\n              \"durable-repository-qualification\": true,\n              \"repository-evidence-map\": true,\n              \"repository-readiness\": true,\n              \"tau-operator-reference\": true\n            },\n            \"expected\": [\n              \"repository-readiness\",\n              \"tau-operator-reference\",\n              \"repository-evidence-map\",\n              \"approved-release-bundle\",\n              \"durable-repository-qualification\"\n            ],\n            \"source\": \"src/tau_coding/workflows/definitions/\"\n          },\n          \"source\": \"src/tau_coding/workflows/definitions/\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"developer_surface_inventory_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"bug_stub_count\": 0,\n            \"status\": \"PASS\",\n            \"unclassified_count\": 0\n          },\n          \"source\": \"developer_surface_inventory\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"viewer_browser_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.viewer_browser\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"repair_self_heal_proof_present\",\n          \"next_command\": null,\n          \"observed\": true,\n          \"source\": \"developer_share_evidence.repair_self_heal\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"human_acceptance_matches_goal\",\n          \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n          \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n          \"source\": \"GOAL.md + human_acceptance\",\n          \"state\": \"FAIL\",\n          \"waivable\": false,\n          \"waiver\": null\n        }\n      ],\n      \"proof_boundary\": {\n        \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n        \"live\": true,\n        \"mocked\": false,\n        \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n        \"provider_live\": false\n      },\n      \"readiness\": \"NOT_READY\",\n      \"repo\": \"/tmp/tau-358-qualification/local/agentic-evals/tau-developer-share-status/work/fixture-repo\",\n      \"schema\": \"tau.developer_share_status.v1\",\n      \"source_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\",\n      \"status\": \"PASS\"\n    },\n    \"eval_index_fail\": {\n      \"current_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\",\n      \"failing_gates\": [\n        \"agentic_eval_evidence_index_pass\",\n        \"human_acceptance_matches_goal\"\n      ],\n      \"gates\": [\n        {\n          \"id\": \"status_source_fresh\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"docs/status/CURRENT_STATE.json source_digests\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"status_source_commit_current\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\",\n            \"status_commit\": \"2f79f7b87a42e44a95f0914877bdc4c56e6f8cd4\"\n          },\n          \"source\": \"git rev-parse HEAD\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"canonical_status_clean_tree\",\n          \"next_command\": null,\n          \"observed\": {\n            \"current_clean_tree\": true,\n            \"status_clean_tree\": true\n          },\n          \"source\": \"git status --porcelain and status.git.clean_tree\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"github_snapshot_fresh\",\n          \"next_command\": null,\n          \"observed\": \"FRESH\",\n          \"source\": \"docs/status/github-snapshot.json\",\n          \"state\": \"PASS\",\n          \"waivable\": true,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"no_unresolved_critical_security_findings\",\n          \"next_command\": null,\n          \"observed\": [],\n          \"source\": \"github.open_critical_issues\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"share_security_gate_receipt_current_and_clean\",\n          \"next_command\": null,\n          \"observed\": {\n            \"changed_paths_since_receipt_source\": [\n              \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\"\n            ],\n            \"receipt\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n            \"receipt_present\": true,\n            \"receipt_source_commit\": \"3c927cac3fcae703acaf9658445863d596279200\",\n            \"receipt_source_is_ancestor\": true,\n            \"receipt_status\": \"PASS\",\n            \"runtime_source_paths_changed\": [],\n            \"share_readiness\": \"READY\",\n            \"unresolved_blockers\": 0\n          },\n          \"source\": \"docs/proofs/tickets/issue-343-security-gate/security-gate.json\",\n          \"state\": \"PASS\",\n          \"waivable\": false,\n          \"waiver\": null\n        },\n        {\n          \"id\": \"proof_index_structurally_valid\",\n          \"next_command\": null,\n          \"observed\": {\n            \"count\": 1,\n            \"digest\": \"sha256:cab9f4b314d6a47a55ddf1e882005b8f89b9519fb44362c8bedee73428c18761\",\n            \"entries\": [\n              {\n                \"path\": \"docs/proofs/tickets/issue-1-demo/closure-evidence.json\",\n                \"sha256\": \"sha256:2ad4bff2d98bedec55e12da9c8670f2ab3f5f6891b7c8412ae3e4539d3\n...[103114 chars omitted]...\n },\n            {\n              \"path\": \"docs/proofs/tickets/issue-298-adversarial-contract-conformance/closure-evidence.json\",\n              \"sha256\": \"sha256:15e4452ea4fac65a78505d04611204e5221c21a76162cb82d3d3dcda89b0bfcd\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/closure-evidence.json\",\n              \"sha256\": \"sha256:397ce58b75aa4de88c26aad5da32bd41f59bb6c5856136bbeec51dd44d0fe418\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-305-acceptance-attestation-20260830T192020Z/closure-evidence.json\",\n              \"sha256\": \"sha256:555677a199483bb84c7a6ab11b5240d7c873df6555bb900fc5cc249d1611edbe\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json\",\n              \"sha256\": \"sha256:508ffdd16fb4cce96306c44d50bbb2c54059125f8189750c1558971b902409c8\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-315-herdr-runtime-agent-nodes-20260830T204841Z/closure-evidence.json\",\n              \"sha256\": \"sha256:c09692c4506975d60e99df7defb3b5f0ec978b870eb85c78dc92bbd201e70818\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json\",\n              \"sha256\": \"sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json\",\n              \"sha256\": \"sha256:61c40efc5300d2c63af4672ff7d34c2b68d8d77a16a9a921f02c0804be83b48c\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/closure-evidence.json\",\n              \"sha256\": \"sha256:58f69633bdbb00806cbd2948a0c5e3e4ebacb8222b823be6f1e391255d246808\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json\",\n              \"sha256\": \"sha256:147d8e70bcc37a9486fe8ec68dccd00cf5b95b3e0d1b3fef9096546b1fcc57c1\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json\",\n              \"sha256\": \"sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/closure-evidence.json\",\n              \"sha256\": \"sha256:f3c8e5e2c998c8ca4ccdc7ee370e72e86aece1a6910fbe036e77483c211eeeda\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-333-ledger-audit-projection-20260830T164658Z/closure-evidence.json\",\n              \"sha256\": \"sha256:9e714105c31141379679d6befe8c4d0ba19b640564b2a9f324194ddeba3467af\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-334-hardcoded-secret-triage-20260830T140545Z/closure-evidence.json\",\n              \"sha256\": \"sha256:ce7a4548d1ceee596e8bca8b32f2ef325bc611be8c18d2b751683b4c48278dfb\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-335-project-knowledge-prune-20260830T161231Z/closure-evidence.json\",\n              \"sha256\": \"sha256:3948762a00ad14c133a0a4cf1991519f132716ddf5f92402907e8857815e0534\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-336-visual-review-evidence-20260831T105945Z/closure-evidence.json\",\n              \"sha256\": \"sha256:006cd9fe89063e274b4b551ffb7cca4ecde3e86f1bcd2005356ab7273d393e62\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-336-visual-review-receipt-enforcement-20260831T111946Z/closure-evidence.json\",\n              \"sha256\": \"sha256:24c93263c5cc8fbb7cf4c95bab194dc24831e21c5cf2d3f8730b2b52bf6d51c6\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json\",\n              \"sha256\": \"sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p11-security-unit-conformance-20260729T0019Z/closure-evidence.json\",\n              \"sha256\": \"sha256:a0ff736d4fe4eefbe9a5c42c7550d4c749dfb1f523d108a920d25608228c1d57\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/closure-evidence.json\",\n              \"sha256\": \"sha256:712cca62770fc02e2967ea323a84bff35fc8483c32864a23686b9778ff773d95\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-p8-sprite-unit-conformance-20260729T0013Z/closure-evidence.json\",\n              \"sha256\": \"sha256:18d68ecdbf53589d14cd1533bc601f97c2f6d7d37307e16d6f0bcc99c507e781\"\n            },\n            {\n              \"path\": \"docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/closure-evidence.json\",\n              \"sha256\": \"sha256:620e3ec9b2379f0819fe7ab341bb6c5ec65ce24f7c9bfc00c1a011a21f6afb43\"\n            }\n          ]\n        },\n        \"source\": \"docs/proofs/tickets/*/closure-evidence.json\",\n        \"state\": \"PASS\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"agentic_eval_evidence_index_pass\",\n        \"next_command\": \"rebuild the retained agentic-eval evidence index after repairing failures\",\n        \"observed\": {\n          \"artifact_count\": 21,\n          \"failure_codes\": [\n            \"artifact_digest_mismatch\",\n            \"artifact_reported_digest_mismatch\",\n            \"report_digest_mismatch\",\n            \"report_identity_mismatch\",\n            \"report_repo_sha_mismatch\"\n          ],\n          \"ok\": false,\n          \"present\": true,\n          \"report_count\": 15,\n          \"retained_reports_live_readback\": {\n            \"all_unmocked\": true,\n            \"count\": 15,\n            \"live\": true,\n            \"mocked\": false,\n            \"ready\": true\n          },\n          \"sha256\": \"sha256:f306e269ccafc0b36a728e82395faa531fa4668bb2bcd00afb7544a452eba2ad\",\n          \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n          \"status\": \"FAIL\"\n        },\n        \"source\": \"local/agentic-evals/tau-agentic-eval-evidence-index.json\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"five_canonical_workflows_present\",\n        \"next_command\": null,\n        \"observed\": {\n          \"all_present\": true,\n          \"available\": {\n            \"approved-release-bundle\": true,\n            \"durable-repository-qualification\": true,\n            \"repository-evidence-map\": true,\n            \"repository-readiness\": true,\n            \"tau-operator-reference\": true\n          },\n          \"expected\": [\n            \"repository-readiness\",\n            \"tau-operator-reference\",\n            \"repository-evidence-map\",\n            \"approved-release-bundle\",\n            \"durable-repository-qualification\"\n          ],\n          \"source\": \"src/tau_coding/workflows/definitions/\"\n        },\n        \"source\": \"src/tau_coding/workflows/definitions/\",\n        \"state\": \"PASS\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"developer_surface_inventory_clean\",\n        \"next_command\": \"tau developer-share stub-inventory --json --repo <repo>\",\n        \"observed\": {\n          \"bug_stub_count\": \"UNKNOWN\",\n          \"status\": \"UNKNOWN\",\n          \"unclassified_count\": \"UNKNOWN\"\n        },\n        \"source\": \"developer_surface_inventory\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n        \"next_command\": \"run the focused proof owner for clean_checkout_installed_wheel_launch\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"viewer_browser_proof_present\",\n        \"next_command\": \"run the focused proof owner for viewer_browser\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.viewer_browser\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"repair_self_heal_proof_present\",\n        \"next_command\": \"run the focused proof owner for repair_self_heal\",\n        \"observed\": \"UNKNOWN\",\n        \"source\": \"developer_share_evidence.repair_self_heal\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      },\n      {\n        \"id\": \"human_acceptance_matches_goal\",\n        \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n        \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n        \"source\": \"GOAL.md + human_acceptance\",\n        \"state\": \"FAIL\",\n        \"waivable\": false,\n        \"waiver\": null\n      }\n    ],\n    \"proof_boundary\": {\n      \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n      \"live\": true,\n      \"mocked\": false,\n      \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n      \"provider_live\": false\n    },\n    \"readiness\": \"NOT_READY\",\n    \"repo\": \"/tmp/tau-358-qualification\",\n    \"schema\": \"tau.developer_share_status.v1\",\n    \"source_commit\": \"9ed328fb3b682ee075a7e6eca266faa44c774f4b\",\n    \"status\": \"PASS\"\n  },\n  \"issue\": 352,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Provider quality, runtime proof freshness beyond supplied inputs, or human acceptance for the real repository.\",\n    \"proves\": \"Developer-share status fails closed on stale/missing inputs and exposes a read-only installed-wheel status command.\"\n  },\n  \"provider_live\": false,\n  \"schema\": \"tau.developer_share_status_proof.v1\",\n  \"status\": \"PASS\"\n}\n",
+          "stderr": "",
+          "duration_ms": 9991.165,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "a3d1c468428c-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-developer-share-status/proof.json": "sha256:f78feb144effae33e8f1fe41f63771f4be0c62db9502bfeee4381b552d85bd8e"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:e32992c3320084614a30a9842965d32ed361ab354dadf1ffdc0953a01857ca7e",
+            "test_source_sha256": "sha256:f39cd5cb0b24947635d82be821493cd83a5ef4064237835b8d1004ee1877f7b7",
+            "oracle_sha256": "sha256:ad4c8b4c60abafa0f5c695da4bf5fc9b0231477f3786d0b317a86dbf31dfe288",
+            "generation_id": "sha256:3ebe8c71ed8ab5df26e7cf7cb",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+                "ref": "HEAD"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -77,16 +77,56 @@ def _init_repo(root: Path) -> None:
         "effects",
         "memory_projection",
     ):
-        (runtime / f"{name}.py").write_text("# stub\n", encoding="utf-8")
+        (runtime / f"{name}.py").write_text("# canonical runtime module\n", encoding="utf-8")
     accept = root / "docs" / "proofs" / "acceptance"
     accept.mkdir(parents=True)
     (accept / "rungs-evidence-receipt.json").write_text('{"schema":"x"}\n', encoding="utf-8")
+    # tau#351: the surface inventory requires every audited file to exist and
+    # carry no unclassified markers, so seed benign stand-ins for any the
+    # synthetic fixture does not create above.
+    from tau_coding.developer_surface_inventory import _AUDITED_FILES
+
+    for rel in _AUDITED_FILES:
+        audited = root / rel
+        if not audited.is_file():
+            audited.parent.mkdir(parents=True, exist_ok=True)
+            audited.write_text(
+                '"""Synthetic fixture module with no inventory markers.\n"""\n',
+                encoding="utf-8",
+            )
     ticket = root / "docs" / "proofs" / "tickets" / "issue-1-demo"
     ticket.mkdir(parents=True)
     (ticket / "closure-evidence.json").write_text('{"ticket":"#1"}\n', encoding="utf-8")
     _run(["git", "add", "."], cwd=root)
     _run(
         ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "init"], cwd=root
+    )
+    # tau#343: the share-security gate hard-fails without a current receipt, so
+    # the synthetic fixture must carry one bound to an ancestor commit. The
+    # receipt must be written AFTER the audited stand-ins so the init commit
+    # contains them.
+    init_sha = _run(["git", "rev-parse", "HEAD"], cwd=root)["stdout"].strip()
+    receipt_dir = root / "docs" / "proofs" / "tickets" / "issue-343-security-gate"
+    receipt_dir.mkdir(parents=True)
+    (receipt_dir / "security-gate.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.developer_share_security_gate.v1",
+                "status": "PASS",
+                "share_readiness": "READY",
+                "source_commit": init_sha,
+                "counts": {"unresolved_blockers": 0},
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _run(["git", "add", "docs/proofs/tickets/issue-343-security-gate"], cwd=root)
+    _run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "receipt"],
+        cwd=root,
     )
 
 
