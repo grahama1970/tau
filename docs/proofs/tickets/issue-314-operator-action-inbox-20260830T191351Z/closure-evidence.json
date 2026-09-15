@@ -26,6 +26,7 @@
   "created_at": "2026-09-15T02:10:35.638781+00:00",
   "e2e": {
     "artifact": "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json",
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_operator_action_inbox_agentic_eval.json --output local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json # live_e2e receipt readback",
     "exit_code": 0,
     "live": true,
     "local_source": "local/agentic-evals/tau-operator-action-inbox-proof.json",
@@ -109,5 +110,5 @@
     "passed": 6,
     "result": "6 passed in 0.59s"
   },
-  "updated_at": "2026-09-15T02:11:24.214995+00:00"
+  "updated_at": "2026-09-15T02:12:02.674079+00:00"
 }
