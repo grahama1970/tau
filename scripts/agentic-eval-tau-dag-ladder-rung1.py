@@ -27,7 +27,9 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--work-root", type=Path, help="Retained proof directory override.")
     parser.add_argument("--uv-bin", default="uv", help="Accepted for compatibility.")
-    parser.add_argument("--timeout-seconds", type=int, default=180, help="Accepted for compatibility.")
+    parser.add_argument(
+        "--timeout-seconds", type=int, default=180, help="Accepted for compatibility."
+    )
     args = parser.parse_args()
 
     source_repo = Path(run_git(args.repo, "rev-parse", "--show-toplevel")).resolve()
@@ -111,10 +113,18 @@ def summarize_proof(
     if not goal_hash_preserved:
         errors.append("goal_hash_not_preserved")
 
-    retained = proof.get("rung_1_artifacts") if isinstance(proof.get("rung_1_artifacts"), dict) else {}
+    retained = (
+        proof.get("rung_1_artifacts")
+        if isinstance(proof.get("rung_1_artifacts"), dict)
+        else {}
+    )
     for key in ("dag_progress", "events", "ledger", "ledger_replay", "result"):
         artifact = retained.get(key) if isinstance(retained, dict) else None
-        path = Path(str(artifact.get("path"))) if isinstance(artifact, dict) and artifact.get("path") else None
+        path = (
+            Path(str(artifact.get("path")))
+            if isinstance(artifact, dict) and artifact.get("path")
+            else None
+        )
         if path is None or not path.is_file():
             errors.append(f"retained_artifact_missing:{key}")
         elif artifact.get("sha256") != file_sha256(path):
@@ -163,8 +173,10 @@ def summarize_proof(
         "proof_scope": {
             "proves": [
                 "The packaged DAG ladder manifest names all five rungs.",
-                "Rung 1 runs from a clean clone of the current Git HEAD through Tau's public workflow proof command.",
-                "The retained proof includes bootstrap, dag-progress, events, ledger, ledger replay, result, verifier, and negative mutation receipts.",
+                "Rung 1 runs from a clean clone of the current Git HEAD through Tau's "
+                "public workflow proof command.",
+                "The retained proof includes bootstrap, dag-progress, events, ledger, "
+                "ledger replay, result, verifier, and negative mutation receipts.",
             ],
             "does_not_prove": [
                 "Rungs 2 through 5 have fresh retained clean-checkout proof.",

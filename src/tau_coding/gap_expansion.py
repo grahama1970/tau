@@ -588,7 +588,7 @@ def _budget_alert(budget: object, envelope: Mapping[str, Any]) -> dict[str, Any]
                     "Candidate budget exceeds the expansion envelope.",
                     {"requested": requested, "allowed": allowed},
                 )
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return _alert(
                 "invalid",
                 f"{budget_key}_invalid",
@@ -709,7 +709,7 @@ def _string_list(value: object) -> list[str]:
 def _positive_int(value: object, *, default: int) -> int:
     try:
         number = int(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return default
     return number if number > 0 else default
 
@@ -717,7 +717,7 @@ def _positive_int(value: object, *, default: int) -> int:
 def _integer(value: object) -> int | None:
     try:
         return int(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return None
 
 
