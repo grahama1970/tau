@@ -10,15 +10,15 @@
     "HARDCODED_RUNTIME_PATH",
     "REAL_SECRET"
   ],
-  "checked_at": "2026-09-15T17:51:59Z",
+  "checked_at": "2026-09-15T19:10:06Z",
   "counts": {
     "by_disposition": {
-      "DOCUMENTATION_EXAMPLE": 79,
+      "DOCUMENTATION_EXAMPLE": 82,
       "SCANNER_FALSE_POSITIVE": 10,
       "SYNTHETIC_FIXTURE": 11
     },
-    "dispositions": 100,
-    "findings": 100,
+    "dispositions": 103,
+    "findings": 103,
     "reconciled": true,
     "runtime_python_path_findings": 3,
     "unresolved_blockers": 0,
@@ -811,31 +811,6 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json",
-      "finding_hash": "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
-      "issue": "hardcoded_secret",
-      "line": 12,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 12,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-apply.json",
       "finding_hash": "sha256:3f403a648f3ddf4d59a0476d0e1642b8968c8a37a29211d129a0646f4d509100",
       "issue": "hardcoded_secret",
@@ -848,56 +823,6 @@
         "exists_in_clean_tree": true,
         "line": 23,
         "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-apply.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json",
-      "finding_hash": "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
-      "issue": "hardcoded_secret",
-      "line": 13,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 13,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json",
-      "finding_hash": "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
-      "issue": "hardcoded_secret",
-      "line": 12,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 12,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json"
       }
     },
     {
@@ -961,6 +886,56 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json",
+      "finding_hash": "sha256:be8a12f09d9d6efb79f56349248b5f176abbbef0e105c6bcb271f62b2bae789b",
+      "issue": "hardcoded_secret",
+      "line": 23,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 23,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json",
+      "finding_hash": "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
+      "issue": "hardcoded_secret",
+      "line": 12,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 12,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-apply.json",
       "finding_hash": "sha256:b0656c51a1b63bc3d3ad9a57a1ebc9c3336e34c84f89f16d44d43e3db675bd26",
       "issue": "hardcoded_secret",
@@ -986,18 +961,18 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json",
-      "finding_hash": "sha256:be8a12f09d9d6efb79f56349248b5f176abbbef0e105c6bcb271f62b2bae789b",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json",
+      "finding_hash": "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
       "issue": "hardcoded_secret",
-      "line": 23,
+      "line": 13,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 23,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json"
+        "line": 13,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json"
       }
     },
     {
@@ -1036,33 +1011,8 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json",
-      "finding_hash": "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
-      "issue": "hardcoded_secret",
-      "line": 23,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 23,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json",
-      "finding_hash": "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json",
+      "finding_hash": "sha256:262ddcec1d115aa4ff9e0699670175a7f6659f684b2d6691cb2bcad6ba25de3e",
       "issue": "hardcoded_secret",
       "line": 13,
       "rule": "generic-api-key",
@@ -1072,7 +1022,7 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 13,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json"
       }
     },
     {
@@ -1111,18 +1061,18 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json",
-      "finding_hash": "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json",
+      "finding_hash": "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
       "issue": "hardcoded_secret",
-      "line": 13,
+      "line": 23,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 13,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json"
+        "line": 23,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json"
       }
     },
     {
@@ -1136,8 +1086,8 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json",
-      "finding_hash": "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json",
+      "finding_hash": "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
       "issue": "hardcoded_secret",
       "line": 12,
       "rule": "generic-api-key",
@@ -1147,7 +1097,32 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 12,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json",
+      "finding_hash": "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
+      "issue": "hardcoded_secret",
+      "line": 13,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 13,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json"
       }
     },
     {
@@ -1186,8 +1161,8 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json",
-      "finding_hash": "sha256:262ddcec1d115aa4ff9e0699670175a7f6659f684b2d6691cb2bcad6ba25de3e",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json",
+      "finding_hash": "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
       "issue": "hardcoded_secret",
       "line": 13,
       "rule": "generic-api-key",
@@ -1197,7 +1172,7 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 13,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json"
       }
     },
     {
@@ -1236,8 +1211,33 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json",
-      "finding_hash": "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json",
+      "finding_hash": "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
+      "issue": "hardcoded_secret",
+      "line": 29,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 29,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json",
+      "finding_hash": "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
       "issue": "hardcoded_secret",
       "line": 12,
       "rule": "generic-api-key",
@@ -1247,7 +1247,7 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 12,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json"
       }
     },
     {
@@ -1311,6 +1311,31 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json",
+      "finding_hash": "sha256:d2d349b939d5766cef35517c846358d85db4b9c0822a3a8ba51a74205d20c6d5",
+      "issue": "hardcoded_secret",
+      "line": 35,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 35,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-proposal.json",
       "finding_hash": "sha256:e8c9a94ec3941e1f7b7794ad1b7b86d92fa67c72e31b359b1bd51634a6d3a8d3",
       "issue": "hardcoded_secret",
@@ -1336,43 +1361,18 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json",
-      "finding_hash": "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json",
+      "finding_hash": "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
       "issue": "hardcoded_secret",
-      "line": 29,
+      "line": 12,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 29,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json",
-      "finding_hash": "sha256:d2d349b939d5766cef35517c846358d85db4b9c0822a3a8ba51a74205d20c6d5",
-      "issue": "hardcoded_secret",
-      "line": 35,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 35,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json"
+        "line": 12,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json"
       }
     },
     {
@@ -1435,44 +1435,19 @@
         "source_backed": true,
         "source_path_exists": true
       },
-      "evidence": "\"idempotency_key\": \"idem-malicious-184009835356\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json",
-      "finding_hash": "sha256:d47817d4839baac2fb57125f64e495bbbcd12220b5b329e0dbfb99cbccbe4371",
-      "issue": "hardcoded_secret",
-      "line": 12,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-malicious-184009835356\",",
-        "exists_in_clean_tree": true,
-        "line": 12,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json",
-      "finding_hash": "sha256:252c9b3bb8783788f52da8def22bdc8f936a8f865a225449dd87388c65fa335e",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json",
+      "finding_hash": "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
       "issue": "hardcoded_secret",
-      "line": 7,
+      "line": 13,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 7,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json"
+        "line": 13,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json"
       }
     },
     {
@@ -1511,18 +1486,68 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json",
-      "finding_hash": "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json",
+      "finding_hash": "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
       "issue": "hardcoded_secret",
-      "line": 13,
+      "line": 7,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 13,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json"
+        "line": 7,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-malicious-184009835356\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json",
+      "finding_hash": "sha256:d47817d4839baac2fb57125f64e495bbbcd12220b5b329e0dbfb99cbccbe4371",
+      "issue": "hardcoded_secret",
+      "line": 12,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-malicious-184009835356\",",
+        "exists_in_clean_tree": true,
+        "line": 12,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json",
+      "finding_hash": "sha256:252c9b3bb8783788f52da8def22bdc8f936a8f865a225449dd87388c65fa335e",
+      "issue": "hardcoded_secret",
+      "line": 7,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 7,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json"
       }
     },
     {
@@ -1586,8 +1611,8 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json",
-      "finding_hash": "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json",
+      "finding_hash": "sha256:92461277d3501a67a955cc61efe8b54907cd9a5b3241aff66025ad3d824c4ddf",
       "issue": "hardcoded_secret",
       "line": 7,
       "rule": "generic-api-key",
@@ -1597,7 +1622,7 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 7,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json"
       }
     },
     {
@@ -1611,18 +1636,18 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json",
-      "finding_hash": "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json",
+      "finding_hash": "sha256:e374990fa44d06c397168f50f222b930cf3ff9c294289dfee11cb958622c65d4",
       "issue": "hardcoded_secret",
-      "line": 7,
+      "line": 44,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
         "exists_in_clean_tree": true,
-        "line": 7,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json"
+        "line": 44,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json"
       }
     },
     {
@@ -1661,8 +1686,8 @@
         "source_path_exists": true
       },
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json",
-      "finding_hash": "sha256:92461277d3501a67a955cc61efe8b54907cd9a5b3241aff66025ad3d824c4ddf",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json",
+      "finding_hash": "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
       "issue": "hardcoded_secret",
       "line": 7,
       "rule": "generic-api-key",
@@ -1672,32 +1697,7 @@
         "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
         "exists_in_clean_tree": true,
         "line": 7,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json",
-      "finding_hash": "sha256:e374990fa44d06c397168f50f222b930cf3ff9c294289dfee11cb958622c65d4",
-      "issue": "hardcoded_secret",
-      "line": 44,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 44,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json"
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json"
       }
     },
     {
@@ -1785,31 +1785,6 @@
         "source_backed": true,
         "source_path_exists": true
       },
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json",
-      "finding_hash": "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
-      "issue": "hardcoded_secret",
-      "line": 38,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-        "exists_in_clean_tree": true,
-        "line": 38,
-        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "disposition": "DOCUMENTATION_EXAMPLE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
       "evidence": "\"idempotency_key\": \"idem-route-184009833821\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/route-proposal.json",
       "finding_hash": "sha256:4b5a7e49d89afeec5b8f6df3264177eee63f508b58ac5a3abced0864348bcda0",
@@ -1823,6 +1798,31 @@
         "exists_in_clean_tree": true,
         "line": 12,
         "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/route-proposal.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json",
+      "finding_hash": "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
+      "issue": "hardcoded_secret",
+      "line": 38,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+        "exists_in_clean_tree": true,
+        "line": 38,
+        "path": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json"
       }
     },
     {
@@ -2235,6 +2235,56 @@
         "source_backed": true,
         "source_path_exists": true
       },
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:92f6867f1f0e5e10a6dbf382f2e208bf40a65157e64b6cd2857dcf8942812b56",
+      "issue": "hardcoded_secret",
+      "line": 2238,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+        "exists_in_clean_tree": true,
+        "line": 2238,
+        "path": "docs/proofs/tickets/issue-343-security-gate/security-gate.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:fd3e5e70bfc4275aee3fcc309cf3763f88c3719618533a2500c11c7965c560a4",
+      "issue": "hardcoded_secret",
+      "line": 2263,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+        "exists_in_clean_tree": true,
+        "line": 2263,
+        "path": "docs/proofs/tickets/issue-343-security-gate/security-gate.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
       "evidence": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
       "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
       "finding_hash": "sha256:8892864cb3b55080294d3ddd5da10a1ff78095b91380273575c2ba60be609084",
@@ -2260,94 +2310,44 @@
         "source_backed": true,
         "source_path_exists": true
       },
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:337a66e838f225e99ce1a64200d9164759d76ac43f31a1859d3ce75cad17a625",
+      "issue": "hardcoded_secret",
+      "line": 3500,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+        "exists_in_clean_tree": true,
+        "line": 3500,
+        "path": "docs/proofs/tickets/issue-343-security-gate/security-gate.json"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "disposition": "DOCUMENTATION_EXAMPLE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to documentation/proof material and the source path or excerpt identifies it as an example, synthetic value, redaction, or retained proof note.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
       "evidence": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
       "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
-      "finding_hash": "sha256:6c3611f78be9d8555cf1da8fed21ae69b352181957de621024cc78486de4306b",
+      "finding_hash": "sha256:0adc6bd54b198b8bfd9c04735fb920d2316b67de886a348627cb4ed18148cdf8",
       "issue": "hardcoded_secret",
-      "line": 3472,
+      "line": 3522,
       "rule": "private-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
         "exists_in_clean_tree": true,
-        "line": 3472,
+        "line": 3522,
         "path": "docs/proofs/tickets/issue-343-security-gate/security-gate.json"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
-      "disposition": "SYNTHETIC_FIXTURE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:ca1653826f084c431cba30556e4f075a9834a969939d33c6af2f7fb53b555323",
-      "issue": "hardcoded_secret",
-      "line": 57,
-      "rule": "private-key",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
-        "exists_in_clean_tree": true,
-        "line": 57,
-        "path": "tests/test_dag_viewer_redaction.py"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
-      "disposition": "SYNTHETIC_FIXTURE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:39dfab2515faccad273568ba34a0d0b7066c452b1dba83bad8cc4088c89b5359",
-      "issue": "hardcoded_secret",
-      "line": 55,
-      "rule": "aws-access-token",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
-        "exists_in_clean_tree": true,
-        "line": 55,
-        "path": "tests/test_dag_viewer_redaction.py"
-      }
-    },
-    {
-      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
-      "disposition": "SYNTHETIC_FIXTURE",
-      "disposition_evidence": {
-        "blocking": false,
-        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
-        "source_backed": true,
-        "source_path_exists": true
-      },
-      "evidence": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:024e643d045ea685b9c70b431ac33c2cf26b95159daf7445f8d5b1abd70ae22e",
-      "issue": "hardcoded_secret",
-      "line": 75,
-      "rule": "aws-access-token",
-      "severity": "critical",
-      "source": "gitleaks",
-      "source_evidence": {
-        "excerpt": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
-        "exists_in_clean_tree": true,
-        "line": 75,
-        "path": "tests/test_dag_viewer_redaction.py"
       }
     },
     {
@@ -2362,16 +2362,16 @@
       },
       "evidence": "\"--token=ghp_abcdefghijklmnopqrstuvwxyz123456\",",
       "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:09d305f31b53ecb63210f1ea8b6fad852d8488203e894c18f75d489eac19f0f3",
+      "finding_hash": "sha256:aa1bf2bcd08ae7b0a9472b2b956a57f52dbe9d67f9213446334cf2762637c71f",
       "issue": "hardcoded_secret",
-      "line": 50,
+      "line": 57,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"--token=ghp_abcdefghijklmnopqrstuvwxyz123456\",",
         "exists_in_clean_tree": true,
-        "line": 50,
+        "line": 57,
         "path": "tests/test_dag_viewer_redaction.py"
       }
     },
@@ -2387,16 +2387,91 @@
       },
       "evidence": "\"refresh_token=rfr_1234567890abcdef\",",
       "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:dbf1f09303039af7727fd36b0bb3b8c44e6061e931b9416ec5b6548fbff9a04b",
+      "finding_hash": "sha256:464ac9ed52d173e9e9d22cef05c52a520e3a2d56f1f42f5fafbd24e0d34f63d8",
       "issue": "hardcoded_secret",
-      "line": 58,
+      "line": 65,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks",
       "source_evidence": {
         "excerpt": "\"refresh_token=rfr_1234567890abcdef\",",
         "exists_in_clean_tree": true,
-        "line": 58,
+        "line": 65,
+        "path": "tests/test_dag_viewer_redaction.py"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "disposition": "SYNTHETIC_FIXTURE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:18dc425def1a7d4918e7b180df68dfa9deba26e531f244488cb82a34ff6ace06",
+      "issue": "hardcoded_secret",
+      "line": 64,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
+        "exists_in_clean_tree": true,
+        "line": 64,
+        "path": "tests/test_dag_viewer_redaction.py"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+      "disposition": "SYNTHETIC_FIXTURE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:58296e3234a9de67d05dcc3329c95a3d5efec7be8143256cae10abd4116167a7",
+      "issue": "hardcoded_secret",
+      "line": 62,
+      "rule": "aws-access-token",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
+        "exists_in_clean_tree": true,
+        "line": 62,
+        "path": "tests/test_dag_viewer_redaction.py"
+      }
+    },
+    {
+      "allowlist_rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+      "disposition": "SYNTHETIC_FIXTURE",
+      "disposition_evidence": {
+        "blocking": false,
+        "rationale": "Finding is confined to a committed fixture/test path and the source context identifies the value as synthetic, fake, mocked, redacted, or assertion-only.",
+        "source_backed": true,
+        "source_path_exists": true
+      },
+      "evidence": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:7a8ae459068d523ffbc1368df3561b2aaf0ea5a8e1cba817066fccbb6cc3ef94",
+      "issue": "hardcoded_secret",
+      "line": 82,
+      "rule": "aws-access-token",
+      "severity": "critical",
+      "source": "gitleaks",
+      "source_evidence": {
+        "excerpt": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
+        "exists_in_clean_tree": true,
+        "line": 82,
         "path": "tests/test_dag_viewer_redaction.py"
       }
     },
@@ -2871,43 +2946,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json",
-      "finding_hash": "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
-      "issue": "hardcoded_secret",
-      "line": 12,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-apply.json",
       "finding_hash": "sha256:3f403a648f3ddf4d59a0476d0e1642b8968c8a37a29211d129a0646f4d509100",
       "issue": "hardcoded_secret",
       "line": 23,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json",
-      "finding_hash": "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
-      "issue": "hardcoded_secret",
-      "line": 13,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json",
-      "finding_hash": "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
-      "issue": "hardcoded_secret",
-      "line": 12,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -2937,6 +2979,28 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json",
+      "finding_hash": "sha256:be8a12f09d9d6efb79f56349248b5f176abbbef0e105c6bcb271f62b2bae789b",
+      "issue": "hardcoded_secret",
+      "line": 23,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-approval-proposal.json",
+      "finding_hash": "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
+      "issue": "hardcoded_secret",
+      "line": 12,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-apply.json",
       "finding_hash": "sha256:b0656c51a1b63bc3d3ad9a57a1ebc9c3336e34c84f89f16d44d43e3db675bd26",
       "issue": "hardcoded_secret",
@@ -2948,10 +3012,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-before_hash-apply.json",
-      "finding_hash": "sha256:be8a12f09d9d6efb79f56349248b5f176abbbef0e105c6bcb271f62b2bae789b",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-decision.json",
+      "finding_hash": "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
       "issue": "hardcoded_secret",
-      "line": 23,
+      "line": 13,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -2970,19 +3034,8 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json",
-      "finding_hash": "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
-      "issue": "hardcoded_secret",
-      "line": 23,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json",
-      "finding_hash": "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json",
+      "finding_hash": "sha256:262ddcec1d115aa4ff9e0699670175a7f6659f684b2d6691cb2bcad6ba25de3e",
       "issue": "hardcoded_secret",
       "line": 13,
       "rule": "generic-api-key",
@@ -3003,10 +3056,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json",
-      "finding_hash": "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-goal_hash-apply.json",
+      "finding_hash": "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
       "issue": "hardcoded_secret",
-      "line": 13,
+      "line": 23,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3014,10 +3067,21 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json",
-      "finding_hash": "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-data_boundary_version-proposal.json",
+      "finding_hash": "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
       "issue": "hardcoded_secret",
       "line": 12,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-decision.json",
+      "finding_hash": "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
+      "issue": "hardcoded_secret",
+      "line": 13,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3036,8 +3100,8 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-decision.json",
-      "finding_hash": "sha256:262ddcec1d115aa4ff9e0699670175a7f6659f684b2d6691cb2bcad6ba25de3e",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-decision.json",
+      "finding_hash": "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
       "issue": "hardcoded_secret",
       "line": 13,
       "rule": "generic-api-key",
@@ -3058,8 +3122,19 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json",
-      "finding_hash": "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json",
+      "finding_hash": "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
+      "issue": "hardcoded_secret",
+      "line": 29,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-policy_version-proposal.json",
+      "finding_hash": "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
       "issue": "hardcoded_secret",
       "line": 12,
       "rule": "generic-api-key",
@@ -3091,6 +3166,17 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json",
+      "finding_hash": "sha256:d2d349b939d5766cef35517c846358d85db4b9c0822a3a8ba51a74205d20c6d5",
+      "issue": "hardcoded_secret",
+      "line": 35,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
       "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-proposal.json",
       "finding_hash": "sha256:e8c9a94ec3941e1f7b7794ad1b7b86d92fa67c72e31b359b1bd51634a6d3a8d3",
       "issue": "hardcoded_secret",
@@ -3102,21 +3188,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-proposed_content-apply.json",
-      "finding_hash": "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-target_ref-proposal.json",
+      "finding_hash": "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
       "issue": "hardcoded_secret",
-      "line": 29,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/bad-validity_window-apply.json",
-      "finding_hash": "sha256:d2d349b939d5766cef35517c846358d85db4b9c0822a3a8ba51a74205d20c6d5",
-      "issue": "hardcoded_secret",
-      "line": 35,
+      "line": 12,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3145,22 +3220,11 @@
     },
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-malicious-184009835356\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json",
-      "finding_hash": "sha256:d47817d4839baac2fb57125f64e495bbbcd12220b5b329e0dbfb99cbccbe4371",
-      "issue": "hardcoded_secret",
-      "line": 12,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json",
-      "finding_hash": "sha256:252c9b3bb8783788f52da8def22bdc8f936a8f865a225449dd87388c65fa335e",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json",
+      "finding_hash": "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
       "issue": "hardcoded_secret",
-      "line": 7,
+      "line": 13,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3179,10 +3243,32 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/offline-decision.json",
-      "finding_hash": "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json",
+      "finding_hash": "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
       "issue": "hardcoded_secret",
-      "line": 13,
+      "line": 7,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-malicious-184009835356\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/malicious-proposal.json",
+      "finding_hash": "sha256:d47817d4839baac2fb57125f64e495bbbcd12220b5b329e0dbfb99cbccbe4371",
+      "issue": "hardcoded_secret",
+      "line": 12,
+      "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+      "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply.json",
+      "finding_hash": "sha256:252c9b3bb8783788f52da8def22bdc8f936a8f865a225449dd87388c65fa335e",
+      "issue": "hardcoded_secret",
+      "line": 7,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3212,8 +3298,8 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json",
-      "finding_hash": "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json",
+      "finding_hash": "sha256:92461277d3501a67a955cc61efe8b54907cd9a5b3241aff66025ad3d824c4ddf",
       "issue": "hardcoded_secret",
       "line": 7,
       "rule": "generic-api-key",
@@ -3223,10 +3309,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-apply-verify-accepted-apply-second.json",
-      "finding_hash": "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json",
+      "finding_hash": "sha256:e374990fa44d06c397168f50f222b930cf3ff9c294289dfee11cb958622c65d4",
       "issue": "hardcoded_secret",
-      "line": 7,
+      "line": 44,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3245,21 +3331,10 @@
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply.json",
-      "finding_hash": "sha256:92461277d3501a67a955cc61efe8b54907cd9a5b3241aff66025ad3d824c4ddf",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/prompt-apply-verify-accepted-apply-second.json",
+      "finding_hash": "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
       "issue": "hardcoded_secret",
       "line": 7,
-      "rule": "generic-api-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-mem-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/memory-document-preview-no-mutation.json",
-      "finding_hash": "sha256:e374990fa44d06c397168f50f222b930cf3ff9c294289dfee11cb958622c65d4",
-      "issue": "hardcoded_secret",
-      "line": 44,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3299,22 +3374,22 @@
     },
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json",
-      "finding_hash": "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
+      "evidence": "\"idempotency_key\": \"idem-route-184009833821\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/route-proposal.json",
+      "finding_hash": "sha256:4b5a7e49d89afeec5b8f6df3264177eee63f508b58ac5a3abced0864348bcda0",
       "issue": "hardcoded_secret",
-      "line": 38,
+      "line": 12,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
     },
     {
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "evidence": "\"idempotency_key\": \"idem-route-184009833821\",",
-      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/route-proposal.json",
-      "finding_hash": "sha256:4b5a7e49d89afeec5b8f6df3264177eee63f508b58ac5a3abced0864348bcda0",
+      "evidence": "\"idempotency_key\": \"idem-prompt-20260830T184008Z\",",
+      "file": "docs/proofs/tickets/issue-319-refinement-proposals-20260830T184045Z/work-artifacts/supplemental-prompt-preview-no-mutation.json",
+      "finding_hash": "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
       "issue": "hardcoded_secret",
-      "line": 12,
+      "line": 38,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3497,6 +3572,28 @@
     },
     {
       "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:92f6867f1f0e5e10a6dbf382f2e208bf40a65157e64b6cd2857dcf8942812b56",
+      "issue": "hardcoded_secret",
+      "line": 2238,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:fd3e5e70bfc4275aee3fcc309cf3763f88c3719618533a2500c11c7965c560a4",
+      "issue": "hardcoded_secret",
+      "line": 2263,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
       "evidence": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
       "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
       "finding_hash": "sha256:8892864cb3b55080294d3ddd5da10a1ff78095b91380273575c2ba60be609084",
@@ -3508,45 +3605,23 @@
     },
     {
       "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
-      "evidence": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
+      "evidence": "\"evidence\": \"\\\"evidence\\\": \\\"\\\\\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\\\\\",\\\",\",",
       "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
-      "finding_hash": "sha256:6c3611f78be9d8555cf1da8fed21ae69b352181957de621024cc78486de4306b",
+      "finding_hash": "sha256:337a66e838f225e99ce1a64200d9164759d76ac43f31a1859d3ce75cad17a625",
       "issue": "hardcoded_secret",
-      "line": 3472,
+      "line": 3500,
       "rule": "private-key",
       "severity": "critical",
       "source": "gitleaks"
     },
     {
       "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
-      "evidence": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:ca1653826f084c431cba30556e4f075a9834a969939d33c6af2f7fb53b555323",
+      "evidence": "\"evidence\": \"\\\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\\\",\",",
+      "file": "docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+      "finding_hash": "sha256:0adc6bd54b198b8bfd9c04735fb920d2316b67de886a348627cb4ed18148cdf8",
       "issue": "hardcoded_secret",
-      "line": 57,
+      "line": 3522,
       "rule": "private-key",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
-      "evidence": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:39dfab2515faccad273568ba34a0d0b7066c452b1dba83bad8cc4088c89b5359",
-      "issue": "hardcoded_secret",
-      "line": 55,
-      "rule": "aws-access-token",
-      "severity": "critical",
-      "source": "gitleaks"
-    },
-    {
-      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
-      "evidence": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
-      "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:024e643d045ea685b9c70b431ac33c2cf26b95159daf7445f8d5b1abd70ae22e",
-      "issue": "hardcoded_secret",
-      "line": 75,
-      "rule": "aws-access-token",
       "severity": "critical",
       "source": "gitleaks"
     },
@@ -3554,9 +3629,9 @@
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"--token=ghp_abcdefghijklmnopqrstuvwxyz123456\",",
       "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:09d305f31b53ecb63210f1ea8b6fad852d8488203e894c18f75d489eac19f0f3",
+      "finding_hash": "sha256:aa1bf2bcd08ae7b0a9472b2b956a57f52dbe9d67f9213446334cf2762637c71f",
       "issue": "hardcoded_secret",
-      "line": 50,
+      "line": 57,
       "rule": "generic-api-key",
       "severity": "critical",
       "source": "gitleaks"
@@ -3565,10 +3640,43 @@
       "description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
       "evidence": "\"refresh_token=rfr_1234567890abcdef\",",
       "file": "tests/test_dag_viewer_redaction.py",
-      "finding_hash": "sha256:dbf1f09303039af7727fd36b0bb3b8c44e6061e931b9416ec5b6548fbff9a04b",
+      "finding_hash": "sha256:464ac9ed52d173e9e9d22cef05c52a520e3a2d56f1f42f5fafbd24e0d34f63d8",
       "issue": "hardcoded_secret",
-      "line": 58,
+      "line": 65,
       "rule": "generic-api-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+      "evidence": "\"private=-----BEGIN PRIVATE KEY-----abc123-----END PRIVATE KEY-----\",",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:18dc425def1a7d4918e7b180df68dfa9deba26e531f244488cb82a34ff6ace06",
+      "issue": "hardcoded_secret",
+      "line": 64,
+      "rule": "private-key",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+      "evidence": "\"aws=AKIAABCDEFGHIJKLMNOP\",",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:58296e3234a9de67d05dcc3329c95a3d5efec7be8143256cae10abd4116167a7",
+      "issue": "hardcoded_secret",
+      "line": 62,
+      "rule": "aws-access-token",
+      "severity": "critical",
+      "source": "gitleaks"
+    },
+    {
+      "description": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on AWS platforms.",
+      "evidence": "assert \"AKIAABCDEFGHIJKLMNOP\" not in serialized",
+      "file": "tests/test_dag_viewer_redaction.py",
+      "finding_hash": "sha256:7a8ae459068d523ffbc1368df3561b2aaf0ea5a8e1cba817066fccbb6cc3ef94",
+      "issue": "hardcoded_secret",
+      "line": 82,
+      "rule": "aws-access-token",
       "severity": "critical",
       "source": "gitleaks"
     },
@@ -3631,13 +3739,13 @@
   "gate_exit_code": 0,
   "inputs": {
     "clean_checkout": true,
-    "clean_tree": "/tmp/tau-share-security-gate-wzii9vww/source",
-    "repo": "/tmp/tau-343-final-verify-I8QoCf",
-    "source_commit": "9823e446bbe4b3de2735de7b74fc41c64b97e21a"
+    "clean_tree": "/tmp/tau-share-security-gate-krm2toig/source",
+    "repo": "/tmp/tau-343-independent-3795247",
+    "source_commit": "c3ddce35f76607d97b02651733888c324db75c53"
   },
   "live": true,
   "mocked": false,
-  "output": "/tmp/tau-343-final-verify-I8QoCf/docs/proofs/tickets/issue-343-security-gate/security-gate.json",
+  "output": "/tmp/tau-343-independent-3795247/docs/proofs/tickets/issue-343-security-gate/security-gate.json",
   "proof_scope": {
     "does_not_prove": [
       "Formal security certification or absence of all vulnerabilities.",
@@ -3704,47 +3812,47 @@
       "sha256:d090dcce11b1a151f88ab2d8a12df96dea772e9c8588efa40c78c07b70d40d3b",
       "sha256:56b87cb01d2c19d03540398f4e82b010526ebff0d929d629a462d6eb1ba82f70",
       "sha256:9b44f5dfc4b36730fd60bcd8428f04ebd4aa4b9567ec47552e6a0e9dc5c08ac1",
-      "sha256:329fa0cf4582a69234bcd965dea2ca240f4557e32062dda7945e696de6e050f5",
       "sha256:ecc40420efd9687b9b139c23f43433978a50331e8a3cbcc0208ff9475fc36bea",
-      "sha256:9534bf23cf543f70f922b8706f7a147e4c66d5bc318874938b1999704ceeb576",
-      "sha256:0525fb0eff101b51d0fe0de5d7c0109def0264eadadee48b25e22412346c6854",
       "sha256:4e8a216b359a71fec92bc67bad1a2de996d389c083708fa290d356a999732774",
       "sha256:cdef133920c3a9ce4fe624aab313ba1ba27bf3405941df9aa63ef5943f6a7ef8",
-      "sha256:7da61efe6d138a1b98de122efc22e6df27047a8596752dfc53af14ecc4e2dbd1",
       "sha256:08ec4b5e77e34a758adbb13a558ef16b8214608d25e61218c3d058b79b195b3e",
+      "sha256:329fa0cf4582a69234bcd965dea2ca240f4557e32062dda7945e696de6e050f5",
+      "sha256:7da61efe6d138a1b98de122efc22e6df27047a8596752dfc53af14ecc4e2dbd1",
+      "sha256:9534bf23cf543f70f922b8706f7a147e4c66d5bc318874938b1999704ceeb576",
       "sha256:8456c04e4d02e117293ebb12386492dd4e6961a9522cfaf06249948b2470598e",
-      "sha256:00f268de377524c0121514a735a2961b3af43fc759e7fe4f5af3ec751c25aca6",
-      "sha256:710de93d9eaa9c390d6c2f243f6d79c1693d219697ebda5c548d34d69fe134fb",
-      "sha256:c1478e83f30d8e9a2ec71aa2f806aa6f6c6ec0b941b94897a37389e6aea64816",
-      "sha256:c608474063d5c46f2de7d223c28a68ad436d65a7630c03971b22ba0b6057ccea",
-      "sha256:329d05fc9b9d054df62ce6b4b1c2adbf9de67e9df4070a7a73f8190be6cde98c",
-      "sha256:c2be396d4334a93be94c44cb55b963fd219096baa0b3d3179c3f6666ee1fb77c",
       "sha256:a6ec3c36a884303d10abec60919e3c3b5d2ed9d409deabcc03fd3cb600854799",
+      "sha256:c1478e83f30d8e9a2ec71aa2f806aa6f6c6ec0b941b94897a37389e6aea64816",
+      "sha256:00f268de377524c0121514a735a2961b3af43fc759e7fe4f5af3ec751c25aca6",
+      "sha256:0525fb0eff101b51d0fe0de5d7c0109def0264eadadee48b25e22412346c6854",
+      "sha256:710de93d9eaa9c390d6c2f243f6d79c1693d219697ebda5c548d34d69fe134fb",
+      "sha256:c2be396d4334a93be94c44cb55b963fd219096baa0b3d3179c3f6666ee1fb77c",
+      "sha256:c608474063d5c46f2de7d223c28a68ad436d65a7630c03971b22ba0b6057ccea",
       "sha256:d45195ef084c473dbc94e87a2f944f4e89757ae385eea72a3a629591ed3a0aa9",
-      "sha256:9f3f3103b08d218667e8f30b49cb8283eb0f7b062bf4c697a506addce324b30b",
+      "sha256:e914df263b4c9480a47a72a37d71c87d0c6865f7985516f2de138cabbdb5ad6a",
+      "sha256:329d05fc9b9d054df62ce6b4b1c2adbf9de67e9df4070a7a73f8190be6cde98c",
       "sha256:e6bc71182a26b433add069e3b3a59ec9c0493355ff25e0a9bd530d5ef7c2e867",
       "sha256:58b8a6605fbac02fe392f3a125f0186390c67bbf0dbeecebc80d0c7ba9b6dcf1",
-      "sha256:d712f8f11191d7ebeb52e6057edab5e05818b1895727c621de9ac0099d30cfb1",
-      "sha256:e914df263b4c9480a47a72a37d71c87d0c6865f7985516f2de138cabbdb5ad6a",
       "sha256:2e4ed70178a167d119b4db364a088569d7d8b5ca5a828e10963d68aaa2279ba1",
+      "sha256:d712f8f11191d7ebeb52e6057edab5e05818b1895727c621de9ac0099d30cfb1",
+      "sha256:9f3f3103b08d218667e8f30b49cb8283eb0f7b062bf4c697a506addce324b30b",
       "sha256:7dcc10851a07964ab11b58f75f9c8e8c581fb098bf565690695399ae20d61b56",
       "sha256:405807446afe23dd64a8189c2371d8268ff6a9626b27f31d529fdd4a8b195426",
+      "sha256:2559d8adabf802dfedccf375b40964ba63644068b713e0a8b0152009d7ea22aa",
+      "sha256:913413ea36aa8e8c3f480a5756405bc48b7a4e52144c2e6d42f26c43525c4891",
+      "sha256:dff1d1d92478c71f76dd1f368009b0f29f837461fb06162aefb87b9243e0d8bd",
       "sha256:4fff5f867ba8faed87bbebf26e2564121aeb3865231bc813ec454d676381c90c",
       "sha256:9c08aec0c90c14157ce847c514be13b0437f75cb4d505b9eef20981fbaada5ce",
-      "sha256:913413ea36aa8e8c3f480a5756405bc48b7a4e52144c2e6d42f26c43525c4891",
-      "sha256:2559d8adabf802dfedccf375b40964ba63644068b713e0a8b0152009d7ea22aa",
       "sha256:2e260dd7c2040af8631341cea04fcb175329cbbf2bcf46158feefb9f652d0488",
       "sha256:149eed974e742678bf145e2e9f63dc93a185f81e6e9b311187223009bce18201",
-      "sha256:8f7fed73f4e20305835b9d01ea95260fe3e55e90fdebe2aa4f8c622b2e1f7993",
-      "sha256:dff1d1d92478c71f76dd1f368009b0f29f837461fb06162aefb87b9243e0d8bd",
-      "sha256:671f4cd307b29fdfdd6bb7ab8cc90a92d7b3f394f76066be53e4b756c1fba737",
       "sha256:b5492d28a511ec7232c06d9601b5d2f495bb4cf4601d54b4eccc1fab9181c54f",
       "sha256:c8ea0c2987fd3f73cb4ad4af2fd85c5c2dd17c23a1f4f73dbc00f47d10dbbf97",
+      "sha256:671f4cd307b29fdfdd6bb7ab8cc90a92d7b3f394f76066be53e4b756c1fba737",
+      "sha256:8f7fed73f4e20305835b9d01ea95260fe3e55e90fdebe2aa4f8c622b2e1f7993",
       "sha256:38ec5e0fa6e459406b3ca7cd04ae53563afb8f46399a398366291a3d5c305eab",
       "sha256:dbcd5a722b47e6d7e34b533eea57bd582bcc9a7c01f5f9ea9d0f123ee0a8f760",
       "sha256:3d5d923e4819d56f3c98075cbad2a0d0342631dff42d742c2779f2721ea3ed31",
-      "sha256:01a9fe630eb0a98541121b8fe7d909ca48e67e88299369a52afada56c7455dfe",
       "sha256:dae0dd3240336cb84c2a3f0a892fa4bb3323cdca1867f3f1ebeb9fa6f8e6ffbb",
+      "sha256:01a9fe630eb0a98541121b8fe7d909ca48e67e88299369a52afada56c7455dfe",
       "sha256:4e928711f2d3760e0a59772e10d494f60b63acababa7293d4e2c9c97fa516219",
       "sha256:7862b53c4cb30f75a4099b55f5eaaf542bc46588d4d6d12480a80a0d83adf55f",
       "sha256:50f1f1c9047797d8b938238150299af01ab1b7878e016bbf115f0fec34571fe9",
@@ -3761,20 +3869,23 @@
       "sha256:9227e10f6437c3fc26627aaef3524abf89252057d572e6a78dc2d9f00ecb7339",
       "sha256:968449ac4978810e537a4779fc773f131e4e302e39ab092d00ef14c3e26d14fd",
       "sha256:4b9c070ac4c21e6732e3918678986d663520071b7a216097b1a5a728fdd77b12",
+      "sha256:e0b2cd97bc4f0d3671f6d80b159da4f963e0b9909fa6c7e8aa36ba7e071b7c59",
+      "sha256:4bfcc7b4c5c227dfe19cc400687441b64f163b4061f04011d0aeedefd61ddf40",
       "sha256:766c8b54ba240e63654ae350c589df411a947e2f8ac5b258592df7137c1c962a",
-      "sha256:1b48c23f9bf06b4fb78066ff40c5a349e9bf259f1154938569bca77315d2401c",
-      "sha256:1bbe9d710724d92b9e528a476f5bec6a7a0dcccae76acee5e9b8c529086939c5",
-      "sha256:c68f564b29274806a99161488017e7aa087b0a5cfebb352474f16c0937ae1a1e",
-      "sha256:c473582a846b8c3f5370ea61a7f1cb29d0e0465daa9f32f1943c48270acc919c",
-      "sha256:de3bdd48851bf6463530ff47e9b3097cf05be45978f9dee9f365575b29ed0a69",
-      "sha256:e17736fe0ac676462650ee839059f421d1880bc70c59e1f27068ca3e9805c665",
+      "sha256:45ebaa51db24b39798f23de350db8ee7622e03f5ddd10e4f657ec6d8d906de39",
+      "sha256:53efbc63cc88ddab1f7f2070869162d30b54d1bf882ef1d49e2432bd2bff459f",
+      "sha256:625f5e620da8be04c258fdac8b924d88157b07730bc7dd54bed66fbc0d2a8899",
+      "sha256:9b683ea002e84ebb75d9a96773082531b73689875730b63c2f27febebea42655",
+      "sha256:5dcee01c538b0212916c580312a39230a6ee2f4b1c10e3ffb54bb07790cf28d1",
+      "sha256:e6bfd7064e051879e5c0f97f6ffd8ec9a1c74d0e6862731ec50bdcc8f4339165",
+      "sha256:73e3fa8fe831b42be3ac0c1b51a71abc4b94872c4fda80e0fdcb61fdfbdbc094",
       "sha256:dcbe8db3ca6ba6646235a0dd9246f7cc70477498a9a4c876240df214b16d8303",
       "sha256:0c4a65229af2c5cf2a9f92502a5cd31101c05535864790b6b9e73ac845f6095a",
       "sha256:d5f11cb7e759a2295799f67d2cfa8b0203dd27b75e4e091964b99589a7a06b0a",
       "sha256:1ccd394f321f93539dae04d9f493d0e3fce53725e06a90b0b824c87a0e382be8",
       "sha256:d2acbd72534f9acb14d52325d8a2122581b83d9bf3e684a9d5d266b25e6a32ca"
     ],
-    "dispositions_sha256": "sha256:66f4f6a42fd65eb5821098feff401d6183c43c4a0acef5e0080afe6e4923d92a",
+    "dispositions_sha256": "sha256:b84e6d6c44ba5f7c890d6fda9b50e77c9a31271b376c2e8f02a6392035e57900",
     "finding_hashes": [
       "sha256:c5f93317e093f669b17c5bded52bb823c254c966633fda98fd84fa2be53aadc1",
       "sha256:655254dc5b98ed3416d9a927fa0019ec7a1965e04f4aba53e0ed9b7d2021e821",
@@ -3807,47 +3918,47 @@
       "sha256:e16fb1aaab16375f15afbe6d64ef8a542a5d4eecca38ac44d7a6c718a2e95e7f",
       "sha256:8e968313ef1b890559759e9d55520fd491ad36719c90e8eb0919a50df7269a3c",
       "sha256:ca6057c8c23a8d50258aa055e5d7b08f0ae61a63a0596e8105e7ee505fe56550",
-      "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
       "sha256:3f403a648f3ddf4d59a0476d0e1642b8968c8a37a29211d129a0646f4d509100",
-      "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
-      "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
       "sha256:84063e82fd4d09012358fae3c1f653a7fad609c742d101b2917bb56ba32d9d5f",
       "sha256:c23242222001c9ba0b759381ffca2ec2748ad9de1fe11e2aaad5fb412202a819",
-      "sha256:b0656c51a1b63bc3d3ad9a57a1ebc9c3336e34c84f89f16d44d43e3db675bd26",
       "sha256:be8a12f09d9d6efb79f56349248b5f176abbbef0e105c6bcb271f62b2bae789b",
+      "sha256:fb6b18227d128eedabf05f6706f2b3e06b9eb28da5628df9efed8e2ae88b5a30",
+      "sha256:b0656c51a1b63bc3d3ad9a57a1ebc9c3336e34c84f89f16d44d43e3db675bd26",
+      "sha256:bd7077ef527c88076633a5fb66868c6cd7d31edc85c1b5bb7cc49977eb7a30e2",
       "sha256:06c93f036477dfdf7de102dc3e0bd4b6c3a19b858b21895a6e8db5dbe954b92f",
-      "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
-      "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
-      "sha256:48282bf769579b8e6cd08c1d9044c82dbbf4598920225d68165c7ab1f29120c0",
-      "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
-      "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
-      "sha256:e4b3495398a4babe29d4fd3104a977e696c6e2038031cf8619debde285fa4dde",
       "sha256:262ddcec1d115aa4ff9e0699670175a7f6659f684b2d6691cb2bcad6ba25de3e",
+      "sha256:48282bf769579b8e6cd08c1d9044c82dbbf4598920225d68165c7ab1f29120c0",
+      "sha256:180577028d418bbe897168328eea068466b6d9fd2df3ef9b6fed77be9c509d3e",
+      "sha256:d385cac778bb60fab8d1a0043cb806f4e20eb86f7bf8df1d2b26bbc5ba1bc4df",
+      "sha256:fbf31e9a18f00e024d6efa5ed10316fe2fde594e99bcd7f87efc8bad0f7be64b",
+      "sha256:e4b3495398a4babe29d4fd3104a977e696c6e2038031cf8619debde285fa4dde",
+      "sha256:3cce02bbf2d71ede1c45ccd7b1679c40f030d72308acde100761af86ba998e6c",
       "sha256:ab6e91fd67c6898c4304bc6192c8a09932ab5ca354387390490dc30562d9b3bf",
-      "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
+      "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
+      "sha256:d8d330fe7f6a33278d385a5156ea4de57c3b20a14db25e7150d46eba74537382",
       "sha256:7fb2af84f123733d8bbbcce978abfa800540146e45c1e9d86cbd37e184eda42e",
       "sha256:a27c80e23131a3e41a66adfe27077dfcfa4c9eb4306ecf72a6c11e9ba318bf38",
-      "sha256:e8c9a94ec3941e1f7b7794ad1b7b86d92fa67c72e31b359b1bd51634a6d3a8d3",
-      "sha256:22f1af4c82b72c82ff58b91f4adcf3036e84a4a614d2a555dd8e6d5f84741140",
       "sha256:d2d349b939d5766cef35517c846358d85db4b9c0822a3a8ba51a74205d20c6d5",
+      "sha256:e8c9a94ec3941e1f7b7794ad1b7b86d92fa67c72e31b359b1bd51634a6d3a8d3",
+      "sha256:39284589ce2f81e18c8336c0ab7452023816cc273cb10f76dae3ec5e91af03b8",
       "sha256:4aa03d5f2e7f8945c2d8836680a9636abd0b5de18432b361f79f6433c8dae6c2",
       "sha256:a910ef2a144e719ca95efe1712c51bf4df21080877c2c1e7bedc4da5d0ddf2e9",
+      "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
+      "sha256:870a904b0fa10ce9613c50421a7d14d5992d946e0f395d33b8d0954c47a328ec",
+      "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
       "sha256:d47817d4839baac2fb57125f64e495bbbcd12220b5b329e0dbfb99cbccbe4371",
       "sha256:252c9b3bb8783788f52da8def22bdc8f936a8f865a225449dd87388c65fa335e",
-      "sha256:870a904b0fa10ce9613c50421a7d14d5992d946e0f395d33b8d0954c47a328ec",
-      "sha256:aa7ba3eae82002b3ab3956431112d4fe455a935a431224b344554b2a178bd6ea",
       "sha256:6303c93692c0fefebb7c99b3d24a985c8d0bab315ee89cffb48074b8d979b80f",
       "sha256:f8d2f64df9921de9f0c4e4b1a671c9890a955a85b006ef07d1693ca18e9962c9",
-      "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
-      "sha256:cf1e0e3b26edc8901f3e657a345fb07ebc40480b537835db8143069ded673d62",
-      "sha256:658e9ae0d42e0a2f3abf24755489cc583724caedb4ddb1e90140f6a6aa70e9a3",
       "sha256:92461277d3501a67a955cc61efe8b54907cd9a5b3241aff66025ad3d824c4ddf",
       "sha256:e374990fa44d06c397168f50f222b930cf3ff9c294289dfee11cb958622c65d4",
+      "sha256:658e9ae0d42e0a2f3abf24755489cc583724caedb4ddb1e90140f6a6aa70e9a3",
+      "sha256:4976cf1f4a95bf64e9fc3d0e0ccf5c3eebd0acf462a44760caf4900cd4a47714",
       "sha256:7cf7d7e74843531c1a41dd0085e3a4c545442971698f0ea8177d8392c96db83b",
       "sha256:3d1f20a4dfabea9291f175e6644564f2ea4566cea140cd409d7d4abc1e9392a2",
       "sha256:3b89afa1657138708cbcd087e6ec17e60d8cd5e08723891d0e29c9c8b1433f67",
-      "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
       "sha256:4b5a7e49d89afeec5b8f6df3264177eee63f508b58ac5a3abced0864348bcda0",
+      "sha256:cef80b5afb31a0eb5509553dfefe8d12cb5655381af89f91399128979151fd5c",
       "sha256:a62419eb9a638074887d696511a195a90ae0be2ffc51df7a08d2645d8e71b644",
       "sha256:2e2e1cdc6e0a8f306c843c530ea88d31c81e19e86a5a6db98ac0970bda8eea50",
       "sha256:4cbb8fb6944db105060aa892670dcc4a3b3d5879b978476f6efb081743324d05",
@@ -3864,20 +3975,23 @@
       "sha256:263df80130c7d28e9d31f654cbca75cff58399252ae8bc811b765e88de2a5868",
       "sha256:de13e72b93e3ec134a3643920f1163c7717319589634992a575a6840d826564a",
       "sha256:1fada23ebf0e8c6eb93e865f52f7097c99d8cf2ee0c82ac7a84ebf83be771c8d",
+      "sha256:92f6867f1f0e5e10a6dbf382f2e208bf40a65157e64b6cd2857dcf8942812b56",
+      "sha256:fd3e5e70bfc4275aee3fcc309cf3763f88c3719618533a2500c11c7965c560a4",
       "sha256:8892864cb3b55080294d3ddd5da10a1ff78095b91380273575c2ba60be609084",
-      "sha256:6c3611f78be9d8555cf1da8fed21ae69b352181957de621024cc78486de4306b",
-      "sha256:ca1653826f084c431cba30556e4f075a9834a969939d33c6af2f7fb53b555323",
-      "sha256:39dfab2515faccad273568ba34a0d0b7066c452b1dba83bad8cc4088c89b5359",
-      "sha256:024e643d045ea685b9c70b431ac33c2cf26b95159daf7445f8d5b1abd70ae22e",
-      "sha256:09d305f31b53ecb63210f1ea8b6fad852d8488203e894c18f75d489eac19f0f3",
-      "sha256:dbf1f09303039af7727fd36b0bb3b8c44e6061e931b9416ec5b6548fbff9a04b",
+      "sha256:337a66e838f225e99ce1a64200d9164759d76ac43f31a1859d3ce75cad17a625",
+      "sha256:0adc6bd54b198b8bfd9c04735fb920d2316b67de886a348627cb4ed18148cdf8",
+      "sha256:aa1bf2bcd08ae7b0a9472b2b956a57f52dbe9d67f9213446334cf2762637c71f",
+      "sha256:464ac9ed52d173e9e9d22cef05c52a520e3a2d56f1f42f5fafbd24e0d34f63d8",
+      "sha256:18dc425def1a7d4918e7b180df68dfa9deba26e531f244488cb82a34ff6ace06",
+      "sha256:58296e3234a9de67d05dcc3329c95a3d5efec7be8143256cae10abd4116167a7",
+      "sha256:7a8ae459068d523ffbc1368df3561b2aaf0ea5a8e1cba817066fccbb6cc3ef94",
       "sha256:d5e57ff17c00e12115f8f9529f4a975f3ed511e1dd84411ca92d09323a1d8111",
       "sha256:7dbbbb4d484772176887583bcfaaece9be6f2948e71b42c099e1c984a460783a",
       "sha256:3ff2f6c1cb1ee6b45f709cd77b221c343b2719052fa458672204a9983c15a2e3",
       "sha256:c0480a93e4a7bc58d75b0a5620fe109549ba9d7eb926d5661279c1f4a607b3ce",
       "sha256:73b153551d6ce6da055179723512440e5cbbfe81b6319aafdaf899f392d8744f"
     ],
-    "findings_sha256": "sha256:73ba24532a5e4fcc96ed777a8965b6370fa9dad969878fba2a55ad26fb49456c"
+    "findings_sha256": "sha256:1e2e88ed979e6e1c83e67127e66841e4f1b61ae0e14ad43de5e438d9154515e0"
   },
   "scan_tool": {
     "gitleaks": {
@@ -3891,20 +4005,20 @@
           "detect",
           "--no-git",
           "--source",
-          "/tmp/tau-share-security-gate-wzii9vww/source",
+          "/tmp/tau-share-security-gate-krm2toig/source",
           "--report-format",
           "json",
           "--report-path",
-          "/tmp/tau-gitleaks-report-hgljc2a5/gitleaks.json",
+          "/tmp/tau-gitleaks-report-rmayyisg/gitleaks.json",
           "--redact=90",
           "--log-level",
           "error",
           "--config",
-          "/tmp/tau-share-security-gate-wzii9vww/source/.gitleaks.toml"
+          "/tmp/tau-share-security-gate-krm2toig/source/.gitleaks.toml"
         ],
         "exit_code": 1,
-        "finding_count": 86,
-        "report_sha256": "sha256:3e86d404380d78928de653c2967da639d2dd43ade499896ecc07bbf2da60db6a",
+        "finding_count": 89,
+        "report_sha256": "sha256:546024a1bb7e8ba042186b065c64ca4f77a78e0fe62d6d3ce1b6850b51dce2e9",
         "stderr": "\u25cb\n    \u2502\u2572\n    \u2502 \u25cb\n    \u25cb \u2591\n    \u2591    gitleaks",
         "stdout": ""
       },
@@ -3918,12 +4032,12 @@
         "stdout": "8.21.2"
       }
     },
-    "project_state_input": "/tmp/tau-share-security-gate-wzii9vww/source/docs/status/PROJECT_STATE.raw.json",
+    "project_state_input": "/tmp/tau-share-security-gate-krm2toig/source/docs/status/PROJECT_STATE.raw.json",
     "runtime_path_scan": "tau_coding.security_audit_conformance.evaluate_developer_share_security_tree"
   },
   "schema": "tau.developer_share_security_gate.v1",
   "share_readiness": "READY",
-  "source_commit": "9823e446bbe4b3de2735de7b74fc41c64b97e21a",
+  "source_commit": "c3ddce35f76607d97b02651733888c324db75c53",
   "status": "PASS",
   "unresolved_blockers": [],
   "what_was_checked": [
