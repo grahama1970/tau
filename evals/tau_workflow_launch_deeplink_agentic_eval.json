@@ -1,0 +1,120 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Tau issue #350 workflow launch run-id, progress deep link, useful-result link, and actionable preflight proof",
+  "claims": {
+    "proves": "Tau's public workflow launch path returns a run ID bound to authoritative run state, surfaces a progress-view deep link without repository archaeology, links completion to the useful results artifact, and reports a missing goal as an actionable blocker.",
+    "does_not_prove": "All five workflows, provider/model quality, or browser rendering of the viewer."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.workflow_launch_deeplink_result",
+      "description": "Workflow launch output exposes run identity, progress-view deep link, useful-result location, and actionable missing-prerequisite failure.",
+      "criticality": "critical",
+      "claim_semantics": "protocol",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "repository-readiness-launch-deeplink-result-link",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.workflow_launch_deeplink_result"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-workflow-launch-deeplink.py --out local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/launch/receipt/schema",
+            "equals": "tau.workflow_run_receipt.v1"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/launch/receipt/workflow_id",
+            "equals": "repository-readiness"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/launch/receipt/result_artifact/schema",
+            "equals": "tau.repository_readiness_report.v1"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json",
+            "json_pointer": "/errors",
+            "equals": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "tampered-result-link-is-detected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.workflow_launch_deeplink_result"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-workflow-launch-deeplink.py --adversarial --out local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json",
+            "json_pointer": "/adversarial/detected_error",
+            "equals": "useful_result_link_missing"
+          },
+          {
+            "path": "../local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json",
+            "json_pointer": "/errors",
+            "equals": []
+          }
+        ]
+      }
+    }
+  ]
+}

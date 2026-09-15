@@ -1,0 +1,149 @@
+{
+  "adversarial": null,
+  "created_at": "2026-09-15T18:52:21Z",
+  "errors": [],
+  "launch": {
+    "receipt": {
+      "cost_accounting": {
+        "budget": {
+          "state": "NOT_CONFIGURED"
+        },
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "goal": {
+        "completion_criteria": [
+          "Inspect the exact requested Git repository without mutation.",
+          "Apply the requested clean-worktree policy.",
+          "Publish a repository-readiness report only after validation passes."
+        ],
+        "goal_hash": "sha256:1aa0fe8d9deca81d3b4d4f2cba0c60a2a2555dc5d9fc04047379eb4686192f20",
+        "goal_id": "repository-readiness:95f896fda4d2",
+        "goal_version": 1,
+        "summary": "Prove issue 350 launch links without repository archaeology."
+      },
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "progress_view": {
+        "command": [
+          "tau",
+          "dag-view",
+          "--run-dir",
+          "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run"
+        ],
+        "url": "http://127.0.0.1:45237/"
+      },
+      "proof_scope": {
+        "does_not_prove": [
+          "The repository test suite passes.",
+          "Provider or model quality.",
+          "Production deployment readiness."
+        ],
+        "proves": [
+          "Tau executed the packaged repository-readiness workflow.",
+          "The requested repository inputs and goal are bound into the materialized DAG."
+        ]
+      },
+      "provider_live": false,
+      "result": {
+        "goal": {
+          "goal_hash": "sha256:1aa0fe8d9deca81d3b4d4f2cba0c60a2a2555dc5d9fc04047379eb4686192f20",
+          "goal_id": "repository-readiness:95f896fda4d2",
+          "goal_version": 1,
+          "summary": "Prove issue 350 launch links without repository archaeology."
+        },
+        "policy": {
+          "require_clean": false,
+          "validation": "PASS"
+        },
+        "proof_scope": {
+          "does_not_prove": [
+            "The repository test suite passes.",
+            "The implementation goal is semantically correct.",
+            "Provider or model quality.",
+            "Production deployment readiness."
+          ],
+          "proves": [
+            "The named repository was inspected with fixed read-only Git commands.",
+            "The requested clean-worktree policy passed."
+          ]
+        },
+        "repository": {
+          "branch": "master",
+          "dirty": false,
+          "head_sha": "1c1940b85f392b3d1754c6f8477e4108fbebb088",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/fixture-repo"
+        },
+        "schema": "tau.repository_readiness_report.v1",
+        "status": "READY",
+        "summary": "Repository is ready for focused work."
+      },
+      "result_artifact": {
+        "media_type": "application/json",
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/results/repository-readiness.json",
+        "schema": "tau.repository_readiness_report.v1"
+      },
+      "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run",
+      "run_id": "repository-readiness-95f896fda4d2",
+      "run_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/run-receipt.json",
+      "schema": "tau.workflow_run_receipt.v1",
+      "source_dag_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/workflow/dag.json",
+      "status": "PASS",
+      "viewer": {
+        "command": [
+          "tau",
+          "dag-view",
+          "--run-dir",
+          "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run"
+        ],
+        "url": "http://127.0.0.1:45237/"
+      },
+      "workflow_id": "repository-readiness",
+      "workflow_version": 1
+    },
+    "returncode": 0,
+    "stderr_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/launch.stderr",
+    "stdout_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/launch.stdout"
+  },
+  "live": true,
+  "mocked": false,
+  "negative": {
+    "missing_goal_returncode": 2,
+    "stderr_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/missing-goal.stderr",
+    "stdout_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/missing-goal.stdout"
+  },
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "All five workflows completed in this focused eval.",
+      "Provider/model quality.",
+      "Browser rendering of the viewer."
+    ],
+    "proves": [
+      "The public tau workflows run command returns a run_id bound to current-state.json and workflow/dag.json.",
+      "The launch prints a progress-view URL and returns a durable tau dag-view command.",
+      "The completion receipt links to the useful result under results/, not only receipts.",
+      "A missing goal fails closed with a specific actionable blocker."
+    ]
+  },
+  "provider_live": false,
+  "readback": {
+    "current_state_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/current-state.json",
+    "result_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/results/repository-readiness.json",
+    "run_id": "repository-readiness-95f896fda4d2",
+    "workflow_dag_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work/repository-readiness-run/workflow/dag.json",
+    "workflow_id": "repository-readiness"
+  },
+  "schema": "tau.workflow_launch_deeplink_eval.v1",
+  "source_repo": "/home/graham/workspace/experiments/tau",
+  "status": "PASS",
+  "work_root": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof-work"
+}

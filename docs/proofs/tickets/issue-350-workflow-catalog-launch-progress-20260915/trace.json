@@ -1,0 +1,825 @@
+{
+  "boundaries": {
+    "live": true,
+    "live_components": [
+      "tau workflows list/describe/run CLI against real local Git checkouts",
+      "scheduler execution of all 23 template nodes across the five rungs",
+      "loopback HTTP viewer (tau dag-view) read via curl during each hold window",
+      "SQLite journal, receipts, and results written under each run-dir"
+    ],
+    "mocked": false,
+    "mocked_components": [],
+    "not_exercised": [
+      "provider/model calls inside workflow nodes (the five packaged workflows are provider-free by design)",
+      "browser UI desktop/mobile navigation screenshots (owned by the viewer live-state tickets; API-level deep-link resolution is proven here)",
+      "post-approval resume paths for rungs 4 and 5 (runs stop at the documented approval gate with verdict APPROVAL_REQUIRED)"
+    ],
+    "provider_live": false
+  },
+  "deterministic_suite": {
+    "command": [
+      "uv",
+      "run",
+      "pytest",
+      "tests/test_workflow_catalog.py",
+      "tests/test_workflow_cli.py",
+      "--tau-suite=all",
+      "-q"
+    ],
+    "result": "10 passed in 28.46s"
+  },
+  "provenance": {
+    "clean_clone": "/tmp/tau-350-clean",
+    "clean_clone_head": "f9ff1158d0fd4b9816252cec09b4c8bcc72f581e",
+    "clean_clone_status": "clean (git status --porcelain empty)",
+    "clone_method": "git clone --depth 1 https://github.com/grahama1970/tau /tmp/tau-350-clean",
+    "install_method": "uv sync in the clean clone; every command is `uv run tau` from the clone root",
+    "origin_main_commit": "f9ff1158d0fd4b9816252cec09b4c8bcc72f581e",
+    "prior_repository_knowledge_used_for_launch_inputs": "none beyond docs/canonical-dag-launch.md and CLI --help output",
+    "repo": "grahama1970/tau"
+  },
+  "schema": "tau.issue350.workflow_launch_trace.v1",
+  "step1_discover": {
+    "assertion": "exactly five entries; workflow ids and rung order equal the catalog readback from tau_coding.workflows.catalog",
+    "command": [
+      "uv",
+      "run",
+      "tau",
+      "workflows",
+      "list"
+    ],
+    "json_ids": [
+      "repository-readiness",
+      "tau-operator-reference",
+      "repository-evidence-map",
+      "approved-release-bundle",
+      "durable-repository-qualification"
+    ],
+    "json_rungs": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "readback_schema": "tau.workflow_catalog.v1",
+    "text_output": "rung 1\trepository-readiness\tLINEAR\tRepository Readiness\nrung 2\ttau-operator-reference\tMULTI_STEP_SEQUENTIAL\tTau Operator Reference\nrung 3\trepository-evidence-map\tFAN_OUT_FAN_IN\tRepository Evidence Map\nrung 4\tapproved-release-bundle\tMIXED_RETRY_APPROVAL\tApproved Release Bundle\nrung 5\tdurable-repository-qualification\tDURABLE_MIXED_REPAIR_APPROVAL\tDurable Repository Qualification"
+  },
+  "step2_describe": {
+    "assertion": "describe output equals the authoritative registry descriptor (id/version/rung/title/topology/result_node_id) and template node counts equal ladder-manifest node_count",
+    "comparisons": [
+      {
+        "command": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "describe",
+          "repository-readiness",
+          "--json"
+        ],
+        "describe_identity": {
+          "input_schema": "tau.repository_readiness_request.v1",
+          "result_node_id": "publish-readiness",
+          "result_schema": "tau.repository_readiness_report.v1",
+          "rung": 1,
+          "title": "Repository Readiness",
+          "topology": "LINEAR",
+          "workflow_id": "repository-readiness",
+          "workflow_version": 1
+        },
+        "match": true,
+        "registry_source": "src/tau_coding/workflows/definitions/repository-readiness.json",
+        "template_node_count": 3
+      },
+      {
+        "command": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "describe",
+          "tau-operator-reference",
+          "--json"
+        ],
+        "describe_identity": {
+          "input_schema": "tau.operator_reference_request.v1",
+          "result_node_id": "validate-operator-reference",
+          "result_schema": "tau.operator_reference.v1",
+          "rung": 2,
+          "title": "Tau Operator Reference",
+          "topology": "MULTI_STEP_SEQUENTIAL",
+          "workflow_id": "tau-operator-reference",
+          "workflow_version": 1
+        },
+        "match": true,
+        "registry_source": "src/tau_coding/workflows/definitions/tau-operator-reference.json",
+        "template_node_count": 4
+      },
+      {
+        "command": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "describe",
+          "repository-evidence-map",
+          "--json"
+        ],
+        "describe_identity": {
+          "input_schema": "tau.repository_evidence_map_request.v1",
+          "result_node_id": "publish-evidence-map",
+          "result_schema": "tau.repository_evidence_map.v1",
+          "rung": 3,
+          "title": "Repository Evidence Map",
+          "topology": "FAN_OUT_FAN_IN",
+          "workflow_id": "repository-evidence-map",
+          "workflow_version": 1
+        },
+        "match": true,
+        "registry_source": "src/tau_coding/workflows/definitions/repository-evidence-map.json",
+        "template_node_count": 5
+      },
+      {
+        "command": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "describe",
+          "approved-release-bundle",
+          "--json"
+        ],
+        "describe_identity": {
+          "input_schema": "tau.approved_release_request.v1",
+          "result_node_id": "finalize-approved-release",
+          "result_schema": "tau.approved_release_bundle.v1",
+          "rung": 4,
+          "title": "Approved Release Bundle",
+          "topology": "MIXED_RETRY_APPROVAL",
+          "workflow_id": "approved-release-bundle",
+          "workflow_version": 1
+        },
+        "match": true,
+        "registry_source": "src/tau_coding/workflows/definitions/approved-release-bundle.json",
+        "template_node_count": 7
+      },
+      {
+        "command": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "describe",
+          "durable-repository-qualification",
+          "--json"
+        ],
+        "describe_identity": {
+          "input_schema": "tau.durable_repository_qualification_request.v1",
+          "result_node_id": "finalize-qualification",
+          "result_schema": "tau.durable_repository_qualification.v1",
+          "rung": 5,
+          "title": "Durable Repository Qualification",
+          "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+          "workflow_id": "durable-repository-qualification",
+          "workflow_version": 1
+        },
+        "match": true,
+        "registry_source": "src/tau_coding/workflows/definitions/durable-repository-qualification.json",
+        "template_node_count": 7
+      }
+    ],
+    "node_count_source": "docs/canonical-workflows.md canonical ladder table (3/4/5/7/7), verified against materialized template placeholders",
+    "registry_sources": [
+      "src/tau_coding/workflows/definitions/*.json",
+      "src/tau_coding/workflows/definitions/ladder-manifest.json",
+      "src/tau_coding/workflows/templates/*.json"
+    ]
+  },
+  "step3_launch": {
+    "assertion": "all five launched through the one documented control; launch output printed run_id, run_dir and progress_view immediately; final tau.workflow_run_receipt.v1 receipt carries matching identity and progress_view.command",
+    "control": "uv run tau workflows run <workflow-id> --repo <repo> --run-dir <run-dir> [inputs] --open-viewer --no-browser-open --viewer-hold-seconds <seconds>",
+    "launches": [
+      {
+        "json_edits": "none (all inputs are CLI options per docs/canonical-dag-launch.md)",
+        "launch_argv": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "run",
+          "repository-readiness",
+          "--repo",
+          "/tmp/tau-350-clean",
+          "--goal",
+          "Determine whether this checkout is ready for focused work.",
+          "--require-clean",
+          "--run-dir",
+          "/tmp/tau350-proof/runs/r1-repository-readiness",
+          "--open-viewer",
+          "--no-browser-open",
+          "--viewer-hold-seconds",
+          "150"
+        ],
+        "launch_receipt": {
+          "goal": {
+            "completion_criteria": [
+              "Inspect the exact requested Git repository without mutation.",
+              "Apply the requested clean-worktree policy.",
+              "Publish a repository-readiness report only after validation passes."
+            ],
+            "goal_hash": "sha256:e9e0e2c56102113e302257fc7b65956a2418b6dd8e1a6df034a29302ca84a385",
+            "goal_id": "repository-readiness:7d0ddc00e604",
+            "goal_version": 1,
+            "summary": "Determine whether this checkout is ready for focused work."
+          },
+          "live": true,
+          "mocked": false,
+          "progress_view": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r1-repository-readiness"
+            ],
+            "url": "http://127.0.0.1:44499/"
+          },
+          "provider_live": false,
+          "result_artifact": {
+            "media_type": "application/json",
+            "path": "/tmp/tau350-proof/runs/r1-repository-readiness/results/repository-readiness.json",
+            "schema": "tau.repository_readiness_report.v1"
+          },
+          "result_keys": [
+            "goal",
+            "policy",
+            "proof_scope",
+            "repository",
+            "schema",
+            "status",
+            "summary"
+          ],
+          "run_dir": "/tmp/tau350-proof/runs/r1-repository-readiness",
+          "run_id": "repository-readiness-7d0ddc00e604",
+          "run_receipt_path": "/tmp/tau350-proof/runs/r1-repository-readiness/run-receipt.json",
+          "schema": "tau.workflow_run_receipt.v1",
+          "source_dag_path": "/tmp/tau350-proof/runs/r1-repository-readiness/workflow/dag.json",
+          "status": "PASS",
+          "viewer": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r1-repository-readiness"
+            ],
+            "url": "http://127.0.0.1:44499/"
+          },
+          "workflow_id": "repository-readiness",
+          "workflow_version": 1
+        },
+        "launch_stdout_identity_lines": {
+          "progress_view": "http://127.0.0.1:44499/",
+          "run_dir": "/tmp/tau350-proof/runs/r1-repository-readiness",
+          "run_id": "repository-readiness-7d0ddc00e604"
+        },
+        "open_progress": {
+          "assertion": "run_id identical across launch stdout, viewer /api/v1/manifest, viewer /api/v1/state, <run-dir>/current-state.json and <run-dir>/workflow/dag.json; workflow id/version/topology and goal summary/goal_hash identical between viewer manifest and the materialized authoritative DAG",
+          "manifest_goal_hash": "sha256:e9e0e2c56102113e302257fc7b65956a2418b6dd8e1a6df034a29302ca84a385",
+          "manifest_goal_summary": "Determine whether this checkout is ready for focused work.",
+          "manifest_run_id": "repository-readiness-7d0ddc00e604",
+          "manifest_workflow": {
+            "result_node_id": "publish-readiness",
+            "result_schema": "tau.repository_readiness_report.v1",
+            "schema": "tau.workflow_metadata.v1",
+            "summary": "Inspect, validate, and publish repository readiness.",
+            "title": "Repository Readiness",
+            "topology": "LINEAR",
+            "workflow_id": "repository-readiness",
+            "workflow_version": 1
+          },
+          "progress_view_url": "http://127.0.0.1:44499/",
+          "resolve_commands": [
+            "curl -s http://127.0.0.1:44499/api/v1/manifest",
+            "curl -s http://127.0.0.1:44499/api/v1/state"
+          ],
+          "resolved": true
+        },
+        "run_receipt_mocked_live": {
+          "live": true,
+          "mocked": false,
+          "provider_live": false
+        },
+        "run_receipt_verdict": "PASS",
+        "rung": 1,
+        "useful_result_files_under_results": [
+          "repository-readiness.json",
+          "repository-readiness.md"
+        ],
+        "workflow_id": "repository-readiness"
+      },
+      {
+        "json_edits": "none (all inputs are CLI options per docs/canonical-dag-launch.md)",
+        "launch_argv": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "run",
+          "tau-operator-reference",
+          "--repo",
+          "/tmp/tau-350-clean",
+          "--required-workflow",
+          "tau-operator-reference",
+          "--run-dir",
+          "/tmp/tau350-proof/runs/r2-tau-operator-reference",
+          "--open-viewer",
+          "--no-browser-open",
+          "--viewer-hold-seconds",
+          "150"
+        ],
+        "launch_receipt": {
+          "goal": {
+            "completion_criteria": [
+              "Expose tau-operator-reference through the packaged workflow catalog.",
+              "Execute the four locked operator-reference nodes sequentially at concurrency one.",
+              "Read only the fixed Tau source set from the requested local repository.",
+              "Capture actual local executable output for the fixed versioned public CLI probes.",
+              "Keep composed JSON and Markdown drafts under intermediate.",
+              "Publish JSON and Markdown results only after independent validator recomputation.",
+              "Block validation with required_workflow_missing when the required workflow is absent.",
+              "Carry the full immutable goal hash and accepted_output in every node receipt."
+            ],
+            "goal_hash": "sha256:177927ed9b7fabe84208d492ca716b64be92a219f045b1e8911addee081eb684",
+            "goal_id": "tau-canonical-workflow-slice-02",
+            "goal_version": 1,
+            "summary": "Generate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence."
+          },
+          "live": true,
+          "mocked": false,
+          "progress_view": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r2-tau-operator-reference"
+            ],
+            "url": "http://127.0.0.1:32951/"
+          },
+          "provider_live": false,
+          "result_artifact": {
+            "media_type": "application/json",
+            "path": "/tmp/tau350-proof/runs/r2-tau-operator-reference/results/tau-operator-reference.json",
+            "schema": "tau.operator_reference.v1"
+          },
+          "result_keys": [
+            "cli_evidence",
+            "goal",
+            "proof_boundary",
+            "required_workflow",
+            "schema",
+            "source_evidence",
+            "status",
+            "summary"
+          ],
+          "run_dir": "/tmp/tau350-proof/runs/r2-tau-operator-reference",
+          "run_id": "tau-operator-reference-19fb46c220ed",
+          "run_receipt_path": "/tmp/tau350-proof/runs/r2-tau-operator-reference/run-receipt.json",
+          "schema": "tau.workflow_run_receipt.v1",
+          "source_dag_path": "/tmp/tau350-proof/runs/r2-tau-operator-reference/workflow/dag.json",
+          "status": "PASS",
+          "viewer": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r2-tau-operator-reference"
+            ],
+            "url": "http://127.0.0.1:32951/"
+          },
+          "workflow_id": "tau-operator-reference",
+          "workflow_version": 1
+        },
+        "launch_stdout_identity_lines": {
+          "progress_view": "http://127.0.0.1:32951/",
+          "run_dir": "/tmp/tau350-proof/runs/r2-tau-operator-reference",
+          "run_id": "tau-operator-reference-19fb46c220ed"
+        },
+        "open_progress": {
+          "assertion": "run_id identical across launch stdout, viewer /api/v1/manifest, viewer /api/v1/state, <run-dir>/current-state.json and <run-dir>/workflow/dag.json; workflow id/version/topology and goal summary/goal_hash identical between viewer manifest and the materialized authoritative DAG",
+          "manifest_goal_hash": "sha256:177927ed9b7fabe84208d492ca716b64be92a219f045b1e8911addee081eb684",
+          "manifest_goal_summary": "Generate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+          "manifest_run_id": "tau-operator-reference-19fb46c220ed",
+          "manifest_workflow": {
+            "result_node_id": "validate-operator-reference",
+            "result_schema": "tau.operator_reference.v1",
+            "schema": "tau.workflow_metadata.v1",
+            "summary": "Build a validated Tau operator reference from fixed local repository sources and versioned public CLI probes.",
+            "title": "Tau Operator Reference",
+            "topology": "MULTI_STEP_SEQUENTIAL",
+            "workflow_id": "tau-operator-reference",
+            "workflow_version": 1
+          },
+          "progress_view_url": "http://127.0.0.1:32951/",
+          "resolve_commands": [
+            "curl -s http://127.0.0.1:32951/api/v1/manifest",
+            "curl -s http://127.0.0.1:32951/api/v1/state"
+          ],
+          "resolved": true
+        },
+        "run_receipt_mocked_live": {
+          "live": true,
+          "mocked": false,
+          "provider_live": false
+        },
+        "run_receipt_verdict": "PASS",
+        "rung": 2,
+        "useful_result_files_under_results": [
+          "tau-operator-reference.json",
+          "tau-operator-reference.md"
+        ],
+        "workflow_id": "tau-operator-reference"
+      },
+      {
+        "json_edits": "none (all inputs are CLI options per docs/canonical-dag-launch.md)",
+        "launch_argv": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "run",
+          "repository-evidence-map",
+          "--repo",
+          "/tmp/tau-350-clean",
+          "--goal",
+          "Map this repository for focused work.",
+          "--require-tests",
+          "--run-dir",
+          "/tmp/tau350-proof/runs/r3-repository-evidence-map",
+          "--open-viewer",
+          "--no-browser-open",
+          "--viewer-hold-seconds",
+          "150"
+        ],
+        "launch_receipt": {
+          "goal": {
+            "completion_criteria": [
+              "Inventory the exact requested Git repository without mutation.",
+              "Analyze documentation, tests, and package metadata concurrently.",
+              "Publish a repository evidence map only after every required branch is accepted."
+            ],
+            "goal_hash": "sha256:266ee7eccaaf84f70fe0f7f93db01a8eff54db8d2b00998428d414e7830052e8",
+            "goal_id": "repository-evidence-map:300023a18bdb",
+            "goal_version": 1,
+            "summary": "Map this repository for focused work."
+          },
+          "live": true,
+          "mocked": false,
+          "progress_view": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r3-repository-evidence-map"
+            ],
+            "url": "http://127.0.0.1:45615/"
+          },
+          "provider_live": false,
+          "result_artifact": {
+            "media_type": "application/json",
+            "path": "/tmp/tau350-proof/runs/r3-repository-evidence-map/results/repository-evidence-map.json",
+            "schema": "tau.repository_evidence_map.v1"
+          },
+          "result_keys": [
+            "documentation",
+            "goal",
+            "package",
+            "proof_scope",
+            "repository",
+            "schema",
+            "status",
+            "summary",
+            "tests"
+          ],
+          "run_dir": "/tmp/tau350-proof/runs/r3-repository-evidence-map",
+          "run_id": "repository-evidence-map-300023a18bdb",
+          "run_receipt_path": "/tmp/tau350-proof/runs/r3-repository-evidence-map/run-receipt.json",
+          "schema": "tau.workflow_run_receipt.v1",
+          "source_dag_path": "/tmp/tau350-proof/runs/r3-repository-evidence-map/workflow/dag.json",
+          "status": "PASS",
+          "viewer": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r3-repository-evidence-map"
+            ],
+            "url": "http://127.0.0.1:45615/"
+          },
+          "workflow_id": "repository-evidence-map",
+          "workflow_version": 1
+        },
+        "launch_stdout_identity_lines": {
+          "progress_view": "http://127.0.0.1:45615/",
+          "run_dir": "/tmp/tau350-proof/runs/r3-repository-evidence-map",
+          "run_id": "repository-evidence-map-300023a18bdb"
+        },
+        "open_progress": {
+          "assertion": "run_id identical across launch stdout, viewer /api/v1/manifest, viewer /api/v1/state, <run-dir>/current-state.json and <run-dir>/workflow/dag.json; workflow id/version/topology and goal summary/goal_hash identical between viewer manifest and the materialized authoritative DAG",
+          "manifest_goal_hash": "sha256:266ee7eccaaf84f70fe0f7f93db01a8eff54db8d2b00998428d414e7830052e8",
+          "manifest_goal_summary": "Map this repository for focused work.",
+          "manifest_run_id": "repository-evidence-map-300023a18bdb",
+          "manifest_workflow": {
+            "result_node_id": "publish-evidence-map",
+            "result_schema": "tau.repository_evidence_map.v1",
+            "schema": "tau.workflow_metadata.v1",
+            "summary": "Inventory a local Git checkout, analyze documentation, tests, and package metadata concurrently, and publish a validated evidence map.",
+            "title": "Repository Evidence Map",
+            "topology": "FAN_OUT_FAN_IN",
+            "workflow_id": "repository-evidence-map",
+            "workflow_version": 1
+          },
+          "progress_view_url": "http://127.0.0.1:45615/",
+          "resolve_commands": [
+            "curl -s http://127.0.0.1:45615/api/v1/manifest",
+            "curl -s http://127.0.0.1:45615/api/v1/state"
+          ],
+          "resolved": true
+        },
+        "run_receipt_mocked_live": {
+          "live": true,
+          "mocked": false,
+          "provider_live": false
+        },
+        "run_receipt_verdict": "PASS",
+        "rung": 3,
+        "useful_result_files_under_results": [
+          "repository-evidence-map.json",
+          "repository-evidence-map.md"
+        ],
+        "workflow_id": "repository-evidence-map"
+      },
+      {
+        "json_edits": "none (all inputs are CLI options per docs/canonical-dag-launch.md)",
+        "launch_argv": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "run",
+          "approved-release-bundle",
+          "--repo",
+          "/tmp/tau-350-clean",
+          "--goal",
+          "Publish an approved local release bundle.",
+          "--publish-path",
+          "/tmp/tau350-proof/published-r4",
+          "--run-dir",
+          "/tmp/tau350-proof/runs/r4-approved-release-bundle",
+          "--open-viewer",
+          "--no-browser-open",
+          "--viewer-hold-seconds",
+          "150"
+        ],
+        "launch_receipt": {
+          "goal": {
+            "completion_criteria": [
+              "Prepare the exact requested Git repository without mutation.",
+              "Accept revised release notes, a release manifest, and release policy concurrently.",
+              "Stop before publication until the exact accepted bundle is approved by a human.",
+              "Publish one hash-bound release bundle with rollback on failed verification."
+            ],
+            "goal_hash": "sha256:deb7f7a4102d4df11df2826e558e90d2096339fc7b44bc36a276551bf77c5096",
+            "goal_id": "approved-release-bundle:58002a3dc695",
+            "goal_version": 1,
+            "summary": "Publish an approved local release bundle."
+          },
+          "live": true,
+          "mocked": false,
+          "progress_view": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r4-approved-release-bundle"
+            ],
+            "url": "http://127.0.0.1:35307/"
+          },
+          "provider_live": false,
+          "result": null,
+          "result_artifact": null,
+          "run_dir": "/tmp/tau350-proof/runs/r4-approved-release-bundle",
+          "run_id": "approved-release-bundle-58002a3dc695",
+          "run_receipt_path": "/tmp/tau350-proof/runs/r4-approved-release-bundle/run-receipt.json",
+          "schema": "tau.workflow_run_receipt.v1",
+          "source_dag_path": "/tmp/tau350-proof/runs/r4-approved-release-bundle/workflow/dag.json",
+          "status": "BLOCKED",
+          "viewer": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r4-approved-release-bundle"
+            ],
+            "url": "http://127.0.0.1:35307/"
+          },
+          "workflow_id": "approved-release-bundle",
+          "workflow_version": 1
+        },
+        "launch_stdout_identity_lines": {
+          "progress_view": "http://127.0.0.1:35307/",
+          "run_dir": "/tmp/tau350-proof/runs/r4-approved-release-bundle",
+          "run_id": "approved-release-bundle-58002a3dc695"
+        },
+        "open_progress": {
+          "assertion": "run_id identical across launch stdout, viewer /api/v1/manifest, viewer /api/v1/state, <run-dir>/current-state.json and <run-dir>/workflow/dag.json; workflow id/version/topology and goal summary/goal_hash identical between viewer manifest and the materialized authoritative DAG",
+          "manifest_goal_hash": "sha256:deb7f7a4102d4df11df2826e558e90d2096339fc7b44bc36a276551bf77c5096",
+          "manifest_goal_summary": "Publish an approved local release bundle.",
+          "manifest_run_id": "approved-release-bundle-58002a3dc695",
+          "manifest_workflow": {
+            "result_node_id": "finalize-approved-release",
+            "result_schema": "tau.approved_release_bundle.v1",
+            "schema": "tau.workflow_metadata.v1",
+            "summary": "Prepare concurrent release evidence, revise and accept release notes, then publish one rollback-protected bundle after exact human approval.",
+            "title": "Approved Release Bundle",
+            "topology": "MIXED_RETRY_APPROVAL",
+            "workflow_id": "approved-release-bundle",
+            "workflow_version": 1
+          },
+          "progress_view_url": "http://127.0.0.1:35307/",
+          "resolve_commands": [
+            "curl -s http://127.0.0.1:35307/api/v1/manifest",
+            "curl -s http://127.0.0.1:35307/api/v1/state"
+          ],
+          "resolved": true
+        },
+        "run_receipt_mocked_live": {
+          "live": true,
+          "mocked": false,
+          "provider_live": false
+        },
+        "run_receipt_verdict": "APPROVAL_REQUIRED",
+        "rung": 4,
+        "useful_result_files_under_results": [],
+        "workflow_id": "approved-release-bundle"
+      },
+      {
+        "json_edits": "none (all inputs are CLI options per docs/canonical-dag-launch.md)",
+        "launch_argv": [
+          "uv",
+          "run",
+          "tau",
+          "workflows",
+          "run",
+          "durable-repository-qualification",
+          "--repo",
+          "/tmp/tau-350-clean",
+          "--goal",
+          "Qualify this repository through durable recovery.",
+          "--publish-path",
+          "/tmp/tau350-proof/published-r5",
+          "--run-dir",
+          "/tmp/tau350-proof/runs/r5-durable-repository-qualification",
+          "--open-viewer",
+          "--no-browser-open",
+          "--viewer-hold-seconds",
+          "150"
+        ],
+        "launch_receipt": {
+          "goal": {
+            "completion_criteria": [
+              "Capture the exact requested Git repository without mutation.",
+              "Qualify documentation, tests, and package metadata concurrently.",
+              "Repair only a blocked qualification branch while preserving accepted work.",
+              "Publish one idempotent qualification result after exact human approval."
+            ],
+            "goal_hash": "sha256:8799138015ea24b3eaf210c59008f980f89a1afd3a35d0c09ecaddb1cdaa024d",
+            "goal_id": "durable-repository-qualification:c06e1c65e623",
+            "goal_version": 1,
+            "summary": "Qualify this repository through durable recovery."
+          },
+          "live": true,
+          "mocked": false,
+          "progress_view": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r5-durable-repository-qualification"
+            ],
+            "url": "http://127.0.0.1:42799/"
+          },
+          "provider_live": false,
+          "result": null,
+          "result_artifact": null,
+          "run_dir": "/tmp/tau350-proof/runs/r5-durable-repository-qualification",
+          "run_id": "durable-repository-qualification-c06e1c65e623",
+          "run_receipt_path": "/tmp/tau350-proof/runs/r5-durable-repository-qualification/run-receipt.json",
+          "schema": "tau.workflow_run_receipt.v1",
+          "source_dag_path": "/tmp/tau350-proof/runs/r5-durable-repository-qualification/workflow/dag.json",
+          "status": "BLOCKED",
+          "viewer": {
+            "command": [
+              "tau",
+              "dag-view",
+              "--run-dir",
+              "/tmp/tau350-proof/runs/r5-durable-repository-qualification"
+            ],
+            "url": "http://127.0.0.1:42799/"
+          },
+          "workflow_id": "durable-repository-qualification",
+          "workflow_version": 1
+        },
+        "launch_stdout_identity_lines": {
+          "progress_view": "http://127.0.0.1:42799/",
+          "run_dir": "/tmp/tau350-proof/runs/r5-durable-repository-qualification",
+          "run_id": "durable-repository-qualification-c06e1c65e623"
+        },
+        "open_progress": {
+          "assertion": "run_id identical across launch stdout, viewer /api/v1/manifest, viewer /api/v1/state, <run-dir>/current-state.json and <run-dir>/workflow/dag.json; workflow id/version/topology and goal summary/goal_hash identical between viewer manifest and the materialized authoritative DAG",
+          "manifest_goal_hash": "sha256:8799138015ea24b3eaf210c59008f980f89a1afd3a35d0c09ecaddb1cdaa024d",
+          "manifest_goal_summary": "Qualify this repository through durable recovery.",
+          "manifest_run_id": "durable-repository-qualification-c06e1c65e623",
+          "manifest_workflow": {
+            "result_node_id": "finalize-qualification",
+            "result_schema": "tau.durable_repository_qualification.v1",
+            "schema": "tau.workflow_metadata.v1",
+            "summary": "Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.",
+            "title": "Durable Repository Qualification",
+            "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+            "workflow_id": "durable-repository-qualification",
+            "workflow_version": 1
+          },
+          "progress_view_url": "http://127.0.0.1:42799/",
+          "resolve_commands": [
+            "curl -s http://127.0.0.1:42799/api/v1/manifest",
+            "curl -s http://127.0.0.1:42799/api/v1/state"
+          ],
+          "resolved": true
+        },
+        "run_receipt_mocked_live": {
+          "live": true,
+          "mocked": false,
+          "provider_live": false
+        },
+        "run_receipt_verdict": "APPROVAL_REQUIRED",
+        "rung": 5,
+        "useful_result_files_under_results": [],
+        "workflow_id": "durable-repository-qualification"
+      }
+    ]
+  },
+  "step4_open_progress": {
+    "per_rung_resolved": {
+      "r1": true,
+      "r2": true,
+      "r3": true,
+      "r4": true,
+      "r5": true
+    },
+    "summary": "each --open-viewer loopback URL was fetched live during its viewer hold window; /api/v1/manifest and /api/v1/state resolved to the launched run"
+  },
+  "step5_negative": {
+    "assertion": "missing prerequisites produce specific actionable blockers (CLI option error; typed BLOCKED receipt), never a traceback and never a guessed healthy state; no result directory is published",
+    "missing_goal": {
+      "blocker": "workflows run missing required option: --goal (required by workflow repository-readiness)",
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "workflows",
+        "run",
+        "repository-readiness",
+        "--repo",
+        "/tmp/tau-350-clean",
+        "--run-dir",
+        "/tmp/tau350-proof/runs/neg-missing-goal"
+      ],
+      "exit_code": 2,
+      "run_dir_created": false,
+      "traceback": false
+    },
+    "test_surface_missing": {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "workflows",
+        "run",
+        "repository-evidence-map",
+        "--repo",
+        "/tmp/tau350-proof/repo-no-tests",
+        "--goal",
+        "Map this repository for focused work.",
+        "--require-tests",
+        "--run-dir",
+        "/tmp/tau350-proof/runs/neg-no-tests"
+      ],
+      "exit_code": 1,
+      "node_receipt": "receipts/analyze-tests.json errors=['test_surface_missing'] verdict=BLOCKED",
+      "receipt_status": "BLOCKED",
+      "result_published": false,
+      "traceback": false
+    }
+  },
+  "verdict": "PASS"
+}

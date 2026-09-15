@@ -189,7 +189,7 @@ Path("/tmp/tau-workflow-catalog-readback.json").write_text(
     encoding="utf-8",
 )
 PY
-uv run pytest tests/test_workflow_catalog.py tests/test_workflow_cli.py -q
+uv run pytest tests/test_workflow_catalog.py tests/test_workflow_cli.py --tau-suite=all -q
 ```
 
 Minimum live proof commands:

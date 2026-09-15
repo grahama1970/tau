@@ -1,0 +1,527 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_workflow_launch_deeplink_agentic_eval.json",
+  "run_id": "86dd2157ba21",
+  "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+  "repo": {
+    "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau issue #350 workflow launch run-id, progress deep link, useful-result link, and actionable preflight proof",
+  "claims": {
+    "proves": "Tau's public workflow launch path returns a run ID bound to authoritative run state, surfaces a progress-view deep link without repository archaeology, links completion to the useful results artifact, and reports a missing goal as an actionable blocker.",
+    "does_not_prove": "All five workflows, provider/model quality, or browser rendering of the viewer."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.workflow_launch_deeplink_result",
+        "description": "Workflow launch output exposes run identity, progress-view deep link, useful-result location, and actionable missing-prerequisite failure.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "tampered-result-link-is-detected"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "repository-readiness-launch-deeplink-result-link"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "ineligible_supporting_cases": [],
+        "supporting_cases": [
+          "repository-readiness-launch-deeplink-result-link",
+          "tampered-result-link-is-detected"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-09-15T18:52:28.843898+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "repository-readiness-launch-deeplink-result-link",
+      "type": "positive",
+      "case_id": "86dd2157ba21-c000",
+      "required": true,
+      "outcome": "PASS",
+      "observed_outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-workflow-launch-deeplink.py --out local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json"
+      ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+        "test_source_sha256": "sha256:3d572e711746e9e39eebf6640c60fca602d1d1e7c054b21d840f9fc911fae6af",
+        "oracle_sha256": "sha256:afd5960c7cbafe95ced2dc43a2e2526591a7065698a0469ff5568a1bd9557bf9",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:810967232df630bc329e2e127",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:3d572e711746e9e39eebf6640c60fca602d1d1e7c054b21d840f9fc911fae6af",
+      "oracle_sha256": "sha256:afd5960c7cbafe95ced2dc43a2e2526591a7065698a0469ff5568a1bd9557bf9",
+      "application_identity": {
+        "repo": {
+          "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.workflow_launch_deeplink_result"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 3805.645,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 3814.285,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "86dd2157ba21-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json": "sha256:1ac84a8cdadfed5aee25a8523b67d46727c8860058c07f7aedf9ee9766b5479d"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+            "test_source_sha256": "sha256:3d572e711746e9e39eebf6640c60fca602d1d1e7c054b21d840f9fc911fae6af",
+            "oracle_sha256": "sha256:afd5960c7cbafe95ced2dc43a2e2526591a7065698a0469ff5568a1bd9557bf9",
+            "generation_id": "sha256:810967232df630bc329e2e127",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 3797.005,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "86dd2157ba21-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-350-workflow-launch-deeplink/proof.json": "sha256:67e6118b624c39b1a7997e0fa706612fb2eb491fd3e5e2121aacb577f2da8c27"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+            "test_source_sha256": "sha256:3d572e711746e9e39eebf6640c60fca602d1d1e7c054b21d840f9fc911fae6af",
+            "oracle_sha256": "sha256:afd5960c7cbafe95ced2dc43a2e2526591a7065698a0469ff5568a1bd9557bf9",
+            "generation_id": "sha256:810967232df630bc329e2e127",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "tampered-result-link-is-detected",
+      "type": "adversarial",
+      "case_id": "86dd2157ba21-c001",
+      "required": true,
+      "outcome": "PASS",
+      "observed_outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-workflow-launch-deeplink.py --adversarial --out local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json"
+      ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+        "test_source_sha256": "sha256:73132a8ead370b109a9a656968d3d5657982953f9339f98c635d5c57648d044c",
+        "oracle_sha256": "sha256:98118481d5dddd9f6131d6785ef75cd567c8a1ddaab070ae6c4cfd22d1ecdbc8",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:898003c7f003f59fac0b0cb31",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:73132a8ead370b109a9a656968d3d5657982953f9339f98c635d5c57648d044c",
+      "oracle_sha256": "sha256:98118481d5dddd9f6131d6785ef75cd567c8a1ddaab070ae6c4cfd22d1ecdbc8",
+      "application_identity": {
+        "repo": {
+          "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.workflow_launch_deeplink_result"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 3801.801,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 3803.171,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "86dd2157ba21-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json": "sha256:16f07f2bdc94fc8ced9eaf9f92561620d751518dd9ebe878b8573f9fdec38186"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+            "test_source_sha256": "sha256:73132a8ead370b109a9a656968d3d5657982953f9339f98c635d5c57648d044c",
+            "oracle_sha256": "sha256:98118481d5dddd9f6131d6785ef75cd567c8a1ddaab070ae6c4cfd22d1ecdbc8",
+            "generation_id": "sha256:898003c7f003f59fac0b0cb31",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 3800.432,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "86dd2157ba21-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-350-workflow-launch-deeplink/adversarial-proof.json": "sha256:4d851abbdca14bff1f31bd0b2ab664376b734627107091c8d5bc440db2f27f3b"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:a9e28f132b7ede5a07ce0fc42d16a4590e3aecdca27cb50affc65557dd6500e8",
+            "test_source_sha256": "sha256:73132a8ead370b109a9a656968d3d5657982953f9339f98c635d5c57648d044c",
+            "oracle_sha256": "sha256:98118481d5dddd9f6131d6785ef75cd567c8a1ddaab070ae6c4cfd22d1ecdbc8",
+            "generation_id": "sha256:898003c7f003f59fac0b0cb31",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

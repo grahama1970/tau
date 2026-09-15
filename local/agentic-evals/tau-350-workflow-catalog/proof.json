@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-09-15T18:51:16.611801+00:00",
+  "checks": [
+    {
+      "check": "list_exposes_five_ordered_rungs_from_one_registry",
+      "ids": [
+        "repository-readiness",
+        "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification"
+      ],
+      "passed": true,
+      "registry_ids_match": true,
+      "rungs": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "approved-release-bundle": "match",
+      "check": "describe_matches_registry_for_all_five",
+      "durable-repository-qualification": "match",
+      "passed": true,
+      "repository-evidence-map": "match",
+      "repository-readiness": "match",
+      "tau-operator-reference": "match"
+    },
+    {
+      "check": "missing_goal_is_actionable_blocker",
+      "exit_code": 2,
+      "passed": true,
+      "stderr_tail": [
+        "\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f"
+      ]
+    },
+    {
+      "boundaries": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "check": "retained_trace_five_resolved_launches_with_boundaries",
+      "launch_count": 5,
+      "passed": true,
+      "trace": "docs/proofs/tickets/issue-350-workflow-catalog-launch-progress-20260915/trace.json"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "schema": "tau.workflow_catalog_eval.v1",
+  "status": "PASS"
+}
