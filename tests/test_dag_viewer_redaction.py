@@ -39,6 +39,13 @@ def test_redactor_bounds_collections_and_depth() -> None:
     assert result.truncated is True
 
 
+def test_storage_redactor_preserves_collection_lengths() -> None:
+    result = redact_for_storage({"items": list(range(1100))})
+
+    assert len(result.value["items"]) == 1100
+    assert result.truncated is False
+
+
 def test_storage_redactor_masks_common_credential_value_formats() -> None:
     slack_token = "xoxb-" + "123456789012-abcdefghijklmnop"
     payload = {

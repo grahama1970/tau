@@ -158,7 +158,8 @@ def _walk(
                 )
         return output
     if isinstance(value, (list, tuple)):
-        if len(value) > 1000:
+        items = value[:1000] if truncate_strings else value
+        if len(value) > len(items):
             truncated[0] = True
         return [
             _walk(
@@ -170,7 +171,7 @@ def _walk(
                 redact_raw_output=redact_raw_output,
                 truncate_strings=truncate_strings,
             )
-            for index, item in enumerate(value[:1000])
+            for index, item in enumerate(items)
         ]
     if isinstance(value, str):
         redacted, changed = _redact_secret_substrings(value)
