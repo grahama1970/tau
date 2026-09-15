@@ -5,9 +5,9 @@
     "report": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json"
   },
   "artifact_hashes": {
-    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
-    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
-    "/home/graham/workspace/experiments/tau/evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
+    "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
   },
   "candidate_paths": [
     "src/tau_coding/dag_runtime/memory_projection.py",
@@ -19,7 +19,7 @@
     "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
     "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json"
   ],
-  "created_at": "2026-09-15T04:12:23.685099+00:00",
+  "created_at": "2026-09-15T06:34:00+00:00",
   "e2e": {
     "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json",
     "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
@@ -139,7 +139,7 @@
         "deleted_documents": 1,
         "deleted_edges": 9,
         "requested_keys": [
-          "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+          "tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca"
         ]
       },
       "post_delete_memory_readback_count": 0,
@@ -147,16 +147,16 @@
       "returncode": 0,
       "settlement_unchanged": true,
       "stderr": "",
-      "stdout": "{\"deleted_documents\": 1, \"deleted_edges\": 9, \"requested_keys\": [\"tau_episode_40001f628ba87e339224281bcc7b992378f871dc\"]}",
+      "stdout": "{\"deleted_documents\": 1, \"deleted_edges\": 9, \"requested_keys\": [\"tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca\"]}",
       "target_keys": [
-        "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+        "tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca"
       ],
       "tau_state_after_delete": {
         "admission_count": 4,
         "event_count": 36,
         "settled_attempt_ids": [
-          "attempt-021ce76699892f1eb048bc1b801bf832",
-          "attempt-4788b7846e3bd1785f0cb447acc682e7"
+          "attempt-3951186ee89e369190e0897d925f47b8",
+          "attempt-db83213355f6bd7b75a6761a83f65dcd"
         ],
         "status": "PASS"
       },
@@ -164,8 +164,8 @@
         "admission_count": 4,
         "event_count": 36,
         "settled_attempt_ids": [
-          "attempt-021ce76699892f1eb048bc1b801bf832",
-          "attempt-4788b7846e3bd1785f0cb447acc682e7"
+          "attempt-3951186ee89e369190e0897d925f47b8",
+          "attempt-db83213355f6bd7b75a6761a83f65dcd"
         ],
         "status": "PASS"
       }
@@ -184,15 +184,15 @@
     "permanent_rejection_state": "permanently_rejected",
     "pre_relay_pending_count": 9,
     "projected_doc_keys": [
-      "tau_episode_25892878a90698befd227ff021e64fdfa8855e40",
-      "tau_episode_b125930d8c001c6db5c84de732ff2276741652f5",
-      "tau_episode_ec715c046ac7a94c69b40f2a5583331743af211c",
-      "tau_episode_e8ca4db6e676115fdce9e0ec8b8ee184e6566cfd",
-      "tau_episode_62290f627bf303468ac06615c54e93f6b06e5771",
-      "tau_episode_6b9cc1f3ba963570be25a83b8aa75c98d60f396c",
-      "tau_episode_a5762c4611143ff29da9eb0c0cddd0cb33d01bb5",
-      "tau_episode_b6a751b1ef4671ef2444d5127a7210128374af1f",
-      "tau_episode_60dc3cf7aed146887cbf4a44ac5ebde3f0476859"
+      "tau_episode_80fc50439679ffb4f28e9a01d2fca907706e710f",
+      "tau_episode_937ad7a2e062ca5a265bca1f71e94d53adf85694",
+      "tau_episode_ae581e79feab038e2ef68ca744640caf04f8a474",
+      "tau_episode_d341bd25fa0f397472e42596b3f20a76d324aa74",
+      "tau_episode_883a154dc78cc000b4648747157456c608585adf",
+      "tau_episode_9d1a47371ca6231a3284e3a136f91c838825ff09",
+      "tau_episode_e411be21589eb6feee08a3fc6a8162ff7258907e",
+      "tau_episode_9db043c9b868e72a68fb26e111bc2839821f7181",
+      "tau_episode_33defd3ce328f8150aa0fcc01d7eadc1c8a50db6"
     ],
     "projected_episode_count": 9,
     "replay_result_count": 0,

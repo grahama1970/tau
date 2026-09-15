@@ -16,7 +16,7 @@
     "projected",
     "projected"
   ],
-  "marker": "issue321_tau_orchestration_episode_1789445473241",
+  "marker": "issue321_tau_orchestration_episode_1789453925222",
   "memory_outage_probe": {
     "container": "embry-memory",
     "health_before_stop": {
@@ -76,7 +76,7 @@
       "deleted_documents": 1,
       "deleted_edges": 9,
       "requested_keys": [
-        "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+        "tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca"
       ]
     },
     "post_delete_memory_readback_count": 0,
@@ -84,16 +84,16 @@
     "returncode": 0,
     "settlement_unchanged": true,
     "stderr": "",
-    "stdout": "{\"deleted_documents\": 1, \"deleted_edges\": 9, \"requested_keys\": [\"tau_episode_40001f628ba87e339224281bcc7b992378f871dc\"]}",
+    "stdout": "{\"deleted_documents\": 1, \"deleted_edges\": 9, \"requested_keys\": [\"tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca\"]}",
     "target_keys": [
-      "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+      "tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca"
     ],
     "tau_state_after_delete": {
       "admission_count": 4,
       "event_count": 36,
       "settled_attempt_ids": [
-        "attempt-021ce76699892f1eb048bc1b801bf832",
-        "attempt-4788b7846e3bd1785f0cb447acc682e7"
+        "attempt-3951186ee89e369190e0897d925f47b8",
+        "attempt-db83213355f6bd7b75a6761a83f65dcd"
       ],
       "status": "PASS"
     },
@@ -101,8 +101,8 @@
       "admission_count": 4,
       "event_count": 36,
       "settled_attempt_ids": [
-        "attempt-021ce76699892f1eb048bc1b801bf832",
-        "attempt-4788b7846e3bd1785f0cb447acc682e7"
+        "attempt-3951186ee89e369190e0897d925f47b8",
+        "attempt-db83213355f6bd7b75a6761a83f65dcd"
       ],
       "status": "PASS"
     }
@@ -113,19 +113,19 @@
       "count": 9,
       "documents": [
         {
-          "_key": "tau_episode_25892878a90698befd227ff021e64fdfa8855e40",
-          "attempt_id": "attempt-4788b7846e3bd1785f0cb447acc682e7",
-          "journal_head_hash": "sha256:6e426bd3f4002ae844db4e89a87252e438f9ef8fb57dfdee8cee846be7ac07ff",
+          "_key": "tau_episode_80fc50439679ffb4f28e9a01d2fca907706e710f",
+          "attempt_id": "attempt-db83213355f6bd7b75a6761a83f65dcd",
+          "journal_head_hash": "sha256:529e78c03ffd94a490cd288edf4fc332213ca4edc3b5c1f94542400487556826",
           "journal_sequence": 18,
           "node_id": "turn-one",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-48e8912ac2642c57cc0c4de02d3b0db1",
+          "source_outbox_row": "mp-5c7a5c37fac1169bd82972de09f838c3",
           "source_receipt_hashes": [
-            "sha256:d3e5b6a02f85f8074aaf7c94e0361d5fb6788e4af100b7a2cdf05441cb576fde",
-            "sha256:189e691e76c9c2699bb425ec53d8607c4e9f0b55ba9338ee6881535a792b6dfa"
+            "sha256:a1d8042066f0076d44221bc167fadce665afc8882c2c28c272e2abdc6b5c3cc3",
+            "sha256:2993dd72762a9e885f1280f806d8b2ee5f0ffbb8272ab8177c48a6799db9ead5"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 turn-one accepted agent turn",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 turn-one accepted agent turn",
           "tags": [
             "tau",
             "orchestration",
@@ -134,19 +134,19 @@
           ]
         },
         {
-          "_key": "tau_episode_b125930d8c001c6db5c84de732ff2276741652f5",
-          "attempt_id": "attempt-4788b7846e3bd1785f0cb447acc682e7",
-          "journal_head_hash": "sha256:6e426bd3f4002ae844db4e89a87252e438f9ef8fb57dfdee8cee846be7ac07ff",
+          "_key": "tau_episode_937ad7a2e062ca5a265bca1f71e94d53adf85694",
+          "attempt_id": "attempt-db83213355f6bd7b75a6761a83f65dcd",
+          "journal_head_hash": "sha256:529e78c03ffd94a490cd288edf4fc332213ca4edc3b5c1f94542400487556826",
           "journal_sequence": 18,
           "node_id": "turn-one",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-fe18217d1ca2e724f38cea83784595d1",
+          "source_outbox_row": "mp-3cbf6a17e3b1f532e724701754a88aa3",
           "source_receipt_hashes": [
-            "sha256:d3e5b6a02f85f8074aaf7c94e0361d5fb6788e4af100b7a2cdf05441cb576fde",
-            "sha256:189e691e76c9c2699bb425ec53d8607c4e9f0b55ba9338ee6881535a792b6dfa"
+            "sha256:a1d8042066f0076d44221bc167fadce665afc8882c2c28c272e2abdc6b5c3cc3",
+            "sha256:2993dd72762a9e885f1280f806d8b2ee5f0ffbb8272ab8177c48a6799db9ead5"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 turn-one accepted tool effect",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 turn-one accepted tool effect",
           "tags": [
             "tau",
             "orchestration",
@@ -155,19 +155,19 @@
           ]
         },
         {
-          "_key": "tau_episode_ec715c046ac7a94c69b40f2a5583331743af211c",
-          "attempt_id": "attempt-4788b7846e3bd1785f0cb447acc682e7",
-          "journal_head_hash": "sha256:6e426bd3f4002ae844db4e89a87252e438f9ef8fb57dfdee8cee846be7ac07ff",
+          "_key": "tau_episode_ae581e79feab038e2ef68ca744640caf04f8a474",
+          "attempt_id": "attempt-db83213355f6bd7b75a6761a83f65dcd",
+          "journal_head_hash": "sha256:529e78c03ffd94a490cd288edf4fc332213ca4edc3b5c1f94542400487556826",
           "journal_sequence": 18,
           "node_id": "turn-one",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-43babea1837aac8db043d193030bbe78",
+          "source_outbox_row": "mp-5b7cdab15113f9f5f7cd0460ffa87187",
           "source_receipt_hashes": [
-            "sha256:d3e5b6a02f85f8074aaf7c94e0361d5fb6788e4af100b7a2cdf05441cb576fde",
-            "sha256:189e691e76c9c2699bb425ec53d8607c4e9f0b55ba9338ee6881535a792b6dfa"
+            "sha256:a1d8042066f0076d44221bc167fadce665afc8882c2c28c272e2abdc6b5c3cc3",
+            "sha256:2993dd72762a9e885f1280f806d8b2ee5f0ffbb8272ab8177c48a6799db9ead5"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 turn-one accepted agent turn",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 turn-one accepted agent turn",
           "tags": [
             "tau",
             "orchestration",
@@ -176,19 +176,19 @@
           ]
         },
         {
-          "_key": "tau_episode_e8ca4db6e676115fdce9e0ec8b8ee184e6566cfd",
-          "attempt_id": "attempt-4788b7846e3bd1785f0cb447acc682e7",
-          "journal_head_hash": "sha256:6e426bd3f4002ae844db4e89a87252e438f9ef8fb57dfdee8cee846be7ac07ff",
+          "_key": "tau_episode_d341bd25fa0f397472e42596b3f20a76d324aa74",
+          "attempt_id": "attempt-db83213355f6bd7b75a6761a83f65dcd",
+          "journal_head_hash": "sha256:529e78c03ffd94a490cd288edf4fc332213ca4edc3b5c1f94542400487556826",
           "journal_sequence": 18,
           "node_id": "turn-one",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-cf02bc42f4379eeda0dd4120f35836bc",
+          "source_outbox_row": "mp-a8f79bac4348bc41ac4b77843645734c",
           "source_receipt_hashes": [
-            "sha256:d3e5b6a02f85f8074aaf7c94e0361d5fb6788e4af100b7a2cdf05441cb576fde",
-            "sha256:189e691e76c9c2699bb425ec53d8607c4e9f0b55ba9338ee6881535a792b6dfa"
+            "sha256:a1d8042066f0076d44221bc167fadce665afc8882c2c28c272e2abdc6b5c3cc3",
+            "sha256:2993dd72762a9e885f1280f806d8b2ee5f0ffbb8272ab8177c48a6799db9ead5"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 turn-one issue321_tau_orchestration_episode_1789445473241 turn one accepted",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 turn-one issue321_tau_orchestration_episode_1789453925222 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -197,19 +197,19 @@
           ]
         },
         {
-          "_key": "tau_episode_62290f627bf303468ac06615c54e93f6b06e5771",
-          "attempt_id": "attempt-021ce76699892f1eb048bc1b801bf832",
-          "journal_head_hash": "sha256:caf5410128a5e190a7c0d5674a9ea96e1697d8a1ef683ec8dec8466b1dd22d34",
+          "_key": "tau_episode_883a154dc78cc000b4648747157456c608585adf",
+          "attempt_id": "attempt-3951186ee89e369190e0897d925f47b8",
+          "journal_head_hash": "sha256:1208c0edecad562a7b03bb851985615a5bbd0b90bd8458fee3cbb53a0a606c0e",
           "journal_sequence": 33,
           "node_id": "tool-and-join",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-bc1abeb9ce3360d7e372631eb6c30b69",
+          "source_outbox_row": "mp-478a8ae733d4f3b6b410f94490872f75",
           "source_receipt_hashes": [
-            "sha256:e276d2a50b63d3bba5c3b2674f87c75bce2aafe8f162a17f6ab757ef14fa46e5",
-            "sha256:1f363c07b694c2d9ee3a4683cf64ce211517a9e7a385201fbf364a2e8c5cd99a"
+            "sha256:8ab4fd86e3229e62b99364e0919354631b418de1c0abe1771e7efd54d4b98662",
+            "sha256:9c8ad674afd3e1b1c9954d2e393b9eb2700ac8f90b19c23b8f0c84eaeffaeab9"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 tool-and-join accepted agent turn",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 tool-and-join accepted agent turn",
           "tags": [
             "tau",
             "orchestration",
@@ -218,19 +218,19 @@
           ]
         },
         {
-          "_key": "tau_episode_6b9cc1f3ba963570be25a83b8aa75c98d60f396c",
-          "attempt_id": "attempt-021ce76699892f1eb048bc1b801bf832",
-          "journal_head_hash": "sha256:caf5410128a5e190a7c0d5674a9ea96e1697d8a1ef683ec8dec8466b1dd22d34",
+          "_key": "tau_episode_9d1a47371ca6231a3284e3a136f91c838825ff09",
+          "attempt_id": "attempt-3951186ee89e369190e0897d925f47b8",
+          "journal_head_hash": "sha256:1208c0edecad562a7b03bb851985615a5bbd0b90bd8458fee3cbb53a0a606c0e",
           "journal_sequence": 33,
           "node_id": "tool-and-join",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-e501554f64d71d5adf714a9aa54ed5d1",
+          "source_outbox_row": "mp-dacf882f60c32190a0b1536b4106480f",
           "source_receipt_hashes": [
-            "sha256:e276d2a50b63d3bba5c3b2674f87c75bce2aafe8f162a17f6ab757ef14fa46e5",
-            "sha256:1f363c07b694c2d9ee3a4683cf64ce211517a9e7a385201fbf364a2e8c5cd99a"
+            "sha256:8ab4fd86e3229e62b99364e0919354631b418de1c0abe1771e7efd54d4b98662",
+            "sha256:9c8ad674afd3e1b1c9954d2e393b9eb2700ac8f90b19c23b8f0c84eaeffaeab9"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 tool-and-join accepted tool effect",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 tool-and-join accepted tool effect",
           "tags": [
             "tau",
             "orchestration",
@@ -239,19 +239,19 @@
           ]
         },
         {
-          "_key": "tau_episode_a5762c4611143ff29da9eb0c0cddd0cb33d01bb5",
-          "attempt_id": "attempt-021ce76699892f1eb048bc1b801bf832",
-          "journal_head_hash": "sha256:caf5410128a5e190a7c0d5674a9ea96e1697d8a1ef683ec8dec8466b1dd22d34",
+          "_key": "tau_episode_e411be21589eb6feee08a3fc6a8162ff7258907e",
+          "attempt_id": "attempt-3951186ee89e369190e0897d925f47b8",
+          "journal_head_hash": "sha256:1208c0edecad562a7b03bb851985615a5bbd0b90bd8458fee3cbb53a0a606c0e",
           "journal_sequence": 33,
           "node_id": "tool-and-join",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-1dd6f74c1bb06c258a580c35e0aae6ff",
+          "source_outbox_row": "mp-6af2fb0fd2c4244b9acd925fc603ecac",
           "source_receipt_hashes": [
-            "sha256:e276d2a50b63d3bba5c3b2674f87c75bce2aafe8f162a17f6ab757ef14fa46e5",
-            "sha256:1f363c07b694c2d9ee3a4683cf64ce211517a9e7a385201fbf364a2e8c5cd99a"
+            "sha256:8ab4fd86e3229e62b99364e0919354631b418de1c0abe1771e7efd54d4b98662",
+            "sha256:9c8ad674afd3e1b1c9954d2e393b9eb2700ac8f90b19c23b8f0c84eaeffaeab9"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 tool-and-join accepted agent turn",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 tool-and-join accepted agent turn",
           "tags": [
             "tau",
             "orchestration",
@@ -260,19 +260,19 @@
           ]
         },
         {
-          "_key": "tau_episode_b6a751b1ef4671ef2444d5127a7210128374af1f",
-          "attempt_id": "attempt-021ce76699892f1eb048bc1b801bf832",
-          "journal_head_hash": "sha256:caf5410128a5e190a7c0d5674a9ea96e1697d8a1ef683ec8dec8466b1dd22d34",
+          "_key": "tau_episode_9db043c9b868e72a68fb26e111bc2839821f7181",
+          "attempt_id": "attempt-3951186ee89e369190e0897d925f47b8",
+          "journal_head_hash": "sha256:1208c0edecad562a7b03bb851985615a5bbd0b90bd8458fee3cbb53a0a606c0e",
           "journal_sequence": 33,
           "node_id": "tool-and-join",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-0b06b7cdc8a15efc368e5e36694c30e6",
+          "source_outbox_row": "mp-cbe6559cfce8caf188c1ca2b6a3e7f2d",
           "source_receipt_hashes": [
-            "sha256:e276d2a50b63d3bba5c3b2674f87c75bce2aafe8f162a17f6ab757ef14fa46e5",
-            "sha256:1f363c07b694c2d9ee3a4683cf64ce211517a9e7a385201fbf364a2e8c5cd99a"
+            "sha256:8ab4fd86e3229e62b99364e0919354631b418de1c0abe1771e7efd54d4b98662",
+            "sha256:9c8ad674afd3e1b1c9954d2e393b9eb2700ac8f90b19c23b8f0c84eaeffaeab9"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 tool-and-join accepted context join",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 tool-and-join accepted context join",
           "tags": [
             "tau",
             "orchestration",
@@ -281,19 +281,19 @@
           ]
         },
         {
-          "_key": "tau_episode_60dc3cf7aed146887cbf4a44ac5ebde3f0476859",
-          "attempt_id": "attempt-021ce76699892f1eb048bc1b801bf832",
-          "journal_head_hash": "sha256:caf5410128a5e190a7c0d5674a9ea96e1697d8a1ef683ec8dec8466b1dd22d34",
+          "_key": "tau_episode_33defd3ce328f8150aa0fcc01d7eadc1c8a50db6",
+          "attempt_id": "attempt-3951186ee89e369190e0897d925f47b8",
+          "journal_head_hash": "sha256:1208c0edecad562a7b03bb851985615a5bbd0b90bd8458fee3cbb53a0a606c0e",
           "journal_sequence": 33,
           "node_id": "tool-and-join",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
-          "source_outbox_row": "mp-54cc2b6140ab59332c91f65c5c7ec835",
+          "source_outbox_row": "mp-b72827c74f50466211813204a46a4eec",
           "source_receipt_hashes": [
-            "sha256:e276d2a50b63d3bba5c3b2674f87c75bce2aafe8f162a17f6ab757ef14fa46e5",
-            "sha256:1f363c07b694c2d9ee3a4683cf64ce211517a9e7a385201fbf364a2e8c5cd99a"
+            "sha256:8ab4fd86e3229e62b99364e0919354631b418de1c0abe1771e7efd54d4b98662",
+            "sha256:9c8ad674afd3e1b1c9954d2e393b9eb2700ac8f90b19c23b8f0c84eaeffaeab9"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 tool-and-join issue321_tau_orchestration_episode_1789445473241 tool effect and join accepted",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 tool-and-join issue321_tau_orchestration_episode_1789453925222 tool effect and join accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -311,7 +311,7 @@
         {
           "problem": "",
           "score": 1.0,
-          "solution": "issue321-tau-orchestration-episode-1789445473241 turn-one issue321_tau_orchestration_episode_1789445473241 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789453925222 turn-one issue321_tau_orchestration_episode_1789453925222 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -322,7 +322,7 @@
         {
           "problem": "",
           "score": 0.983,
-          "solution": "issue321-tau-orchestration-episode-1789444778159 turn-one issue321_tau_orchestration_episode_1789444778159 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445823452 turn-one issue321_tau_orchestration_episode_1789445823452 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -333,7 +333,7 @@
         {
           "problem": "",
           "score": 0.967,
-          "solution": "issue321-tau-orchestration-episode-1789444742036 turn-one issue321_tau_orchestration_episode_1789444742036 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444009955 turn-one issue321_tau_orchestration_episode_1789444009955 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -355,7 +355,7 @@
         {
           "problem": "",
           "score": 0.933,
-          "solution": "issue321-tau-orchestration-episode-1789444002893 turn-one issue321_tau_orchestration_episode_1789444002893 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789453906598 turn-one issue321_tau_orchestration_episode_1789453906598 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -366,7 +366,7 @@
         {
           "problem": "",
           "score": 0.917,
-          "solution": "issue321-tau-orchestration-episode-1789443767182 turn-one issue321_tau_orchestration_episode_1789443767182 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445808058 turn-one issue321_tau_orchestration_episode_1789445808058 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -377,7 +377,7 @@
         {
           "problem": "",
           "score": 0.9,
-          "solution": "issue321-tau-orchestration-episode-1789445457264 turn-one issue321_tau_orchestration_episode_1789445457264 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444778159 turn-one issue321_tau_orchestration_episode_1789444778159 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -388,7 +388,7 @@
         {
           "problem": "",
           "score": 0.883,
-          "solution": "issue321-tau-orchestration-episode-1789440917916 turn-one issue321_tau_orchestration_episode_1789440917916 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444002893 turn-one issue321_tau_orchestration_episode_1789444002893 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -399,17 +399,6 @@
         {
           "problem": "",
           "score": 0.867,
-          "solution": "issue321-tau-orchestration-episode-1789444009955 turn-one issue321_tau_orchestration_episode_1789444009955 turn one accepted",
-          "tags": [
-            "tau",
-            "orchestration",
-            "episode",
-            "node_settlement"
-          ]
-        },
-        {
-          "problem": "",
-          "score": 0.85,
           "solution": "issue321-tau-orchestration-episode-1789443763725 turn-one issue321_tau_orchestration_episode_1789443763725 turn one accepted",
           "tags": [
             "tau",
@@ -420,8 +409,19 @@
         },
         {
           "problem": "",
+          "score": 0.85,
+          "solution": "issue321-tau-orchestration-episode-1789445457264 turn-one issue321_tau_orchestration_episode_1789445457264 turn one accepted",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "node_settlement"
+          ]
+        },
+        {
+          "problem": "",
           "score": 0.833,
-          "solution": "issue321-tau-orchestration-episode-1789444762657 turn-one issue321_tau_orchestration_episode_1789444762657 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789443767182 turn-one issue321_tau_orchestration_episode_1789443767182 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -432,7 +432,7 @@
         {
           "problem": "",
           "score": 0.817,
-          "solution": "issue321-tau-orchestration-episode-1789440906902 turn-one issue321_tau_orchestration_episode_1789440906902 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445473241 turn-one issue321_tau_orchestration_episode_1789445473241 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -448,7 +448,7 @@
         ],
         "k": 12,
         "memory_first": true,
-        "q": "issue321_tau_orchestration_episode_1789445473241",
+        "q": "issue321_tau_orchestration_episode_1789453925222",
         "recall_envelope": {
           "collections": [
             "agent_conversations"
@@ -458,7 +458,7 @@
           "limit": 12,
           "profile_hash": "638629ccdbe77b7bdad08403d5b538a37f6ffcd4f57bf0c068f9c9535963bce5",
           "profile_version": "memory.recall_profile.v1",
-          "q": "issue321_tau_orchestration_episode_1789445473241",
+          "q": "issue321_tau_orchestration_episode_1789453925222",
           "recall_profile": "tau_orchestration_recall",
           "recall_profile_source": "explicit",
           "required_artifacts": [
@@ -479,7 +479,7 @@
           "selector_lifecycle_mode": null,
           "tags": [],
           "threshold": 0.0,
-          "took_ms": 159,
+          "took_ms": 143,
           "used_dense": true,
           "used_reranker": false
         },
@@ -493,7 +493,7 @@
         "reranker_mode": "off",
         "runtime_pressure": {
           "active_workloads": [],
-          "checked_at": 1789445475,
+          "checked_at": 1789453927,
           "level": "normal",
           "recommended_action": "No active persisted runtime pressure detected.",
           "slow_query_risk": false,
@@ -501,7 +501,7 @@
         },
         "scope": "",
         "threshold": 0.0,
-        "took_ms": 159,
+        "took_ms": 143,
         "used_dense": true,
         "used_reranker": false
       },
@@ -516,19 +516,19 @@
       "count": 1,
       "documents": [
         {
-          "_key": "tau_episode_40001f628ba87e339224281bcc7b992378f871dc",
+          "_key": "tau_episode_84c8576695e06e6a185c7277486b1b3c5d8739ca",
           "attempt_id": "attempt-outage",
-          "journal_head_hash": "sha256:6e426bd3f4002ae844db4e89a87252e438f9ef8fb57dfdee8cee846be7ac07ff",
+          "journal_head_hash": "sha256:529e78c03ffd94a490cd288edf4fc332213ca4edc3b5c1f94542400487556826",
           "journal_sequence": 18,
           "node_id": "turn-one",
-          "run_id": "issue321-tau-orchestration-episode-1789445473241",
+          "run_id": "issue321-tau-orchestration-episode-1789453925222",
           "schema": "memory.tau_orchestration_episode.v1",
           "source_outbox_row": "mp-outage",
           "source_receipt_hashes": [
-            "sha256:d3e5b6a02f85f8074aaf7c94e0361d5fb6788e4af100b7a2cdf05441cb576fde",
-            "sha256:189e691e76c9c2699bb425ec53d8607c4e9f0b55ba9338ee6881535a792b6dfa"
+            "sha256:a1d8042066f0076d44221bc167fadce665afc8882c2c28c272e2abdc6b5c3cc3",
+            "sha256:2993dd72762a9e885f1280f806d8b2ee5f0ffbb8272ab8177c48a6799db9ead5"
           ],
-          "summary": "issue321-tau-orchestration-episode-1789445473241 turn-one accepted agent turn",
+          "summary": "issue321-tau-orchestration-episode-1789453925222 turn-one accepted agent turn",
           "tags": [
             "tau",
             "orchestration",
@@ -546,7 +546,7 @@
         {
           "problem": "",
           "score": 1.0,
-          "solution": "issue321-tau-orchestration-episode-1789445473241 turn-one issue321_tau_orchestration_episode_1789445473241 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789453925222 turn-one issue321_tau_orchestration_episode_1789453925222 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -557,7 +557,7 @@
         {
           "problem": "",
           "score": 0.983,
-          "solution": "issue321-tau-orchestration-episode-1789444778159 turn-one issue321_tau_orchestration_episode_1789444778159 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445823452 turn-one issue321_tau_orchestration_episode_1789445823452 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -568,7 +568,7 @@
         {
           "problem": "",
           "score": 0.967,
-          "solution": "issue321-tau-orchestration-episode-1789444742036 turn-one issue321_tau_orchestration_episode_1789444742036 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444009955 turn-one issue321_tau_orchestration_episode_1789444009955 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -590,7 +590,7 @@
         {
           "problem": "",
           "score": 0.933,
-          "solution": "issue321-tau-orchestration-episode-1789444002893 turn-one issue321_tau_orchestration_episode_1789444002893 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789453906598 turn-one issue321_tau_orchestration_episode_1789453906598 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -601,7 +601,7 @@
         {
           "problem": "",
           "score": 0.917,
-          "solution": "issue321-tau-orchestration-episode-1789443767182 turn-one issue321_tau_orchestration_episode_1789443767182 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445808058 turn-one issue321_tau_orchestration_episode_1789445808058 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -612,7 +612,7 @@
         {
           "problem": "",
           "score": 0.9,
-          "solution": "issue321-tau-orchestration-episode-1789445457264 turn-one issue321_tau_orchestration_episode_1789445457264 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444778159 turn-one issue321_tau_orchestration_episode_1789444778159 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -623,7 +623,7 @@
         {
           "problem": "",
           "score": 0.883,
-          "solution": "issue321-tau-orchestration-episode-1789440917916 turn-one issue321_tau_orchestration_episode_1789440917916 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789444002893 turn-one issue321_tau_orchestration_episode_1789444002893 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -634,17 +634,6 @@
         {
           "problem": "",
           "score": 0.867,
-          "solution": "issue321-tau-orchestration-episode-1789444009955 turn-one issue321_tau_orchestration_episode_1789444009955 turn one accepted",
-          "tags": [
-            "tau",
-            "orchestration",
-            "episode",
-            "node_settlement"
-          ]
-        },
-        {
-          "problem": "",
-          "score": 0.85,
           "solution": "issue321-tau-orchestration-episode-1789443763725 turn-one issue321_tau_orchestration_episode_1789443763725 turn one accepted",
           "tags": [
             "tau",
@@ -655,8 +644,19 @@
         },
         {
           "problem": "",
+          "score": 0.85,
+          "solution": "issue321-tau-orchestration-episode-1789445457264 turn-one issue321_tau_orchestration_episode_1789445457264 turn one accepted",
+          "tags": [
+            "tau",
+            "orchestration",
+            "episode",
+            "node_settlement"
+          ]
+        },
+        {
+          "problem": "",
           "score": 0.833,
-          "solution": "issue321-tau-orchestration-episode-1789444762657 turn-one issue321_tau_orchestration_episode_1789444762657 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789443767182 turn-one issue321_tau_orchestration_episode_1789443767182 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -667,7 +667,7 @@
         {
           "problem": "",
           "score": 0.817,
-          "solution": "issue321-tau-orchestration-episode-1789440906902 turn-one issue321_tau_orchestration_episode_1789440906902 turn one accepted",
+          "solution": "issue321-tau-orchestration-episode-1789445473241 turn-one issue321_tau_orchestration_episode_1789445473241 turn one accepted",
           "tags": [
             "tau",
             "orchestration",
@@ -683,7 +683,7 @@
         ],
         "k": 12,
         "memory_first": true,
-        "q": "issue321_tau_orchestration_episode_1789445473241",
+        "q": "issue321_tau_orchestration_episode_1789453925222",
         "recall_envelope": {
           "collections": [
             "agent_conversations"
@@ -693,7 +693,7 @@
           "limit": 12,
           "profile_hash": "638629ccdbe77b7bdad08403d5b538a37f6ffcd4f57bf0c068f9c9535963bce5",
           "profile_version": "memory.recall_profile.v1",
-          "q": "issue321_tau_orchestration_episode_1789445473241",
+          "q": "issue321_tau_orchestration_episode_1789453925222",
           "recall_profile": "tau_orchestration_recall",
           "recall_profile_source": "explicit",
           "required_artifacts": [
@@ -714,7 +714,7 @@
           "selector_lifecycle_mode": null,
           "tags": [],
           "threshold": 0.0,
-          "took_ms": 2580,
+          "took_ms": 2418,
           "used_dense": true,
           "used_reranker": false
         },
@@ -728,7 +728,7 @@
         "reranker_mode": "off",
         "runtime_pressure": {
           "active_workloads": [],
-          "checked_at": 1789445481,
+          "checked_at": 1789453932,
           "level": "normal",
           "recommended_action": "No active persisted runtime pressure detected.",
           "slow_query_risk": false,
@@ -736,7 +736,7 @@
         },
         "scope": "",
         "threshold": 0.0,
-        "took_ms": 2580,
+        "took_ms": 2418,
         "used_dense": true,
         "used_reranker": false
       },
@@ -756,15 +756,15 @@
   "permanent_rejection_state": "permanently_rejected",
   "pre_relay_pending_count": 9,
   "projected_doc_keys": [
-    "tau_episode_25892878a90698befd227ff021e64fdfa8855e40",
-    "tau_episode_b125930d8c001c6db5c84de732ff2276741652f5",
-    "tau_episode_ec715c046ac7a94c69b40f2a5583331743af211c",
-    "tau_episode_e8ca4db6e676115fdce9e0ec8b8ee184e6566cfd",
-    "tau_episode_62290f627bf303468ac06615c54e93f6b06e5771",
-    "tau_episode_6b9cc1f3ba963570be25a83b8aa75c98d60f396c",
-    "tau_episode_a5762c4611143ff29da9eb0c0cddd0cb33d01bb5",
-    "tau_episode_b6a751b1ef4671ef2444d5127a7210128374af1f",
-    "tau_episode_60dc3cf7aed146887cbf4a44ac5ebde3f0476859"
+    "tau_episode_80fc50439679ffb4f28e9a01d2fca907706e710f",
+    "tau_episode_937ad7a2e062ca5a265bca1f71e94d53adf85694",
+    "tau_episode_ae581e79feab038e2ef68ca744640caf04f8a474",
+    "tau_episode_d341bd25fa0f397472e42596b3f20a76d324aa74",
+    "tau_episode_883a154dc78cc000b4648747157456c608585adf",
+    "tau_episode_9d1a47371ca6231a3284e3a136f91c838825ff09",
+    "tau_episode_e411be21589eb6feee08a3fc6a8162ff7258907e",
+    "tau_episode_9db043c9b868e72a68fb26e111bc2839821f7181",
+    "tau_episode_33defd3ce328f8150aa0fcc01d7eadc1c8a50db6"
   ],
   "projected_episode_count": 9,
   "provider_live": false,
