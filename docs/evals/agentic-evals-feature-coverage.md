@@ -66,9 +66,9 @@ The retained guard fails closed, and the agentic-evals fixture proves these inje
 
 ## Evidence Index
 
-`local/agentic-evals/tau-agentic-eval-evidence-index.json` is the verifier-owned evidence index for the retained Tau agentic-eval milestone. It records `tau.agentic_eval_evidence_verifier.v1`, the `agentic_evals.report.v2` runner schema, the command used to build the index, checkout SHA/ref/dirty-tree declaration, 15 retained report digests, and 21 retained artifact digests referenced by report trial `artifact_hashes`.
+`local/agentic-evals/tau-agentic-eval-evidence-index.json` is the verifier-owned evidence index for the retained Tau agentic-eval milestone. It records `tau.agentic_eval_evidence_verifier.v1`, the `agentic_evals.report.v2` runner schema, the command used to build the index, checkout SHA/ref/dirty-tree declaration, retained report digests, report-referenced artifact digests, and closure proof bundle digests under `docs/proofs/tickets/*/closure-evidence.json`.
 
-The verifier PASS receipt is `local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json`. It re-reads the index, reports, and referenced artifacts without regenerating reports, and records `retained_reports_live_readback.mocked=false`, `retained_reports_live_readback.all_unmocked=true`, `retained_reports_live_readback.live=true`, and `retained_reports_live_readback.ready=true`.
+The verifier PASS receipt is `local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json`. It re-reads the index, reports, referenced artifacts, and ticket proof bundles without regenerating reports, and records `retained_reports_live_readback.mocked=false`, `retained_reports_live_readback.all_unmocked=true`, `retained_reports_live_readback.live=true`, and `retained_reports_live_readback.ready=true`.
 
 ## Proof Boundary
 

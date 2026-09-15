@@ -11,6 +11,7 @@
     {
       "id": "tau.agentic_eval_evidence_index.revision_bound_retained_reports",
       "description": "Tau content-addresses retained agentic-eval reports and report-referenced artifacts, records report commands and runner schema version, binds report source SHA/ref and checkout dirty-tree declarations, and verifies the retained evidence fail-closed.",
+      "claim_semantics": "protocol",
       "criticality": "critical",
       "evidence_required": {
         "live_e2e": true,

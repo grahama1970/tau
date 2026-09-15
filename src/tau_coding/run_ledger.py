@@ -692,7 +692,9 @@ def verify_audit_projection(
         else:
             prior_timestamps.append((index, timestamp))
 
-    for (left_index, left), (right_index, right) in zip(prior_timestamps, prior_timestamps[1:]):
+    for (left_index, left), (right_index, right) in zip(
+        prior_timestamps, prior_timestamps[1:], strict=False
+    ):
         if (right - left).total_seconds() < -max_clock_skew_seconds:
             failures.append(
                 _audit_failure(
@@ -778,15 +780,16 @@ def build_agentic_eval_ledger_evidence_index(
     """
 
     resolved_repo = repo.expanduser().resolve()
-    reports = (
-        [path.expanduser() for path in report_paths]
-        if report_paths
-        else _default_agentic_eval_report_paths(resolved_repo)
+    reports = _agentic_eval_report_paths_for_index(
+        resolved_repo,
+        report_paths=report_paths,
+        output_path=output_path,
     )
     current_sha = _git_text(resolved_repo, "rev-parse", "HEAD")
     current_ref = _git_text(resolved_repo, "branch", "--show-current")
     porcelain = _git_status_porcelain(resolved_repo)
-    dirty_tree = porcelain != "" if porcelain is not None else None
+    disallowed_porcelain = _disallowed_status_porcelain(porcelain or "")
+    dirty_tree = bool(disallowed_porcelain) if porcelain is not None else None
     report_entries: list[dict[str, Any]] = []
     artifact_entries: dict[str, dict[str, Any]] = {}
     errors: list[dict[str, Any]] = []
@@ -835,8 +838,13 @@ def build_agentic_eval_ledger_evidence_index(
             "ref": current_ref,
             "dirty_tree": dirty_tree,
             "dirty_tree_declaration": "dirty" if dirty_tree else "clean",
-            "status_porcelain": porcelain or "",
+            "status_porcelain": "\n".join(disallowed_porcelain),
+            "ignored_mutable_status_porcelain": "\n".join(
+                _allowed_mutable_status_porcelain(porcelain or "")
+            ),
         },
+        "ticket_proof_bundle_count": len(_ticket_proof_bundle_entries(resolved_repo)),
+        "ticket_proof_bundles": _ticket_proof_bundle_entries(resolved_repo),
         "excluded_reports": [
             {
                 "path": SELF_AGENTIC_EVAL_EVIDENCE_REPORT,
@@ -857,7 +865,8 @@ def build_agentic_eval_ledger_evidence_index(
             "proves": [
                 "Retained agentic-eval report bytes are content-addressed.",
                 "Report-referenced retained artifacts are content-addressed.",
-                "Report commands, report schema version, report source SHA/ref, and checkout dirty state are recorded.",
+                "Report commands, report schema version, report source SHA/ref, "
+                "and checkout dirty state are recorded.",
             ],
             "does_not_prove": [
                 "Provider semantic quality.",
@@ -963,6 +972,13 @@ def verify_agentic_eval_ledger_evidence_index(
         index.get("artifacts") if isinstance(index.get("artifacts"), list) else [],
         failures,
     )
+    _verify_ticket_proof_bundles(
+        resolved_repo,
+        index.get("ticket_proof_bundles")
+        if isinstance(index.get("ticket_proof_bundles"), list)
+        else [],
+        failures,
+    )
     result = _agentic_eval_verification_result(
         index_path=resolved_index,
         repo=resolved_repo,
@@ -1042,7 +1058,14 @@ def _write_agentic_eval_negative_selftest(repo: Path, *, mode: str, out: Path) -
         )
         _git_init_commit(mirror)
         index_path = Path(tmp) / "index.json"
-        build_agentic_eval_ledger_evidence_index(mirror, output_path=index_path)
+        milestone_reports = _existing_agentic_eval_evidence_index_report_paths(
+            mirror, mirror / DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX
+        )
+        build_agentic_eval_ledger_evidence_index(
+            mirror,
+            output_path=index_path,
+            report_paths=milestone_reports,
+        )
         if mode == "mutated-report":
             report = _first_index_report(index_path)
             (mirror / report).write_text(
@@ -1055,7 +1078,9 @@ def _write_agentic_eval_negative_selftest(repo: Path, *, mode: str, out: Path) -
                 raise RuntimeError("substituted-report selftest requires one retained report")
             report_path = mirror / reports[0]
             substituted = _read_json_object(report_path)
-            repo_block = substituted.get("repo") if isinstance(substituted.get("repo"), dict) else {}
+            repo_block = (
+                substituted.get("repo") if isinstance(substituted.get("repo"), dict) else {}
+            )
             substituted["repo"] = {**repo_block, "sha": "substituted-from-another-sha"}
             _write_json(report_path, substituted)
         elif mode == "deleted-artifact":
@@ -1198,7 +1223,9 @@ def _verify_agentic_eval_reports(
         try:
             report = _read_json_object(path)
         except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
-            failures.append({"code": "report_unreadable", "path": entry.get("path"), "message": str(exc)})
+            failures.append(
+                {"code": "report_unreadable", "path": entry.get("path"), "message": str(exc)}
+            )
             continue
         repo_block = report.get("repo") if isinstance(report.get("repo"), dict) else {}
         comparisons = {
@@ -1213,7 +1240,11 @@ def _verify_agentic_eval_reports(
             if actual != entry.get(field):
                 failures.append(
                     {
-                        "code": "report_identity_mismatch" if field != "repo_sha" else "report_repo_sha_mismatch",
+                        "code": (
+                            "report_identity_mismatch"
+                            if field != "repo_sha"
+                            else "report_repo_sha_mismatch"
+                        ),
                         "path": entry.get("path"),
                         "field": field,
                         "expected": entry.get(field),
@@ -1249,16 +1280,122 @@ def _verify_agentic_eval_artifacts(
                     "actual": actual_sha,
                 }
             )
-        reported_values = entry.get("reported_sha256_values")
-        if isinstance(reported_values, list) and reported_values and actual_sha not in reported_values:
+
+
+def _verify_ticket_proof_bundles(
+    repo: Path, bundles: list[Any], failures: list[dict[str, Any]]
+) -> None:
+    for entry in bundles:
+        if not isinstance(entry, dict):
+            failures.append({"code": "ticket_proof_bundle_entry_invalid"})
+            continue
+        path = repo / str(entry.get("path") or "")
+        if not path.is_file():
+            failures.append({"code": "ticket_proof_bundle_missing", "path": entry.get("path")})
+            continue
+        actual_sha = "sha256:" + _sha256_file(path)
+        if actual_sha != entry.get("sha256"):
             failures.append(
                 {
-                    "code": "artifact_reported_digest_mismatch",
+                    "code": "ticket_proof_bundle_digest_mismatch",
                     "path": entry.get("path"),
+                    "expected": entry.get("sha256"),
                     "actual": actual_sha,
-                    "reported_sha256_values": reported_values,
                 }
             )
+        try:
+            payload = _read_json_object(path)
+        except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            failures.append(
+                {
+                    "code": "ticket_proof_bundle_unreadable",
+                    "path": entry.get("path"),
+                    "message": str(exc),
+                }
+            )
+            continue
+        for field in (
+            "issue",
+            "status",
+            "mocked",
+            "live",
+            "source_revision",
+            "reviewer_run_addressed",
+        ):
+            if payload.get(field) != entry.get(field):
+                failures.append(
+                    {
+                        "code": "ticket_proof_bundle_identity_mismatch",
+                        "path": entry.get("path"),
+                        "field": field,
+                        "expected": entry.get(field),
+                        "actual": payload.get(field),
+                    }
+                )
+        _verify_ticket_proof_hash_map(
+            repo,
+            path=str(entry.get("path") or ""),
+            hashes=entry.get("artifact_hashes"),
+            missing_code="ticket_proof_artifact_missing",
+            mismatch_code="ticket_proof_artifact_digest_mismatch",
+            failures=failures,
+        )
+        _verify_ticket_proof_hash_map(
+            repo,
+            path=str(entry.get("path") or ""),
+            hashes=entry.get("source_file_hashes"),
+            missing_code="ticket_proof_source_file_missing",
+            mismatch_code="ticket_proof_source_file_digest_mismatch",
+            failures=failures,
+        )
+        if entry.get("issue") == 316:
+            dependencies = entry.get("issue_dependencies")
+            if not isinstance(dependencies, dict):
+                dependencies = {}
+            issue_314 = dependencies.get("314_live_state_readback")
+            if not isinstance(issue_314, dict) or issue_314.get("state") != "CLOSED":
+                failures.append(
+                    {
+                        "code": "issue_314_not_closed_for_316",
+                        "path": entry.get("path"),
+                        "actual": issue_314,
+                    }
+                )
+
+
+
+def _verify_ticket_proof_hash_map(
+    repo: Path,
+    *,
+    path: str,
+    hashes: Any,
+    missing_code: str,
+    mismatch_code: str,
+    failures: list[dict[str, Any]],
+) -> None:
+    if not isinstance(hashes, dict):
+        return
+    for raw_path, expected in hashes.items():
+        if not isinstance(raw_path, str) or not isinstance(expected, str):
+            continue
+        target = Path(raw_path)
+        if not target.is_absolute():
+            target = repo / target
+        if not target.is_file():
+            failures.append({"code": missing_code, "path": path, "target": raw_path})
+            continue
+        actual = "sha256:" + _sha256_file(target)
+        if actual != expected:
+            failures.append(
+                {
+                    "code": mismatch_code,
+                    "path": path,
+                    "target": raw_path,
+                    "expected": expected,
+                    "actual": actual,
+                }
+            )
+
 
 
 def _agentic_eval_verification_result(
@@ -1301,13 +1438,22 @@ def _agentic_eval_verification_result(
         "require_live_reports": require_live_reports,
         "report_count": len(reports),
         "artifact_count": len(artifacts),
+        "ticket_proof_bundle_count": len(
+            index.get("ticket_proof_bundles")
+            if isinstance(index.get("ticket_proof_bundles"), list)
+            else []
+        ),
         "retained_reports_live_readback": {
-            "mocked": any(not isinstance(row, dict) or row.get("mocked") is not False for row in reports),
+            "mocked": any(
+                not isinstance(row, dict) or row.get("mocked") is not False for row in reports
+            ),
             "all_unmocked": all(
                 isinstance(row, dict) and row.get("mocked") is False for row in reports
             ),
             "live": all(isinstance(row, dict) and row.get("live") is True for row in reports),
-            "ready": all(isinstance(row, dict) and row.get("readiness") == "READY" for row in reports),
+            "ready": all(
+                isinstance(row, dict) and row.get("readiness") == "READY" for row in reports
+            ),
             "count": len(reports),
         },
         "failure_count": len(failures),
@@ -1315,8 +1461,10 @@ def _agentic_eval_verification_result(
         "failures": failures,
         "proof_scope": {
             "proves": [
-                "The verifier re-read the evidence index, retained reports, and referenced artifacts by digest without regenerating reports.",
-                "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence can be represented as stable failure codes.",
+                "The verifier re-read the evidence index, retained reports, and "
+                "referenced artifacts by digest without regenerating reports.",
+                "Missing, mutated, substituted, wrong-SHA, and dirty-tree evidence "
+                "can be represented as stable failure codes.",
             ],
             "does_not_prove": [
                 "Provider semantic quality.",
@@ -1353,11 +1501,92 @@ def _agentic_eval_selftest_payload(
 
 def _default_agentic_eval_report_paths(repo: Path) -> list[Path]:
     reports = []
-    for path in sorted((repo / "local" / "agentic-evals").glob("*agentic-evals-report.json")):
-        if _repo_relative(repo, path) == SELF_AGENTIC_EVAL_EVIDENCE_REPORT:
-            continue
-        reports.append(path)
+    seen: set[str] = set()
+    for pattern in (
+        "local/agentic-evals/*agentic-evals-report.json",
+        "docs/proofs/tickets/**/*agentic-evals-report.json",
+    ):
+        for path in sorted(repo.glob(pattern)):
+            rel = _repo_relative(repo, path)
+            if rel == SELF_AGENTIC_EVAL_EVIDENCE_REPORT or rel in seen:
+                continue
+            seen.add(rel)
+            reports.append(path)
     return reports
+
+
+def _agentic_eval_report_paths_for_index(
+    repo: Path,
+    *,
+    report_paths: Sequence[Path],
+    output_path: Path | None,
+) -> list[Path]:
+    if report_paths:
+        return [path.expanduser() for path in report_paths]
+    existing = _existing_agentic_eval_evidence_index_report_paths(repo, output_path)
+    if existing:
+        return existing
+    return _default_agentic_eval_report_paths(repo)
+
+
+
+def _existing_agentic_eval_evidence_index_report_paths(
+    repo: Path, output_path: Path | None
+) -> list[Path]:
+    if output_path is None:
+        return []
+    candidate = output_path.expanduser()
+    if not candidate.is_absolute():
+        candidate = repo / candidate
+    try:
+        resolved = candidate.resolve()
+    except OSError:
+        resolved = candidate.absolute()
+    if _repo_relative(repo, resolved) != DEFAULT_AGENTIC_EVAL_EVIDENCE_INDEX:
+        return []
+    if not resolved.is_file():
+        return []
+    try:
+        index = _read_json_object(resolved)
+    except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        return []
+    reports = index.get("reports") if isinstance(index.get("reports"), list) else []
+    selected: list[Path] = []
+    for entry in reports:
+        if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+            continue
+        if entry["path"] == SELF_AGENTIC_EVAL_EVIDENCE_REPORT:
+            continue
+        selected.append(Path(entry["path"]))
+    return selected
+
+
+
+def _ticket_proof_bundle_entries(repo: Path) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    for path in sorted((repo / "docs" / "proofs" / "tickets").glob("*/closure-evidence.json")):
+        try:
+            payload = _read_json_object(path)
+        except (OSError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        entries.append(
+            {
+                "path": _repo_relative(repo, path),
+                "sha256": "sha256:" + _sha256_file(path),
+                "bytes": path.stat().st_size,
+                "issue": payload.get("issue"),
+                "status": payload.get("status"),
+                "mocked": payload.get("mocked"),
+                "live": payload.get("live"),
+                "source_revision": payload.get("source_revision"),
+                "reviewer_run_addressed": payload.get("reviewer_run_addressed"),
+                "artifact_hashes": payload.get("artifact_hashes", {}),
+                "source_file_hashes": payload.get("source_file_hashes", {}),
+                "issue_dependencies": payload.get("issue_dependencies", {}),
+            }
+        )
+    return entries
+
 
 
 def _index_report_paths(index_path: Path) -> list[Path]:
@@ -1402,16 +1631,33 @@ def _git_status_porcelain(repo: Path) -> str | None:
 
 
 def _disallowed_dirty_paths(porcelain: str) -> list[str]:
-    paths: list[str] = []
-    for line in porcelain.splitlines():
-        if not line:
-            continue
-        path = line[2:].strip() if len(line) > 2 else line.strip()
-        if " -> " in path:
-            path = path.rsplit(" -> ", 1)[1]
-        if not path.startswith(AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS):
-            paths.append(path)
-    return paths
+    return [_status_porcelain_path(line) for line in _disallowed_status_porcelain(porcelain)]
+
+
+
+def _disallowed_status_porcelain(porcelain: str) -> list[str]:
+    return [
+        line
+        for line in porcelain.splitlines()
+        if line and not _status_porcelain_path(line).startswith(AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS)
+    ]
+
+
+
+def _allowed_mutable_status_porcelain(porcelain: str) -> list[str]:
+    return [
+        line
+        for line in porcelain.splitlines()
+        if line and _status_porcelain_path(line).startswith(AGENTIC_EVAL_EVIDENCE_MUTABLE_PATHS)
+    ]
+
+
+
+def _status_porcelain_path(line: str) -> str:
+    path = line[2:].strip() if len(line) > 2 else line.strip()
+    if " -> " in path:
+        path = path.rsplit(" -> ", 1)[1]
+    return path
 
 
 def _index_source_sha_allowance(repo: Path, indexed_sha: str, current_sha: str) -> dict[str, Any]:
