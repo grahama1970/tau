@@ -1,10 +1,8 @@
 {
   "agentic_eval_evidence_index": {
     "artifact_count": 28,
-    "failure_codes": [
-      "ticket_proof_artifact_digest_mismatch"
-    ],
-    "ok": false,
+    "failure_codes": [],
+    "ok": true,
     "present": true,
     "report_count": 15,
     "retained_reports_live_readback": {
@@ -14,9 +12,9 @@
       "mocked": false,
       "ready": true
     },
-    "sha256": "sha256:b0b692a97340aef07b7de4297cd48429ceba9e0cb961d5706e4ef2aa286f86a2",
+    "sha256": "sha256:6d83f0714f202548d6cc5886166511cb6b7b79c17ad4f43fd6ec1b1a053d3118",
     "source": "local/agentic-evals/tau-agentic-eval-evidence-index.json",
-    "status": "FAIL"
+    "status": "PASS"
   },
   "capabilities": {
     "all_present": true,
@@ -185,17 +183,17 @@
       "proves": "Known developer-visible stub, placeholder, degraded, and audited pass surfaces are classified.",
       "provider_live": false
     },
-    "repo": "/tmp/tau-358-qualification",
+    "repo": "/tmp/tau-t2-verify-YkwNNN/repo",
     "schema": "tau.developer_surface_inventory.v1",
     "status": "PASS",
     "unclassified_count": 0,
     "unclassified_markers": []
   },
-  "generated_at": "2026-09-15T20:19:21.687835+00:00",
+  "generated_at": "2026-09-15T21:04:07.310227+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": true,
-    "commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2"
+    "commit": "5684a8d3fb9265b7dbfe745ae070b67d1b681f63"
   },
   "github": {
     "branch_protection": {
@@ -396,7 +394,7 @@
       ],
       "ok": false,
       "schema": "tau.human_acceptance_attestation_verification.v1",
-      "source_commit": "2ee17893dd4ffaee21bae958a97e953e032ac7d2",
+      "source_commit": "5684a8d3fb9265b7dbfe745ae070b67d1b681f63",
       "state": "PENDING_HUMAN_SIGNATURE",
       "status": "PENDING_HUMAN_SIGNATURE"
     }
@@ -432,7 +430,7 @@
   },
   "proof_index": {
     "count": 44,
-    "digest": "sha256:8ea6368bd99a0602f38f5e83bbe2c4e3742e2d85e5420c6177e4d67ee631c046",
+    "digest": "sha256:2bd2fe4e05c384038ba7cc18b090f0463424a557ff3463b56dd16a126eb50aa3",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -560,7 +558,7 @@
       },
       {
         "path": "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json",
-        "sha256": "sha256:21c3c716713d0518c1b4d971aa0a17abf76d1fd122646996a1e0bec1726b2e5e"
+        "sha256": "sha256:6494d66b860b8732ef5b4740726bd88427b8363db1d62ce5203da2569eaab118"
       },
       {
         "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
@@ -613,14 +611,14 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:99f4a6fe1c291132eb298777f447e1e796b80bfd867f096781f838b0e9bf9678",
+  "semantic_content_digest": "sha256:8a146c611937a7e40c569b972608985f5a8e52518e9ddc532a43e9ce07abbee5",
   "source_digests": {
     "GOAL.md": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "agentic_eval_evidence_index": "sha256:b0b692a97340aef07b7de4297cd48429ceba9e0cb961d5706e4ef2aa286f86a2",
+    "agentic_eval_evidence_index": "sha256:6d83f0714f202548d6cc5886166511cb6b7b79c17ad4f43fd6ec1b1a053d3118",
     "github_snapshot": "sha256:44335484e9297d0ed1dd174660a90bba40ae20154c92d085250599a33e68f0dc",
     "human_acceptance_attestation": null,
-    "proof_index": "sha256:8ea6368bd99a0602f38f5e83bbe2c4e3742e2d85e5420c6177e4d67ee631c046",
+    "proof_index": "sha256:2bd2fe4e05c384038ba7cc18b090f0463424a557ff3463b56dd16a126eb50aa3",
     "pyproject.toml": "sha256:0129dd918978c3760bd29ca736f5f6e01e5402d2dfa840a7df5538fd11fe854f"
   },
   "workflows": {
