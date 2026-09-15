@@ -1,0 +1,47 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "kind": "repository_readiness_validation",
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+        "sha256": "sha256:7977839140e8c54b0d2acbd40e410ce471edc9fd5d5f160dd34f8896054c19b1"
+      }
+    ],
+    "dirty": false,
+    "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+    "require_clean": true,
+    "schema": "tau.repository_readiness_validation.v1",
+    "status": "PASS",
+    "summary": "Repository readiness policy passed."
+  },
+  "artifacts": [
+    {
+      "kind": "repository_readiness_validation",
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+      "sha256": "sha256:7977839140e8c54b0d2acbd40e410ce471edc9fd5d5f160dd34f8896054c19b1"
+    }
+  ],
+  "commands_run": [
+    "deterministic readiness validation"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:d7ec3365b7e828706fab86a95363cd0e859a5ffc78387da272cbb54fa9832f05",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+  "handoff_summary": "Repository readiness validation passed and may be published.",
+  "live": true,
+  "mocked": false,
+  "node_id": "validate-readiness",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

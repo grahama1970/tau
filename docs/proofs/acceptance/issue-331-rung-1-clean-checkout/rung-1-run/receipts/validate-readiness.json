@@ -3,12 +3,12 @@
     "artifacts": [
       {
         "kind": "repository_readiness_validation",
-        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
-        "sha256": "sha256:68799b3bd1a73534744079834be24eb6e11b95d72cdd8eb028a8d89ed2b57bdd"
+        "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+        "sha256": "sha256:e7845d346dba9a3e8fda357ef332f28afb6db762f0aa30491a190036603bd99a"
       }
     ],
     "dirty": false,
-    "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
+    "goal_hash": "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1",
     "require_clean": true,
     "schema": "tau.repository_readiness_validation.v1",
     "status": "PASS",
@@ -17,8 +17,8 @@
   "artifacts": [
     {
       "kind": "repository_readiness_validation",
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
-      "sha256": "sha256:68799b3bd1a73534744079834be24eb6e11b95d72cdd8eb028a8d89ed2b57bdd"
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+      "sha256": "sha256:e7845d346dba9a3e8fda357ef332f28afb6db762f0aa30491a190036603bd99a"
     }
   ],
   "commands_run": [
@@ -26,7 +26,7 @@
   ],
   "errors": [],
   "execution_evidence": {
-    "command_result_sha256": "sha256:e937431b6464b08d22aa457726100e416701b98f65bdf1406f12d2e1065190d1",
+    "command_result_sha256": "sha256:d3f6c685e463a6d68837621037597339ae437124b8084c3207dce164112ecda0",
     "kind": "local_subprocess",
     "returncode": 0,
     "runtime_artifact_count": 4,
@@ -34,7 +34,7 @@
     "runtime_event_state": "EXITED",
     "runtime_submit_delivery_status": "CONFIRMED"
   },
-  "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
+  "goal_hash": "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1",
   "handoff_summary": "Repository readiness validation passed and may be published.",
   "live": true,
   "mocked": false,

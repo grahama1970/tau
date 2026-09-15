@@ -1,0 +1,54 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "kind": "repository_readiness_json",
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.json",
+        "sha256": "sha256:b1602fc27fc021b437afcd031196cacb027616318807c093147c2e09431be641"
+      },
+      {
+        "kind": "repository_readiness_markdown",
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.md",
+        "sha256": "sha256:f3c4151f4ab9e473b61eb7ec2c6e485fccf37f65dd9c97d377908d5fdf570919"
+      }
+    ],
+    "schema": "tau.repository_readiness_report.v1",
+    "status": "READY",
+    "summary": "Repository is ready for focused work."
+  },
+  "artifacts": [
+    {
+      "kind": "repository_readiness_json",
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.json",
+      "sha256": "sha256:b1602fc27fc021b437afcd031196cacb027616318807c093147c2e09431be641"
+    },
+    {
+      "kind": "repository_readiness_markdown",
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.md",
+      "sha256": "sha256:f3c4151f4ab9e473b61eb7ec2c6e485fccf37f65dd9c97d377908d5fdf570919"
+    }
+  ],
+  "commands_run": [
+    "deterministic readiness publication"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+  "handoff_summary": "The accepted repository-readiness report is available.",
+  "live": true,
+  "mocked": false,
+  "node_id": "publish-readiness",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

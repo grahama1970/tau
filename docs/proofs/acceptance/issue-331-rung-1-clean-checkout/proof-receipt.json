@@ -1,23 +1,23 @@
 {
   "bootstrap_log": {
-    "bytes": 2922,
-    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
-    "sha256": "sha256:8ae9e4a4551decb210ede8638b4dbb5ed4287b0ebb021764c74e8c8e2d1e92bb"
+    "bytes": 2578,
+    "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
+    "sha256": "sha256:acd2b904349e6560727b24f68af3b465ae5c8479c9e231192f4bd76b09382882"
   },
   "ladder_manifest": {
     "bytes": 6488,
-    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
+    "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
     "sha256": "sha256:9cea30fd6ba5df4c39195e3f9489e4300917b318ce6591cc69b026670045a309"
   },
   "live": true,
   "mocked": false,
   "negative_mutation_receipt": {
     "bytes": 536,
-    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json",
-    "sha256": "sha256:5e57b1db6684dfa6682286c07ce22ef2769f136d3f088d84da439984bee34b59"
+    "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json",
+    "sha256": "sha256:70ba75f977b620716396ce6771d4c4a1977adb6f19929c83833e35fcfbf64ae7"
   },
   "ok": true,
-  "output_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout",
+  "output_dir": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout",
   "proof_boundary": {
     "does_not_prove": [
       "Rungs 2 through 5 have fresh retained clean-checkout proof.",
@@ -35,40 +35,40 @@
   "provider_live": false,
   "rung_1_artifacts": {
     "dag_progress": {
-      "bytes": 2552,
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
-      "sha256": "sha256:25d90b0908b6358e1e9c91b5337f4b6eb34ad08fa051016e4b7e53d7a0ae20fc"
+      "bytes": 2264,
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
+      "sha256": "sha256:3b71c8d1581f0190796fb206b826f83af219d0c028372fb567f61359914eafe5"
     },
     "events": {
-      "bytes": 2921,
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
-      "sha256": "sha256:b9fce97c12b233f64c1a05d7b1baf060eba1a44d9fc59056127cba01f2653ca1"
+      "bytes": 2697,
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
+      "sha256": "sha256:bd89f4f9294602e895492194855bf89badbd6da8476719c79a2930b8af3b5be5"
     },
     "ledger": {
-      "bytes": 34153,
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
-      "sha256": "sha256:4a0bc57cda5d46b692288c6dbf1979fab02a6cbecd78d0d4dd87ff490b3f0bad"
+      "bytes": 58353,
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
+      "sha256": "sha256:f9ca0086cd227a0cd920cc1d04006e9bef9d6fd98c60024d0beb469a7c7fd06e"
     },
     "ledger_replay": {
       "bytes": 341,
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
-      "sha256": "sha256:d8ed1f0ab8a66f9355956ef863e74bffcc112b60c2680ea93120d0e8c1bc931a"
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
+      "sha256": "sha256:ba317a0350e8d7738bfc03c3f8b551bd7f4e7cd3e651de6643ad0757974be8d3"
     },
     "result": {
       "bytes": 1022,
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json",
-      "sha256": "sha256:465a399c84d72d62c0149fea0767b55669cc99243bed66416931c3841607a493"
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json",
+      "sha256": "sha256:6787af3ac7f5b3f8e8a3eae2f948a358f11388c386afbc87e14eb1ab9166d4c5"
     }
   },
   "schema": "tau.dag_ladder_rung1_clean_checkout_proof.v1",
-  "source_branch": "watchdog/issue-331",
-  "source_commit": "588e5171c28df288dbce75feeaeae4d546bfb1af",
-  "source_repo": "/tmp/tau-issue-331-agentic-source",
+  "source_branch": "main",
+  "source_commit": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+  "source_repo": "/tmp/tau-331-origin-main.VxaSqN/source-clean",
   "status": "PASS",
-  "verified_at": "2026-09-02T21:46:05.310177Z",
+  "verified_at": "2026-09-15T07:08:08.212173Z",
   "verifier_receipt": {
-    "bytes": 2007,
-    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json",
-    "sha256": "sha256:de473908551a0cdb3141a2ebbb1e3aeb7101e21227bf60f6382c29f667e11844"
+    "bytes": 1751,
+    "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json",
+    "sha256": "sha256:66c381966834def290045188d322d91b93367c9bb285ba385f9d51cbf44e7978"
   }
 }

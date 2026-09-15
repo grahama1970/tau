@@ -4,9 +4,9 @@
 
 **Goal:** Prove the first canonical Tau DAG rung from a clean checkout.
 
-**Repository:** `/tmp/tau-rung1-clean-b2bw4hd2/checkout`
+**Repository:** `/tmp/tau-rung1-clean-9s0mvd1h/checkout`
 
-**HEAD:** `588e5171c28df288dbce75feeaeae4d546bfb1af`
+**HEAD:** `de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9`
 
 **Branch:** ``
 

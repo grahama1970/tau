@@ -1,10 +1,10 @@
 {
   "schema": "agentic_evals.report.v2",
   "source": "evals/tau_dag_ladder_rung1_agentic_eval.json",
-  "run_id": "3641ed4f5fcc",
-  "fixture_sha256": "sha256:1127c52004476559c0f98adeab8ab36db7828c07f7ec4439bb34d0228709f45b",
+  "run_id": "fb9327d06b39",
+  "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
   "repo": {
-    "sha": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+    "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
     "ref": "main"
   },
   "mocked": false,
@@ -12,7 +12,7 @@
   "live": true,
   "proof_scope": "Tau canonical packaged DAG ladder manifest and rung-1 clean-checkout proof",
   "claims": {
-    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, artifact digest readback, and negative artifact mutation detection.",
+    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, retained dag-progress/events/ledger/result artifacts, ledger replay, verifier PASS receipt, and negative mutation detection.",
     "does_not_prove": "Rungs 2-5 execute from clean checkout, provider-live execution, dynamic React Flow progress, or human acceptance of the full GOAL.md outcome."
   },
   "what_was_exercised": "local commands declared in the fixture manifest",
@@ -26,7 +26,7 @@
     "claims": [
       {
         "id": "tau.dag_ladder.rung1_clean_checkout",
-        "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with independent artifact readback and negative controls.",
+        "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with retained runtime artifacts, ledger replay, verifier receipt, and negative controls.",
         "criticality": "critical",
         "required_evidence": [
           "fault_injected_deterministic",
@@ -52,6 +52,7 @@
         "exempt_evidence": [],
         "exemptions": [],
         "unqualified_live_cases": [],
+        "ineligible_supporting_cases": [],
         "supporting_cases": [
           "rung1-clean-checkout-workflow-proof",
           "rung1-artifact-mutation-and-missing-artifact-detected"
@@ -61,7 +62,7 @@
   },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-29T19:31:43.201768+00:00",
+  "generated_at": "2026-09-15T07:07:17.244284+00:00",
   "case_count": 2,
   "required_case_count": 2,
   "outcome_counts": {
@@ -77,15 +78,83 @@
       "flaky": false,
       "name": "rung1-clean-checkout-workflow-proof",
       "type": "positive",
-      "case_id": "3641ed4f5fcc-c000",
+      "case_id": "fb9327d06b39-c000",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+        "test_source_sha256": "sha256:4acbaebe054dfc1a670d4a07306e8cd8437c0e0142812f701055a0cbe81b7d36",
+        "oracle_sha256": "sha256:9fa1591441bb745a0a2c6e02ab74d256b6df2f4e0af304599a83044b0e5476e4",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:1c466d5a929708191aeb9440d",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:4acbaebe054dfc1a670d4a07306e8cd8437c0e0142812f701055a0cbe81b7d36",
+      "oracle_sha256": "sha256:9fa1591441bb745a0a2c6e02ab74d256b6df2f4e0af304599a83044b0e5476e4",
+      "application_identity": {
+        "repo": {
+          "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "live_e2e",
       "effective_evidence_class": "live_e2e",
       "live_qualified": true,
@@ -97,35 +166,147 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 8686.974,
+      "avg_latency_ms": 15677.618,
       "trials": [
         {
           "exit_code": 0,
-          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/tmp/tau-331-origin-main.VxaSqN/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 8656.72,
+          "duration_ms": 16116.66,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "3641ed4f5fcc-c000-t00",
+          "trial_id": "fb9327d06b39-c000-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:0d28f4eaa6c23a834e736f6205c3fc5e0627718319c385987fae330461caffb9"
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:b5b0b3ad874213641981b7398021bc118378f7256062583a5d4551dea71214a0",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json": "sha256:c8ad943d59dd834590b5b9bc09b1b7aad4d48149072d8c7f0d9d1ccbc05a51d3",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json": "sha256:1251dac615f59761cd14c5f5cd41b2b9b146b14ae694203589dae5d039ab4bff",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json": "sha256:442395d67a099b61d8abf4ca495605d026062bdd06bbde5054d02e6c2091f608",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl": "sha256:799625d7425bc03522793d76f1e3dca74f6fe9846544dc68e93fcff36885696b",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json": "sha256:48fa7fd94575d0196adbd63a43684949f2ee2dd98efd943f0e41ec9b97aa8b48",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json": "sha256:f35f15142bb030a0ccf1f143713ce853495e4fdd522b6139930cef91486a7e7f"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+            "test_source_sha256": "sha256:4acbaebe054dfc1a670d4a07306e8cd8437c0e0142812f701055a0cbe81b7d36",
+            "oracle_sha256": "sha256:9fa1591441bb745a0a2c6e02ab74d256b6df2f4e0af304599a83044b0e5476e4",
+            "generation_id": "sha256:1c466d5a929708191aeb9440d",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
-          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/tmp/tau-331-origin-main.VxaSqN/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 8717.228,
+          "duration_ms": 15238.575,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "3641ed4f5fcc-c000-t01",
+          "trial_id": "fb9327d06b39-c000-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:c5b429768abe4b0fdc91f29e77501d0e520a3eb36b12553e6454c0c0b6bd9cfe",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json": "sha256:96ec354c965b9173d4a9d5650385f182646273207548f61b16791e7bac82a0b3",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json": "sha256:627b0c8c758b6c605e6a8fa9aaf39d35058eea6d4f0dcb4686d3d8f83f5a2d52",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json": "sha256:7f180cefddbfd81c2d5a0130fde0600edbbc3cd48a23a9bf4419ada2fdb87ecd",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl": "sha256:d89129666135d148c2172a60ac330af9cd5a2deb74654dc6999a5a7e96d2b233",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json": "sha256:a91d7d129a6d2c18d5dd314dea90172816f9410ee0396282216a56acf3932f16",
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json": "sha256:85e43a878912d691b77990d860cf64cc85640b6304aa68eea82c11167742048a"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+            "test_source_sha256": "sha256:4acbaebe054dfc1a670d4a07306e8cd8437c0e0142812f701055a0cbe81b7d36",
+            "oracle_sha256": "sha256:9fa1591441bb745a0a2c6e02ab74d256b6df2f4e0af304599a83044b0e5476e4",
+            "generation_id": "sha256:1c466d5a929708191aeb9440d",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     },
@@ -134,15 +315,83 @@
       "flaky": false,
       "name": "rung1-artifact-mutation-and-missing-artifact-detected",
       "type": "adversarial",
-      "case_id": "3641ed4f5fcc-c001",
+      "case_id": "fb9327d06b39-c001",
       "required": true,
       "outcome": "PASS",
+      "observed_outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
         "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json --timeout-seconds 180"
       ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+        "test_source_sha256": "sha256:a1f149c06996fb212495f750c03d294545d1326f4b1425149f8e026829121022",
+        "oracle_sha256": "sha256:e5a7c369e38d9a9c2723c582a30b1920696d675066d8c3bf4480c3beb445a629",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:034c3ad4325c27145333dad4c",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:a1f149c06996fb212495f750c03d294545d1326f4b1425149f8e026829121022",
+      "oracle_sha256": "sha256:e5a7c369e38d9a9c2723c582a30b1920696d675066d8c3bf4480c3beb445a629",
+      "application_identity": {
+        "repo": {
+          "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
@@ -154,35 +403,137 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 9082.084,
+      "avg_latency_ms": 15410.205,
       "trials": [
         {
           "exit_code": 0,
-          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/tmp/tau-331-origin-main.VxaSqN/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 9087.891,
+          "duration_ms": 15575.038,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "3641ed4f5fcc-c001-t00",
+          "trial_id": "fb9327d06b39-c001-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:d6799ae8467045c5360f507cc43d552483bd9b5b2f864d77ffb67592a4fd0164"
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:f0506b59a10026a21c84fa3705756e163cf5a291a558e4ebaeebf4d03feb17d7",
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json": "sha256:742a896d5911e71fdd2e272f430e2573d1768ffb0876106505f01da74e053654"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+            "test_source_sha256": "sha256:a1f149c06996fb212495f750c03d294545d1326f4b1425149f8e026829121022",
+            "oracle_sha256": "sha256:e5a7c369e38d9a9c2723c582a30b1920696d675066d8c3bf4480c3beb445a629",
+            "generation_id": "sha256:034c3ad4325c27145333dad4c",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         },
         {
           "exit_code": 0,
-          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/tmp/tau-331-origin-main.VxaSqN/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 9076.277,
+          "duration_ms": 15245.372,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "3641ed4f5fcc-c001-t01",
+          "trial_id": "fb9327d06b39-c001-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:394f365f1725270cc334b7ff4827579aea346ef7eb5e01a2161eeb7692f0448d",
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json": "sha256:bae990116c0597b5c2d53f76de5b31d6342e70f18f03d1a28bf5b04572635a1a"
           },
           "outcome": "PASS",
-          "problems": []
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+            "test_source_sha256": "sha256:a1f149c06996fb212495f750c03d294545d1326f4b1425149f8e026829121022",
+            "oracle_sha256": "sha256:e5a7c369e38d9a9c2723c582a30b1920696d675066d8c3bf4480c3beb445a629",
+            "generation_id": "sha256:034c3ad4325c27145333dad4c",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
         }
       ]
     }

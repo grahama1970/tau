@@ -1,0 +1,33 @@
+{
+  "goal": {
+    "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+    "goal_id": "repository-readiness:8affebdf9331",
+    "goal_version": 1,
+    "summary": "Prove the first canonical Tau DAG rung from a clean checkout."
+  },
+  "policy": {
+    "require_clean": true,
+    "validation": "PASS"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "The repository test suite passes.",
+      "The implementation goal is semantically correct.",
+      "Provider or model quality.",
+      "Production deployment readiness."
+    ],
+    "proves": [
+      "The named repository was inspected with fixed read-only Git commands.",
+      "The requested clean-worktree policy passed."
+    ]
+  },
+  "repository": {
+    "branch": "",
+    "dirty": false,
+    "head_sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+    "path": "/tmp/tau-rung1-clean-7mnttew_/checkout"
+  },
+  "schema": "tau.repository_readiness_report.v1",
+  "status": "READY",
+  "summary": "Repository is ready for focused work."
+}

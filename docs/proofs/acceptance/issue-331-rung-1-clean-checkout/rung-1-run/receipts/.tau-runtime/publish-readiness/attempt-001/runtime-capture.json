@@ -1,18 +1,18 @@
 {
   "cancelled": false,
   "command": [
-    "/tmp/tau-rung1-clean-b2bw4hd2/checkout/.venv/bin/python",
+    "/tmp/tau-rung1-clean-9s0mvd1h/checkout/.venv/bin/python",
     "-m",
     "tau_coding.workflows.nodes.repository_readiness",
     "publish",
     "--request",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
     "--json-output",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
     "--markdown-output",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
     "--receipt",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
     "--step-delay-seconds",
     "0.0"
   ],

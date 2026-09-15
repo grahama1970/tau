@@ -1,0 +1,18 @@
+{
+  "goal": {
+    "completion_criteria": [
+      "Inspect the exact requested Git repository without mutation.",
+      "Apply the requested clean-worktree policy.",
+      "Publish a repository-readiness report only after validation passes."
+    ],
+    "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+    "goal_id": "repository-readiness:8affebdf9331",
+    "goal_version": 1,
+    "summary": "Prove the first canonical Tau DAG rung from a clean checkout."
+  },
+  "human_goal": "Prove the first canonical Tau DAG rung from a clean checkout.",
+  "repo_path": "/tmp/tau-rung1-clean-7mnttew_/checkout",
+  "request_sha256": "sha256:8affebdf933122b4c580cee584340f4310b9981742679c996ba97828826646b2",
+  "require_clean": true,
+  "schema": "tau.repository_readiness_request.v1"
+}

@@ -3,13 +3,13 @@
     "artifacts": [
       {
         "kind": "repository_readiness_json",
-        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
-        "sha256": "sha256:465a399c84d72d62c0149fea0767b55669cc99243bed66416931c3841607a493"
+        "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+        "sha256": "sha256:6787af3ac7f5b3f8e8a3eae2f948a358f11388c386afbc87e14eb1ab9166d4c5"
       },
       {
         "kind": "repository_readiness_markdown",
-        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
-        "sha256": "sha256:97c3f648cb6bc458b438db93d9d665ff800b986909573e69c5b9f432bf448e3e"
+        "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+        "sha256": "sha256:6be5bf3cb8ebc4e1796a2044c93a48dc9ea127a558823e60595f4c2821b7f2e4"
       }
     ],
     "schema": "tau.repository_readiness_report.v1",
@@ -19,13 +19,13 @@
   "artifacts": [
     {
       "kind": "repository_readiness_json",
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
-      "sha256": "sha256:465a399c84d72d62c0149fea0767b55669cc99243bed66416931c3841607a493"
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+      "sha256": "sha256:6787af3ac7f5b3f8e8a3eae2f948a358f11388c386afbc87e14eb1ab9166d4c5"
     },
     {
       "kind": "repository_readiness_markdown",
-      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
-      "sha256": "sha256:97c3f648cb6bc458b438db93d9d665ff800b986909573e69c5b9f432bf448e3e"
+      "path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+      "sha256": "sha256:6be5bf3cb8ebc4e1796a2044c93a48dc9ea127a558823e60595f4c2821b7f2e4"
     }
   ],
   "commands_run": [
@@ -33,7 +33,7 @@
   ],
   "errors": [],
   "execution_evidence": {
-    "command_result_sha256": "sha256:135d0372496cb3858df2dd05da4662d014c13ae9e577b3290981a349eed2de35",
+    "command_result_sha256": "sha256:487abfab1f5e43847d648cb267aa54ecfa343b2f17ec56d6b81eaeb80d06a9a5",
     "kind": "local_subprocess",
     "returncode": 0,
     "runtime_artifact_count": 4,
@@ -41,7 +41,7 @@
     "runtime_event_state": "EXITED",
     "runtime_submit_delivery_status": "CONFIRMED"
   },
-  "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
+  "goal_hash": "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1",
   "handoff_summary": "The accepted repository-readiness report is available.",
   "live": true,
   "mocked": false,

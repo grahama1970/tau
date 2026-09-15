@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:9c6e4933317f74a26c4f66fc21257436459b787589daded117e16e2922367802",
+  "event_id": "local-event:f4d5dd4c21c4d9e6be3d8b79",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-09-15T07:09:25.907064+00:00",
+  "run_id": "repository-readiness-5af8d57cdd97",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

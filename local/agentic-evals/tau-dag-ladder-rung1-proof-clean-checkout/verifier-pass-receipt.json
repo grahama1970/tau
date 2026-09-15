@@ -1,0 +1,40 @@
+{
+  "details": {
+    "goal_hashes": [
+      "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef"
+    ],
+    "ledger_replay": {
+      "admission_count": 6,
+      "event_count": 37,
+      "head_sequence": 37,
+      "journal_sequence": 37,
+      "result_nodes": [
+        "inspect-repository",
+        "validate-readiness",
+        "publish-readiness"
+      ],
+      "run_id": "repository-readiness-5af8d57cdd97",
+      "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "output_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout"
+  },
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.dag_ladder_rung1_verifier_receipt.v1",
+  "status": "PASS",
+  "verified_artifacts": [
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/ladder-manifest.json",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/clean-checkout-bootstrap.log",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger-replay.json",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json"
+  ],
+  "verified_at": "2026-09-15T07:09:27.496010Z"
+}

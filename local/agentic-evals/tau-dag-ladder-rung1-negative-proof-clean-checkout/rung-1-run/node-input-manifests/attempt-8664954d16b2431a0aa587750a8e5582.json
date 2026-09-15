@@ -1,0 +1,11 @@
+{
+  "accepted_input_count": 0,
+  "attempt": 1,
+  "attempt_id": "attempt-8664954d16b2431a0aa587750a8e5582",
+  "bindings": [],
+  "canonical_manifest_hash": "sha256:d0e74bd0bc8c89a8b1bb0e052fa4dfe274a2aeb5dfad7c25be369a2dce09eb0c",
+  "node_id": "inspect-repository",
+  "plan_sha256": "sha256:ab4dff422f689158f69606bceb5557d7aed2fd6537ba6df27fcf241a775f7c43",
+  "run_id": "repository-readiness-8affebdf9331",
+  "schema": "tau.node_input_manifest.v1"
+}

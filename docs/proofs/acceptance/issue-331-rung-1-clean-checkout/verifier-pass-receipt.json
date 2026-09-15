@@ -1,24 +1,24 @@
 {
   "details": {
     "goal_hashes": [
-      "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1"
+      "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1"
     ],
     "ledger_replay": {
       "admission_count": 6,
-      "event_count": 34,
-      "head_sequence": 34,
-      "journal_sequence": 34,
+      "event_count": 37,
+      "head_sequence": 37,
+      "journal_sequence": 37,
       "result_nodes": [
         "inspect-repository",
         "validate-readiness",
         "publish-readiness"
       ],
-      "run_id": "repository-readiness-c51f959facff",
+      "run_id": "repository-readiness-92d975a9f543",
       "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
       "status": "PASS",
       "verdict": "PASS"
     },
-    "output_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout"
+    "output_dir": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout"
   },
   "errors": [],
   "live": true,
@@ -28,13 +28,13 @@
   "schema": "tau.dag_ladder_rung1_verifier_receipt.v1",
   "status": "PASS",
   "verified_artifacts": [
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
-    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json"
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
+    "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json"
   ],
-  "verified_at": "2026-09-02T21:46:05.295914Z"
+  "verified_at": "2026-09-15T07:08:08.963949Z"
 }

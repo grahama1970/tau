@@ -1,0 +1,147 @@
+{
+  "accepted_evidence_refs": [],
+  "accepted_inputs": [],
+  "accepted_inputs_sha256": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "accepted_parent_results": [],
+  "adapter_kind": "generic_command",
+  "allowed_effect_refs": [],
+  "attempt": 1,
+  "attempt_id": "attempt-d13a49a2f80ace864f305acad2e19f1a",
+  "capability_refs": [],
+  "checkpoint_hash": "sha256:004a592626de231419ee48ecb819fcc7da8490ca3362647146aec291fe3d1743",
+  "checkpoint_id": "1a7d466fd053f128ec247d4b1fea8a30",
+  "dag_id": "generic:repository-readiness-92d975a9f543",
+  "envelope_sha256": "sha256:5ddf6dcb22f159d2d88f50bbd0ef51e1e4e8468bf18b7f80665a9fbfa7b3536f",
+  "goal_hash": "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1",
+  "goal_id": "repository-readiness:92d975a9f543",
+  "goal_version": "1",
+  "idempotency_key": "sha256:3368d8c768e9550c0cecb52916e4fe48345d17d8ad339c3703e9dc944a36e8ee",
+  "input_schema_declaration": "explicit",
+  "input_schema_id": "tau.node_input.none.v1",
+  "input_schema_version": "v1",
+  "join_decision_refs": [],
+  "node_id": "inspect-repository",
+  "plan_revision": "sha256:35d0fc041831442c3dd68b9e6a490f6034cf576b577578a7d8d871d25357c069",
+  "plan_sha256": "sha256:1d6e4e78af0684ffe69a32b37bde2a31527b7a75b467fb3192e7125917567a6d",
+  "policy_refs": [
+    {
+      "metadata": {
+        "declarations": [],
+        "security_mode": null
+      },
+      "ref_id": "plan-security",
+      "ref_type": "security_declarations",
+      "sha256": "sha256:2410248e93658dbe3f0bc0252c3872b1905bc97f175d7d31fa7d0d3d1bb92649"
+    },
+    {
+      "metadata": {
+        "execution_profile": {
+          "profile_id": "standard",
+          "resolution_sha256": "sha256:dd9770493d325448bcc33d3ba195db7db5e7ce8ba6894469ceabbfe60c78cf25",
+          "resolved_controls": {
+            "adaptive_expansion": {
+              "authorization": "policy_bounded",
+              "max_nodes": 3
+            },
+            "approval_requirements": "exact_human_gate_for_irreversible_effects",
+            "canonical_scheduler_required": true,
+            "durable_run_store_required": true,
+            "effective_edge_count": 3,
+            "effective_node_count": 3,
+            "input_manifest_enforcement": "when_declared",
+            "max_attempts_per_node": 3,
+            "max_concurrency": 1,
+            "max_depth": 10,
+            "max_nodes": 50,
+            "max_run_seconds": 3600,
+            "max_total_attempts": 150,
+            "required_evidence_schemas": [
+              "tau.generic_dag_node_receipt.v1"
+            ],
+            "review_requirements": "node_declared",
+            "security_defaults": {
+              "filesystem_mutation": "node_declared_only",
+              "network": "deny_by_default"
+            },
+            "side_effect_defaults": {
+              "external_side_effects": "deny_without_exact_human_gate",
+              "irreversible_effects": "deny_without_exact_human_gate"
+            },
+            "stale_read_behavior": "observe"
+          }
+        }
+      },
+      "ref_id": "plan-execution-limits",
+      "ref_type": "execution_limits",
+      "sha256": "sha256:84d73a8c6a803575f1e1c407be68f0eb1023018b2d2206744ca8e097ea2f75aa"
+    },
+    {
+      "metadata": {},
+      "ref_id": "inspect-repository",
+      "ref_type": "node_static_context",
+      "sha256": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "resolved_input_manifest": {
+    "accepted_input_count": 0,
+    "attempt": 1,
+    "attempt_id": "attempt-d13a49a2f80ace864f305acad2e19f1a",
+    "bindings": [],
+    "canonical_manifest_hash": "sha256:6866664f82382de5739ece1b8e434fd6bab6aab5927121b05c0a4afeb78dadd1",
+    "node_id": "inspect-repository",
+    "plan_sha256": "sha256:1d6e4e78af0684ffe69a32b37bde2a31527b7a75b467fb3192e7125917567a6d",
+    "run_id": "repository-readiness-92d975a9f543",
+    "schema": "tau.node_input_manifest.v1"
+  },
+  "resolved_input_manifest_sha256": "sha256:7f6e6c766e2c818447167260799a4d6fd6ed8444cbf0a00a4a1076f8926bf790",
+  "resource_lease_refs": [],
+  "route_decision_refs": [],
+  "run_id": "repository-readiness-92d975a9f543",
+  "runtime_binding": {
+    "metadata": {
+      "backend": "local",
+      "interaction_mode": "one_shot",
+      "observation_requirements": [
+        "PROCESS"
+      ],
+      "required_capabilities": [
+        "one_shot",
+        "supports_working_directory"
+      ],
+      "schema": "tau.runtime_requirement.v1",
+      "session_scope": "node_attempt"
+    },
+    "ref_id": "inspect-repository",
+    "ref_type": "runtime_backend_binding",
+    "sha256": "sha256:02d60f20ecb17b71a46caaa9cafd4ea84072c426c96ac54fbd412da36509e9c8"
+  },
+  "schema": "tau.dag_node_dispatch.v1",
+  "source_revision": {
+    "metadata": {
+      "source_family": "generic_dag",
+      "source_logical_id": "repository-readiness-92d975a9f543",
+      "source_payload_sha256": "sha256:35d0fc041831442c3dd68b9e6a490f6034cf576b577578a7d8d871d25357c069",
+      "source_schema": "tau.generic_dag_spec.v1"
+    },
+    "ref_id": "repository-readiness-92d975a9f543",
+    "ref_type": "source_revision",
+    "sha256": "sha256:ac9a0196985ef66244706f4e31f76eaae1a33cfde0ce4a908d0866f10342e4c8"
+  },
+  "workspace_revision": {
+    "metadata": {
+      "attempt": 1,
+      "attempt_id": "attempt-d13a49a2f80ace864f305acad2e19f1a",
+      "entries": [],
+      "entry_count": 0,
+      "node_id": "inspect-repository",
+      "plan_sha256": "sha256:1d6e4e78af0684ffe69a32b37bde2a31527b7a75b467fb3192e7125917567a6d",
+      "policy": "observe",
+      "read_set_sha256": "sha256:fa6938a7df713c3709706bc02c7b02daf29bcc3cd62b6eb9efa06ad795c01783",
+      "run_id": "repository-readiness-92d975a9f543",
+      "schema": "tau.workspace_read_set.v1"
+    },
+    "ref_id": "attempt-d13a49a2f80ace864f305acad2e19f1a",
+    "ref_type": "workspace_revision",
+    "sha256": "sha256:93ce363e679e189bddad86f2067f6bf6690d8a71fcd6a9e0c01460c66e938a08"
+  }
+}

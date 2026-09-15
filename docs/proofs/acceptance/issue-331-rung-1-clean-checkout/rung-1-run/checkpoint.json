@@ -6,25 +6,25 @@
     "publish-readiness",
     "validate-readiness"
   ],
-  "events_jsonl": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/events.jsonl",
+  "events_jsonl": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/events.jsonl",
   "node_statuses": {
     "inspect-repository": {
       "attempt_count": 1,
-      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+      "receipt_path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
       "resumed": false,
       "status": "PASS",
       "verdict": "PASS"
     },
     "publish-readiness": {
       "attempt_count": 1,
-      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+      "receipt_path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
       "resumed": false,
       "status": "PASS",
       "verdict": "PASS"
     },
     "validate-readiness": {
       "attempt_count": 1,
-      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+      "receipt_path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
       "resumed": false,
       "status": "PASS",
       "verdict": "PASS"
@@ -34,17 +34,17 @@
   "resume": {
     "enabled_by_default": true,
     "receipt_paths": {
-      "inspect-repository": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
-      "publish-readiness": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
-      "validate-readiness": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json"
+      "inspect-repository": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+      "publish-readiness": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+      "validate-readiness": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json"
     },
     "will_reuse_valid_pass_receipts": true
   },
-  "run_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run",
-  "run_id": "repository-readiness-c51f959facff",
+  "run_dir": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run",
+  "run_id": "repository-readiness-92d975a9f543",
   "schema": "tau.generic_dag_checkpoint.v1",
-  "spec_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json",
+  "spec_path": "/tmp/tau-331-origin-main.VxaSqN/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json",
   "status": "PASS",
-  "timestamp": "2026-09-02T21:46:04Z",
+  "timestamp": "2026-09-15T07:08:07Z",
   "verdict": "PASS"
 }

@@ -1,0 +1,222 @@
+{
+  "accepted_evidence_refs": [
+    {
+      "metadata": {
+        "kind": "repository_inspection",
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+        "sha256": "sha256:02d0e3d9f2741db2594472593acf585c708554a47a536c69c4268e7d3de85a46"
+      },
+      "ref_id": "inspect-repository:artifacts:0",
+      "ref_type": "accepted_artifacts",
+      "sha256": "sha256:1c92e6941f1d241d0dbf66517feb58d381893225e94cec0e9029780fe2819050"
+    }
+  ],
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "kind": "repository_inspection",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+          "sha256": "sha256:02d0e3d9f2741db2594472593acf585c708554a47a536c69c4268e7d3de85a46"
+        }
+      ],
+      "branch": "",
+      "diff_check_passed": true,
+      "dirty": false,
+      "head_sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+      "repo_path": "/tmp/tau-rung1-clean-7mnttew_/checkout",
+      "schema": "tau.repository_inspection.v1",
+      "summary": "Repository inspection completed."
+    }
+  ],
+  "accepted_inputs_sha256": "sha256:80cbb0d98e789375aecadb1eddd0b442f9b3a9cb919edc700981b1a7a4347da3",
+  "accepted_parent_results": [
+    {
+      "metadata": {
+        "binding_id": "generic-context:inspect-repository:validate-readiness",
+        "control_edge_id": "generic-dependency:inspect-repository:validate-readiness",
+        "result_sha256": "sha256:c39364fa18a29c1a657158c3c8780311d45af32f3ddd2860de453aa237137c96",
+        "selected_sha256": "sha256:da4e4e77b327682f6ce8b4d4ca10123195d41bc2ecfcbead680d4a4501a23e34",
+        "source_attempt_id": "attempt-8664954d16b2431a0aa587750a8e5582",
+        "source_node_id": "inspect-repository"
+      },
+      "ref_id": "inspect-repository:attempt-8664954d16b2431a0aa587750a8e5582",
+      "ref_type": "accepted_parent_result",
+      "sha256": "sha256:dd3094d2875e0a7364e225f676288e8c972c94bd63b94a1694e214347ba11e93"
+    }
+  ],
+  "adapter_kind": "generic_command",
+  "allowed_effect_refs": [],
+  "attempt": 1,
+  "attempt_id": "attempt-ef859cbbdbe7bfdf2d1e516d3565155c",
+  "capability_refs": [],
+  "checkpoint_hash": "sha256:42faf8858943f51f6024d4ff8c38cb0bba0b7140ae1546acbf3dcdf6d7993794",
+  "checkpoint_id": "cfde7110ab5cc32e3c5d2839f756e4ae",
+  "dag_id": "generic:repository-readiness-8affebdf9331",
+  "envelope_sha256": "sha256:17268c61d0b37d400dddd14f7fb3f7b926611bb2d0bbe5392a6f5790f6fb5653",
+  "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+  "goal_id": "repository-readiness:8affebdf9331",
+  "goal_version": "1",
+  "idempotency_key": "sha256:4c6305f3378a5cbc0cbf57ecbb1801ec201ed0e954d77855fd0d80e64bceb980",
+  "input_schema_declaration": "explicit",
+  "input_schema_id": "tau.node_input.accepted_inputs.v1",
+  "input_schema_version": "v1",
+  "join_decision_refs": [],
+  "node_id": "validate-readiness",
+  "plan_revision": "sha256:e467e6f938a6ecb737b4dea65b3c970520d3bbf77234b26b7ec34f2db2e87c95",
+  "plan_sha256": "sha256:ab4dff422f689158f69606bceb5557d7aed2fd6537ba6df27fcf241a775f7c43",
+  "policy_refs": [
+    {
+      "metadata": {
+        "declarations": [],
+        "security_mode": null
+      },
+      "ref_id": "plan-security",
+      "ref_type": "security_declarations",
+      "sha256": "sha256:2410248e93658dbe3f0bc0252c3872b1905bc97f175d7d31fa7d0d3d1bb92649"
+    },
+    {
+      "metadata": {
+        "execution_profile": {
+          "profile_id": "standard",
+          "resolution_sha256": "sha256:dd9770493d325448bcc33d3ba195db7db5e7ce8ba6894469ceabbfe60c78cf25",
+          "resolved_controls": {
+            "adaptive_expansion": {
+              "authorization": "policy_bounded",
+              "max_nodes": 3
+            },
+            "approval_requirements": "exact_human_gate_for_irreversible_effects",
+            "canonical_scheduler_required": true,
+            "durable_run_store_required": true,
+            "effective_edge_count": 3,
+            "effective_node_count": 3,
+            "input_manifest_enforcement": "when_declared",
+            "max_attempts_per_node": 3,
+            "max_concurrency": 1,
+            "max_depth": 10,
+            "max_nodes": 50,
+            "max_run_seconds": 3600,
+            "max_total_attempts": 150,
+            "required_evidence_schemas": [
+              "tau.generic_dag_node_receipt.v1"
+            ],
+            "review_requirements": "node_declared",
+            "security_defaults": {
+              "filesystem_mutation": "node_declared_only",
+              "network": "deny_by_default"
+            },
+            "side_effect_defaults": {
+              "external_side_effects": "deny_without_exact_human_gate",
+              "irreversible_effects": "deny_without_exact_human_gate"
+            },
+            "stale_read_behavior": "observe"
+          }
+        }
+      },
+      "ref_id": "plan-execution-limits",
+      "ref_type": "execution_limits",
+      "sha256": "sha256:84d73a8c6a803575f1e1c407be68f0eb1023018b2d2206744ca8e097ea2f75aa"
+    },
+    {
+      "metadata": {},
+      "ref_id": "validate-readiness",
+      "ref_type": "node_static_context",
+      "sha256": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "resolved_input_manifest": {
+    "accepted_input_count": 1,
+    "attempt": 1,
+    "attempt_id": "attempt-ef859cbbdbe7bfdf2d1e516d3565155c",
+    "bindings": [
+      {
+        "accepted_source_schemas": [
+          "*"
+        ],
+        "activation": "after_source_pass",
+        "binding_id": "generic-context:inspect-repository:validate-readiness",
+        "control_edge_id": "generic-dependency:inspect-repository:validate-readiness",
+        "disposition": "included",
+        "materialization_mode": "by_value",
+        "on_invalid": "omit",
+        "on_missing": "omit",
+        "origin": "explicit",
+        "projection": "accepted_output_if_present",
+        "reason": "selected",
+        "selected_path": null,
+        "selected_schema": "tau.repository_inspection.v1",
+        "selected_sha256": "sha256:da4e4e77b327682f6ce8b4d4ca10123195d41bc2ecfcbead680d4a4501a23e34",
+        "selector_kind": "accepted_output",
+        "source_attempt_id": "attempt-8664954d16b2431a0aa587750a8e5582",
+        "source_node_id": "inspect-repository",
+        "target_node_id": "validate-readiness"
+      }
+    ],
+    "canonical_manifest_hash": "sha256:1bb9104f69fd703c439156c3997ee3e88e5544b73315805174b5a39eed0e0740",
+    "node_id": "validate-readiness",
+    "plan_sha256": "sha256:ab4dff422f689158f69606bceb5557d7aed2fd6537ba6df27fcf241a775f7c43",
+    "run_id": "repository-readiness-8affebdf9331",
+    "schema": "tau.node_input_manifest.v1"
+  },
+  "resolved_input_manifest_sha256": "sha256:a7565465317cf55b09ab2a2a3ad97a0bc26d1331fb083bd2f85a1b1b553787c8",
+  "resource_lease_refs": [],
+  "route_decision_refs": [
+    {
+      "metadata": {
+        "edge_id": "generic-dependency:inspect-repository:validate-readiness",
+        "state": "success"
+      },
+      "ref_id": "generic-dependency:inspect-repository:validate-readiness",
+      "ref_type": "route_edge_state",
+      "sha256": "sha256:4cef61695cc3fc4876995278fe5ed723edfa0807610bb8c11c7cf45ccaa0abce"
+    }
+  ],
+  "run_id": "repository-readiness-8affebdf9331",
+  "runtime_binding": {
+    "metadata": {
+      "backend": "local",
+      "interaction_mode": "one_shot",
+      "observation_requirements": [
+        "PROCESS"
+      ],
+      "required_capabilities": [
+        "one_shot",
+        "supports_working_directory"
+      ],
+      "schema": "tau.runtime_requirement.v1",
+      "session_scope": "node_attempt"
+    },
+    "ref_id": "validate-readiness",
+    "ref_type": "runtime_backend_binding",
+    "sha256": "sha256:02d60f20ecb17b71a46caaa9cafd4ea84072c426c96ac54fbd412da36509e9c8"
+  },
+  "schema": "tau.dag_node_dispatch.v1",
+  "source_revision": {
+    "metadata": {
+      "source_family": "generic_dag",
+      "source_logical_id": "repository-readiness-8affebdf9331",
+      "source_payload_sha256": "sha256:e467e6f938a6ecb737b4dea65b3c970520d3bbf77234b26b7ec34f2db2e87c95",
+      "source_schema": "tau.generic_dag_spec.v1"
+    },
+    "ref_id": "repository-readiness-8affebdf9331",
+    "ref_type": "source_revision",
+    "sha256": "sha256:155803fd9b5982603137e4f89bd7bb122ed7e6461c5776a0199c6295c068257a"
+  },
+  "workspace_revision": {
+    "metadata": {
+      "attempt": 1,
+      "attempt_id": "attempt-ef859cbbdbe7bfdf2d1e516d3565155c",
+      "entries": [],
+      "entry_count": 0,
+      "node_id": "validate-readiness",
+      "plan_sha256": "sha256:ab4dff422f689158f69606bceb5557d7aed2fd6537ba6df27fcf241a775f7c43",
+      "policy": "observe",
+      "read_set_sha256": "sha256:08d82676083e08f5bd9300612e1e92e062d24811d1ddb2220f43966bd21467ff",
+      "run_id": "repository-readiness-8affebdf9331",
+      "schema": "tau.workspace_read_set.v1"
+    },
+    "ref_id": "attempt-ef859cbbdbe7bfdf2d1e516d3565155c",
+    "ref_type": "workspace_revision",
+    "sha256": "sha256:5b961d480273fab3fce15fbe33032c87e49cb383572b540c2b5cc5958c684f36"
+  }
+}

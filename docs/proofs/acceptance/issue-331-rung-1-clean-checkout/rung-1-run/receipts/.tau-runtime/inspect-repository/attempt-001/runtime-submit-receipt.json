@@ -6,11 +6,11 @@
   "composer_state_after": "NOT_APPLICABLE",
   "composer_state_before": "NOT_APPLICABLE",
   "delivery_status": "CONFIRMED",
-  "endpoint_lease_sha256": "sha256:7dccfb58ff7d1cefcf6f349b4d22e98d6f33b6832cc7cbe74533c5b1d248c8f5",
+  "endpoint_lease_sha256": "sha256:e5ff86f59ba57f49b65051ae5b85cd1cdb6018ce8a07fdcdcc2e2ae18e398699",
   "errors": [],
   "provider_execution_status": "NOT_APPLICABLE",
   "schema": "tau.runtime_submit_receipt.v1",
   "submit_attempt_count": 1,
   "text_delivery_count": 0,
-  "work_order_sha256": "sha256:0086840262924594f93169d7ddd025a088440207e75f49b6b2479ff5de26d8cb"
+  "work_order_sha256": "sha256:9cb5b4b37bb8356bace12e9c50b890f2c61b54e4863949ade6a394692330df92"
 }

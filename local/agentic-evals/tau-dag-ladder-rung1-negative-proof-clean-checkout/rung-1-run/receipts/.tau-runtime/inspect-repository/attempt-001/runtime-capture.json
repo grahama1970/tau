@@ -1,0 +1,22 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-rung1-clean-7mnttew_/checkout/.venv/bin/python",
+    "-m",
+    "tau_coding.workflows.nodes.repository_readiness",
+    "inspect",
+    "--request",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+    "--output",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+    "--step-delay-seconds",
+    "0.0"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

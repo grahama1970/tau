@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-89bc0716476c6dd937ec339c60e33207",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:inspect-repository:validate-readiness",
+      "control_edge_id": "generic-dependency:inspect-repository:validate-readiness",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.repository_inspection.v1",
+      "selected_sha256": "sha256:4929148e116d35ad74cd5bf53cd11277ee95e083ad98ce9a32cb62456bf154f5",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-d13a49a2f80ace864f305acad2e19f1a",
+      "source_node_id": "inspect-repository",
+      "target_node_id": "validate-readiness"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:7d4f105606469cf8f247d545c12d528363936cfa23a6a6d0b4c0c6fc1fb839df",
+  "node_id": "validate-readiness",
+  "plan_sha256": "sha256:1d6e4e78af0684ffe69a32b37bde2a31527b7a75b467fb3192e7125917567a6d",
+  "run_id": "repository-readiness-92d975a9f543",
+  "schema": "tau.node_input_manifest.v1"
+}

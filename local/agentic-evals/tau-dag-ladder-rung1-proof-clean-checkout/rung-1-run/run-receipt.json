@@ -1,0 +1,1187 @@
+{
+  "checkpoint_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/checkpoint.json",
+  "completed_node_count": 3,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/current-state.json",
+  "dag_plan_sha256": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+  "diagnostics_log_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "execution_profile": {
+    "compatibility_default": true,
+    "profile_id": "standard",
+    "resolution_sha256": "sha256:dd9770493d325448bcc33d3ba195db7db5e7ce8ba6894469ceabbfe60c78cf25",
+    "resolved_controls_sha256": "sha256:f2431688becaa3564547be5663e5fa8877d581c23a0a560f4e5b43e7f18a7ba0"
+  },
+  "lease_epoch": 1,
+  "live": true,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 3,
+  "nodes": [
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_inspection",
+            "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+            "sha256": "sha256:de51c616d1e820435453e7176dda89acdef449f34f544a7dca043c9a9907f7de"
+          }
+        ],
+        "branch": "",
+        "diff_check_passed": true,
+        "dirty": false,
+        "head_sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+        "repo_path": "/tmp/tau-rung1-clean-_2fp7oeu/checkout",
+        "schema": "tau.repository_inspection.v1",
+        "summary": "Repository inspection completed."
+      },
+      "accepted_output_sha256": "sha256:bca6ce585f6cd2b65a539108e0352d677207c39ebfbb89478befe71c807716ae",
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_inspection",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+          "sha256": "sha256:de51c616d1e820435453e7176dda89acdef449f34f544a7dca043c9a9907f7de"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-85a28ab7eade778608a6d5366ea91a15",
+      "command_results": [
+        {
+          "full_result_bytes": 4481,
+          "full_result_sha256": "sha256:69f00a07c95749904f2dcfc8f72dc9c90bd3e0a32ce8f37d52e1bdb35f95ef8c",
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-event.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-85a28ab7eade778608a6d5366ea91a15",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-09-15T07:09:24.617090+00:00",
+            "dag_id": "generic:repository-readiness-5af8d57cdd97",
+            "endpoint_id": "local:ad787055d27d34dd8f180589",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-09-15T07:10:54.617090+00:00",
+            "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "inspect-repository",
+            "owner": "tau",
+            "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-5af8d57cdd97",
+            "work_order_sha256": "sha256:2f765cb58acc200ed55f1ab5299269c27f77f4feeaaaa96bb2816022ee90d101"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:c5dce5dd96c56483e1441350b48c88d4c86abc0bc7ba681d34a4f5557cfe355c",
+            "event_id": "local-event:ad787055d27d34dd8f180589",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-09-15T07:09:25.319990+00:00",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "delivery_status": "CONFIRMED",
+            "full_submit_receipt_bytes": 535,
+            "full_submit_receipt_sha256": "sha256:1067098c1e004bc0eb585f139f1d62129b30a03859566ac14282d00929596b85"
+          },
+          "stderr_bytes": 0,
+          "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "stdout_bytes": 0,
+          "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "diagnostics": {
+        "workspace_stale_read_state": {
+          "policy": "observe",
+          "schema": "tau.workspace_stale_read_state.v1",
+          "unresolved_signal_count": 0,
+          "unresolved_signal_ids": []
+        }
+      },
+      "duration_seconds": 0.706,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:69f00a07c95749904f2dcfc8f72dc9c90bd3e0a32ce8f37d52e1bdb35f95ef8c",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "extensions": {
+        "command_results": [
+          {
+            "full_result_bytes": 4481,
+            "full_result_sha256": "sha256:69f00a07c95749904f2dcfc8f72dc9c90bd3e0a32ce8f37d52e1bdb35f95ef8c",
+            "returncode": 0,
+            "runtime_artifacts": [
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-endpoint-lease.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-submit-receipt.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-event.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-capture.json"
+            ],
+            "runtime_backend": "local",
+            "runtime_endpoint_lease": {
+              "attempt_id": "attempt-85a28ab7eade778608a6d5366ea91a15",
+              "attempt_number": 1,
+              "backend": "local",
+              "backend_ids": {
+                "pid": null
+              },
+              "backend_session_id": null,
+              "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+              "cleanup_policy": {
+                "kind": "process_group_termination"
+              },
+              "created_at": "2026-09-15T07:09:24.617090+00:00",
+              "dag_id": "generic:repository-readiness-5af8d57cdd97",
+              "endpoint_id": "local:ad787055d27d34dd8f180589",
+              "execution_token": "[REDACTED]",
+              "expires_at": "2026-09-15T07:10:54.617090+00:00",
+              "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+              "heartbeat_policy": {
+                "kind": "process_poll"
+              },
+              "node_id": "inspect-repository",
+              "owner": "tau",
+              "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_endpoint_lease.v1",
+              "scope_id": "repository-readiness-5af8d57cdd97",
+              "work_order_sha256": "sha256:2f765cb58acc200ed55f1ab5299269c27f77f4feeaaaa96bb2816022ee90d101"
+            },
+            "runtime_event": {
+              "confidence": "PROCESS",
+              "endpoint_lease_sha256": "sha256:c5dce5dd96c56483e1441350b48c88d4c86abc0bc7ba681d34a4f5557cfe355c",
+              "event_id": "local-event:ad787055d27d34dd8f180589",
+              "event_type": "RUNTIME_ENDPOINT_EXITED",
+              "liveness": "DEAD",
+              "observation": {
+                "cancelled": false,
+                "returncode": 0,
+                "timed_out": false
+              },
+              "observed_at": "2026-09-15T07:09:25.319990+00:00",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_event.v1",
+              "source": "local",
+              "state": "EXITED"
+            },
+            "runtime_submit_receipt": {
+              "delivery_status": "CONFIRMED",
+              "full_submit_receipt_bytes": 535,
+              "full_submit_receipt_sha256": "sha256:1067098c1e004bc0eb585f139f1d62129b30a03859566ac14282d00929596b85"
+            },
+            "stderr_bytes": 0,
+            "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "stdout_bytes": 0,
+            "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "termination_cause": "exited"
+          }
+        ],
+        "generic_receipt": {
+          "artifacts": [
+            {
+              "kind": "repository_inspection",
+              "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+              "sha256": "sha256:de51c616d1e820435453e7176dda89acdef449f34f544a7dca043c9a9907f7de"
+            }
+          ],
+          "attempt_count": 1,
+          "command_results": [
+            {
+              "full_result_bytes": 4481,
+              "full_result_sha256": "sha256:69f00a07c95749904f2dcfc8f72dc9c90bd3e0a32ce8f37d52e1bdb35f95ef8c",
+              "returncode": 0,
+              "runtime_artifacts": [
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-endpoint-lease.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-submit-receipt.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-event.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-capture.json"
+              ],
+              "runtime_backend": "local",
+              "runtime_endpoint_lease": {
+                "attempt_id": "attempt-85a28ab7eade778608a6d5366ea91a15",
+                "attempt_number": 1,
+                "backend": "local",
+                "backend_ids": {
+                  "pid": null
+                },
+                "backend_session_id": null,
+                "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                "cleanup_policy": {
+                  "kind": "process_group_termination"
+                },
+                "created_at": "2026-09-15T07:09:24.617090+00:00",
+                "dag_id": "generic:repository-readiness-5af8d57cdd97",
+                "endpoint_id": "local:ad787055d27d34dd8f180589",
+                "execution_token": "[REDACTED]",
+                "expires_at": "2026-09-15T07:10:54.617090+00:00",
+                "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+                "heartbeat_policy": {
+                  "kind": "process_poll"
+                },
+                "node_id": "inspect-repository",
+                "owner": "tau",
+                "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_endpoint_lease.v1",
+                "scope_id": "repository-readiness-5af8d57cdd97",
+                "work_order_sha256": "sha256:2f765cb58acc200ed55f1ab5299269c27f77f4feeaaaa96bb2816022ee90d101"
+              },
+              "runtime_event": {
+                "confidence": "PROCESS",
+                "endpoint_lease_sha256": "sha256:c5dce5dd96c56483e1441350b48c88d4c86abc0bc7ba681d34a4f5557cfe355c",
+                "event_id": "local-event:ad787055d27d34dd8f180589",
+                "event_type": "RUNTIME_ENDPOINT_EXITED",
+                "liveness": "DEAD",
+                "observation": {
+                  "cancelled": false,
+                  "returncode": 0,
+                  "timed_out": false
+                },
+                "observed_at": "2026-09-15T07:09:25.319990+00:00",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_event.v1",
+                "source": "local",
+                "state": "EXITED"
+              },
+              "runtime_submit_receipt": {
+                "delivery_status": "CONFIRMED",
+                "full_submit_receipt_bytes": 535,
+                "full_submit_receipt_sha256": "sha256:1067098c1e004bc0eb585f139f1d62129b30a03859566ac14282d00929596b85"
+              },
+              "stderr_bytes": 0,
+              "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "stdout_bytes": 0,
+              "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "termination_cause": "exited"
+            }
+          ],
+          "cost_accounting": {
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "estimated_cost_is_billing_truth": false,
+            "estimated_cost_usd": null,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "total_tokens": 0
+          },
+          "cost_estimate": null,
+          "duration_seconds": 0.706,
+          "execution_evidence": {
+            "command_result_sha256": "sha256:69f00a07c95749904f2dcfc8f72dc9c90bd3e0a32ce8f37d52e1bdb35f95ef8c",
+            "kind": "local_subprocess",
+            "returncode": 0,
+            "runtime_artifact_count": 4,
+            "runtime_backend": "local",
+            "runtime_event_state": "EXITED",
+            "runtime_submit_delivery_status": "CONFIRMED"
+          },
+          "finished_at": "2026-09-15T07:09:25Z",
+          "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+          "live": true,
+          "mocked": false,
+          "pane_id": null,
+          "provider_live": false,
+          "provider_status": null,
+          "provider_verdict": null,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+          "resumed": false,
+          "role": "Inspect repository",
+          "started_at": "2026-09-15T07:09:24Z",
+          "terminal_id": null,
+          "usage": null,
+          "visible_log_path": null,
+          "visible_log_sha256": null,
+          "work_order_path": null,
+          "work_order_sha256": null,
+          "workspace_id": null
+        }
+      },
+      "finished_at": "2026-09-15T07:09:25Z",
+      "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+      "live": true,
+      "mocked": false,
+      "node_id": "inspect-repository",
+      "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+      "output_schema_version": "v1",
+      "pane_id": null,
+      "plan_sha256": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Inspect repository",
+      "run_id": "repository-readiness-5af8d57cdd97",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-85a28ab7eade778608a6d5366ea91a15",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-09-15T07:09:24Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_readiness_validation",
+            "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+            "sha256": "sha256:fac57fa84074ffef95d247de957be7da7ecee7f9e2d9db4da1310aca505b0569"
+          }
+        ],
+        "dirty": false,
+        "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+        "require_clean": true,
+        "schema": "tau.repository_readiness_validation.v1",
+        "status": "PASS",
+        "summary": "Repository readiness policy passed."
+      },
+      "accepted_output_sha256": "sha256:c0ea65f7b14e2031f078139b9dbd7044e23307ef7bd684e0bc86d4e078aa48cb",
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_readiness_validation",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+          "sha256": "sha256:fac57fa84074ffef95d247de957be7da7ecee7f9e2d9db4da1310aca505b0569"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-975eb65e814223477a0ff978eb0bef4a",
+      "command_results": [
+        {
+          "full_result_bytes": 4503,
+          "full_result_sha256": "sha256:f94dfb5b51d4462d2233e0d499c89a0179d16d9e339fb97195bacb20bd02dcd6",
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-event.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-975eb65e814223477a0ff978eb0bef4a",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-09-15T07:09:25.354045+00:00",
+            "dag_id": "generic:repository-readiness-5af8d57cdd97",
+            "endpoint_id": "local:f4d5dd4c21c4d9e6be3d8b79",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-09-15T07:10:55.354045+00:00",
+            "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "validate-readiness",
+            "owner": "tau",
+            "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-5af8d57cdd97",
+            "work_order_sha256": "sha256:88f8a6253bb9b12c0dba3892a2aec2c813be608ee614c6db0873a486f15a9c31"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:9c6e4933317f74a26c4f66fc21257436459b787589daded117e16e2922367802",
+            "event_id": "local-event:f4d5dd4c21c4d9e6be3d8b79",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-09-15T07:09:25.907064+00:00",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "delivery_status": "CONFIRMED",
+            "full_submit_receipt_bytes": 535,
+            "full_submit_receipt_sha256": "sha256:c9c096039545490fb47c11cfd04db4b692ab0359d1d2c6a27fd868bc1736f189"
+          },
+          "stderr_bytes": 0,
+          "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "stdout_bytes": 0,
+          "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "diagnostics": {
+        "workspace_stale_read_state": {
+          "policy": "observe",
+          "schema": "tau.workspace_stale_read_state.v1",
+          "unresolved_signal_count": 0,
+          "unresolved_signal_ids": []
+        }
+      },
+      "duration_seconds": 0.558,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:f94dfb5b51d4462d2233e0d499c89a0179d16d9e339fb97195bacb20bd02dcd6",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "extensions": {
+        "command_results": [
+          {
+            "full_result_bytes": 4503,
+            "full_result_sha256": "sha256:f94dfb5b51d4462d2233e0d499c89a0179d16d9e339fb97195bacb20bd02dcd6",
+            "returncode": 0,
+            "runtime_artifacts": [
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-endpoint-lease.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-submit-receipt.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-event.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-capture.json"
+            ],
+            "runtime_backend": "local",
+            "runtime_endpoint_lease": {
+              "attempt_id": "attempt-975eb65e814223477a0ff978eb0bef4a",
+              "attempt_number": 1,
+              "backend": "local",
+              "backend_ids": {
+                "pid": null
+              },
+              "backend_session_id": null,
+              "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+              "cleanup_policy": {
+                "kind": "process_group_termination"
+              },
+              "created_at": "2026-09-15T07:09:25.354045+00:00",
+              "dag_id": "generic:repository-readiness-5af8d57cdd97",
+              "endpoint_id": "local:f4d5dd4c21c4d9e6be3d8b79",
+              "execution_token": "[REDACTED]",
+              "expires_at": "2026-09-15T07:10:55.354045+00:00",
+              "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+              "heartbeat_policy": {
+                "kind": "process_poll"
+              },
+              "node_id": "validate-readiness",
+              "owner": "tau",
+              "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_endpoint_lease.v1",
+              "scope_id": "repository-readiness-5af8d57cdd97",
+              "work_order_sha256": "sha256:88f8a6253bb9b12c0dba3892a2aec2c813be608ee614c6db0873a486f15a9c31"
+            },
+            "runtime_event": {
+              "confidence": "PROCESS",
+              "endpoint_lease_sha256": "sha256:9c6e4933317f74a26c4f66fc21257436459b787589daded117e16e2922367802",
+              "event_id": "local-event:f4d5dd4c21c4d9e6be3d8b79",
+              "event_type": "RUNTIME_ENDPOINT_EXITED",
+              "liveness": "DEAD",
+              "observation": {
+                "cancelled": false,
+                "returncode": 0,
+                "timed_out": false
+              },
+              "observed_at": "2026-09-15T07:09:25.907064+00:00",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_event.v1",
+              "source": "local",
+              "state": "EXITED"
+            },
+            "runtime_submit_receipt": {
+              "delivery_status": "CONFIRMED",
+              "full_submit_receipt_bytes": 535,
+              "full_submit_receipt_sha256": "sha256:c9c096039545490fb47c11cfd04db4b692ab0359d1d2c6a27fd868bc1736f189"
+            },
+            "stderr_bytes": 0,
+            "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "stdout_bytes": 0,
+            "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "termination_cause": "exited"
+          }
+        ],
+        "generic_receipt": {
+          "artifacts": [
+            {
+              "kind": "repository_readiness_validation",
+              "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+              "sha256": "sha256:fac57fa84074ffef95d247de957be7da7ecee7f9e2d9db4da1310aca505b0569"
+            }
+          ],
+          "attempt_count": 1,
+          "command_results": [
+            {
+              "full_result_bytes": 4503,
+              "full_result_sha256": "sha256:f94dfb5b51d4462d2233e0d499c89a0179d16d9e339fb97195bacb20bd02dcd6",
+              "returncode": 0,
+              "runtime_artifacts": [
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-endpoint-lease.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-submit-receipt.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-event.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-capture.json"
+              ],
+              "runtime_backend": "local",
+              "runtime_endpoint_lease": {
+                "attempt_id": "attempt-975eb65e814223477a0ff978eb0bef4a",
+                "attempt_number": 1,
+                "backend": "local",
+                "backend_ids": {
+                  "pid": null
+                },
+                "backend_session_id": null,
+                "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                "cleanup_policy": {
+                  "kind": "process_group_termination"
+                },
+                "created_at": "2026-09-15T07:09:25.354045+00:00",
+                "dag_id": "generic:repository-readiness-5af8d57cdd97",
+                "endpoint_id": "local:f4d5dd4c21c4d9e6be3d8b79",
+                "execution_token": "[REDACTED]",
+                "expires_at": "2026-09-15T07:10:55.354045+00:00",
+                "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+                "heartbeat_policy": {
+                  "kind": "process_poll"
+                },
+                "node_id": "validate-readiness",
+                "owner": "tau",
+                "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_endpoint_lease.v1",
+                "scope_id": "repository-readiness-5af8d57cdd97",
+                "work_order_sha256": "sha256:88f8a6253bb9b12c0dba3892a2aec2c813be608ee614c6db0873a486f15a9c31"
+              },
+              "runtime_event": {
+                "confidence": "PROCESS",
+                "endpoint_lease_sha256": "sha256:9c6e4933317f74a26c4f66fc21257436459b787589daded117e16e2922367802",
+                "event_id": "local-event:f4d5dd4c21c4d9e6be3d8b79",
+                "event_type": "RUNTIME_ENDPOINT_EXITED",
+                "liveness": "DEAD",
+                "observation": {
+                  "cancelled": false,
+                  "returncode": 0,
+                  "timed_out": false
+                },
+                "observed_at": "2026-09-15T07:09:25.907064+00:00",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_event.v1",
+                "source": "local",
+                "state": "EXITED"
+              },
+              "runtime_submit_receipt": {
+                "delivery_status": "CONFIRMED",
+                "full_submit_receipt_bytes": 535,
+                "full_submit_receipt_sha256": "sha256:c9c096039545490fb47c11cfd04db4b692ab0359d1d2c6a27fd868bc1736f189"
+              },
+              "stderr_bytes": 0,
+              "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "stdout_bytes": 0,
+              "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "termination_cause": "exited"
+            }
+          ],
+          "cost_accounting": {
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "estimated_cost_is_billing_truth": false,
+            "estimated_cost_usd": null,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "total_tokens": 0
+          },
+          "cost_estimate": null,
+          "duration_seconds": 0.558,
+          "execution_evidence": {
+            "command_result_sha256": "sha256:f94dfb5b51d4462d2233e0d499c89a0179d16d9e339fb97195bacb20bd02dcd6",
+            "kind": "local_subprocess",
+            "returncode": 0,
+            "runtime_artifact_count": 4,
+            "runtime_backend": "local",
+            "runtime_event_state": "EXITED",
+            "runtime_submit_delivery_status": "CONFIRMED"
+          },
+          "finished_at": "2026-09-15T07:09:25Z",
+          "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+          "live": true,
+          "mocked": false,
+          "pane_id": null,
+          "provider_live": false,
+          "provider_status": null,
+          "provider_verdict": null,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+          "resumed": false,
+          "role": "Validate readiness policy",
+          "started_at": "2026-09-15T07:09:25Z",
+          "terminal_id": null,
+          "usage": null,
+          "visible_log_path": null,
+          "visible_log_sha256": null,
+          "work_order_path": null,
+          "work_order_sha256": null,
+          "workspace_id": null
+        }
+      },
+      "finished_at": "2026-09-15T07:09:25Z",
+      "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+      "live": true,
+      "mocked": false,
+      "node_id": "validate-readiness",
+      "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+      "output_schema_version": "v1",
+      "pane_id": null,
+      "plan_sha256": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Validate readiness policy",
+      "run_id": "repository-readiness-5af8d57cdd97",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-975eb65e814223477a0ff978eb0bef4a",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-09-15T07:09:25Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_readiness_json",
+            "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.json",
+            "sha256": "sha256:b1602fc27fc021b437afcd031196cacb027616318807c093147c2e09431be641"
+          },
+          {
+            "kind": "repository_readiness_markdown",
+            "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.md",
+            "sha256": "sha256:f3c4151f4ab9e473b61eb7ec2c6e485fccf37f65dd9c97d377908d5fdf570919"
+          }
+        ],
+        "schema": "tau.repository_readiness_report.v1",
+        "status": "READY",
+        "summary": "Repository is ready for focused work."
+      },
+      "accepted_output_sha256": "sha256:84eb9efefe253379b45f216ae1cdb5a2e38eff1b0f651229d96745bd37bbcc79",
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_readiness_json",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.json",
+          "sha256": "sha256:b1602fc27fc021b437afcd031196cacb027616318807c093147c2e09431be641"
+        },
+        {
+          "kind": "repository_readiness_markdown",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.md",
+          "sha256": "sha256:f3c4151f4ab9e473b61eb7ec2c6e485fccf37f65dd9c97d377908d5fdf570919"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-a681312058db08c27323031f9c1f38bc",
+      "command_results": [
+        {
+          "full_result_bytes": 4804,
+          "full_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-event.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-a681312058db08c27323031f9c1f38bc",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-09-15T07:09:25.942610+00:00",
+            "dag_id": "generic:repository-readiness-5af8d57cdd97",
+            "endpoint_id": "local:dee5324fc1e675d26bde1ca5",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-09-15T07:10:55.942610+00:00",
+            "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "publish-readiness",
+            "owner": "tau",
+            "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-5af8d57cdd97",
+            "work_order_sha256": "sha256:bc5f3a8d95e7c557744581093e62c150b19dc89cef6ab080601cf8700713fe26"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:7a3686c9dff0d2bbc8cb3a13df6e07c3309c81e6bb063c5e1f96ed1400f20f03",
+            "event_id": "local-event:dee5324fc1e675d26bde1ca5",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-09-15T07:09:26.495465+00:00",
+            "run_id": "repository-readiness-5af8d57cdd97",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "delivery_status": "CONFIRMED",
+            "full_submit_receipt_bytes": 535,
+            "full_submit_receipt_sha256": "sha256:f434ac34c407650e0c4f7b403c2b5bf605fea9147aa2968c9afcd7c1beb1bc1b"
+          },
+          "stderr_bytes": 0,
+          "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "stdout_bytes": 0,
+          "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "diagnostics": {
+        "workspace_stale_read_state": {
+          "policy": "observe",
+          "schema": "tau.workspace_stale_read_state.v1",
+          "unresolved_signal_count": 0,
+          "unresolved_signal_ids": []
+        }
+      },
+      "duration_seconds": 0.557,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "extensions": {
+        "command_results": [
+          {
+            "full_result_bytes": 4804,
+            "full_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+            "returncode": 0,
+            "runtime_artifacts": [
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-endpoint-lease.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-submit-receipt.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-event.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-capture.json"
+            ],
+            "runtime_backend": "local",
+            "runtime_endpoint_lease": {
+              "attempt_id": "attempt-a681312058db08c27323031f9c1f38bc",
+              "attempt_number": 1,
+              "backend": "local",
+              "backend_ids": {
+                "pid": null
+              },
+              "backend_session_id": null,
+              "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+              "cleanup_policy": {
+                "kind": "process_group_termination"
+              },
+              "created_at": "2026-09-15T07:09:25.942610+00:00",
+              "dag_id": "generic:repository-readiness-5af8d57cdd97",
+              "endpoint_id": "local:dee5324fc1e675d26bde1ca5",
+              "execution_token": "[REDACTED]",
+              "expires_at": "2026-09-15T07:10:55.942610+00:00",
+              "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+              "heartbeat_policy": {
+                "kind": "process_poll"
+              },
+              "node_id": "publish-readiness",
+              "owner": "tau",
+              "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_endpoint_lease.v1",
+              "scope_id": "repository-readiness-5af8d57cdd97",
+              "work_order_sha256": "sha256:bc5f3a8d95e7c557744581093e62c150b19dc89cef6ab080601cf8700713fe26"
+            },
+            "runtime_event": {
+              "confidence": "PROCESS",
+              "endpoint_lease_sha256": "sha256:7a3686c9dff0d2bbc8cb3a13df6e07c3309c81e6bb063c5e1f96ed1400f20f03",
+              "event_id": "local-event:dee5324fc1e675d26bde1ca5",
+              "event_type": "RUNTIME_ENDPOINT_EXITED",
+              "liveness": "DEAD",
+              "observation": {
+                "cancelled": false,
+                "returncode": 0,
+                "timed_out": false
+              },
+              "observed_at": "2026-09-15T07:09:26.495465+00:00",
+              "run_id": "repository-readiness-5af8d57cdd97",
+              "schema": "tau.runtime_event.v1",
+              "source": "local",
+              "state": "EXITED"
+            },
+            "runtime_submit_receipt": {
+              "delivery_status": "CONFIRMED",
+              "full_submit_receipt_bytes": 535,
+              "full_submit_receipt_sha256": "sha256:f434ac34c407650e0c4f7b403c2b5bf605fea9147aa2968c9afcd7c1beb1bc1b"
+            },
+            "stderr_bytes": 0,
+            "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "stdout_bytes": 0,
+            "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "termination_cause": "exited"
+          }
+        ],
+        "generic_receipt": {
+          "artifacts": [
+            {
+              "kind": "repository_readiness_json",
+              "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.json",
+              "sha256": "sha256:b1602fc27fc021b437afcd031196cacb027616318807c093147c2e09431be641"
+            },
+            {
+              "kind": "repository_readiness_markdown",
+              "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/results/repository-readiness.md",
+              "sha256": "sha256:f3c4151f4ab9e473b61eb7ec2c6e485fccf37f65dd9c97d377908d5fdf570919"
+            }
+          ],
+          "attempt_count": 1,
+          "command_results": [
+            {
+              "full_result_bytes": 4804,
+              "full_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+              "returncode": 0,
+              "runtime_artifacts": [
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-endpoint-lease.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-submit-receipt.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-event.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-capture.json"
+              ],
+              "runtime_backend": "local",
+              "runtime_endpoint_lease": {
+                "attempt_id": "attempt-a681312058db08c27323031f9c1f38bc",
+                "attempt_number": 1,
+                "backend": "local",
+                "backend_ids": {
+                  "pid": null
+                },
+                "backend_session_id": null,
+                "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                "cleanup_policy": {
+                  "kind": "process_group_termination"
+                },
+                "created_at": "2026-09-15T07:09:25.942610+00:00",
+                "dag_id": "generic:repository-readiness-5af8d57cdd97",
+                "endpoint_id": "local:dee5324fc1e675d26bde1ca5",
+                "execution_token": "[REDACTED]",
+                "expires_at": "2026-09-15T07:10:55.942610+00:00",
+                "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+                "heartbeat_policy": {
+                  "kind": "process_poll"
+                },
+                "node_id": "publish-readiness",
+                "owner": "tau",
+                "plan_revision": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_endpoint_lease.v1",
+                "scope_id": "repository-readiness-5af8d57cdd97",
+                "work_order_sha256": "sha256:bc5f3a8d95e7c557744581093e62c150b19dc89cef6ab080601cf8700713fe26"
+              },
+              "runtime_event": {
+                "confidence": "PROCESS",
+                "endpoint_lease_sha256": "sha256:7a3686c9dff0d2bbc8cb3a13df6e07c3309c81e6bb063c5e1f96ed1400f20f03",
+                "event_id": "local-event:dee5324fc1e675d26bde1ca5",
+                "event_type": "RUNTIME_ENDPOINT_EXITED",
+                "liveness": "DEAD",
+                "observation": {
+                  "cancelled": false,
+                  "returncode": 0,
+                  "timed_out": false
+                },
+                "observed_at": "2026-09-15T07:09:26.495465+00:00",
+                "run_id": "repository-readiness-5af8d57cdd97",
+                "schema": "tau.runtime_event.v1",
+                "source": "local",
+                "state": "EXITED"
+              },
+              "runtime_submit_receipt": {
+                "delivery_status": "CONFIRMED",
+                "full_submit_receipt_bytes": 535,
+                "full_submit_receipt_sha256": "sha256:f434ac34c407650e0c4f7b403c2b5bf605fea9147aa2968c9afcd7c1beb1bc1b"
+              },
+              "stderr_bytes": 0,
+              "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "stdout_bytes": 0,
+              "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "termination_cause": "exited"
+            }
+          ],
+          "cost_accounting": {
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "estimated_cost_is_billing_truth": false,
+            "estimated_cost_usd": null,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "total_tokens": 0
+          },
+          "cost_estimate": null,
+          "duration_seconds": 0.557,
+          "execution_evidence": {
+            "command_result_sha256": "sha256:5b62f3068504b44317a353a6e848d5db39b1297a58d60f2138ae4e224fb4e542",
+            "kind": "local_subprocess",
+            "returncode": 0,
+            "runtime_artifact_count": 4,
+            "runtime_backend": "local",
+            "runtime_event_state": "EXITED",
+            "runtime_submit_delivery_status": "CONFIRMED"
+          },
+          "finished_at": "2026-09-15T07:09:26Z",
+          "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+          "live": true,
+          "mocked": false,
+          "pane_id": null,
+          "provider_live": false,
+          "provider_status": null,
+          "provider_verdict": null,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+          "resumed": false,
+          "role": "Publish readiness result",
+          "started_at": "2026-09-15T07:09:25Z",
+          "terminal_id": null,
+          "usage": null,
+          "visible_log_path": null,
+          "visible_log_sha256": null,
+          "work_order_path": null,
+          "work_order_sha256": null,
+          "workspace_id": null
+        }
+      },
+      "finished_at": "2026-09-15T07:09:26Z",
+      "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+      "live": true,
+      "mocked": false,
+      "node_id": "publish-readiness",
+      "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+      "output_schema_version": "v1",
+      "pane_id": null,
+      "plan_sha256": "sha256:73aa8c386ba2551b020910ee362f087e6aa8ef1af2a59679989dc9acbf1a48cd",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Publish readiness result",
+      "run_id": "repository-readiness-5af8d57cdd97",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-a681312058db08c27323031f9c1f38bc",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-09-15T07:09:25Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/workflow/dag.json"
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run",
+  "run_id": "repository-readiness-5af8d57cdd97",
+  "run_store_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "repository-readiness-5af8d57cdd97",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-run/workflow/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-09-15T07:09:26Z",
+  "verdict": "PASS"
+}

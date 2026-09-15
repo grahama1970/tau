@@ -5,14 +5,14 @@
       "Apply the requested clean-worktree policy.",
       "Publish a repository-readiness report only after validation passes."
     ],
-    "goal_hash": "sha256:cd7899d43453a80b603b68ee9bfc6509b18ee7981f8220d00e84ac2d6a2163f1",
-    "goal_id": "repository-readiness:c51f959facff",
+    "goal_hash": "sha256:68794f7fef1ff6cb7810b02a6af9711b673a8719773c862e84937722c3f483d1",
+    "goal_id": "repository-readiness:92d975a9f543",
     "goal_version": 1,
     "summary": "Prove the first canonical Tau DAG rung from a clean checkout."
   },
   "human_goal": "Prove the first canonical Tau DAG rung from a clean checkout.",
-  "repo_path": "/tmp/tau-rung1-clean-b2bw4hd2/checkout",
-  "request_sha256": "sha256:c51f959facff3891c4296b81eedf295c0249c90d050fb909852d4ed86dcff017",
+  "repo_path": "/tmp/tau-rung1-clean-9s0mvd1h/checkout",
+  "request_sha256": "sha256:92d975a9f543984c5cf744b274c94ecd4e1828d3f31b8085b9e50a7fda70f840",
   "require_clean": true,
   "schema": "tau.repository_readiness_request.v1"
 }

@@ -1,0 +1,38 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "kind": "repository_inspection",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+          "sha256": "sha256:02d0e3d9f2741db2594472593acf585c708554a47a536c69c4268e7d3de85a46"
+        }
+      ],
+      "branch": "",
+      "diff_check_passed": true,
+      "dirty": false,
+      "head_sha": "de8ce5e7f55cca537963cc1af1fea8b1b10c1bc9",
+      "repo_path": "/tmp/tau-rung1-clean-7mnttew_/checkout",
+      "schema": "tau.repository_inspection.v1",
+      "summary": "Repository inspection completed."
+    },
+    {
+      "artifacts": [
+        {
+          "kind": "repository_readiness_validation",
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+          "sha256": "sha256:7977839140e8c54b0d2acbd40e410ce471edc9fd5d5f160dd34f8896054c19b1"
+        }
+      ],
+      "dirty": false,
+      "goal_hash": "sha256:5260b4218223a0258f27e44fcfb699670d05ba08cc3f4b4ff1f81df857469a12",
+      "require_clean": true,
+      "schema": "tau.repository_readiness_validation.v1",
+      "status": "PASS",
+      "summary": "Repository readiness policy passed."
+    }
+  ],
+  "node_id": "publish-readiness",
+  "run_id": "repository-readiness-8affebdf9331",
+  "schema": "tau.generic_dag_node_context.v1"
+}

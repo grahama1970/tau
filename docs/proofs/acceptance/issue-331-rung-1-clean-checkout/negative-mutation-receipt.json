@@ -6,7 +6,7 @@
   "provider_live": false,
   "schema": "tau.dag_ladder_rung1_negative_mutation_receipt.v1",
   "status": "PASS",
-  "verified_at": "2026-09-02T21:46:05.309589Z",
+  "verified_at": "2026-09-15T07:08:08.211689Z",
   "verifier_errors": [
     "missing_required_artifact:rung-1-run/events.jsonl",
     "missing_required_artifact:events.jsonl",

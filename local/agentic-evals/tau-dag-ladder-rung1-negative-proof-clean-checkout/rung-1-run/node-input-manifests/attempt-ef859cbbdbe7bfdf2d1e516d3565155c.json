@@ -1,7 +1,7 @@
 {
   "accepted_input_count": 1,
   "attempt": 1,
-  "attempt_id": "attempt-b56f44d0b7d8e46c0422e9792d20d3b2",
+  "attempt_id": "attempt-ef859cbbdbe7bfdf2d1e516d3565155c",
   "bindings": [
     {
       "accepted_source_schemas": [
@@ -19,16 +19,16 @@
       "reason": "selected",
       "selected_path": null,
       "selected_schema": "tau.repository_inspection.v1",
-      "selected_sha256": "sha256:73584fc5ee4892892f26cd467ec87ef924c0c4a630fa8002279044aba93e0d93",
+      "selected_sha256": "sha256:da4e4e77b327682f6ce8b4d4ca10123195d41bc2ecfcbead680d4a4501a23e34",
       "selector_kind": "accepted_output",
-      "source_attempt_id": "attempt-7072904fd112ea52d5926229098b8280",
+      "source_attempt_id": "attempt-8664954d16b2431a0aa587750a8e5582",
       "source_node_id": "inspect-repository",
       "target_node_id": "validate-readiness"
     }
   ],
-  "canonical_manifest_hash": "sha256:3f1f8224fbc9a948f1b333bb89582e2ec0eb763a27137acc4f182310a8023630",
+  "canonical_manifest_hash": "sha256:1bb9104f69fd703c439156c3997ee3e88e5544b73315805174b5a39eed0e0740",
   "node_id": "validate-readiness",
-  "plan_sha256": "sha256:d075b5562be49807b722839b08de4f1143476e023a101f4327e5a64775fcd70d",
-  "run_id": "repository-readiness-c51f959facff",
+  "plan_sha256": "sha256:ab4dff422f689158f69606bceb5557d7aed2fd6537ba6df27fcf241a775f7c43",
+  "run_id": "repository-readiness-8affebdf9331",
   "schema": "tau.node_input_manifest.v1"
 }

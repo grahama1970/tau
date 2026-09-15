@@ -1,0 +1,8 @@
+{
+  "dirty": false,
+  "goal_hash": "sha256:bae151a155583e4c4cdbcf79a22b690533cfe7c7a3fa77770f126f1e2a2f4cef",
+  "require_clean": true,
+  "schema": "tau.repository_readiness_validation.v1",
+  "status": "PASS",
+  "summary": "Repository readiness policy passed."
+}
