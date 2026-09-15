@@ -11,6 +11,7 @@
     {
       "id": "tau.operator_action_inbox.durable_idempotent_cross_process",
       "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
+      "claim_semantics": "protocol",
       "criticality": "critical",
       "evidence_required": {
         "live_e2e": 1,
@@ -30,7 +31,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && mkdir -p local/agentic-evals && TAU_OPERATOR_ACTION_INBOX_PROOF=local/agentic-evals/tau-operator-action-inbox-proof.json uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_request_survives_process_reopen_and_applies_once tests/test_operator_action_inbox.py::test_operator_action_inbox_can_emit_machine_readable_proof -q -s"
+        "cd .. && mkdir -p local/agentic-evals && TAU_OPERATOR_ACTION_INBOX_PROOF=local/agentic-evals/tau-operator-action-inbox-proof.json uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_request_survives_process_reopen_and_applies_once tests/test_operator_action_inbox.py::test_pause_waiting_for_safe_boundary_blocks_later_actions tests/test_operator_action_inbox.py::test_operator_action_inbox_can_emit_machine_readable_proof -q -s"
       ],
       "timeout_seconds": 120,
       "expected": {
@@ -38,7 +39,7 @@
         "stdout_contains": [
           "tau.operator_action_inbox_proof.v1",
           "\"completion_status\": \"APPLIED\"",
-          "2 passed"
+          "3 passed"
         ],
         "artifacts": [
           {
@@ -80,13 +81,13 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_inbox_rejects_idempotency_key_conflicts tests/test_operator_action_inbox.py::test_claimed_operator_action_reconciles_after_scheduler_restart -q"
+        "cd .. && uv run pytest --tau-suite=all tests/test_operator_action_inbox.py::test_operator_action_inbox_rejects_idempotency_key_conflicts tests/test_operator_action_inbox.py::test_restored_operator_pause_state_replays_pause_and_resume tests/test_operator_action_inbox.py::test_claimed_operator_action_reconciles_after_scheduler_restart -q"
       ],
       "timeout_seconds": 120,
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "2 passed"
+          "3 passed"
         ]
       }
     }

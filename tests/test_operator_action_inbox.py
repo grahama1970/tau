@@ -16,6 +16,7 @@ from tau_coding.dag_runtime.run_store import (
     SqliteDagRunStore,
     _operator_action_head,
 )
+from tau_coding.dag_runtime.scheduler import _restored_operator_pause_state
 
 
 def _plan(tmp_path: Path):
@@ -45,7 +46,9 @@ def _future_stamp() -> str:
     return (datetime.now(UTC) + timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
 
 
-def _action_request(store: SqliteDagRunStore, plan, *, action_id: str = "action-1") -> dict[str, object]:
+def _action_request(
+    store: SqliteDagRunStore, plan, *, action_id: str = "action-1"
+) -> dict[str, object]:
     head_seq, head_sha256 = _operator_action_head(store._connection, "run-1")
     return {
         "schema": "tau.operator_action_request.v1",
@@ -137,6 +140,37 @@ def test_operator_action_inbox_rejects_idempotency_key_conflicts(tmp_path: Path)
             store.submit_operator_action_request(conflicting)
 
 
+def test_pause_waiting_for_safe_boundary_blocks_later_actions(tmp_path: Path) -> None:
+    database = tmp_path / "dag-run.sqlite3"
+    plan = _plan(tmp_path)
+
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="scheduler")
+        store.reserve_attempt(lease, plan_sha256=plan.plan_sha256, node_id="worker", attempt=1)
+        pause = _action_request(store, plan)
+        pause["action"] = "pause"
+        pause["arguments"] = {}
+        store.submit_operator_action_request(pause)
+        store.submit_operator_action_request(_action_request(store, plan, action_id="action-2"))
+        assert store.claim_operator_action(lease, skip_actions=("pause",)) is None
+        claimed = store.claim_operator_action(lease)
+
+    assert claimed is not None
+    assert claimed["action_request_id"] == "action-1"
+
+
+def test_restored_operator_pause_state_replays_pause_and_resume() -> None:
+    assert _restored_operator_pause_state(
+        (
+            {"event_type": "operator_action_pause", "payload": {"outcome": "paused"}},
+            {"event_type": "operator_action_resume", "payload": {"outcome": "resumed"}},
+        )
+    ) is False
+    assert _restored_operator_pause_state(
+        ({"event_type": "operator_action_pause", "payload": {"outcome": "paused"}},)
+    ) is True
+
+
 def test_claimed_operator_action_reconciles_after_scheduler_restart(tmp_path: Path) -> None:
     database = tmp_path / "dag-run.sqlite3"
     plan = _plan(tmp_path)
@@ -196,8 +230,12 @@ def test_operator_action_inbox_can_emit_machine_readable_proof(tmp_path: Path) -
     assert proof["database_exists"] is True
     assert proof["submission_status"] == "VALIDATED"
     assert proof["completion_status"] == "APPLIED"
-    assert isinstance(proof["receipt_sha256"], str) and proof["receipt_sha256"].startswith("sha256:")
+    assert isinstance(proof["receipt_sha256"], str) and proof["receipt_sha256"].startswith(
+        "sha256:"
+    )
     if output_path := os.environ.get("TAU_OPERATOR_ACTION_INBOX_PROOF"):
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(output_path).write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        Path(output_path).write_text(
+            json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     print(json.dumps(proof, sort_keys=True))

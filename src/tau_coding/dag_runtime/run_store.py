@@ -1967,23 +1967,15 @@ class SqliteDagRunStore:
 
         with self._transaction():
             self._assert_lease(lease)
-            if skip_actions:
-                placeholders = ",".join("?" for _ in skip_actions)
-                row = self._connection.execute(
-                    f"""SELECT * FROM operator_action_requests
-                        WHERE run_id = ? AND status = 'VALIDATED'
-                        AND action NOT IN ({placeholders})
-                        ORDER BY created_at, action_request_id LIMIT 1""",
-                    (lease.run_id, *tuple(skip_actions)),
-                ).fetchone()
-            else:
-                row = self._connection.execute(
-                    """SELECT * FROM operator_action_requests
-                       WHERE run_id = ? AND status = 'VALIDATED'
-                       ORDER BY created_at, action_request_id LIMIT 1""",
-                    (lease.run_id,),
-                ).fetchone()
+            row = self._connection.execute(
+                """SELECT * FROM operator_action_requests
+                   WHERE run_id = ? AND status = 'VALIDATED'
+                   ORDER BY created_at, action_request_id LIMIT 1""",
+                (lease.run_id,),
+            ).fetchone()
             if row is None:
+                return None
+            if str(row["action"]) in set(skip_actions):
                 return None
             action_request_id = str(row["action_request_id"])
             claimed_at = _now_iso()

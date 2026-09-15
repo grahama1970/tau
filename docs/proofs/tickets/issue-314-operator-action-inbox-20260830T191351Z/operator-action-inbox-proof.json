@@ -4,7 +4,7 @@
   "live": true,
   "mocked": false,
   "ok": true,
-  "receipt_sha256": "sha256:bcb31d7c7aa12734d730c87735c225529f996f38722e11fbff73b5ef82094424",
+  "receipt_sha256": "sha256:a43b13dc509bac6fd959358279179ff7f189542b1e5df43633aaa5667677c3b0",
   "schema": "tau.operator_action_inbox_proof.v1",
   "submission_status": "VALIDATED"
 }

@@ -1,111 +1,108 @@
 {
-  "schema": "tau.ticket_closure_evidence.v1",
-  "issue": 314,
-  "title": "Make Tau operator actions durable, idempotent, and applicable across process boundaries",
-  "implementation_commit": "81aff44711baa3288b578fa50906857e37ff7d1e",
-  "proof_boundary": {
-    "proves": [
-      "Operator action requests are stored durably in the SQLite run store.",
-      "Duplicate request delivery is byte-idempotent.",
-      "Idempotency-key conflicts fail closed.",
-      "A reopened scheduler owner can claim and complete an action exactly once with a receipt.",
-      "A claimed action left without a terminal receipt is reconciled to RECONCILED after restart instead of being replayed silently."
-    ],
-    "does_not_prove": [
-      "Human acceptance.",
-      "External UI delivery.",
-      "Provider semantic quality.",
-      "Semantic application coverage for every operator action subtype against live runtime backends."
-    ]
-  },
-  "commands": [
-    {
-      "command": "uv run pytest --tau-suite=all tests/test_operator_action_inbox.py tests/test_project_dag.py tests/test_run_ledger.py tests/test_agent_projection_actions.py -q",
-      "result": "129 passed in 15.65s"
-    },
-    {
-      "command": "uv run pytest -q",
-      "result": "253 passed, 29 skipped, 3445 deselected in 26.52s"
-    },
-    {
-      "command": "agentic-evals/run.sh run evals/tau_operator_action_inbox_agentic_eval.json --output local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
-      "result": "readiness=READY; outcome_counts={'PASS': 2, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=4"
-    },
-    {
-      "command": "agentic-evals/run.sh run evals/tau_feature_coverage_agentic_eval.json --output local/agentic-evals/tau-feature-coverage-agentic-evals-report.json",
-      "result": "readiness=READY; outcome_counts={'PASS': 7, 'FAIL': 0, 'BLOCKED': 0, 'NOT_TESTED': 0}; trial_count=14"
-    }
-  ],
-  "operator_action_readback": {
-    "completion_status": "APPLIED",
-    "database_exists": true,
+  "agentic_evals": {
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_operator_action_inbox_agentic_eval.json --output local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
+    "critical_claim": "tau.operator_action_inbox.durable_idempotent_cross_process",
+    "critical_claim_verdict": "PROVEN",
+    "exit_code": 0,
     "live": true,
     "mocked": false,
-    "ok": true,
-    "receipt_sha256": "sha256:bcb31d7c7aa12734d730c87735c225529f996f38722e11fbff73b5ef82094424",
-    "schema": "tau.operator_action_inbox_proof.v1",
-    "submission_status": "VALIDATED"
-  },
-  "agentic_eval_readback": {
-    "readiness": "READY",
     "outcome_counts": {
-      "PASS": 2,
-      "FAIL": 0,
       "BLOCKED": 0,
-      "NOT_TESTED": 0
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 2
     },
-    "trial_count": 4,
-    "capability_readiness": {
-      "aggregate_readiness": "READY",
-      "critical_claim_count": 1,
-      "critical_claims_proven": 1,
-      "claims": [
-        {
-          "id": "tau.operator_action_inbox.durable_idempotent_cross_process",
-          "description": "Tau stores bounded operator actions durably, preserves idempotency, applies actions only through scheduler-owned claim/complete transitions, and reconciles uncertain claimed actions after process restart.",
-          "criticality": "critical",
-          "required_evidence": [
-            "fault_injected_deterministic",
-            "live_e2e"
-          ],
-          "verdict": "PROVEN",
-          "per_class": {
-            "fault_injected_deterministic": {
-              "status": "PROVEN",
-              "cases": [
-                "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
-              ]
-            },
-            "live_e2e": {
-              "status": "PROVEN",
-              "cases": [
-                "operator-action-inbox-sqlite-cross-process-apply-once"
-              ]
-            }
-          },
-          "missing_evidence": [],
-          "blocked_evidence": [],
-          "exempt_evidence": [],
-          "exemptions": [],
-          "unqualified_live_cases": [],
-          "supporting_cases": [
-            "operator-action-inbox-sqlite-cross-process-apply-once",
-            "operator-action-inbox-rejects-conflicts-and-reconciles-uncertain-claim"
-          ]
-        }
-      ]
+    "readiness": "READY",
+    "repo_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "run_id": "6a64cf5671b3",
+    "source": "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
+    "trial_count": 4
+  },
+  "artifact_hashes": {
+    "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json": "sha256:61438c2c92739f6dcbee303d3adadfd9cf09bf2fadab87b5dd0ebc7cc18031de",
+    "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json": "sha256:9991da2577f9bcb47dbcd04869e5882ce495b85a27bb1cac36cd810391792ea6",
+    "local/agentic-evals/tau-operator-action-inbox-proof.json": "sha256:61438c2c92739f6dcbee303d3adadfd9cf09bf2fadab87b5dd0ebc7cc18031de"
+  },
+  "created_at": "2026-09-15T02:10:35.638781+00:00",
+  "e2e": {
+    "artifact": "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json",
+    "exit_code": 0,
+    "live": true,
+    "local_source": "local/agentic-evals/tau-operator-action-inbox-proof.json",
+    "mocked": false,
+    "observed": {
+      "completion_status": "APPLIED",
+      "database_exists": true,
+      "receipt_sha256": "sha256:a43b13dc509bac6fd959358279179ff7f189542b1e5df43633aaa5667677c3b0",
+      "submission_status": "VALIDATED"
     }
   },
-  "feature_coverage_readback": {
-    "readiness": "READY",
-    "outcome_counts": {
-      "PASS": 7,
-      "FAIL": 0,
-      "BLOCKED": 0,
-      "NOT_TESTED": 0
-    },
-    "trial_count": 14,
-    "source": "evals/tau_feature_coverage_agentic_eval.json"
+  "implementation_base_commit": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+  "issue": 314,
+  "lint": {
+    "command": "uv run ruff check src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/scheduler.py tests/test_operator_action_inbox.py",
+    "exit_code": 0,
+    "result": "All checks passed!"
   },
-  "status": "PASS"
+  "live": true,
+  "mocked": false,
+  "observed": {
+    "agentic_eval_outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 2
+    },
+    "agentic_eval_readiness": "READY",
+    "agentic_eval_trial_count": 4,
+    "operator_action_completion_status": "APPLIED",
+    "operator_action_receipt_sha256": "sha256:a43b13dc509bac6fd959358279179ff7f189542b1e5df43633aaa5667677c3b0",
+    "operator_action_submission_status": "VALIDATED",
+    "ticket_lookup": "OPEN; live lookup 2026-09-15 showed labels include agent-work,type:feature,maintainer-active,agent-blocked,dag,route:ops_or_scheduler and active lease_id=20260915T012813Z-codex-314"
+  },
+  "origin_main_commit_before_land": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+  "proof_boundary": {
+    "does_not_prove": "Human acceptance, provider semantic quality, UI delivery, full semantic coverage for every operator-action subtype, or the unrelated Herdr #315 ledger finding.",
+    "proves": "Tau stores bounded operator actions durably in SQLite, preserves duplicate idempotency, rejects idempotency-key conflicts, applies actions once through scheduler-owned claim/complete transitions, restores pause/resume state after restart, and reconciles uncertain claimed actions without replay."
+  },
+  "publication": {
+    "method": "pending gh-land finalizer",
+    "raw_git_add_commit_push_used": false
+  },
+  "review": {
+    "p2_findings_acknowledged": true,
+    "scope": "finalizer landing",
+    "verdict": "PASS"
+  },
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "scoped_paths": [
+    "src/tau_coding/dag_runtime/run_store.py",
+    "src/tau_coding/dag_runtime/scheduler.py",
+    "tests/test_operator_action_inbox.py",
+    "evals/tau_operator_action_inbox_agentic_eval.json",
+    "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json",
+    "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json",
+    "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
+    "local/agentic-evals/tau-operator-action-inbox-proof.json"
+  ],
+  "scoped_worktree_diff_against_origin_main": {
+    "paths": [
+      "src/tau_coding/dag_runtime/run_store.py",
+      "src/tau_coding/dag_runtime/scheduler.py",
+      "tests/test_operator_action_inbox.py",
+      "evals/tau_operator_action_inbox_agentic_eval.json",
+      "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json",
+      "docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json",
+      "local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json",
+      "local/agentic-evals/tau-operator-action-inbox-proof.json"
+    ],
+    "stat": ".../closure-evidence.json                          | 234 +++++++-----\n .../operator-action-inbox-proof.json               |   2 +-\n evals/tau_operator_action_inbox_agentic_eval.json  |   9 +-\n ...operator-action-inbox-agentic-evals-report.json | 393 +++++++++++++++++++--\n .../tau-operator-action-inbox-proof.json           |   2 +-\n src/tau_coding/dag_runtime/run_store.py            |  24 +-\n src/tau_coding/dag_runtime/scheduler.py            |  26 +-\n tests/test_operator_action_inbox.py                |  44 ++-\n 8 files changed, 589 insertions(+), 145 deletions(-)"
+  },
+  "status": "ACCEPTED",
+  "unit": {
+    "command": "uv run pytest -q --tau-suite=all tests/test_operator_action_inbox.py",
+    "exit_code": 0,
+    "passed": 6,
+    "result": "6 passed in 0.59s"
+  }
 }

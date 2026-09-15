@@ -350,7 +350,7 @@ def run_dag_plan(
             return uncertain_result
         run_store.reconcile_claimed_operator_actions(lease)
         try:
-            replayed_event_count, replayed_block = _restore_durable_state(
+            replayed_event_count, replayed_block, paused_by_operator = _restore_durable_state(
                 plan=plan,
                 policy=policy,
                 run_store=run_store,
@@ -1556,7 +1556,8 @@ def run_dag_plan(
                             "cancelled"
                             if cancel_events[node_id].is_set()
                             else "success"
-                            if completion_result.get("status") == "PASS" and completion_result.get("verdict") == "PASS"
+                            if completion_result.get("status") == "PASS"
+                            and completion_result.get("verdict") == "PASS"
                             else "failed"
                         ),
                     )
@@ -2860,7 +2861,8 @@ def _recover_incomplete_attempts(
             raw_result=completion_result,
             terminal_state=(
                 "success"
-                if completion_result.get("status") == "PASS" and completion_result.get("verdict") == "PASS"
+                if completion_result.get("status") == "PASS"
+                and completion_result.get("verdict") == "PASS"
                 else "failed"
             ),
         )
@@ -3941,7 +3943,7 @@ def _restore_durable_state(
     attempt_history: dict[str, list[dict[str, Any]]],
     transition_receipt_paths: list[str],
     event_sink: EventSink | None,
-) -> tuple[int, dict[str, Any] | None]:
+) -> tuple[int, dict[str, Any] | None, bool]:
     events = run_store.load_events(run_id)
     attempts = run_store.list_attempts(run_id)
     runtime_endpoints = {
@@ -4004,7 +4006,21 @@ def _restore_durable_state(
             continue
         if stored.state == "RETRY_SCHEDULED":
             attempt_history[stored.identity.node_id].append(stored.staged_result)
-    return len(events), replay.block
+    return len(events), replay.block, _restored_operator_pause_state(events)
+
+
+def _restored_operator_pause_state(events: tuple[dict[str, Any], ...]) -> bool:
+    paused = False
+    for event in events:
+        event_type = event.get("event_type")
+        payload = event.get("payload")
+        if not isinstance(payload, Mapping):
+            continue
+        if event_type == "operator_action_pause" and payload.get("outcome") == "paused":
+            paused = True
+        elif event_type == "operator_action_resume" and payload.get("outcome") == "resumed":
+            paused = False
+    return paused
 
 
 def _validate_replayed_dispatch_envelopes(
