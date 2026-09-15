@@ -542,6 +542,7 @@ def _run_materialized_workflow(
     # tau#350: print the run identity and progress-view deep link immediately
     # so headless and --no-browser-open launches still surface the viewer URL.
     print(
+        f"run_id: {materialized.run_id}\n"
         f"run_dir: {materialized.run_dir}\n"
         f"progress_view: {viewer.url}",
         flush=True,
@@ -638,6 +639,17 @@ def _write_workflow_receipt(
         payload = json.loads(result_path.read_text(encoding="utf-8"))
         result = payload if isinstance(payload, dict) else None
     ok = dag_receipt.get("ok") is True and result is not None
+    result_artifact = None
+    if result is not None:
+        result_artifact = {
+            "path": str(result_path),
+            "schema": result.get("schema") if isinstance(result.get("schema"), str) else None,
+            "media_type": "application/json",
+        }
+    viewer_payload = {
+        "command": ["tau", "dag-view", "--run-dir", str(materialized.run_dir)],
+        "url": viewer.url if viewer is not None else None,
+    }
     receipt: dict[str, object] = {
         "schema": WORKFLOW_RUN_RECEIPT_SCHEMA,
         "status": "PASS" if ok else "BLOCKED",
@@ -647,6 +659,7 @@ def _write_workflow_receipt(
         "provider_live": dag_receipt.get("provider_live") is True,
         "workflow_id": materialized.definition.workflow_id,
         "workflow_version": materialized.definition.workflow_version,
+        "run_id": materialized.run_id,
         "goal": materialized.goal,
         "source_dag_path": str(materialized.source_dag_path),
         "run_dir": str(materialized.run_dir),
@@ -655,10 +668,9 @@ def _write_workflow_receipt(
         if isinstance(dag_receipt.get("cost_accounting"), dict)
         else None,
         "result": result,
-        "viewer": {
-            "command": ["tau", "dag-view", "--run-dir", str(materialized.run_dir)],
-            "url": viewer.url if viewer is not None else None,
-        },
+        "result_artifact": result_artifact,
+        "progress_view": viewer_payload,
+        "viewer": viewer_payload,
         "proof_scope": {
             "proves": [
                 f"Tau executed the packaged {materialized.definition.workflow_id} workflow.",

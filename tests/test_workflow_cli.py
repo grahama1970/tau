@@ -217,7 +217,14 @@ def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     payload = json.loads(result.stdout)
     assert payload["workflow_id"] == "repository-readiness"
+    assert payload["run_id"] == json.loads((run_dir / "current-state.json").read_text())["run_id"]
+    assert payload["progress_view"]["command"] == ["tau", "dag-view", "--run-dir", str(run_dir)]
     assert payload["result"]["status"] == "READY"
+    assert payload["result_artifact"] == {
+        "path": str(run_dir / "results" / "repository-readiness.json"),
+        "schema": "tau.repository_readiness_report.v1",
+        "media_type": "application/json",
+    }
 
 
 def test_workflows_run_dispatches_operator_reference(tmp_path: Path) -> None:
