@@ -1,0 +1,36 @@
+{
+  "accepted_inputs": [
+    {
+      "first_failed_gate": "transcript_malformed",
+      "project_id": "beta",
+      "project_status": "BLOCKED_INPUT",
+      "skip_reason": null,
+      "suppressed_by": "archive.beta"
+    },
+    {
+      "first_failed_gate": null,
+      "project_id": "beta",
+      "project_state": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/beta/state/project-state.json",
+        "schema": "tau.project_state.v1",
+        "sha256": "sha256:313eba442b92e88720358ebfdc70395a6381dff78ebdd372ca431cae6a6a6da8"
+      },
+      "project_status": "OK",
+      "skip_reason": null
+    },
+    {
+      "code_ingest": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/beta/ingest/code-ingest.json",
+        "schema": "tau.code_ingest_manifest.v1",
+        "sha256": "sha256:886f97c167d7a7345892866c7d5e5f0ea5c55b1612632ee93372ea989505af50"
+      },
+      "first_failed_gate": null,
+      "project_id": "beta",
+      "project_status": "OK",
+      "skip_reason": null
+    }
+  ],
+  "node_id": "join.beta",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

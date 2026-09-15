@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:36e8d6ca4281dda17d3c69ecbaced43028f3ef149a7de3069d81941408321886",
+  "event_id": "local-event:53c276fc557a38ea45d0a50c",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-09-15T22:20:39.499136+00:00",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

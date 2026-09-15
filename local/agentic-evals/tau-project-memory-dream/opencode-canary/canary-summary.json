@@ -1,0 +1,34 @@
+{
+  "candidate_digest": "sha256:348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6",
+  "checked_at_utc": null,
+  "dispatch_ok": true,
+  "head_generation": 1,
+  "provider": {
+    "model": "opencode/claude-haiku-4-5",
+    "provider": "opencode"
+  },
+  "provider_live": true,
+  "raw_output_sha256": null,
+  "raw_text_head": "I'll read the evidence-packet.json file first, then create the candidate file with the specified schema.\nLet me check for the evidence-packet.json file more carefully:\nI don't see an evidence-packet.json file in the current directory. Let me check if it's in a parent directory or if you meant a different file:\nFound it! Let me read the evidence-packet.json from the correct location:\nNow I'll creat",
+  "returncode": 0,
+  "schema": "tau.project_memory_dream.opencode_canary.v1",
+  "status": "PASS",
+  "terminal_rows": {
+    "alpha": {
+      "candidate_digest": "sha256:348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6",
+      "evidence": {
+        "stage_response": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/stage/348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6/stage-response.json",
+          "schema": "graph_memory.project_topic_stage_receipt.v1",
+          "sha256": "sha256:aae5aa3ce78ce6ab4f47c1af77ff3539718ce6abc4ef56ae6dafb59e6ef719bb"
+        }
+      },
+      "first_failed_gate": null,
+      "project_id": "alpha",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/receipts/alpha/project-dream-receipt.json",
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": null,
+      "terminal_status": "SHADOW_STAGED"
+    }
+  }
+}

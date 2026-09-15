@@ -1,0 +1,15 @@
+{
+  "model_id": "fixture/deterministic",
+  "policy_profile": {
+    "path": "/home/graham/workspace/experiments/tau/examples/project-memory-dream/policy-profile.json",
+    "sha256": "sha256:413c4d39daa66e25bc4f3c6d0211484915a715c84df88dc6dfe9dc33ce3950e8"
+  },
+  "projects": [
+    "alpha",
+    "beta",
+    "gamma"
+  ],
+  "promotion_mode": "shadow",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_memory_dream_resolved_config.v1"
+}

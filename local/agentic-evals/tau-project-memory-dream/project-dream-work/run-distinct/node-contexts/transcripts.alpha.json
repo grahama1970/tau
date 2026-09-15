@@ -1,0 +1,51 @@
+{
+  "accepted_inputs": [
+    {
+      "command_specs": {
+        "alpha": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/command-spec-alpha.json",
+          "schema": "tau.opencode_command_spec.v1",
+          "sha256": "sha256:95f5545fb87b13d015538f6f5707ab9b76b1d17684fc86f4d2eb93f692927a7b"
+        },
+        "beta": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/command-spec-beta.json",
+          "schema": "tau.opencode_command_spec.v1",
+          "sha256": "sha256:67b60f06791477d158ec53faec908b48d9cf9057c31edfd2148fe19506af9e43"
+        }
+      },
+      "data_boundary": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/data-boundary.json",
+        "schema": "tau.data_boundary.v1",
+        "sha256": "sha256:bffde6c6d795b042971841c34622282c0d8de010661fcfd728ea2839fbe85d89"
+      },
+      "first_failed_gate": null,
+      "model_id": "fixture/deterministic",
+      "preflight": "PASS",
+      "project_id": null,
+      "project_status": "OK",
+      "projects": [
+        "alpha",
+        "beta"
+      ],
+      "prompt_schema_policy": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/prompt-schema-policy.json",
+        "schema": "tau.prompt_schema_policy.v1",
+        "sha256": "sha256:eab9ee4ce7528dbc6fbc46a4f6f996214954d31451954d4513bd6e7e00c0216f"
+      },
+      "provider_readiness": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/provider-readiness.json",
+        "schema": "tau.provider_readiness_receipt.v1",
+        "sha256": "sha256:7bd70d2bae036193d74a27ccbc075e4197a6d64930738b71807ec18eb0a6e37b"
+      },
+      "resolved_config": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/artifacts/preflight/resolved-config.json",
+        "schema": "tau.project_memory_dream_resolved_config.v1",
+        "sha256": "sha256:69459bad34daf51e2dd99e87defceb1c30ef1cbd5476b15190e20d639d8d9b9f"
+      },
+      "skip_reason": null
+    }
+  ],
+  "node_id": "transcripts.alpha",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

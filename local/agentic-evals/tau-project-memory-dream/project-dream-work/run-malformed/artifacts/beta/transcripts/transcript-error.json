@@ -1,0 +1,7 @@
+{
+  "bundle": "bundle-0001.jsonl",
+  "detail": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+  "line": 1,
+  "project_id": "beta",
+  "schema": "tau.transcript_error.v1"
+}

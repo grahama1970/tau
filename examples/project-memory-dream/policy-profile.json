@@ -1,0 +1,37 @@
+{
+  "schema": "tau.policy_profile.v1",
+  "policy_profile_id": "project-memory-dream-default",
+  "default_promotion_mode": "shadow",
+  "allowed_promotion_modes": ["shadow", "human_approval", "policy_limited_auto"],
+  "declared_capability_allowlist": [
+    "filesystem.read",
+    "filesystem.write",
+    "process.opencode.run"
+  ],
+  "forbidden_model_capabilities": [
+    "memory.direct",
+    "memory.write_direct",
+    "arangodb.write",
+    "qdrant.write",
+    "database.write",
+    "generic_upsert"
+  ],
+  "learning_exclusion": {
+    "exclude_worker_sessions_from_learning": true
+  },
+  "memory_access": {
+    "wrapper_required": true,
+    "direct_http_aql_forbidden": true
+  },
+  "retry_policy": {
+    "read_only_nodes": "bounded_typed",
+    "synthesis_retry_keeps_failed_attempt": true,
+    "stage_replay_idempotent": true,
+    "promotion_against_changed_head": "rebuild_required",
+    "cas_conflict_terminal": "BLOCKED_CAS"
+  },
+  "promotion": {
+    "default": "shadow_only",
+    "requires_issue_318_gates_before_promote_or_rollback": true
+  }
+}

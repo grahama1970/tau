@@ -1,0 +1,32 @@
+{
+  "accepted_inputs": [
+    {
+      "first_failed_gate": null,
+      "project_id": "alpha",
+      "project_status": "OK",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/receipts/alpha/project-dream-receipt.json",
+      "skip_reason": null,
+      "terminal_row": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/rows/alpha.json",
+        "schema": "tau.project_memory_dream_terminal_row.v1",
+        "sha256": "sha256:eeb0bbf57486272c603e66501447ec0089c0ea92466136439f5faba9775af049"
+      },
+      "terminal_status": "SHADOW_STAGED"
+    },
+    {
+      "first_failed_gate": "transcript_malformed",
+      "project_id": "beta",
+      "project_status": "BLOCKED_INPUT",
+      "skip_reason": null,
+      "suppressed_by": "stage.beta",
+      "terminal_row": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/rows/beta.json",
+        "schema": "tau.project_memory_dream_terminal_row.v1",
+        "sha256": "sha256:15c9694160740a0a9268ea5730e07515ca8e03a38dd92a8044fc7ce3c5b7abc5"
+      }
+    }
+  ],
+  "node_id": "aggregate",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

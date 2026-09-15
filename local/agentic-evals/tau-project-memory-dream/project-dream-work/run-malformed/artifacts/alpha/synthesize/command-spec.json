@@ -1,0 +1,17 @@
+{
+  "argv": [],
+  "command_spec_id": "synthesize-alpha",
+  "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize",
+  "declared_capabilities": [
+    "filesystem.read:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize",
+    "filesystem.write:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/raw-model-output.json"
+  ],
+  "excluded_from_learning": true,
+  "model_id": "fixture/deterministic",
+  "provider": "fixture",
+  "schema": "tau.opencode_command_spec.v1",
+  "uses_capabilities": [
+    "filesystem.read:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize",
+    "filesystem.write:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/raw-model-output.json"
+  ]
+}

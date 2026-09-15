@@ -1,0 +1,53 @@
+{
+  "accepted_output": {
+    "archival_compaction": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/archive/archival-compaction.json",
+      "schema": "tau.archival_compaction.v1",
+      "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+    },
+    "code_ingest": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:4d0b35b3c7c11d56dba35f5e1f697220b38ea350d0efa534b84b65d325468ef9"
+    },
+    "first_failed_gate": null,
+    "join": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/join/join.json",
+      "schema": "tau.project_join.v1",
+      "sha256": "sha256:3d15bb885c9148a0008709dbf9f54d22d11d593a6735f72696922262f82553e1"
+    },
+    "project_id": "alpha",
+    "project_state": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/state/project-state.json",
+      "schema": "tau.project_state.v1",
+      "sha256": "sha256:03cfee1286e136caa57851b763d759fdd1ae613d51dbabfbb9ad3be509a5583d"
+    },
+    "project_status": "OK",
+    "skip_reason": null,
+    "transcript_corpus": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/transcripts/transcript-corpus.json",
+      "schema": "tau.transcript_corpus.v1",
+      "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/join/join.json",
+      "schema": "tau.project_join.v1",
+      "sha256": "sha256:3d15bb885c9148a0008709dbf9f54d22d11d593a6735f72696922262f82553e1"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "joined transcript and project-delta branches before packet construction",
+  "mocked": false,
+  "node_id": "join.alpha",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "5092f15a2f9ccb0dfce8ffbe3d963b5447cabef94f942055f5cba51d929f40c9"
+}

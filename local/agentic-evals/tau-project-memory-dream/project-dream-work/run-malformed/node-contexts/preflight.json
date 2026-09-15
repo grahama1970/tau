@@ -1,0 +1,6 @@
+{
+  "accepted_inputs": [],
+  "node_id": "preflight",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

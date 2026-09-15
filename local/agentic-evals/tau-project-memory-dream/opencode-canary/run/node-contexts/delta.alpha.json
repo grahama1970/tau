@@ -1,0 +1,45 @@
+{
+  "accepted_inputs": [
+    {
+      "command_specs": {
+        "alpha": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/command-spec-alpha.json",
+          "schema": "tau.opencode_command_spec.v1",
+          "sha256": "sha256:0c47bd4965f51abf2d8117fb644576e03717ec92daa011b6e63f035ff837f33d"
+        }
+      },
+      "data_boundary": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/data-boundary.json",
+        "schema": "tau.data_boundary.v1",
+        "sha256": "sha256:c6f0db0865d12393d2e93aac353156ef8f5d07844f6993a6ff5b1b9bbf7e1a7e"
+      },
+      "first_failed_gate": null,
+      "model_id": "opencode/claude-haiku-4-5",
+      "preflight": "PASS",
+      "project_id": null,
+      "project_status": "OK",
+      "projects": [
+        "alpha"
+      ],
+      "prompt_schema_policy": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/prompt-schema-policy.json",
+        "schema": "tau.prompt_schema_policy.v1",
+        "sha256": "sha256:eab9ee4ce7528dbc6fbc46a4f6f996214954d31451954d4513bd6e7e00c0216f"
+      },
+      "provider_readiness": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/provider-readiness.json",
+        "schema": "tau.provider_readiness_receipt.v1",
+        "sha256": "sha256:1e610f21d50ae34d6403a2830b9248199fa6aee3643cd9a18435c2d22acc666b"
+      },
+      "resolved_config": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/resolved-config.json",
+        "schema": "tau.project_memory_dream_resolved_config.v1",
+        "sha256": "sha256:e2d65e3cbad5a0256235199981ac18f7a9bf418b00d34167d0c7e048fb202114"
+      },
+      "skip_reason": null
+    }
+  ],
+  "node_id": "delta.alpha",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

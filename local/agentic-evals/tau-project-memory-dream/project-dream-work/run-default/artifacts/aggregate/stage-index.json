@@ -1,0 +1,9 @@
+{
+  "candidate_digest": "sha256:082273a3577f583eaa435e57658404f0a035640f4f49c5d0383bbf1c17192c77",
+  "schema": "graph_memory.project_topic_stage_index.v1",
+  "shadow": true,
+  "staged": {
+    "alpha": "sha256:8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2",
+    "beta": "sha256:590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5"
+  }
+}

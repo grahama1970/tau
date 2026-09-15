@@ -1,0 +1,7 @@
+{
+  "archived_sessions": 2,
+  "compacted": true,
+  "corpus_sha256": "sha256:5a380bb89b5f44265c5947a3b6713ac491aa933c59380a0275805ffdb651d306",
+  "project_id": "gamma",
+  "schema": "tau.archival_compaction.v1"
+}

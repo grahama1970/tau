@@ -1,0 +1,14 @@
+{
+  "accepted_inputs": [
+    {
+      "first_failed_gate": null,
+      "project_id": "gamma",
+      "project_status": "SKIPPED",
+      "skip_reason": "unchanged_project",
+      "suppressed_by": "stage.gamma"
+    }
+  ],
+  "node_id": "policy.gamma",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

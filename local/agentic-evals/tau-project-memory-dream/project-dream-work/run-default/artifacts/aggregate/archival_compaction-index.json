@@ -1,0 +1,13 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/alpha/archive/archival-compaction.json",
+      "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+    },
+    "beta": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/archive/archival-compaction.json",
+      "sha256": "sha256:e208081f44222a4ef2474e12e72094476d5f6659faf9f74be01d377acfcd7050"
+    }
+  },
+  "schema": "tau.archival_compaction_index.v1"
+}

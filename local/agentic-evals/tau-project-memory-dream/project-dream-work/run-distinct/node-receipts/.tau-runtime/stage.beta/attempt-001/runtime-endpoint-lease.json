@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-d4d1f86be55cf53a188c7a821a19d819",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-09-15T22:20:51.547371+00:00",
+  "dag_id": "generic:project-memory-dream-fixture",
+  "endpoint_id": "local:f0c32b369b64e64e267be9de",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-09-15T22:22:21.547371+00:00",
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "stage.beta",
+  "owner": "tau",
+  "plan_revision": "sha256:60d8729f96490f52cf8ac7e3c8b33afc8b71a7274b4c0d5a5123956671ebb551",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "project-memory-dream-fixture",
+  "work_order_sha256": "sha256:45a809a808bdc5a1f0d5aaa3982e6f1e284567246ec1a9ab843f3052530f9372"
+}

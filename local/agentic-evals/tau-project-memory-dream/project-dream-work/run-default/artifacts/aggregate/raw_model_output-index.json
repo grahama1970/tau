@@ -1,0 +1,13 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/alpha/synthesize/raw-model-output.json",
+      "sha256": "sha256:e4645b6be4686e750af425581def4af16814c77625bbb5c5dab10bddf41d0b44"
+    },
+    "beta": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/synthesize/raw-model-output.json",
+      "sha256": "sha256:ec45ff4bcead0758f8eb69ad14423ddfc29a867c7e5ae1d84e0389ed2a3b1c88"
+    }
+  },
+  "schema": "tau.raw_model_output_index.v1"
+}

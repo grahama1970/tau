@@ -1,0 +1,12 @@
+{
+  "dispatch_ok": true,
+  "project_id": "alpha",
+  "provider": {
+    "model": "fixture/deterministic",
+    "provider": "fixture"
+  },
+  "provider_live": false,
+  "schema": "tau.raw_model_output.v1",
+  "source_packet_digest": "sha256:26abbf46b9fb9388caefb4b29bb3d936a92b1b8043d23ad9d170b6a26a7388fb",
+  "text": "fixture synthesis for alpha\npacket: sha256:26abbf46b9fb9388caefb4b29bb3d936a92b1b8043d23ad9d170b6a26a7388fb\nknowledge update derived deterministically from the evidence packet\n"
+}

@@ -1,0 +1,15 @@
+{
+  "allowed_paths": [
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/distinct",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct"
+  ],
+  "allowed_projects": [
+    "alpha",
+    "beta"
+  ],
+  "home_transcript_access": false,
+  "network": {
+    "model_dispatch_only": true
+  },
+  "schema": "tau.data_boundary.v1"
+}

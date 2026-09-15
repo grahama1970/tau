@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-43599867966bbf3d6a195b0f9bdd5b72",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:synthesize.alpha:validate.alpha",
+      "control_edge_id": "generic-dependency:synthesize.alpha:validate.alpha",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:ffbda00611f9c93a7c5c95a533e597b8cec3aafb2feb9d3160d645a51fa1861b",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-666dc09ae22cd5e47516b0529fa07f47",
+      "source_node_id": "synthesize.alpha",
+      "target_node_id": "validate.alpha"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:f3f53aa71eda59273f487660bcc77c521dce50ba930b21e0ff5e2b5d6712388d",
+  "node_id": "validate.alpha",
+  "plan_sha256": "sha256:60d8729f96490f52cf8ac7e3c8b33afc8b71a7274b4c0d5a5123956671ebb551",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

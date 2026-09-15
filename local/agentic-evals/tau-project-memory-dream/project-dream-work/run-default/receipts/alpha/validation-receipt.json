@@ -1,0 +1,31 @@
+{
+  "attempt_id": "attempt-001",
+  "checked_at": "2026-09-15T22:20:40.875832Z",
+  "error_count": 0,
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "project_dream_schema": "tau.project_dream_receipt.v1",
+  "project_id": "alpha",
+  "proof_scope": {
+    "does_not_prove": [
+      "The synthesized project knowledge is semantically true.",
+      "Provider/model quality.",
+      "Production Graph Memory persistence beyond referenced CAS receipts.",
+      "Human identity verification beyond referenced approval receipts."
+    ],
+    "proves": [
+      "Tau replay-validated the project-dream receipt from hash-bound artifacts.",
+      "Tau checked project-dream policy, approval, CAS/head readback, effect-count, and data-boundary gates deterministically."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+  "receipt_sha256": "sha256:9a568530d4be87be3a9a1fe14ec5f2933ad9eedc297db3ee854753f9b0707efb",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_dream_validation_receipt.v1",
+  "status": "PASS",
+  "terminal_status": "SHADOW_STAGED",
+  "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/validation-receipt.json"
+}

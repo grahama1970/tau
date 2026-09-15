@@ -1,0 +1,16 @@
+{
+  "includes_dream_worker_transcript": false,
+  "project_id": "gamma",
+  "schema": "tau.transcript_corpus.v1",
+  "sessions": [
+    {
+      "session_id": "sess-gamma-1",
+      "turn_count": 1
+    },
+    {
+      "session_id": "sess-gamma-2",
+      "turn_count": 1
+    }
+  ],
+  "total_turns": 2
+}

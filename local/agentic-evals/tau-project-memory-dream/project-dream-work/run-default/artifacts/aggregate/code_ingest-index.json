@@ -1,0 +1,16 @@
+{
+  "coverage_scope": "incremental",
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/alpha/ingest/code-ingest.json",
+      "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+    },
+    "beta": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/ingest/code-ingest.json",
+      "sha256": "sha256:8fae12a4e0d5fde6111317ccf72b8516c82614b00604009f52abd33ecd16b7b7"
+    }
+  },
+  "git_commit": "head-alpha-0001",
+  "reconciliation_eligible": true,
+  "schema": "tau.code_ingest_manifest_index.v1"
+}

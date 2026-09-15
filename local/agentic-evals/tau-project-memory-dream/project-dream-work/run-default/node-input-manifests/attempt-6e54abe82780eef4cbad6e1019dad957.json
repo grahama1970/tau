@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-6e54abe82780eef4cbad6e1019dad957",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:join.alpha:packet.alpha",
+      "control_edge_id": "generic-dependency:join.alpha:packet.alpha",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:9bef90197a397f343f46413d08a9674ee53f7413f2e15b4bc03a56292832d76e",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-bf8be8c2bfc5a36c3d7495fb1ac70fc4",
+      "source_node_id": "join.alpha",
+      "target_node_id": "packet.alpha"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:0fba8f1aea6f9f99506fd07531414e1926043e2633ddf8cb252ba31a0c684f1a",
+  "node_id": "packet.alpha",
+  "plan_sha256": "sha256:0f32f04210e0bab446c630854c64cf75a4105813e7be63641c3ca3117b7c8e6b",
+  "run_id": "project-memory-dream-fixture:generation:1",
+  "schema": "tau.node_input_manifest.v1"
+}

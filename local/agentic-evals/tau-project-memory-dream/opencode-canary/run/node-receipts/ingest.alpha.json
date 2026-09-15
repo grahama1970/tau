@@ -1,0 +1,33 @@
+{
+  "accepted_output": {
+    "code_ingest": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+    },
+    "first_failed_gate": null,
+    "project_id": "alpha",
+    "project_status": "OK",
+    "skip_reason": null
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "ingest-code-incremental completed for alpha",
+  "mocked": false,
+  "node_id": "ingest.alpha",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "8f413752b307fcc2b15bf0f200884c125a0437e596eb44439f3fade098dfc9d3"
+}

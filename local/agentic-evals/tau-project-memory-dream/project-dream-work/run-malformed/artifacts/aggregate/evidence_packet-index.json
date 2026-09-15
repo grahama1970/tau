@@ -1,0 +1,9 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/packet/evidence-packet.json",
+      "sha256": "sha256:781f02df2172b700a3967655c906af1bce5e5ccf912c4c219c9769cda8c8524b"
+    }
+  },
+  "schema": "tau.evidence_packet_index.v1"
+}

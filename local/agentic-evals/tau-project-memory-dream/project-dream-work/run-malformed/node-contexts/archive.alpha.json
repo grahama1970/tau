@@ -1,0 +1,18 @@
+{
+  "accepted_inputs": [
+    {
+      "first_failed_gate": null,
+      "project_id": "alpha",
+      "project_status": "OK",
+      "skip_reason": null,
+      "transcript_corpus": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/transcripts/transcript-corpus.json",
+        "schema": "tau.transcript_corpus.v1",
+        "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+      }
+    }
+  ],
+  "node_id": "archive.alpha",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

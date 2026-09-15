@@ -1,0 +1,16 @@
+{
+  "cancelled": false,
+  "command": [
+    "python",
+    "/home/graham/workspace/experiments/tau/examples/project-memory-dream/dream_nodes.py",
+    "--mode",
+    "opencode-synthesize",
+    "--work-order",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/work-orders/synthesize.beta.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

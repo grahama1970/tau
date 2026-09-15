@@ -1,0 +1,20 @@
+{
+  "candidate_count": 1,
+  "candidate_digest": "sha256:75b3ee0ec2056f00a00d07a6f83c366a4096c4357d716db9216cfbb2c29323e4",
+  "checks": [
+    {
+      "check": "candidate_schema",
+      "ok": true
+    },
+    {
+      "check": "forbidden_capability_absent",
+      "ok": true
+    },
+    {
+      "check": "packet_binding",
+      "ok": true
+    }
+  ],
+  "schema": "tau.project_dream_deterministic_validation.v1",
+  "terminal_row_count": 1
+}

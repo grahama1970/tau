@@ -1,0 +1,73 @@
+{
+  "counts": {
+    "blocked": 0,
+    "projects": 3,
+    "receipts": 2,
+    "shadow_staged": 2,
+    "skipped": 1,
+    "terminal_rows": 3
+  },
+  "promotion_mode": "shadow",
+  "receipt_validations": [
+    {
+      "ok": true,
+      "project_id": "alpha",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+      "status": "PASS",
+      "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/validations/alpha-validation-receipt.json"
+    },
+    {
+      "ok": true,
+      "project_id": "beta",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json",
+      "status": "PASS",
+      "validation_receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/validations/beta-validation-receipt.json"
+    }
+  ],
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_memory_dream_run_summary.v1",
+  "terminal_rows": [
+    {
+      "candidate_digest": "sha256:8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2",
+      "evidence": {
+        "stage_response": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/alpha/stage/8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2/stage-response.json",
+          "schema": "graph_memory.project_topic_stage_receipt.v1",
+          "sha256": "sha256:7e46f7b3fff48c2519e95eb8c515c95fc17bf700da68ef01b4ae10b5e41676c1"
+        }
+      },
+      "first_failed_gate": null,
+      "project_id": "alpha",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": null,
+      "terminal_status": "SHADOW_STAGED"
+    },
+    {
+      "candidate_digest": "sha256:590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5",
+      "evidence": {
+        "stage_response": {
+          "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/stage/590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5/stage-response.json",
+          "schema": "graph_memory.project_topic_stage_receipt.v1",
+          "sha256": "sha256:dd5127a8fe93f949c7403d3625a6da7d84fb1635d11ad943b693bd8a20fe601a"
+        }
+      },
+      "first_failed_gate": null,
+      "project_id": "beta",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json",
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": null,
+      "terminal_status": "SHADOW_STAGED"
+    },
+    {
+      "candidate_digest": null,
+      "evidence": {},
+      "first_failed_gate": null,
+      "project_id": "gamma",
+      "receipt_path": null,
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": "unchanged_project",
+      "terminal_status": "NO_CHANGE"
+    }
+  ]
+}

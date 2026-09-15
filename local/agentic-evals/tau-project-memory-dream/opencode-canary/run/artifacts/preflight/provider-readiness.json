@@ -1,0 +1,8 @@
+{
+  "excluded_from_learning": true,
+  "model_id": "opencode/claude-haiku-4-5",
+  "provider": "opencode",
+  "ready": true,
+  "resolved_at": "preflight",
+  "schema": "tau.provider_readiness_receipt.v1"
+}

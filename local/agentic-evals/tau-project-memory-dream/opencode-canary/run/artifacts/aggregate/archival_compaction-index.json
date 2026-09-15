@@ -1,0 +1,9 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/archive/archival-compaction.json",
+      "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+    }
+  },
+  "schema": "tau.archival_compaction_index.v1"
+}

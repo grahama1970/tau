@@ -1,0 +1,11 @@
+{
+  "attempt_id": "attempt-001",
+  "config_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/workspace/run-config.json",
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "mode": "discover-project-deltas",
+  "node_id": "delta.alpha",
+  "project_id": "alpha",
+  "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_memory_dream_work_order.v1"
+}

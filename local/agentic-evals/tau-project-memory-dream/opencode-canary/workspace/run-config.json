@@ -1,0 +1,27 @@
+{
+  "cost_budget_usd": 5.0,
+  "force_reconciliation": false,
+  "max_input_chars_per_project": 20000,
+  "max_parallel_projects": 2,
+  "max_project_mutation_ratio": 0.5,
+  "max_projects_per_run": 8,
+  "max_topic_mutations": 3,
+  "model_id": "opencode/claude-haiku-4-5",
+  "policy_profile_path": "/home/graham/workspace/experiments/tau/examples/project-memory-dream/policy-profile.json",
+  "projects": [
+    "alpha"
+  ],
+  "promotion_mode": "shadow",
+  "retries": {
+    "read_only_max_attempts": 2,
+    "synthesis_max_attempts": 1
+  },
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_memory_dream_run_config.v1",
+  "synthesis_backend": "opencode",
+  "timeouts": {
+    "node_seconds": 30,
+    "synthesis_seconds": 120
+  },
+  "workspace_root": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/workspace"
+}

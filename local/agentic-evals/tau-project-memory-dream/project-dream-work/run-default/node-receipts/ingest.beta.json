@@ -1,0 +1,33 @@
+{
+  "accepted_output": {
+    "code_ingest": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:8fae12a4e0d5fde6111317ccf72b8516c82614b00604009f52abd33ecd16b7b7"
+    },
+    "first_failed_gate": null,
+    "project_id": "beta",
+    "project_status": "OK",
+    "skip_reason": null
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:8fae12a4e0d5fde6111317ccf72b8516c82614b00604009f52abd33ecd16b7b7"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "ingest-code-incremental completed for beta",
+  "mocked": false,
+  "node_id": "ingest.beta",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "0449d94b204f4c901dbea2850c1828df55c72e9a0a5a35f849d288519417e067"
+}

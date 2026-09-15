@@ -1,0 +1,33 @@
+{
+  "accepted_output": {
+    "first_failed_gate": null,
+    "project_id": "beta",
+    "project_status": "OK",
+    "skip_reason": null,
+    "transcript_corpus": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/transcripts/transcript-corpus.json",
+      "schema": "tau.transcript_corpus.v1",
+      "sha256": "sha256:21245a1f34e262863f7566d52939830d48c87c4b76bfa5d2f6a11f2032e487af"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/transcripts/transcript-corpus.json",
+      "schema": "tau.transcript_corpus.v1",
+      "sha256": "sha256:21245a1f34e262863f7566d52939830d48c87c4b76bfa5d2f6a11f2032e487af"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "normalized 2 sessions / 2 turns",
+  "mocked": false,
+  "node_id": "transcripts.beta",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "8b7ac0d3e6be8ba6fc57a9c735f01b7a579902f93cd780e5e99bb6f1c1502ca2"
+}

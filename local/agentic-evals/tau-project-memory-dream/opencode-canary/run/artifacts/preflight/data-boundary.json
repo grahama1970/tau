@@ -1,0 +1,14 @@
+{
+  "allowed_paths": [
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/workspace",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run"
+  ],
+  "allowed_projects": [
+    "alpha"
+  ],
+  "home_transcript_access": false,
+  "network": {
+    "model_dispatch_only": true
+  },
+  "schema": "tau.data_boundary.v1"
+}

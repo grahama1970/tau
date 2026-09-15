@@ -1,0 +1,23 @@
+{
+  "accepted_inputs": [
+    {
+      "dispatch_decision": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/gamma/delta/dispatch-decision.json",
+        "schema": "tau.project_dispatch_decision.v1",
+        "sha256": "sha256:68783e054fa90bda1300819f06fd60e95a98874832b711f58a51b442f6accb22"
+      },
+      "first_failed_gate": null,
+      "observed_head": {
+        "digest": "sha256:e599664d792f6d3f840cf97cb54b6725b0ce38dd7356fd5c80debccbedec52b8",
+        "generation": 1
+      },
+      "project_id": "gamma",
+      "project_status": "SKIPPED",
+      "skip_reason": "unchanged_project",
+      "suppressed_by": "delta.gamma"
+    }
+  ],
+  "node_id": "state.gamma",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

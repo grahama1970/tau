@@ -1,0 +1,15 @@
+{
+  "eligible": true,
+  "observed_head": {
+    "digest": "sha256:1b8bbcc92e53ec55b3cf38e5fe59a7e350ec03b6039f12800a5290762da6b0f4",
+    "generation": 1
+  },
+  "observed_manifest_sha256": "sha256:3156a9ad3225e6317879e3f45bca79a379eacf600982181807b896a18f0d98ed",
+  "project_id": "beta",
+  "reasons": [
+    "changed_inputs"
+  ],
+  "recorded_head_digest": "sha256:1b8bbcc92e53ec55b3cf38e5fe59a7e350ec03b6039f12800a5290762da6b0f4",
+  "recorded_head_generation": 1,
+  "schema": "tau.project_dispatch_decision.v1"
+}

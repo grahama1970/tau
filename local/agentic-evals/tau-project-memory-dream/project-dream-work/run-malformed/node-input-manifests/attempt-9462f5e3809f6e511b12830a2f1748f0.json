@@ -1,0 +1,11 @@
+{
+  "accepted_input_count": 0,
+  "attempt": 1,
+  "attempt_id": "attempt-9462f5e3809f6e511b12830a2f1748f0",
+  "bindings": [],
+  "canonical_manifest_hash": "sha256:f50d7809662405185dfdbd9d178dee831944f9a80b44d6e78d60d4b9b4eab6eb",
+  "node_id": "preflight",
+  "plan_sha256": "sha256:f7043ca81c38b4d4d84cb2eabdffe72e843f213582cfef181122581db40153d9",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

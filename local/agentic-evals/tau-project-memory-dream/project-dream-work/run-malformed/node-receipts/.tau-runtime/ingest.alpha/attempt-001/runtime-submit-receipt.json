@@ -1,0 +1,16 @@
+{
+  "backend_acknowledgement": {
+    "process_started": true,
+    "stdin_delivery": "not_requested"
+  },
+  "composer_state_after": "NOT_APPLICABLE",
+  "composer_state_before": "NOT_APPLICABLE",
+  "delivery_status": "CONFIRMED",
+  "endpoint_lease_sha256": "sha256:b4d348c1629117b2424f6ba668c67c974ba0dd27f4b606bc191c3e134c007e24",
+  "errors": [],
+  "provider_execution_status": "NOT_APPLICABLE",
+  "schema": "tau.runtime_submit_receipt.v1",
+  "submit_attempt_count": 1,
+  "text_delivery_count": 0,
+  "work_order_sha256": "sha256:b6b939e2a4570d4ed7a788806ac9ab0e00d40a2ec2ee0a66797b8f45d01c4def"
+}

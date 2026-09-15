@@ -1,0 +1,87 @@
+{
+  "accepted_output": {
+    "archival_compaction": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/archive/archival-compaction.json",
+      "schema": "tau.archival_compaction.v1",
+      "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+    },
+    "candidate": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/candidate.json",
+      "schema": "tau.project_dream_candidate.v1",
+      "sha256": "sha256:a89bde02f7e67f54d8fcc245a22f8026665c849c38a61a2ffc80261737fca4a0"
+    },
+    "code_ingest": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:4d0b35b3c7c11d56dba35f5e1f697220b38ea350d0efa534b84b65d325468ef9"
+    },
+    "command_spec": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/command-spec.json",
+      "schema": "tau.opencode_command_spec.v1",
+      "sha256": "sha256:ad4b288bf74cee146017f0cbb46385dc43cec464005e266be40dbebaeeffdb92"
+    },
+    "evidence_packet": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/packet/evidence-packet.json",
+      "schema": "tau.evidence_packet.v1",
+      "sha256": "sha256:781f02df2172b700a3967655c906af1bce5e5ccf912c4c219c9769cda8c8524b"
+    },
+    "first_failed_gate": null,
+    "project_id": "alpha",
+    "project_state": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/state/project-state.json",
+      "schema": "tau.project_state.v1",
+      "sha256": "sha256:03cfee1286e136caa57851b763d759fdd1ae613d51dbabfbb9ad3be509a5583d"
+    },
+    "project_status": "OK",
+    "provider": {
+      "model": "fixture/deterministic",
+      "provider": "fixture"
+    },
+    "provider_live": false,
+    "raw_model_output": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/raw-model-output.json",
+      "schema": "tau.raw_model_output.v1",
+      "sha256": "sha256:afedb2f6fa6f1bf4f6e679ee9a85022c96a093d3dd230db3c0082c55267728a4"
+    },
+    "skip_reason": null,
+    "transcript_corpus": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/transcripts/transcript-corpus.json",
+      "schema": "tau.transcript_corpus.v1",
+      "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/command-spec.json",
+      "schema": "tau.opencode_command_spec.v1",
+      "sha256": "sha256:ad4b288bf74cee146017f0cbb46385dc43cec464005e266be40dbebaeeffdb92"
+    },
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/raw-model-output.json",
+      "schema": "tau.raw_model_output.v1",
+      "sha256": "sha256:afedb2f6fa6f1bf4f6e679ee9a85022c96a093d3dd230db3c0082c55267728a4"
+    },
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/candidate.json",
+      "schema": "tau.project_dream_candidate.v1",
+      "sha256": "sha256:a89bde02f7e67f54d8fcc245a22f8026665c849c38a61a2ffc80261737fca4a0"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "synthesized candidate sha256:75b3ee0ec205... for alpha",
+  "mocked": false,
+  "node_id": "synthesize.alpha",
+  "policy_exceptions": [],
+  "provider": {
+    "model": "fixture/deterministic",
+    "provider": "fixture"
+  },
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "63caa27723acc70a0b577496a7ffa3715bfe2a109b12e2a0176fa743a7d01dc5"
+}

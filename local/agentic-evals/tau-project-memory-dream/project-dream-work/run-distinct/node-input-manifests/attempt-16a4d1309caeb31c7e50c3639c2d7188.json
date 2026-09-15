@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-16a4d1309caeb31c7e50c3639c2d7188",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:delta.beta:ingest.beta",
+      "control_edge_id": "generic-dependency:delta.beta:ingest.beta",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:8d92591be09b1f250b1d7cf2f7e8584a2a4b051c67004f69d11d8a0b41e7a4fa",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-705556a370fd58320bf6ce1de2d4e9c6",
+      "source_node_id": "delta.beta",
+      "target_node_id": "ingest.beta"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:9928ce1fbfd5326692e4c108a7c2edffe30a78ba62d9d5dafe85b504567ec419",
+  "node_id": "ingest.beta",
+  "plan_sha256": "sha256:60d8729f96490f52cf8ac7e3c8b33afc8b71a7274b4c0d5a5123956671ebb551",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

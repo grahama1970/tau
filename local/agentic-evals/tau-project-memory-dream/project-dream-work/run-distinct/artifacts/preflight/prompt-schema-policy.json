@@ -1,0 +1,6 @@
+{
+  "direct_memory_access": false,
+  "excluded_from_learning": true,
+  "prompt_source": "evidence_packet_only",
+  "schema": "tau.prompt_schema_policy.v1"
+}

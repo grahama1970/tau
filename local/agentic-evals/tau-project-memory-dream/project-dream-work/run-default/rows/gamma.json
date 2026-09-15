@@ -1,0 +1,10 @@
+{
+  "candidate_digest": null,
+  "evidence": {},
+  "first_failed_gate": null,
+  "project_id": "gamma",
+  "receipt_path": null,
+  "schema": "tau.project_memory_dream_terminal_row.v1",
+  "skip_reason": "unchanged_project",
+  "terminal_status": "NO_CHANGE"
+}

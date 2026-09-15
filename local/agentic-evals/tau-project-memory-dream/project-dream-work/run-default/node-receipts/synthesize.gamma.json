@@ -1,0 +1,23 @@
+{
+  "accepted_output": {
+    "first_failed_gate": null,
+    "project_id": "gamma",
+    "project_status": "SKIPPED",
+    "skip_reason": "unchanged_project",
+    "suppressed_by": "synthesize.gamma"
+  },
+  "artifacts": [],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "suppressed: no model dispatch for this project",
+  "mocked": false,
+  "node_id": "synthesize.gamma",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "82ccb36fb432db6763c84333ede20a39b92b578d5cdf2641cbb6b8a2b215dd6a"
+}

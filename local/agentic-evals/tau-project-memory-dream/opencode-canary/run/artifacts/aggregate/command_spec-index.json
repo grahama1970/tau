@@ -1,0 +1,9 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/command-spec.json",
+      "sha256": "sha256:6ce6a9716bfe3fdb70773b89d4b66a858e5bc3b62045277fdcf2eb6ca501aba4"
+    }
+  },
+  "schema": "tau.opencode_command_spec_index.v1"
+}

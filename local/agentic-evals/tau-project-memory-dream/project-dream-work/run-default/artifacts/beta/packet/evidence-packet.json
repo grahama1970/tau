@@ -1,0 +1,9 @@
+{
+  "bounded_input_chars": 146,
+  "excerpt": "{\"sessions\":[{\"session_id\":\"sess-beta-1\",\"turn_count\":1},{\"session_id\":\"sess-beta-2\",\"turn_count\":1}],\"state\":{\"maturity\":\"seed\",\"module\":\"beta\"}}",
+  "input_digest": "sha256:4db269af3d0e6210326fc6d551b4a9971a033bec2fdb00b6d4e0141b3bd0a586",
+  "join_sha256": "sha256:c0aa79691234097bec1aea9da5bee554cf7a438ca2d0c6e98fce9642be7da14e",
+  "project_id": "beta",
+  "schema": "tau.evidence_packet.v1",
+  "truncated": false
+}

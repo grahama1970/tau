@@ -1,0 +1,16 @@
+{
+  "candidate_digest": "sha256:590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5",
+  "evidence": {
+    "stage_response": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/stage/590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5/stage-response.json",
+      "schema": "graph_memory.project_topic_stage_receipt.v1",
+      "sha256": "sha256:dd5127a8fe93f949c7403d3625a6da7d84fb1635d11ad943b693bd8a20fe601a"
+    }
+  },
+  "first_failed_gate": null,
+  "project_id": "beta",
+  "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json",
+  "schema": "tau.project_memory_dream_terminal_row.v1",
+  "skip_reason": null,
+  "terminal_status": "SHADOW_STAGED"
+}

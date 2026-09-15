@@ -1,0 +1,8 @@
+{
+  "excluded_from_learning": true,
+  "model_id": "fixture/deterministic",
+  "provider": "fixture",
+  "ready": true,
+  "resolved_at": "preflight",
+  "schema": "tau.provider_readiness_receipt.v1"
+}

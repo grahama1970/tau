@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "opencode",
+    "run",
+    "--model",
+    "opencode/claude-haiku-4-5",
+    "--dir",
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize",
+    "Read evidence-packet.json in this directory. Write a JSON candidate file to /home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/raw-model-output.json with keys schema (tau.project_dream_candidate.v1), project_id, claim_type, topics. Change nothing else."
+  ],
+  "command_spec_id": "synthesize-alpha",
+  "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize",
+  "declared_capabilities": [
+    "filesystem.read:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize",
+    "filesystem.write:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/raw-model-output.json",
+    "process.opencode.run"
+  ],
+  "excluded_from_learning": true,
+  "model_id": "opencode/claude-haiku-4-5",
+  "provider": "opencode",
+  "schema": "tau.opencode_command_spec.v1",
+  "uses_capabilities": [
+    "filesystem.read:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize",
+    "filesystem.write:/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/raw-model-output.json",
+    "process.opencode.run"
+  ]
+}

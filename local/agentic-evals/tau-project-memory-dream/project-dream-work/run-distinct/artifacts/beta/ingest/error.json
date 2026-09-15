@@ -1,0 +1,6 @@
+{
+  "gate": "code_ingest_unavailable",
+  "project_id": "beta",
+  "schema": "tau.project_step_error.v1",
+  "step": "ingest-code-incremental"
+}

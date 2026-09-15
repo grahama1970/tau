@@ -1,0 +1,43 @@
+{
+  "accepted_output": {
+    "counts": {
+      "blocked": 1,
+      "projects": 2,
+      "receipts": 1,
+      "shadow_staged": 1,
+      "skipped": 0,
+      "terminal_rows": 2
+    },
+    "final_receipt": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/receipts/aggregate/project-dream-receipt.json",
+    "first_failed_gate": null,
+    "project_id": null,
+    "project_status": "OK",
+    "run_summary": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/run-summary.json",
+      "schema": "tau.project_memory_dream_run_summary.v1",
+      "sha256": "sha256:971df521569b307d3f928f3c1e86f1c1ab6c6ce8a166f57056a5992efa4071ce"
+    },
+    "skip_reason": null
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/run-summary.json",
+      "schema": "tau.project_memory_dream_run_summary.v1",
+      "sha256": "sha256:971df521569b307d3f928f3c1e86f1c1ab6c6ce8a166f57056a5992efa4071ce"
+    },
+    "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/validations/aggregate-validation-receipt.json"
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "aggregated 2 terminal rows; 1 receipts re-validated clean",
+  "mocked": false,
+  "node_id": "aggregate",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "7dec58db69267a33157af5c0d52f966b489bf4242742f847e647eb274747d686"
+}

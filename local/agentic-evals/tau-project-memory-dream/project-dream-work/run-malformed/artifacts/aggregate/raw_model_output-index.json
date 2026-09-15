@@ -1,0 +1,9 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/synthesize/raw-model-output.json",
+      "sha256": "sha256:afedb2f6fa6f1bf4f6e679ee9a85022c96a093d3dd230db3c0082c55267728a4"
+    }
+  },
+  "schema": "tau.raw_model_output_index.v1"
+}

@@ -1,0 +1,78 @@
+{
+  "accepted_input_count": 3,
+  "attempt": 1,
+  "attempt_id": "attempt-ab6a656bf238ac25508bdaeafdae8edc",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:archive.gamma:join.gamma",
+      "control_edge_id": "generic-dependency:archive.gamma:join.gamma",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:df989aa0304baf8ea0853170409108bbbd3d7db42377bb75ce0b912ddfde9224",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-e505e2a35520a3a0ff43c55b36526f43",
+      "source_node_id": "archive.gamma",
+      "target_node_id": "join.gamma"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:state.gamma:join.gamma",
+      "control_edge_id": "generic-dependency:state.gamma:join.gamma",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:23475145bd8d9dea6e08bfe6c1b5265ae5bf7c78d64735b53032f42ced661d75",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-29e219d563b1838da4de9bcd13f40e53",
+      "source_node_id": "state.gamma",
+      "target_node_id": "join.gamma"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:ingest.gamma:join.gamma",
+      "control_edge_id": "generic-dependency:ingest.gamma:join.gamma",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:17d78b6e946b5b82e2df930f8495382e07bd5d750e364f144e51cc00ab8d21cf",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-060e87d2e3c7c47702265c0b117c8519",
+      "source_node_id": "ingest.gamma",
+      "target_node_id": "join.gamma"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:a369d9dabff8afd5514fa0a6f4fec0ad25369a6583cd9efb8a0338e32e8fd4be",
+  "node_id": "join.gamma",
+  "plan_sha256": "sha256:0f32f04210e0bab446c630854c64cf75a4105813e7be63641c3ca3117b7c8e6b",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

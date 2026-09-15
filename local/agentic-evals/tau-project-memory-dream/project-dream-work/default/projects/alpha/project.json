@@ -1,0 +1,9 @@
+{
+  "faults": {},
+  "git_head": "head-alpha-0001",
+  "project_id": "alpha",
+  "state_summary": {
+    "maturity": "seed",
+    "module": "alpha"
+  }
+}

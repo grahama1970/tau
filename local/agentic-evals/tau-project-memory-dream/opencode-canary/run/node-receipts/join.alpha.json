@@ -1,0 +1,53 @@
+{
+  "accepted_output": {
+    "archival_compaction": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/archive/archival-compaction.json",
+      "schema": "tau.archival_compaction.v1",
+      "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+    },
+    "code_ingest": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/ingest/code-ingest.json",
+      "schema": "tau.code_ingest_manifest.v1",
+      "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+    },
+    "first_failed_gate": null,
+    "join": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/join/join.json",
+      "schema": "tau.project_join.v1",
+      "sha256": "sha256:11fd12a3ee6c1339b7fdb5be439507a57ce62596fef7674af38e41c162541769"
+    },
+    "project_id": "alpha",
+    "project_state": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/state/project-state.json",
+      "schema": "tau.project_state.v1",
+      "sha256": "sha256:03cfee1286e136caa57851b763d759fdd1ae613d51dbabfbb9ad3be509a5583d"
+    },
+    "project_status": "OK",
+    "skip_reason": null,
+    "transcript_corpus": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/transcripts/transcript-corpus.json",
+      "schema": "tau.transcript_corpus.v1",
+      "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/join/join.json",
+      "schema": "tau.project_join.v1",
+      "sha256": "sha256:11fd12a3ee6c1339b7fdb5be439507a57ce62596fef7674af38e41c162541769"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "joined transcript and project-delta branches before packet construction",
+  "mocked": false,
+  "node_id": "join.alpha",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "2153941271bc29fc43b00b37d01305dc1724f98652189f8e437ec9891f0da497"
+}

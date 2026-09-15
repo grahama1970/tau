@@ -1,0 +1,34 @@
+{
+  "accepted_output": {
+    "first_failed_gate": "project_state_unavailable",
+    "project_id": "alpha",
+    "project_status": "BLOCKED_INPUT",
+    "skip_reason": null,
+    "suppressed_by": "stage.alpha",
+    "terminal_row": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/rows/alpha.json",
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "sha256": "sha256:2ec088054f1b087502560d7de1690d5c1ebbbf77df58db8ec8f01085e1dfbf34"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/rows/alpha.json",
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "sha256": "sha256:2ec088054f1b087502560d7de1690d5c1ebbbf77df58db8ec8f01085e1dfbf34"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "terminal row BLOCKED_INPUT for alpha",
+  "mocked": false,
+  "node_id": "policy.alpha",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "9309cdc08a5c5fdfbdb9bec725c43d772ba9b301de25fef1d617254940f3d4a1"
+}

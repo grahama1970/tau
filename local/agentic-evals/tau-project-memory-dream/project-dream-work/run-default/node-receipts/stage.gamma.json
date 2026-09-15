@@ -1,0 +1,23 @@
+{
+  "accepted_output": {
+    "first_failed_gate": null,
+    "project_id": "gamma",
+    "project_status": "SKIPPED",
+    "skip_reason": "unchanged_project",
+    "suppressed_by": "stage.gamma"
+  },
+  "artifacts": [],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "suppressed upstream marker",
+  "mocked": false,
+  "node_id": "stage.gamma",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "689949e9307695071779ee52d4c37d131cbc9d4386dba6bf57d685409e7382db"
+}

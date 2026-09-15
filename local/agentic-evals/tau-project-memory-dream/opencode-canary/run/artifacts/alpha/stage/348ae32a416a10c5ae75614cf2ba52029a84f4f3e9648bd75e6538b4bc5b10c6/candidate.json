@@ -1,0 +1,18 @@
+{
+  "candidate_digest": "sha256:348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6",
+  "claim_type": "update",
+  "excluded_from_learning": true,
+  "project_id": "alpha",
+  "provider": {
+    "model": "opencode/claude-haiku-4-5",
+    "provider": "opencode"
+  },
+  "schema": "tau.project_dream_candidate.v1",
+  "source_packet_digest": "sha256:26abbf46b9fb9388caefb4b29bb3d936a92b1b8043d23ad9d170b6a26a7388fb",
+  "topics": [
+    {
+      "summary": "- `topics`: An array reflecting the content structure (session management, module state, maturity tracking)",
+      "title": "knowledge:alpha"
+    }
+  ]
+}

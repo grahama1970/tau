@@ -1,0 +1,14 @@
+{
+  "accepted_inputs": [
+    {
+      "first_failed_gate": "project_state_unavailable",
+      "project_id": "alpha",
+      "project_status": "BLOCKED_INPUT",
+      "skip_reason": null,
+      "suppressed_by": "packet.alpha"
+    }
+  ],
+  "node_id": "synthesize.alpha",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

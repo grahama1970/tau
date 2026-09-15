@@ -1,0 +1,11 @@
+{
+  "joined_before_packet": true,
+  "joined_inputs": {
+    "archival_compaction": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe",
+    "code_ingest": "sha256:4d0b35b3c7c11d56dba35f5e1f697220b38ea350d0efa534b84b65d325468ef9",
+    "project_state": "sha256:03cfee1286e136caa57851b763d759fdd1ae613d51dbabfbb9ad3be509a5583d",
+    "transcript_corpus": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+  },
+  "project_id": "alpha",
+  "schema": "tau.project_join.v1"
+}

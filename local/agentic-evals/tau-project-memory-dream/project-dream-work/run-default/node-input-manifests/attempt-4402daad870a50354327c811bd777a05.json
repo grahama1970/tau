@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-4402daad870a50354327c811bd777a05",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:validate.gamma:stage.gamma",
+      "control_edge_id": "generic-dependency:validate.gamma:stage.gamma",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:1dd26a2e9dead08b39afbb1caa47f928895707d6550a9b70f26861ebda3c087c",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-92454a855d95c5bf0a71ff1d6f5f956f",
+      "source_node_id": "validate.gamma",
+      "target_node_id": "stage.gamma"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:cfd17a78a58d1904b239538faabbe6809f5b6e06a10c97435712362d47529533",
+  "node_id": "stage.gamma",
+  "plan_sha256": "sha256:0f32f04210e0bab446c630854c64cf75a4105813e7be63641c3ca3117b7c8e6b",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

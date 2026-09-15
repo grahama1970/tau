@@ -1,0 +1,118 @@
+{
+  "checked_at": "2026-09-15T22:20:53.519683Z",
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Semantic truth of synthesized project knowledge.",
+      "Provider/model quality (fixture backend; opencode canary is separate).",
+      "Production Graph Memory persistence beyond the local fixture head store."
+    ],
+    "proves": [
+      "The packaged project-memory-dream workflow compiles to tau.generic_dag_spec.v1 and executes on the canonical Tau scheduler with deterministic local adapters.",
+      "Terminal receipts validate under tau.project_dream_receipt.v1 with typed isolation, shadow default, and replay idempotency proofs read back from disk."
+    ]
+  },
+  "proofs": {
+    "join_before_packet": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/events.jsonl"
+      ],
+      "ok": true
+    },
+    "malformed_transcript_blocks_only_its_project": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/run-summary.json"
+      ],
+      "ok": true
+    },
+    "one_project_failure_does_not_suppress_others": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/run-summary.json"
+      ],
+      "ok": true
+    },
+    "restart_after_stage_no_duplicate": {
+      "evidence": [
+        "artifacts/alpha/stage/8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2/candidate.json",
+        "artifacts/alpha/stage/8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2/stage-response.json",
+        "artifacts/beta/stage/590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5/candidate.json",
+        "artifacts/beta/stage/590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5/stage-response.json"
+      ],
+      "ok": true
+    },
+    "shadow_staging_head_unchanged": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/default/memory/alpha/head.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/default/memory/beta/head.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/default/memory/gamma/head.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json"
+      ],
+      "ok": true
+    },
+    "state_and_ingest_failures_distinct": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/run-summary.json"
+      ],
+      "ok": true
+    },
+    "terminal_receipts_validate_under_issue_318": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/receipts/alpha/project-dream-receipt.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/aggregate/project-dream-receipt.json"
+      ],
+      "ok": true,
+      "validations": {
+        "aggregate": {
+          "errors": [],
+          "ok": true,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/aggregate/project-dream-receipt.json"
+        },
+        "run-default:alpha": {
+          "errors": [],
+          "ok": true,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json"
+        },
+        "run-default:beta": {
+          "errors": [],
+          "ok": true,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json"
+        },
+        "run-malformed:alpha": {
+          "errors": [],
+          "ok": true,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/receipts/alpha/project-dream-receipt.json"
+        }
+      }
+    },
+    "two_eligible_projects_independent_terminal_rows": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/alpha/project-dream-receipt.json",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/receipts/beta/project-dream-receipt.json"
+      ],
+      "ok": true
+    },
+    "unchanged_project_skipped_with_typed_reason": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/gamma/delta/dispatch-decision.json"
+      ],
+      "ok": true
+    },
+    "undeclared_capability_rejected_before_dispatch": {
+      "evidence": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/preflight.json"
+      ],
+      "ok": true
+    }
+  },
+  "provider_live": false,
+  "receipt_contract": "tau.project_dream_receipt.v1 (issue #318)",
+  "scheduler": "tau_coding.generic_dag.run_generic_dag (canonical)",
+  "schema": "tau.project_memory_dream_agentic_eval_proof.v1",
+  "status": "PASS",
+  "workflow": "project-memory-dream"
+}

@@ -1,0 +1,36 @@
+{
+  "counts": {
+    "blocked": 2,
+    "projects": 2,
+    "receipts": 0,
+    "shadow_staged": 0,
+    "skipped": 0,
+    "terminal_rows": 2
+  },
+  "promotion_mode": "shadow",
+  "receipt_validations": [],
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_memory_dream_run_summary.v1",
+  "terminal_rows": [
+    {
+      "candidate_digest": null,
+      "evidence": {},
+      "first_failed_gate": "project_state_unavailable",
+      "project_id": "alpha",
+      "receipt_path": null,
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": null,
+      "terminal_status": "BLOCKED_INPUT"
+    },
+    {
+      "candidate_digest": null,
+      "evidence": {},
+      "first_failed_gate": "code_ingest_unavailable",
+      "project_id": "beta",
+      "receipt_path": null,
+      "schema": "tau.project_memory_dream_terminal_row.v1",
+      "skip_reason": null,
+      "terminal_status": "BLOCKED_INPUT"
+    }
+  ]
+}

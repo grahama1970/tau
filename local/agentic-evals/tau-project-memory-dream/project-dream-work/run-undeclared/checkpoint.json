@@ -1,0 +1,66 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [
+    "preflight"
+  ],
+  "completed_nodes": [],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/events.jsonl",
+  "node_statuses": {
+    "preflight": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/preflight.json",
+      "resumed": false,
+      "status": "BLOCKED",
+      "verdict": "BLOCKED"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "aggregate": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/aggregate.json",
+      "archive.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/archive.alpha.json",
+      "archive.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/archive.beta.json",
+      "archive.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/archive.gamma.json",
+      "delta.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/delta.alpha.json",
+      "delta.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/delta.beta.json",
+      "delta.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/delta.gamma.json",
+      "ingest.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/ingest.alpha.json",
+      "ingest.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/ingest.beta.json",
+      "ingest.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/ingest.gamma.json",
+      "join.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/join.alpha.json",
+      "join.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/join.beta.json",
+      "join.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/join.gamma.json",
+      "packet.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/packet.alpha.json",
+      "packet.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/packet.beta.json",
+      "packet.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/packet.gamma.json",
+      "policy.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/policy.alpha.json",
+      "policy.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/policy.beta.json",
+      "policy.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/policy.gamma.json",
+      "preflight": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/preflight.json",
+      "stage.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/stage.alpha.json",
+      "stage.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/stage.beta.json",
+      "stage.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/stage.gamma.json",
+      "state.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/state.alpha.json",
+      "state.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/state.beta.json",
+      "state.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/state.gamma.json",
+      "synthesize.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/synthesize.alpha.json",
+      "synthesize.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/synthesize.beta.json",
+      "synthesize.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/synthesize.gamma.json",
+      "transcripts.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/transcripts.alpha.json",
+      "transcripts.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/transcripts.beta.json",
+      "transcripts.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/transcripts.gamma.json",
+      "validate.alpha": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/validate.alpha.json",
+      "validate.beta": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/validate.beta.json",
+      "validate.gamma": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/validate.gamma.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/dag-spec.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-09-15T22:20:53Z",
+  "verdict": "BLOCKED"
+}

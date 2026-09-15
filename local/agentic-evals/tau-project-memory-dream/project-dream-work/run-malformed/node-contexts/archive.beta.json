@@ -1,0 +1,19 @@
+{
+  "accepted_inputs": [
+    {
+      "error_evidence": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/beta/transcripts/transcript-error.json",
+        "schema": "tau.transcript_error.v1",
+        "sha256": "sha256:b787a1fa6420bf9c45e9d509fe0fed4488921e24107005fc11a3fb222d580651"
+      },
+      "first_failed_gate": "transcript_malformed",
+      "project_id": "beta",
+      "project_status": "BLOCKED_INPUT",
+      "skip_reason": null,
+      "suppressed_by": "transcripts.beta"
+    }
+  ],
+  "node_id": "archive.beta",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_node_context.v1"
+}

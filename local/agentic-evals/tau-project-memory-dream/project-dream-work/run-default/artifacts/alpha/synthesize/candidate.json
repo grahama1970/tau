@@ -1,0 +1,18 @@
+{
+  "candidate_digest": "sha256:8e0877053ce968b1b2036b18734e746c9f4315bba79af9e7f705c1c0b1792ca2",
+  "claim_type": "update",
+  "excluded_from_learning": true,
+  "project_id": "alpha",
+  "provider": {
+    "model": "fixture/deterministic",
+    "provider": "fixture"
+  },
+  "schema": "tau.project_dream_candidate.v1",
+  "source_packet_digest": "sha256:26abbf46b9fb9388caefb4b29bb3d936a92b1b8043d23ad9d170b6a26a7388fb",
+  "topics": [
+    {
+      "summary": "knowledge update derived deterministically from the evidence packet",
+      "title": "knowledge:alpha"
+    }
+  ]
+}

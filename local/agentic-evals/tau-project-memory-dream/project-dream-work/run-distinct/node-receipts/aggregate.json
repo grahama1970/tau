@@ -1,0 +1,43 @@
+{
+  "accepted_output": {
+    "counts": {
+      "blocked": 2,
+      "projects": 2,
+      "receipts": 0,
+      "shadow_staged": 0,
+      "skipped": 0,
+      "terminal_rows": 2
+    },
+    "final_receipt": null,
+    "final_receipt_note": "final aggregate receipt written only for shadow runs (mode=shadow)",
+    "first_failed_gate": null,
+    "project_id": null,
+    "project_status": "OK",
+    "run_summary": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/run-summary.json",
+      "schema": "tau.project_memory_dream_run_summary.v1",
+      "sha256": "sha256:bbf67078cd50131bdfa121a512a938be16d927c1b26b137c95d6a9a499ea8949"
+    },
+    "skip_reason": null
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-distinct/run-summary.json",
+      "schema": "tau.project_memory_dream_run_summary.v1",
+      "sha256": "sha256:bbf67078cd50131bdfa121a512a938be16d927c1b26b137c95d6a9a499ea8949"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "aggregated 2 terminal rows; 0 receipts re-validated clean",
+  "mocked": false,
+  "node_id": "aggregate",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "2265f89b2ab257247bbccc552b1c86210951c846d404cccdcff5cf56fdb38682"
+}

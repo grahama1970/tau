@@ -1,0 +1,12 @@
+{
+  "dispatch_ok": true,
+  "project_id": "alpha",
+  "provider": {
+    "model": "opencode/claude-haiku-4-5",
+    "provider": "opencode"
+  },
+  "provider_live": true,
+  "schema": "tau.raw_model_output.v1",
+  "source_packet_digest": "sha256:26abbf46b9fb9388caefb4b29bb3d936a92b1b8043d23ad9d170b6a26a7388fb",
+  "text": "I'll read the evidence-packet.json file first, then create the candidate file with the specified schema.\nLet me check for the evidence-packet.json file more carefully:\nI don't see an evidence-packet.json file in the current directory. Let me check if it's in a parent directory or if you meant a different file:\nFound it! Let me read the evidence-packet.json from the correct location:\nNow I'll create the raw-model-output.json candidate file with the specified schema and extract the relevant information:\nDone. I've created `/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/raw-model-output.json` with:\n- `schema`: `tau.project_dream_candidate.v1`\n- `project_id`: `alpha` (extracted from evidence-packet.json)\n- `claim_type`: `memory_synthesis`\n- `topics`: An array reflecting the content structure (session management, module state, maturity tracking)\n"
+}

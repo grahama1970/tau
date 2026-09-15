@@ -1,0 +1,13 @@
+{
+  "coverage_scope": "incremental",
+  "files": [
+    {
+      "path": "worktree/notes.md",
+      "sha256": "sha256:7bb1347a5ed27cba09c239e19bc971d2ca4848c7b0b427ac540fcd80ae2fb11c"
+    }
+  ],
+  "git_commit": "head-beta-0001",
+  "project_id": "beta",
+  "reconciliation_eligible": true,
+  "schema": "tau.code_ingest_manifest.v1"
+}

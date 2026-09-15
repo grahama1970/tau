@@ -1,0 +1,140 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "Packaged project-memory-dream workflow: canonical scheduler execution, bounded OpenCode synthesis surface, shadow-default staging, typed per-project isolation, replay idempotency, and tau.project_dream_receipt.v1 terminal validation",
+  "claims": {
+    "proves": "Tau's packaged project-memory-dream workflow compiles to tau.generic_dag_spec.v1, runs on the canonical scheduler with deterministic local source/model adapters, preserves independent typed terminal rows per project, joins transcript and delta branches before packet construction, fails closed on undeclared model capabilities and malformed inputs, stages under shadow policy without moving the active head, resumes after staging without duplicates, and produces terminal receipts that validate under tau.project_dream_receipt.v1.",
+    "does_not_prove": "Semantic truth of synthesized project knowledge, provider/model quality, production Graph Memory persistence, or human approval workflows beyond the local fixture."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.project_memory_dream.packaged_dag_execution",
+      "description": "The packaged workflow executes the issue-320 topology on the canonical scheduler with bounded work items, typed terminal rows, shadow-default promotion policy, and #318-valid terminal receipts.",
+      "claim_semantics": "protocol",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": 1,
+        "fault_injected_deterministic": 1
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "project-memory-dream-deterministic-proof-matrix",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.project_memory_dream.packaged_dag_execution"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-project-memory-dream.py --out local/agentic-evals/tau-project-memory-dream/proof.json"
+      ],
+      "timeout_seconds": 280,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/errors",
+            "equals": []
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/two_eligible_projects_independent_terminal_rows/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/unchanged_project_skipped_with_typed_reason/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/join_before_packet/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/shadow_staging_head_unchanged/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/terminal_receipts_validate_under_issue_318/ok",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "project-memory-dream-fail-closed-and-replay-retained",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.project_memory_dream.packaged_dag_execution"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-project-memory-dream.py --out local/agentic-evals/tau-project-memory-dream/proof.json"
+      ],
+      "timeout_seconds": 280,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/malformed_transcript_blocks_only_its_project/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/state_and_ingest_failures_distinct/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/undeclared_capability_rejected_before_dispatch/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/restart_after_stage_no_duplicate/ok",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-project-memory-dream/proof.json",
+            "json_pointer": "/proofs/one_project_failure_does_not_suppress_others/ok",
+            "equals": true
+          }
+        ]
+      }
+    }
+  ]
+}

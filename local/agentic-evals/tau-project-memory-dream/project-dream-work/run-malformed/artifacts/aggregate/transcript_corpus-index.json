@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/alpha/transcripts/transcript-corpus.json",
+      "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+    }
+  },
+  "includes_dream_worker_transcript": false,
+  "project_count": 1,
+  "schema": "tau.transcript_corpus_index.v1"
+}

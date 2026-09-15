@@ -1,0 +1,12 @@
+{
+  "coverage_scope": "incremental",
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/ingest/code-ingest.json",
+      "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+    }
+  },
+  "git_commit": "head-alpha-0001",
+  "reconciliation_eligible": true,
+  "schema": "tau.code_ingest_manifest_index.v1"
+}

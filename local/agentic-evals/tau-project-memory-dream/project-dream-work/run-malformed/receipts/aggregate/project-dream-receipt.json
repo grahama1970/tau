@@ -1,0 +1,115 @@
+{
+  "accepted_effect_count": 0,
+  "accepted_effects": [],
+  "aggregate": {
+    "expected_candidate_count": 1,
+    "expected_terminal_row_count": 2,
+    "observed_candidate_count": 1,
+    "observed_terminal_row_count": 2,
+    "projects": [
+      "alpha",
+      "beta"
+    ]
+  },
+  "archival_compaction": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/archival_compaction-index.json",
+    "schema": "tau.archival_compaction_index.v1",
+    "sha256": "sha256:44a1fde5313da27dd9c29110907a77df2c0507d7948da56bac95a5a02e546345"
+  },
+  "attempt_id": "attempt-001",
+  "candidate": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/candidate-index.json",
+    "schema": "tau.project_dream_candidate_index.v1",
+    "sha256": "sha256:ec789fd00304bdf82d11bf46304d05ca752ef104c1baef3ee03091adf88958fe"
+  },
+  "candidate_digest": "sha256:faebcd36e4fb4cb3165209a37af3d7c55d51a4a6887f60c754c0fcc29e0c2b68",
+  "code_ingest": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/code_ingest-index.json",
+    "schema": "tau.code_ingest_manifest_index.v1",
+    "sha256": "sha256:c0590e51b6b5f23fbb68aa72852356cce22eaf419b6af8f12756ac93c797b19e"
+  },
+  "command_spec": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/command_spec-index.json",
+    "schema": "tau.opencode_command_spec_index.v1",
+    "sha256": "sha256:d21b6229546e60018f83313a019b2fb666b9c078aff892e9b0ac299436c36233"
+  },
+  "data_boundary": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/preflight/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:b37faa55e19fc5a8c0136c9cb2d01d85edbcf89530eb4571c88e6c66d0d362b4"
+  },
+  "deterministic_validation": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/deterministic-validation.json",
+    "schema": "tau.project_dream_deterministic_validation.v1",
+    "sha256": "sha256:3c9f289ed68467a702f634a213a3e4f597a8a8b07f2c97b4160d4fe628597f21"
+  },
+  "effects": [],
+  "evidence_packet": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/evidence_packet-index.json",
+    "schema": "tau.evidence_packet_index.v1",
+    "sha256": "sha256:38615eb03a34e306d81101dde55932766a6e506a746908586515c595b94544e8"
+  },
+  "explicit_non_claims": [
+    "This receipt does not prove semantic truth of any synthesized project knowledge.",
+    "Model agreement is not a trust anchor.",
+    "Receipt existence is not a trust anchor."
+  ],
+  "first_failed_gate": null,
+  "immutable_goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "policy_profile": {
+    "path": "/home/graham/workspace/experiments/tau/examples/project-memory-dream/policy-profile.json",
+    "schema": "tau.policy_profile.v1",
+    "sha256": "sha256:413c4d39daa66e25bc4f3c6d0211484915a715c84df88dc6dfe9dc33ce3950e8"
+  },
+  "project_id": "aggregate:project-memory-dream-fixture",
+  "project_state": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/project_state-index.json",
+    "schema": "tau.project_state_index.v1",
+    "sha256": "sha256:2341db5254e9e88452ad3f8655b86cfd93321de8a7af2cf82747a12440cfa65d"
+  },
+  "promotion_policy": {
+    "decision": "shadow_only",
+    "human_approval_required": false,
+    "policy_class": "shadow_only"
+  },
+  "prompt_schema_policy": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/preflight/prompt-schema-policy.json",
+    "schema": "tau.prompt_schema_policy.v1",
+    "sha256": "sha256:eab9ee4ce7528dbc6fbc46a4f6f996214954d31451954d4513bd6e7e00c0216f"
+  },
+  "proof_scope": "run-level consolidation evidence: every selected project reached a typed terminal row; shadow staging changed no active head",
+  "provider": {
+    "model": "fixture/deterministic",
+    "provider": "fixture"
+  },
+  "provider_readiness": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/preflight/provider-readiness.json",
+    "schema": "tau.provider_readiness_receipt.v1",
+    "sha256": "sha256:7bd70d2bae036193d74a27ccbc075e4197a6d64930738b71807ec18eb0a6e37b"
+  },
+  "raw_model_output": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/raw_model_output-index.json",
+    "schema": "tau.raw_model_output_index.v1",
+    "sha256": "sha256:3e60ed5dbaf36606c133adcf5f6b88a57f917a02812b74573e9b2b5b5b8ffb27"
+  },
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_dream_receipt.v1",
+  "stage_response": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/stage-index.json",
+    "schema": "graph_memory.project_topic_stage_index.v1",
+    "sha256": "sha256:ed97611bf6eaf092ade3ac029df5fedb3654392a8b840e4d64d687c869b29d5a"
+  },
+  "telemetry": {
+    "cost_usd": null,
+    "duration_ms": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "status": "unknown"
+  },
+  "terminal_status": "SHADOW_STAGED",
+  "transcript_corpus": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-malformed/artifacts/aggregate/transcript_corpus-index.json",
+    "schema": "tau.transcript_corpus_index.v1",
+    "sha256": "sha256:a95d68e7aa21a2aa0176496ec3fc3ed1f1bc677372441f3c18590e703378acbd"
+  }
+}

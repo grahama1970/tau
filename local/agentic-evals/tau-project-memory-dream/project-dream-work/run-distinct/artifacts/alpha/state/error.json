@@ -1,0 +1,6 @@
+{
+  "gate": "project_state_unavailable",
+  "project_id": "alpha",
+  "schema": "tau.project_step_error.v1",
+  "step": "project-state"
+}

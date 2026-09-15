@@ -1,0 +1,404 @@
+{
+  "checkpoint_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/checkpoint.json",
+  "completed_node_count": 0,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/current-state.json",
+  "dag_plan_sha256": "sha256:cda109c8b8ef0d84fe96f7ac684bdd200f931822979252cc5362603a343fe404",
+  "diagnostics_log_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "execution_profile": {
+    "compatibility_default": true,
+    "profile_id": "standard",
+    "resolution_sha256": "sha256:1691d19c5029a6dca0e362c5af0d86f703cb9451fd2560ea4ab777f17ada0cdf",
+    "resolved_controls_sha256": "sha256:b268059d72931206ac629f2c30c4180bd45b3ffdb218128cfc0e83fd1b213be0"
+  },
+  "lease_epoch": 1,
+  "live": false,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 35,
+  "nodes": [
+    {
+      "accepted_output": null,
+      "accepted_output_sha256": null,
+      "alert_codes": [],
+      "artifacts": [],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-611c56b3f2f4d47675cc3d06b0a98778",
+      "command_results": [
+        {
+          "full_result_bytes": 3732,
+          "full_result_sha256": "sha256:aa05a6af55b0811c824c6873334b909fbb3fa7048ab21f38efd07abfe300d96c",
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-event.json",
+            "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-611c56b3f2f4d47675cc3d06b0a98778",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-09-15T22:20:53.241431+00:00",
+            "dag_id": "generic:project-memory-dream-fixture",
+            "endpoint_id": "local:d4b6b8899b1d22c71753caec",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-09-15T22:22:23.241431+00:00",
+            "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "preflight",
+            "owner": "tau",
+            "plan_revision": "sha256:cda109c8b8ef0d84fe96f7ac684bdd200f931822979252cc5362603a343fe404",
+            "run_id": "project-memory-dream-fixture",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "project-memory-dream-fixture",
+            "work_order_sha256": "sha256:f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:f2caf7f6e10c3aef4f445fd5b7530313f83e35ea258854205171ad9be2a5ffd3",
+            "event_id": "local-event:d4b6b8899b1d22c71753caec",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-09-15T22:20:53.343519+00:00",
+            "run_id": "project-memory-dream-fixture",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "delivery_status": "CONFIRMED",
+            "full_submit_receipt_bytes": 535,
+            "full_submit_receipt_sha256": "sha256:0e558b6462a1fcfc7bb010706f26f57e30a4fb89d5396bd015122e061ece5312"
+          },
+          "stderr_bytes": 0,
+          "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "stdout_bytes": 0,
+          "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "diagnostics": {
+        "workspace_stale_read_state": {
+          "policy": "observe",
+          "schema": "tau.workspace_stale_read_state.v1",
+          "unresolved_signal_count": 0,
+          "unresolved_signal_ids": []
+        }
+      },
+      "duration_seconds": 0.106,
+      "errors": [
+        "undeclared_capabilities: ['arangodb.write']",
+        "forbidden_model_capabilities: ['arangodb.write']"
+      ],
+      "execution_evidence": null,
+      "extensions": {
+        "command_results": [
+          {
+            "full_result_bytes": 3732,
+            "full_result_sha256": "sha256:aa05a6af55b0811c824c6873334b909fbb3fa7048ab21f38efd07abfe300d96c",
+            "returncode": 0,
+            "runtime_artifacts": [
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-endpoint-lease.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-submit-receipt.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-event.json",
+              "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-capture.json"
+            ],
+            "runtime_backend": "local",
+            "runtime_endpoint_lease": {
+              "attempt_id": "attempt-611c56b3f2f4d47675cc3d06b0a98778",
+              "attempt_number": 1,
+              "backend": "local",
+              "backend_ids": {
+                "pid": null
+              },
+              "backend_session_id": null,
+              "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+              "cleanup_policy": {
+                "kind": "process_group_termination"
+              },
+              "created_at": "2026-09-15T22:20:53.241431+00:00",
+              "dag_id": "generic:project-memory-dream-fixture",
+              "endpoint_id": "local:d4b6b8899b1d22c71753caec",
+              "execution_token": "[REDACTED]",
+              "expires_at": "2026-09-15T22:22:23.241431+00:00",
+              "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+              "heartbeat_policy": {
+                "kind": "process_poll"
+              },
+              "node_id": "preflight",
+              "owner": "tau",
+              "plan_revision": "sha256:cda109c8b8ef0d84fe96f7ac684bdd200f931822979252cc5362603a343fe404",
+              "run_id": "project-memory-dream-fixture",
+              "schema": "tau.runtime_endpoint_lease.v1",
+              "scope_id": "project-memory-dream-fixture",
+              "work_order_sha256": "sha256:f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457"
+            },
+            "runtime_event": {
+              "confidence": "PROCESS",
+              "endpoint_lease_sha256": "sha256:f2caf7f6e10c3aef4f445fd5b7530313f83e35ea258854205171ad9be2a5ffd3",
+              "event_id": "local-event:d4b6b8899b1d22c71753caec",
+              "event_type": "RUNTIME_ENDPOINT_EXITED",
+              "liveness": "DEAD",
+              "observation": {
+                "cancelled": false,
+                "returncode": 0,
+                "timed_out": false
+              },
+              "observed_at": "2026-09-15T22:20:53.343519+00:00",
+              "run_id": "project-memory-dream-fixture",
+              "schema": "tau.runtime_event.v1",
+              "source": "local",
+              "state": "EXITED"
+            },
+            "runtime_submit_receipt": {
+              "delivery_status": "CONFIRMED",
+              "full_submit_receipt_bytes": 535,
+              "full_submit_receipt_sha256": "sha256:0e558b6462a1fcfc7bb010706f26f57e30a4fb89d5396bd015122e061ece5312"
+            },
+            "stderr_bytes": 0,
+            "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "stdout_bytes": 0,
+            "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "termination_cause": "exited"
+          }
+        ],
+        "generic_receipt": {
+          "artifacts": [],
+          "attempt_count": 1,
+          "command_results": [
+            {
+              "full_result_bytes": 3732,
+              "full_result_sha256": "sha256:aa05a6af55b0811c824c6873334b909fbb3fa7048ab21f38efd07abfe300d96c",
+              "returncode": 0,
+              "runtime_artifacts": [
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-endpoint-lease.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-submit-receipt.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-event.json",
+                "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/.tau-runtime/preflight/attempt-001/runtime-capture.json"
+              ],
+              "runtime_backend": "local",
+              "runtime_endpoint_lease": {
+                "attempt_id": "attempt-611c56b3f2f4d47675cc3d06b0a98778",
+                "attempt_number": 1,
+                "backend": "local",
+                "backend_ids": {
+                  "pid": null
+                },
+                "backend_session_id": null,
+                "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                "cleanup_policy": {
+                  "kind": "process_group_termination"
+                },
+                "created_at": "2026-09-15T22:20:53.241431+00:00",
+                "dag_id": "generic:project-memory-dream-fixture",
+                "endpoint_id": "local:d4b6b8899b1d22c71753caec",
+                "execution_token": "[REDACTED]",
+                "expires_at": "2026-09-15T22:22:23.241431+00:00",
+                "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+                "heartbeat_policy": {
+                  "kind": "process_poll"
+                },
+                "node_id": "preflight",
+                "owner": "tau",
+                "plan_revision": "sha256:cda109c8b8ef0d84fe96f7ac684bdd200f931822979252cc5362603a343fe404",
+                "run_id": "project-memory-dream-fixture",
+                "schema": "tau.runtime_endpoint_lease.v1",
+                "scope_id": "project-memory-dream-fixture",
+                "work_order_sha256": "sha256:f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457"
+              },
+              "runtime_event": {
+                "confidence": "PROCESS",
+                "endpoint_lease_sha256": "sha256:f2caf7f6e10c3aef4f445fd5b7530313f83e35ea258854205171ad9be2a5ffd3",
+                "event_id": "local-event:d4b6b8899b1d22c71753caec",
+                "event_type": "RUNTIME_ENDPOINT_EXITED",
+                "liveness": "DEAD",
+                "observation": {
+                  "cancelled": false,
+                  "returncode": 0,
+                  "timed_out": false
+                },
+                "observed_at": "2026-09-15T22:20:53.343519+00:00",
+                "run_id": "project-memory-dream-fixture",
+                "schema": "tau.runtime_event.v1",
+                "source": "local",
+                "state": "EXITED"
+              },
+              "runtime_submit_receipt": {
+                "delivery_status": "CONFIRMED",
+                "full_submit_receipt_bytes": 535,
+                "full_submit_receipt_sha256": "sha256:0e558b6462a1fcfc7bb010706f26f57e30a4fb89d5396bd015122e061ece5312"
+              },
+              "stderr_bytes": 0,
+              "stderr_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "stdout_bytes": 0,
+              "stdout_sha256": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+              "termination_cause": "exited"
+            }
+          ],
+          "cost_accounting": {
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "estimated_cost_is_billing_truth": false,
+            "estimated_cost_usd": null,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "total_tokens": 0
+          },
+          "cost_estimate": null,
+          "duration_seconds": 0.106,
+          "execution_evidence": null,
+          "finished_at": "2026-09-15T22:20:53Z",
+          "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+          "live": null,
+          "mocked": false,
+          "pane_id": null,
+          "provider_live": null,
+          "provider_status": null,
+          "provider_verdict": null,
+          "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/preflight.json",
+          "resumed": false,
+          "role": "preflight",
+          "started_at": "2026-09-15T22:20:53Z",
+          "terminal_id": null,
+          "usage": null,
+          "visible_log_path": null,
+          "visible_log_sha256": null,
+          "work_order_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/work-orders/preflight.json",
+          "work_order_sha256": "f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457",
+          "workspace_id": null
+        }
+      },
+      "finished_at": "2026-09-15T22:20:53Z",
+      "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+      "live": null,
+      "mocked": false,
+      "node_id": "preflight",
+      "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+      "output_schema_version": "v1",
+      "pane_id": null,
+      "plan_sha256": "sha256:cda109c8b8ef0d84fe96f7ac684bdd200f931822979252cc5362603a343fe404",
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/node-receipts/preflight.json",
+      "resumed": false,
+      "retryable": true,
+      "role": "preflight",
+      "run_id": "project-memory-dream-fixture",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-611c56b3f2f4d47675cc3d06b0a98778",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "undeclared_capabilities: ['arangodb.write']",
+            "forbidden_model_capabilities: ['arangodb.write']"
+          ],
+          "status": "BLOCKED",
+          "verdict": "BLOCKED"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-09-15T22:20:53Z",
+      "status": "BLOCKED",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "BLOCKED",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/work-orders/preflight.json",
+      "work_order_sha256": "f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457",
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/dag-spec.json"
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared",
+  "run_id": "project-memory-dream-fixture",
+  "run_store_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "project-memory-dream-fixture",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-undeclared/dag-spec.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-09-15T22:20:53Z",
+  "verdict": "BLOCKED"
+}

@@ -1,0 +1,111 @@
+{
+  "accepted_effect_count": 0,
+  "accepted_effects": [],
+  "aggregate": {
+    "expected_candidate_count": 1,
+    "expected_terminal_row_count": 1,
+    "observed_candidate_count": 1,
+    "observed_terminal_row_count": 1
+  },
+  "archival_compaction": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/archive/archival-compaction.json",
+    "schema": "tau.archival_compaction.v1",
+    "sha256": "sha256:2bb00757cc5040c3a1050eec3c10c77a8a8a86cf94f948cdfa0362d3a0420afe"
+  },
+  "attempt_id": "attempt-001",
+  "candidate": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/candidate.json",
+    "schema": "tau.project_dream_candidate.v1",
+    "sha256": "sha256:6634a433259df03a7382849d0b55fdec3294eedfa1c24195f72dd8713a33d71c"
+  },
+  "candidate_digest": "sha256:348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6",
+  "code_ingest": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/ingest/code-ingest.json",
+    "schema": "tau.code_ingest_manifest.v1",
+    "sha256": "sha256:ff8f19381278853782456c9bb96251dc5aa0f1d2ddf83f2021850475dbb42ae9"
+  },
+  "command_spec": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/command-spec.json",
+    "schema": "tau.opencode_command_spec.v1",
+    "sha256": "sha256:6ce6a9716bfe3fdb70773b89d4b66a858e5bc3b62045277fdcf2eb6ca501aba4"
+  },
+  "data_boundary": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:c6f0db0865d12393d2e93aac353156ef8f5d07844f6993a6ff5b1b9bbf7e1a7e"
+  },
+  "deterministic_validation": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/validate/validation.json",
+    "schema": "tau.project_dream_deterministic_validation.v1",
+    "sha256": "sha256:aaf371f00748c9bef5dbbcd0a43aa4f17e0d6e3bac4e1aea88a5a23ea29c6a93"
+  },
+  "effects": [],
+  "evidence_packet": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/packet/evidence-packet.json",
+    "schema": "tau.evidence_packet.v1",
+    "sha256": "sha256:a2a0da43990d411b221d57b0a372a1a25ad9ce3b10e3ab740d2e8ef58b4130cf"
+  },
+  "explicit_non_claims": [
+    "This receipt does not prove semantic truth of the synthesized knowledge.",
+    "Model agreement is not a trust anchor.",
+    "Receipt existence is not a trust anchor."
+  ],
+  "first_failed_gate": null,
+  "immutable_goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "policy_profile": {
+    "path": "/home/graham/workspace/experiments/tau/examples/project-memory-dream/policy-profile.json",
+    "schema": "tau.policy_profile.v1",
+    "sha256": "sha256:413c4d39daa66e25bc4f3c6d0211484915a715c84df88dc6dfe9dc33ce3950e8"
+  },
+  "project_id": "alpha",
+  "project_state": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/state/project-state.json",
+    "schema": "tau.project_state.v1",
+    "sha256": "sha256:03cfee1286e136caa57851b763d759fdd1ae613d51dbabfbb9ad3be509a5583d"
+  },
+  "promotion_policy": {
+    "decision": "shadow_only",
+    "human_approval_required": false,
+    "policy_class": "shadow_only"
+  },
+  "prompt_schema_policy": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/prompt-schema-policy.json",
+    "schema": "tau.prompt_schema_policy.v1",
+    "sha256": "sha256:eab9ee4ce7528dbc6fbc46a4f6f996214954d31451954d4513bd6e7e00c0216f"
+  },
+  "proof_scope": "bounded project-memory consolidation terminal evidence",
+  "provider": {
+    "model": "opencode/claude-haiku-4-5",
+    "provider": "opencode"
+  },
+  "provider_readiness": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/preflight/provider-readiness.json",
+    "schema": "tau.provider_readiness_receipt.v1",
+    "sha256": "sha256:1e610f21d50ae34d6403a2830b9248199fa6aee3643cd9a18435c2d22acc666b"
+  },
+  "raw_model_output": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/synthesize/raw-model-output.json",
+    "schema": "tau.raw_model_output.v1",
+    "sha256": "sha256:045dd100e84a9408147ad3dde4a1f8e6b25fd3a38fd5e0b88e7dc957c751c2d2"
+  },
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.project_dream_receipt.v1",
+  "stage_response": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/stage/348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6/stage-response.json",
+    "schema": "graph_memory.project_topic_stage_receipt.v1",
+    "sha256": "sha256:aae5aa3ce78ce6ab4f47c1af77ff3539718ce6abc4ef56ae6dafb59e6ef719bb"
+  },
+  "telemetry": {
+    "cost_usd": null,
+    "duration_ms": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "status": "unknown"
+  },
+  "terminal_status": "SHADOW_STAGED",
+  "transcript_corpus": {
+    "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/transcripts/transcript-corpus.json",
+    "schema": "tau.transcript_corpus.v1",
+    "sha256": "sha256:cbcb9935e3991f517af1873fe5336ad933829d014f319e8392b080d2d15efce5"
+  }
+}

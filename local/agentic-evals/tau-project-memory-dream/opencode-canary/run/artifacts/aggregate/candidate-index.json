@@ -1,0 +1,7 @@
+{
+  "candidate_digest": "sha256:3657fba9420d0c53feadd16fab431c314e1eccfc260a0c24d1a76566e81470b5",
+  "project_candidate_digests": {
+    "alpha": "sha256:348ae32a416a10c5ae75614cf2ba52029a84f4f3e9648bd75e6538b4bc5b10c6"
+  },
+  "schema": "tau.project_dream_candidate_index.v1"
+}

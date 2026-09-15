@@ -1,0 +1,20 @@
+{
+  "accepted_output": null,
+  "artifacts": [],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [
+    "undeclared_capabilities: ['arangodb.write']",
+    "forbidden_model_capabilities: ['arangodb.write']"
+  ],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "preflight failed: command spec rejected for alpha",
+  "mocked": false,
+  "node_id": "preflight",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "BLOCKED",
+  "verdict": "BLOCKED",
+  "work_order_sha256": "f802327e8ce169763b960796b9a3c24bde6e6e8e7c7e44410f460d5d19a57457"
+}

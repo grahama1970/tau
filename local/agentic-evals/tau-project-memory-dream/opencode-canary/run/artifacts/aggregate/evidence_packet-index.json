@@ -1,0 +1,9 @@
+{
+  "entries": {
+    "alpha": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/artifacts/alpha/packet/evidence-packet.json",
+      "sha256": "sha256:a2a0da43990d411b221d57b0a372a1a25ad9ce3b10e3ab740d2e8ef58b4130cf"
+    }
+  },
+  "schema": "tau.evidence_packet_index.v1"
+}

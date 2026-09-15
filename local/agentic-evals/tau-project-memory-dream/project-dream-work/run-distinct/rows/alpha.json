@@ -1,0 +1,10 @@
+{
+  "candidate_digest": null,
+  "evidence": {},
+  "first_failed_gate": "project_state_unavailable",
+  "project_id": "alpha",
+  "receipt_path": null,
+  "schema": "tau.project_memory_dream_terminal_row.v1",
+  "skip_reason": null,
+  "terminal_status": "BLOCKED_INPUT"
+}

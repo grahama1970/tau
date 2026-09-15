@@ -1,0 +1,11 @@
+{
+  "candidate_digest": "sha256:590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5",
+  "observed_head": {
+    "digest": "sha256:1b8bbcc92e53ec55b3cf38e5fe59a7e350ec03b6039f12800a5290762da6b0f4",
+    "generation": 1
+  },
+  "project_id": "beta",
+  "schema": "graph_memory.project_topic_stage_receipt.v1",
+  "shadow": true,
+  "staged_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/stage/590a67c8cda2607a921727f484339d015b234041ca7113b635387b84e204b0e5/candidate.json"
+}

@@ -1,0 +1,78 @@
+{
+  "accepted_input_count": 3,
+  "attempt": 1,
+  "attempt_id": "attempt-2b591a2e95a16291df6f0e05bd490da0",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:archive.alpha:join.alpha",
+      "control_edge_id": "generic-dependency:archive.alpha:join.alpha",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:ca53160fb4cb7d9919819e74a618f0f80337516585f8fd34c5294922bc5fbd58",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-fbd25143f57aa1cd44723734de48f7ed",
+      "source_node_id": "archive.alpha",
+      "target_node_id": "join.alpha"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:state.alpha:join.alpha",
+      "control_edge_id": "generic-dependency:state.alpha:join.alpha",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:014428c6944ad1dfc5bc959e38ac2eb2a0fd02269c3b2a23d9b2b35d60c99315",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-25c223c9878b9fe70c19532145bb36a0",
+      "source_node_id": "state.alpha",
+      "target_node_id": "join.alpha"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:ingest.alpha:join.alpha",
+      "control_edge_id": "generic-dependency:ingest.alpha:join.alpha",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:faf37a2101892f8bf266683104b8d418e217e9ab341eefff416d1a094cbcc6bf",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-903b58b9fd31b69f56cf00eec235709b",
+      "source_node_id": "ingest.alpha",
+      "target_node_id": "join.alpha"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:01ae9750ed225edce8d7aa6db4d89c799c4277a8cc4f62ddfc8d396ba53be8c3",
+  "node_id": "join.alpha",
+  "plan_sha256": "sha256:b8a11cb271320bcc143cb0f6bf9e10f1fe8b7c2696cc4d6b8a88d209ca3755ff",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}

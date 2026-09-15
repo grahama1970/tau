@@ -1,0 +1,10 @@
+{
+  "candidate_digest": null,
+  "evidence": {},
+  "first_failed_gate": "transcript_malformed",
+  "project_id": "beta",
+  "receipt_path": null,
+  "schema": "tau.project_memory_dream_terminal_row.v1",
+  "skip_reason": null,
+  "terminal_status": "BLOCKED_INPUT"
+}

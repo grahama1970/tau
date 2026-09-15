@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-7b806e574b53b075d838f297c698ffc7",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:preflight:transcripts.beta",
+      "control_edge_id": "generic-dependency:preflight:transcripts.beta",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:ca5207673a49054b3b2a36479bdc1cfa726b8997a54ca8cd8198953a95d05316",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-2e79fa7331b2d669a1e2b828fca018a2",
+      "source_node_id": "preflight",
+      "target_node_id": "transcripts.beta"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:67ebbd382e6bb1d9570c13c0cf61454bb605eb5ec0b6e6bafce70b34dba18439",
+  "node_id": "transcripts.beta",
+  "plan_sha256": "sha256:0f32f04210e0bab446c630854c64cf75a4105813e7be63641c3ca3117b7c8e6b",
+  "run_id": "project-memory-dream-fixture:generation:1",
+  "schema": "tau.node_input_manifest.v1"
+}

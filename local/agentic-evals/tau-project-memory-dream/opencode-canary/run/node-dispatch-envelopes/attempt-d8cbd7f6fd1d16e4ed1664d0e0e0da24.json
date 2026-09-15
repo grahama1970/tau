@@ -1,0 +1,216 @@
+{
+  "accepted_evidence_refs": [],
+  "accepted_inputs": [
+    {
+      "first_failed_gate": null,
+      "project_id": "alpha",
+      "project_status": "OK",
+      "receipt_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/receipts/alpha/project-dream-receipt.json",
+      "skip_reason": null,
+      "terminal_row": {
+        "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/rows/alpha.json",
+        "schema": "tau.project_memory_dream_terminal_row.v1",
+        "sha256": "sha256:12825227e6558dd1ca96e3066abcaeff01936eae5142b8081e557220bdb26106"
+      },
+      "terminal_status": "SHADOW_STAGED"
+    }
+  ],
+  "accepted_inputs_sha256": "sha256:f11ee3f6181a8a6f43a9876d3c1fa74d94a10c3d7f7b79ee3ddfb2ef3809da24",
+  "accepted_parent_results": [
+    {
+      "metadata": {
+        "binding_id": "generic-context:policy.alpha:aggregate",
+        "control_edge_id": "generic-dependency:policy.alpha:aggregate",
+        "result_sha256": "sha256:cb5fc934ed801c247af50c96f338a574b7d016ce7b60fb1aace6011b7a279a0f",
+        "selected_sha256": "sha256:3337351a064d772f6f433519bac1dc7dbb4f8b9fe225fa3a21fef120dbf2fc32",
+        "source_attempt_id": "attempt-9dcfe63e8fe9109618685b17d12595ce",
+        "source_node_id": "policy.alpha"
+      },
+      "ref_id": "policy.alpha:attempt-9dcfe63e8fe9109618685b17d12595ce",
+      "ref_type": "accepted_parent_result",
+      "sha256": "sha256:b479ea47b20248d1cb81cd5edc25a4d7766d049c1347a4571a1ada5a907820ac"
+    }
+  ],
+  "adapter_kind": "generic_command",
+  "allowed_effect_refs": [],
+  "attempt": 1,
+  "attempt_id": "attempt-d8cbd7f6fd1d16e4ed1664d0e0e0da24",
+  "capability_refs": [],
+  "checkpoint_hash": "sha256:a0ee83d694dcf662fe8cff446045dab11d890103b01a8a6a6769cccc053fb996",
+  "checkpoint_id": "b5ebdd3d89b73b5f9fd8b07703db5ebb",
+  "dag_id": "generic:project-memory-dream-fixture",
+  "envelope_sha256": "sha256:6d1ad8d0cfb125f85b151fdd9a42be0316a7c2715d62716460beacd041ddd7af",
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "goal_id": "project-memory-dream:project-memory-dream-fixture",
+  "goal_version": "1",
+  "idempotency_key": "sha256:8cc705eec7706491491d7fc1f8427681149563a0cb5e67927562a4ecbe759684",
+  "input_schema_declaration": "explicit",
+  "input_schema_id": "tau.node_input.accepted_inputs.v1",
+  "input_schema_version": "v1",
+  "join_decision_refs": [],
+  "node_id": "aggregate",
+  "plan_revision": "sha256:ef30e1edcd51efc71750bcc5895e67374741fe4db8aa99b6c93050fe9d62db9e",
+  "plan_sha256": "sha256:b8a11cb271320bcc143cb0f6bf9e10f1fe8b7c2696cc4d6b8a88d209ca3755ff",
+  "policy_refs": [
+    {
+      "metadata": {
+        "declarations": [],
+        "security_mode": null
+      },
+      "ref_id": "plan-security",
+      "ref_type": "security_declarations",
+      "sha256": "sha256:2410248e93658dbe3f0bc0252c3872b1905bc97f175d7d31fa7d0d3d1bb92649"
+    },
+    {
+      "metadata": {
+        "execution_profile": {
+          "profile_id": "standard",
+          "resolution_sha256": "sha256:aff9b5d87e6548bdd9ce0e472ee2e4b4d60c25ee7e4495f09d037551bc7c6038",
+          "resolved_controls": {
+            "adaptive_expansion": {
+              "authorization": "policy_bounded",
+              "max_nodes": 3
+            },
+            "approval_requirements": "exact_human_gate_for_irreversible_effects",
+            "canonical_scheduler_required": true,
+            "durable_run_store_required": true,
+            "effective_edge_count": 14,
+            "effective_node_count": 13,
+            "input_manifest_enforcement": "when_declared",
+            "max_attempts_per_node": 3,
+            "max_concurrency": 2,
+            "max_depth": 10,
+            "max_nodes": 50,
+            "max_run_seconds": 3600,
+            "max_total_attempts": 150,
+            "required_evidence_schemas": [
+              "tau.generic_dag_node_receipt.v1"
+            ],
+            "review_requirements": "node_declared",
+            "security_defaults": {
+              "filesystem_mutation": "node_declared_only",
+              "network": "deny_by_default"
+            },
+            "side_effect_defaults": {
+              "external_side_effects": "deny_without_exact_human_gate",
+              "irreversible_effects": "deny_without_exact_human_gate"
+            },
+            "stale_read_behavior": "observe"
+          }
+        }
+      },
+      "ref_id": "plan-execution-limits",
+      "ref_type": "execution_limits",
+      "sha256": "sha256:75b5f2f2dbe572a87afb8ad63374d16b22b08efaa8b7191509f613e2aa9d368a"
+    },
+    {
+      "metadata": {},
+      "ref_id": "aggregate",
+      "ref_type": "node_static_context",
+      "sha256": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "resolved_input_manifest": {
+    "accepted_input_count": 1,
+    "attempt": 1,
+    "attempt_id": "attempt-d8cbd7f6fd1d16e4ed1664d0e0e0da24",
+    "bindings": [
+      {
+        "accepted_source_schemas": [
+          "*"
+        ],
+        "activation": "after_source_pass",
+        "binding_id": "generic-context:policy.alpha:aggregate",
+        "control_edge_id": "generic-dependency:policy.alpha:aggregate",
+        "disposition": "included",
+        "materialization_mode": "by_value",
+        "on_invalid": "omit",
+        "on_missing": "omit",
+        "origin": "explicit",
+        "projection": "accepted_output_if_present",
+        "reason": "selected",
+        "selected_path": null,
+        "selected_schema": null,
+        "selected_sha256": "sha256:3337351a064d772f6f433519bac1dc7dbb4f8b9fe225fa3a21fef120dbf2fc32",
+        "selector_kind": "accepted_output",
+        "source_attempt_id": "attempt-9dcfe63e8fe9109618685b17d12595ce",
+        "source_node_id": "policy.alpha",
+        "target_node_id": "aggregate"
+      }
+    ],
+    "canonical_manifest_hash": "sha256:b7a866173245104ae7bd0eeaa51e9760a3e14638e6a2203f2c8c96a406218e0d",
+    "node_id": "aggregate",
+    "plan_sha256": "sha256:b8a11cb271320bcc143cb0f6bf9e10f1fe8b7c2696cc4d6b8a88d209ca3755ff",
+    "run_id": "project-memory-dream-fixture",
+    "schema": "tau.node_input_manifest.v1"
+  },
+  "resolved_input_manifest_sha256": "sha256:a683ec547c11e17107e4e9c66668a0de12da0aa7c8bc9e5ed30eb550fcdeae64",
+  "resource_lease_refs": [],
+  "route_decision_refs": [
+    {
+      "metadata": {
+        "edge_id": "generic-dependency:policy.alpha:aggregate",
+        "state": "success"
+      },
+      "ref_id": "generic-dependency:policy.alpha:aggregate",
+      "ref_type": "route_edge_state",
+      "sha256": "sha256:a4a65598f0d43a750b60f662be13009b7c2963bfd73a4f90aacc289f9eab6311"
+    }
+  ],
+  "run_id": "project-memory-dream-fixture",
+  "runtime_binding": {
+    "metadata": {
+      "backend": "local",
+      "interaction_mode": "one_shot",
+      "observation_requirements": [
+        "PROCESS"
+      ],
+      "required_capabilities": [
+        "one_shot",
+        "supports_working_directory"
+      ],
+      "schema": "tau.runtime_requirement.v1",
+      "session_scope": "node_attempt"
+    },
+    "ref_id": "aggregate",
+    "ref_type": "runtime_backend_binding",
+    "sha256": "sha256:02d60f20ecb17b71a46caaa9cafd4ea84072c426c96ac54fbd412da36509e9c8"
+  },
+  "schema": "tau.dag_node_dispatch.v1",
+  "source_revision": {
+    "metadata": {
+      "source_family": "generic_dag",
+      "source_logical_id": "project-memory-dream-fixture",
+      "source_payload_sha256": "sha256:ef30e1edcd51efc71750bcc5895e67374741fe4db8aa99b6c93050fe9d62db9e",
+      "source_schema": "tau.generic_dag_spec.v1"
+    },
+    "ref_id": "project-memory-dream-fixture",
+    "ref_type": "source_revision",
+    "sha256": "sha256:d7e50c5b82e09bd2273654105b73ef092ad52906a3edd50626a9c26497d6724f"
+  },
+  "workspace_revision": {
+    "metadata": {
+      "attempt": 1,
+      "attempt_id": "attempt-d8cbd7f6fd1d16e4ed1664d0e0e0da24",
+      "entries": [
+        {
+          "blob_sha256": "sha256:65c9c9a218831d768a83f0072229a8ce08369a1f5eadaf5a9e2a157f43c32c9e",
+          "observation_source": "source_binding",
+          "path": "aggregate.json",
+          "repository_id": "default",
+          "worktree_id": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/opencode-canary/run/work-orders"
+        }
+      ],
+      "entry_count": 1,
+      "node_id": "aggregate",
+      "plan_sha256": "sha256:b8a11cb271320bcc143cb0f6bf9e10f1fe8b7c2696cc4d6b8a88d209ca3755ff",
+      "policy": "observe",
+      "read_set_sha256": "sha256:9cfdf84eed769eb37e90921b04ea664ddf350b17c9089cb3fa36741ca7adf666",
+      "run_id": "project-memory-dream-fixture",
+      "schema": "tau.workspace_read_set.v1"
+    },
+    "ref_id": "attempt-d8cbd7f6fd1d16e4ed1664d0e0e0da24",
+    "ref_type": "workspace_revision",
+    "sha256": "sha256:cfa27b1ba90f7a061b90c523fc61d165551ae8eedd8f78b3aa35a207d4068f9e"
+  }
+}

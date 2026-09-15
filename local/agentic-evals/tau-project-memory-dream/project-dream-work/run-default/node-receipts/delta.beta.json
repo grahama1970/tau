@@ -1,0 +1,38 @@
+{
+  "accepted_output": {
+    "dispatch_decision": {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/delta/dispatch-decision.json",
+      "schema": "tau.project_dispatch_decision.v1",
+      "sha256": "sha256:c5fbeccab18244e6a81962aef9e8df01d38481a897d104f0b430610695434733"
+    },
+    "eligible": true,
+    "first_failed_gate": null,
+    "observed_head": {
+      "digest": "sha256:1b8bbcc92e53ec55b3cf38e5fe59a7e350ec03b6039f12800a5290762da6b0f4",
+      "generation": 1
+    },
+    "project_id": "beta",
+    "project_status": "OK",
+    "skip_reason": null
+  },
+  "artifacts": [
+    {
+      "path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-project-memory-dream/project-dream-work/run-default/artifacts/beta/delta/dispatch-decision.json",
+      "schema": "tau.project_dispatch_decision.v1",
+      "sha256": "sha256:c5fbeccab18244e6a81962aef9e8df01d38481a897d104f0b430610695434733"
+    }
+  ],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "dispatch decision for beta: dispatch",
+  "mocked": false,
+  "node_id": "delta.beta",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "47add4c9fdd471b6b61cddb28b14be354ca452112b8cb55daf684380f9ce2491"
+}

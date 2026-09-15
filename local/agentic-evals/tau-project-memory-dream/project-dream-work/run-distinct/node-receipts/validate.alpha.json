@@ -1,0 +1,23 @@
+{
+  "accepted_output": {
+    "first_failed_gate": "project_state_unavailable",
+    "project_id": "alpha",
+    "project_status": "BLOCKED_INPUT",
+    "skip_reason": null,
+    "suppressed_by": "validate.alpha"
+  },
+  "artifacts": [],
+  "attempt": 1,
+  "attempt_id": "attempt-001",
+  "commands_run": [],
+  "errors": [],
+  "goal_hash": "sha256:c7f7d4270b388642519c91a102a772d80027941b22f598792c86f41cbf1c30de",
+  "handoff_summary": "suppressed upstream marker",
+  "mocked": false,
+  "node_id": "validate.alpha",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "f5853b4472ffbf18dc7ad486f67995a0285b37731fc927ea14abc12ed365691e"
+}

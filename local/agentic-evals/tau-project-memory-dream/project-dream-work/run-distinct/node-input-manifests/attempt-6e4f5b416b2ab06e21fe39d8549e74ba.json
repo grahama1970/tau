@@ -1,0 +1,56 @@
+{
+  "accepted_input_count": 2,
+  "attempt": 1,
+  "attempt_id": "attempt-6e4f5b416b2ab06e21fe39d8549e74ba",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:policy.alpha:aggregate",
+      "control_edge_id": "generic-dependency:policy.alpha:aggregate",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:1c3908a7a4b684d2d9c074d54cf012d6f8bdc02a29f2a4ba90b00b352258eaff",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-4ca03ed5c8fe2ad97d2d650f909fd32e",
+      "source_node_id": "policy.alpha",
+      "target_node_id": "aggregate"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:policy.beta:aggregate",
+      "control_edge_id": "generic-dependency:policy.beta:aggregate",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:3fcf13e7d84a91dfb76cf41f083246d7d428cb08019f68c30d740852f35a6227",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-5e57068408e1c39056a2949a87b406ca",
+      "source_node_id": "policy.beta",
+      "target_node_id": "aggregate"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:1eb0ad46f72dedc40485346e56a46c40ec138200c5dfb76210ee8c7079241937",
+  "node_id": "aggregate",
+  "plan_sha256": "sha256:60d8729f96490f52cf8ac7e3c8b33afc8b71a7274b4c0d5a5123956671ebb551",
+  "run_id": "project-memory-dream-fixture",
+  "schema": "tau.node_input_manifest.v1"
+}
