@@ -1,39 +1,59 @@
 {
   "agentic_evals": {
-    "command": "/home/graham/.pi/agent/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output local/agentic-evals/tau-memory-episode-agentic-evals-report.json",
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
     "exit_code": 0,
     "report": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json"
   },
-  "created_at": "2026-08-30T20:12:46.579677+00:00",
+  "artifact_hashes": {
+    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
+    "/home/graham/workspace/experiments/tau/evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
+  },
+  "candidate_paths": [
+    "src/tau_coding/dag_runtime/memory_projection.py",
+    "src/tau_coding/dag_runtime/run_store.py",
+    "scripts/agentic-eval-tau-memory-episode-projection.py",
+    "evals/tau_memory_episode_projection_agentic_eval.json",
+    "tests/test_dag_runtime_memory_projection.py",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json"
+  ],
+  "created_at": "2026-09-15T04:12:23.685099+00:00",
   "e2e": {
     "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json",
-    "command": "uv run python scripts/agentic-eval-tau-memory-episode-projection.py --out local/agentic-evals/tau-memory-episode-proof.json --work local/agentic-evals/tau-memory-episode-work",
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
     "exit_code": 0,
     "live": true,
     "mocked": false
   },
-  "feature_coverage": {
-    "outcome_counts": {
-      "BLOCKED": 0,
-      "FAIL": 0,
-      "NOT_TESTED": 0,
-      "PASS": 7
-    },
-    "path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/tau-feature-coverage-agentic-evals-report.json",
-    "readiness": "READY",
-    "trial_count": 14
-  },
   "issue": 321,
+  "issue_dependencies": {
+    "314_live_state_readback": {
+      "closedAt": "2026-09-15T02:13:00Z",
+      "state": "CLOSED",
+      "stateReason": "COMPLETED"
+    },
+    "316_live_state_readback": {
+      "state": "OPEN",
+      "stateReason": "REOPENED"
+    },
+    "316_parent_child_lineage": "not_required_for_321_base_projection_until_316_closed",
+    "316_requirement": "314 must be CLOSED before 316 closure evidence is accepted"
+  },
   "live": true,
   "mocked": false,
   "not_proven": [
     "full graph traversal UX",
     "multimodal indexing for real image/audio artifacts",
+    "#316 parent/child lineage while #316 remains OPEN",
     "provider semantic quality",
     "GOAL.md completion",
     "human acceptance"
   ],
   "observed": {
+    "agentic_eval_case_readiness": "READY",
+    "agentic_eval_fixture_sha256": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75",
     "agentic_eval_outcome_counts": {
       "BLOCKED": 0,
       "FAIL": 0,
@@ -41,33 +61,169 @@
       "PASS": 2
     },
     "agentic_eval_readiness": "READY",
+    "agentic_eval_repo": {
+      "ref": "main",
+      "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86"
+    },
     "agentic_eval_trial_count": 4,
     "dag_status": "PASS",
     "forbidden_raw_prompt_rejected": true,
     "lineage_mutation_rejected": true,
     "live_relay_states": [
       "projected",
+      "projected",
+      "projected",
+      "projected",
+      "projected",
+      "projected",
+      "projected",
+      "projected",
       "projected"
     ],
-    "memory_readback_count": 2,
+    "memory_outage_probe": {
+      "container": "embry-memory",
+      "health_before_stop": {
+        "build_sha": null,
+        "conversation_classifier_device": "cuda",
+        "conversation_classifier_ok": true,
+        "conversation_classifier_warm": true,
+        "intent_mapper_ok": true,
+        "memory_db_connected": true,
+        "ok": true,
+        "service_sha": null,
+        "service_source": {
+          "error": "FileNotFoundError: [Errno 2] No such file or directory: 'git'",
+          "path": "/app"
+        },
+        "source_sha": null,
+        "sparta_controls_count": 382736,
+        "sparta_corpus_ok": true,
+        "sparta_corpus_required": true,
+        "status": "ok"
+      },
+      "memory_healthy_after_start": true,
+      "memory_unreachable_after_stop": true,
+      "start": {
+        "command": [
+          "docker",
+          "start",
+          "embry-memory"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "embry-memory"
+      },
+      "stop": {
+        "command": [
+          "docker",
+          "stop",
+          "embry-memory"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "embry-memory"
+      }
+    },
+    "memory_projection_delete": {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "embry-memory",
+        "sh",
+        "-lc",
+        "cd /app && PYTHONPATH=/app/src /usr/local/bin/python -"
+      ],
+      "method": "proof_only_delete_inside_memory_container_arango_client",
+      "parsed": {
+        "deleted_documents": 1,
+        "deleted_edges": 9,
+        "requested_keys": [
+          "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+        ]
+      },
+      "post_delete_memory_readback_count": 0,
+      "post_delete_relay_result_count": 0,
+      "returncode": 0,
+      "settlement_unchanged": true,
+      "stderr": "",
+      "stdout": "{\"deleted_documents\": 1, \"deleted_edges\": 9, \"requested_keys\": [\"tau_episode_40001f628ba87e339224281bcc7b992378f871dc\"]}",
+      "target_keys": [
+        "tau_episode_40001f628ba87e339224281bcc7b992378f871dc"
+      ],
+      "tau_state_after_delete": {
+        "admission_count": 4,
+        "event_count": 36,
+        "settled_attempt_ids": [
+          "attempt-021ce76699892f1eb048bc1b801bf832",
+          "attempt-4788b7846e3bd1785f0cb447acc682e7"
+        ],
+        "status": "PASS"
+      },
+      "tau_state_before_delete": {
+        "admission_count": 4,
+        "event_count": 36,
+        "settled_attempt_ids": [
+          "attempt-021ce76699892f1eb048bc1b801bf832",
+          "attempt-4788b7846e3bd1785f0cb447acc682e7"
+        ],
+        "status": "PASS"
+      }
+    },
+    "memory_readback_count": 9,
+    "outage_recovery_readback_count": 1,
+    "outage_recovery_relay_states": [
+      "projected"
+    ],
+    "outage_recovery_replay_result_count": 0,
+    "outage_recovery_state": "projected",
+    "outage_relay_states": [
+      "degraded"
+    ],
     "outage_state": "degraded",
     "permanent_rejection_state": "permanently_rejected",
-    "projected_episode_count": 2,
+    "pre_relay_pending_count": 9,
+    "projected_doc_keys": [
+      "tau_episode_25892878a90698befd227ff021e64fdfa8855e40",
+      "tau_episode_b125930d8c001c6db5c84de732ff2276741652f5",
+      "tau_episode_ec715c046ac7a94c69b40f2a5583331743af211c",
+      "tau_episode_e8ca4db6e676115fdce9e0ec8b8ee184e6566cfd",
+      "tau_episode_62290f627bf303468ac06615c54e93f6b06e5771",
+      "tau_episode_6b9cc1f3ba963570be25a83b8aa75c98d60f396c",
+      "tau_episode_a5762c4611143ff29da9eb0c0cddd0cb33d01bb5",
+      "tau_episode_b6a751b1ef4671ef2444d5127a7210128374af1f",
+      "tau_episode_60dc3cf7aed146887cbf4a44ac5ebde3f0476859"
+    ],
+    "projected_episode_count": 9,
     "replay_result_count": 0,
     "run_state_after_outage": "PASS",
-    "source_journal_event_count": 25,
+    "source_journal_event_count": 35,
     "source_receipt_admission_count": 4
   },
   "proof_boundary": {
-    "does_not_prove": "full graph traversal UI, real multimodal indexing, provider semantic quality, GOAL.md completion, or human acceptance.",
-    "proves": "Tau builds redacted accepted orchestration episodes, enqueues them in the existing memory_projection_outbox, relays them through Memory /store, reads projected records back through Memory endpoints, dedupes replay, and keeps Tau settlement unchanged on outage/rejection."
+    "does_not_prove": "Full graph traversal UI, real multimodal indexing, provider semantic quality, GOAL.md completion, human acceptance, or #316 parent/child lineage while #316 remains open.",
+    "proves": "Production Tau settlement enqueues accepted agent-turn, tool-effect, join-decision, and node-settlement episode rows in memory_projection_outbox; retained live proof relays nine episodes through governed Memory /store, reads them back by key and recall, replay-dedupes projected rows, stops the real embry-memory container and observes outage degradation without changing Tau settlement, restarts Memory and projects the same degraded row exactly once, deletes the recovered Memory projection and verifies Tau settlement/replay is unchanged, and keeps Tau settlement unchanged on permanent Memory schema rejection."
   },
   "provider_live": false,
+  "reviewer_run_addressed": "2e94d54e-39c1-4a8a-bd14-bb75816ce765",
   "schema": "agent_skills.ticket_closure_evidence.v1",
+  "source_file_hashes": {
+    "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75",
+    "scripts/agentic-eval-tau-memory-episode-projection.py": "sha256:8f97bb75ac768900f3edce0c6be8eeedb5f54ef40da39e4753a43bc744e2290f",
+    "src/tau_coding/dag_runtime/memory_projection.py": "sha256:9b257c2836931a514da3f1e80e4580b9ebc29c23e13fa4a7d8102821e1974af3",
+    "src/tau_coding/dag_runtime/run_store.py": "sha256:ddbafe81ca152cee9b5c5ac0b9bafdc1a0f6650d13d77be2ebad01c03d2ad4c3",
+    "tests/test_dag_runtime_memory_projection.py": "sha256:5c1cec151ff8e4a8c99e963bc2e24606d56502835f39ff99db04e6e389c1fa47"
+  },
+  "source_revision": {
+    "head_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "ref": "main",
+    "repo": "grahama1970/tau"
+  },
   "status": "ACCEPTED",
+  "title": "Extend the Memory outbox to project accepted Tau turn/tool/orchestration episodes",
   "unit": {
-    "command": "uv run pytest --tau-suite=all tests/test_tau_memory_episode_projection.py tests/test_dag_runtime_memory_projection.py -q",
+    "command": "uv run pytest --tau-suite=all tests/test_dag_runtime_memory_projection.py tests/test_tau_memory_episode_projection.py -q",
     "exit_code": 0,
-    "passed": 9
+    "passed": 10
   }
 }

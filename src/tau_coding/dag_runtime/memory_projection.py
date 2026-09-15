@@ -193,9 +193,8 @@ def build_tau_orchestration_episode(
         "fact_kind": fact_kind,
     }
     doc = {
-        "_key": "tau_episode_" + hashlib.sha256(
-            json.dumps(key_basis, sort_keys=True).encode("utf-8")
-        ).hexdigest()[:40],
+        "_key": "tau_episode_"
+        + hashlib.sha256(json.dumps(key_basis, sort_keys=True).encode("utf-8")).hexdigest()[:40],
         "schema": TAU_ORCHESTRATION_EPISODE_SCHEMA,
         "kind": TAU_ORCHESTRATION_EPISODE_KIND,
         "record_kind": TAU_ORCHESTRATION_EPISODE_KIND,
@@ -269,7 +268,9 @@ def validate_tau_orchestration_episode(
             and existing.get(field) != doc.get(field)
         ]
         if changed:
-            raise MemoryProjectionError("tau_episode_immutable_lineage_changed:" + ",".join(changed))
+            raise MemoryProjectionError(
+                "tau_episode_immutable_lineage_changed:" + ",".join(changed)
+            )
 
 
 def governed_memory_store_sender(
@@ -280,7 +281,9 @@ def governed_memory_store_sender(
     endpoint = memory_url.rstrip("/") + "/store"
 
     def send(payload: dict[str, Any]) -> dict[str, Any]:
-        body = json.dumps({"collection": "agent_conversations", "document": payload}).encode("utf-8")
+        body = json.dumps({"collection": "agent_conversations", "document": payload}).encode(
+            "utf-8"
+        )
         req = request.Request(
             endpoint,
             data=body,
@@ -334,14 +337,23 @@ class MemoryProjectionOutbox:
                 payload_json, state, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)
             ON CONFLICT(projection_key) DO NOTHING""",
-            (key, lease.run_id, node_id, attempt_id, fact_kind,
-             json.dumps(payload, sort_keys=True), _now(), _now()),
+            (
+                key,
+                lease.run_id,
+                node_id,
+                attempt_id,
+                fact_kind,
+                json.dumps(payload, sort_keys=True),
+                _now(),
+                _now(),
+            ),
         )
         return key
 
     def pending(self) -> list[dict[str, Any]]:
         rows = self._store._connection.execute(
-            "SELECT * FROM memory_projection_outbox WHERE state IN ('pending','retryable_failed')"
+            """SELECT * FROM memory_projection_outbox
+               WHERE state IN ('pending','retryable_failed','degraded')"""
         ).fetchall()
         return [dict(r) for r in rows]
 
@@ -351,7 +363,7 @@ class MemoryProjectionOutbox:
         *,
         max_attempts: int = 3,
     ) -> list[ProjectionResult]:
-        """Drain pending/retryable rows through ``sender`` (the governed
+        """Drain pending/retryable/degraded rows through ``sender`` (the governed
         graph-memory API or a degraded stub). Never raises on delivery
         failure: a graph-memory outage degrades the outbox, never the run.
 

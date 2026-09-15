@@ -2431,12 +2431,180 @@ class SqliteDagRunStore:
                 attempt_id=attempt_id,
                 payload=payload,
             )
+            self._enqueue_memory_episode_projections(
+                lease,
+                plan=plan,
+                attempt=attempt,
+                result=result,
+                transition_event_seq=event_seq,
+            )
             self._connection.execute(
                 """UPDATE dag_node_attempts SET state = 'SETTLED', final_event_seq = ?,
                    updated_at = ? WHERE attempt_id = ?""",
                 (event_seq, _now_iso(), attempt_id),
             )
             self._observe_admission_gap(lease, attempt_id, str(attempt["node_id"]))
+
+    def _enqueue_memory_episode_projections(
+        self,
+        lease: DagRunLease,
+        *,
+        plan: DagPlan,
+        attempt: sqlite3.Row,
+        result: Mapping[str, Any],
+        transition_event_seq: int,
+    ) -> None:
+        if result.get("status") != "PASS" or result.get("verdict") != "PASS":
+            return
+        admissions = self._connection.execute(
+            """SELECT admission_id, sha256 FROM receipt_admissions
+               WHERE run_id = ? AND attempt_id = ? AND receipt_kind != 'tau.dag_node_dispatch.v1'
+               ORDER BY admitted_event_seq, admission_id""",
+            (lease.run_id, str(attempt["attempt_id"])),
+        ).fetchall()
+        if not admissions:
+            return
+        try:
+            from tau_coding.dag_runtime.memory_projection import (
+                _OUTBOX_DDL,
+                build_tau_orchestration_episode,
+                projection_key_for,
+            )
+        except Exception:
+            return
+        self._connection.execute(_OUTBOX_DDL)
+        node_id = str(attempt["node_id"])
+        attempt_id = str(attempt["attempt_id"])
+        receipt_refs = [f"receipt_admissions/{row['admission_id']}" for row in admissions]
+        receipt_hashes = [str(row["sha256"]) for row in admissions]
+        live = result.get("live", False)
+        mocked = result.get("mocked", False)
+        provider_live = result.get("provider_live", False)
+        events = self._connection.execute(
+            """SELECT seq, payload_json FROM dag_run_events
+               WHERE run_id = ? AND attempt_id = ? AND event_type = 'agent_event_appended'
+               ORDER BY seq""",
+            (lease.run_id, attempt_id),
+        ).fetchall()
+        facts: list[tuple[str, str, str, list[str], list[str] | None]] = []
+        for row in events:
+            try:
+                event_seq = int(row["seq"])
+                payload = json.loads(str(row["payload_json"]))
+                agent_event = payload.get("agent_event", {})
+            except (TypeError, ValueError):
+                continue
+            event_type = agent_event.get("event_type")
+            if event_type == "agent_turn_recorded":
+                facts.append(
+                    (
+                        f"agent_turn:{event_seq}",
+                        "agent_turn",
+                        "accepted agent turn",
+                        [f"dag_run_events/{event_seq}"],
+                        None,
+                    )
+                )
+            elif event_type == "tool_effect_recorded":
+                facts.append(
+                    (
+                        f"tool_effect:{event_seq}",
+                        "tool_effect",
+                        "accepted tool effect",
+                        [f"dag_run_events/{event_seq}"],
+                        None,
+                    )
+                )
+        joined_from = [
+            binding.source_node_id
+            for binding in plan.context_bindings
+            if binding.target_node_id == node_id
+        ]
+        if joined_from:
+            facts.append(
+                (
+                    "join_decision",
+                    "join_decision",
+                    "accepted context join",
+                    [],
+                    sorted(joined_from),
+                )
+            )
+        summary = "accepted node settlement"
+        receipt = self._connection.execute(
+            """SELECT path FROM receipt_admissions
+               WHERE run_id = ? AND attempt_id = ? AND receipt_kind = 'node_receipt'
+               ORDER BY admitted_event_seq DESC LIMIT 1""",
+            (lease.run_id, attempt_id),
+        ).fetchone()
+        if receipt is not None:
+            try:
+                receipt_payload = json.loads(Path(str(receipt["path"])).read_text())
+                summary = str(
+                    receipt_payload.get("handoff_summary")
+                    or receipt_payload.get("accepted_output", {}).get("summary")
+                    or summary
+                )
+                live = receipt_payload.get("live", live)
+                mocked = receipt_payload.get("mocked", mocked)
+                provider_live = receipt_payload.get("provider_live", provider_live)
+            except Exception:
+                pass
+        facts.append(("node_settlement", "node_settlement", summary, [], None))
+        for identity_kind, fact_kind, summary, refs, joined in facts:
+            projection_key = projection_key_for(lease.run_id, node_id, attempt_id, identity_kind)
+            try:
+                doc = build_tau_orchestration_episode(
+                    projection_key=projection_key,
+                    source_outbox_row=projection_key,
+                    run_id=lease.run_id,
+                    dag_id=plan.plan_id,
+                    dag_plan_hash=plan.plan_sha256,
+                    node_id=node_id,
+                    attempt_id=attempt_id,
+                    attempt_number=int(attempt["attempt_no"]),
+                    goal_hash=plan.runtime_goal_hash,
+                    work_order_hash=str(result.get("work_order_sha256") or canonical_sha256({
+                        "run_id": lease.run_id,
+                        "node_id": node_id,
+                        "attempt_id": attempt_id,
+                        "plan_sha256": plan.plan_sha256,
+                    })),
+                    journal_sequence=transition_event_seq,
+                    journal_head_hash=str(self._event_by_key(
+                        lease.run_id, f"attempt:{attempt_id}:transition-committed"
+                    )["payload_sha256"]),
+                    source_event_refs=[*refs, f"dag_run_events/{transition_event_seq}"],
+                    source_receipt_refs=receipt_refs,
+                    source_receipt_hashes=receipt_hashes,
+                    fact_kind=fact_kind,
+                    summary=f"{lease.run_id} {node_id} {summary}",
+                    outcome="PASS",
+                    project="tau",
+                    live=bool(live),
+                    mocked=bool(mocked),
+                    provider_live=bool(provider_live),
+                    joined_from=joined,
+                )
+                self._connection.execute(
+                    """INSERT INTO memory_projection_outbox(
+                        projection_key, run_id, node_id, attempt_id, fact_kind,
+                        payload_json, state, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+                    ON CONFLICT(projection_key) DO NOTHING""",
+                    (
+                        projection_key,
+                        lease.run_id,
+                        node_id,
+                        attempt_id,
+                        identity_kind,
+                        json.dumps(doc, sort_keys=True),
+                        _now_iso(),
+                        _now_iso(),
+                    ),
+                )
+            except Exception:
+                continue
 
     def _observe_admission_gap(self, lease: DagRunLease, attempt_id: str, node_id: str) -> None:
         """Shadow-mode invariant (#202): record, never block.

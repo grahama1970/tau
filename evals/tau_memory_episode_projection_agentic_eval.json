@@ -4,13 +4,14 @@
   "trials": 2,
   "proof_scope": "Tau accepted turn/tool/join episode projection through the existing Memory outbox and governed Memory /store API",
   "claims": {
-    "proves": "Tau builds redacted memory.tau_orchestration_episode.v1 payloads from accepted journal facts, enqueues them in the existing outbox, relays them through governed Memory /store, reads them back by key and recall, replay-dedupes projected rows, degrades on Memory outage without changing settlement, permanently records schema rejection without changing settlement, and rejects forbidden raw text plus lineage mutation.",
+    "proves": "Tau builds redacted memory.tau_orchestration_episode.v1 payloads from accepted journal facts, enqueues them in the existing outbox, relays them through governed Memory /store, reads them back by key and recall, replay-dedupes projected rows, degrades while the real Memory container is stopped without changing settlement, recovers the same degraded row exactly once after Memory restarts, deletes the Memory projection and verifies Tau settlement/replay is unchanged, permanently records schema rejection without changing settlement, and rejects forbidden raw text plus lineage mutation.",
     "does_not_prove": "Full graph traversal UX, multimodal indexing of real image/audio artifacts, provider semantic quality, GOAL.md completion, or human acceptance."
   },
   "capability_claims": [
     {
       "id": "tau.memory_episode_projection.governed_accepted_episode_outbox",
-      "description": "Accepted Tau turn/tool/join/settlement facts are normalized into governed Memory orchestration episode payloads, projected via the existing outbox, replay-deduped, redacted, and resilient to Memory outage or schema rejection.",
+      "description": "Accepted Tau turn/tool/join/settlement facts are normalized into governed Memory orchestration episode payloads, projected via the existing outbox, replay-deduped, redacted, recoverable after a real Memory outage, deletion-independent for Tau settlement, and resilient to schema rejection.",
+      "claim_semantics": "protocol",
       "criticality": "critical",
       "evidence_required": {
         "live_e2e": 1,
@@ -49,17 +50,34 @@
           {
             "path": "../local/agentic-evals/tau-memory-episode-proof.json",
             "json_pointer": "/projected_episode_count",
-            "equals": 2
+            "equals": 9
           },
           {
             "path": "../local/agentic-evals/tau-memory-episode-proof.json",
             "json_pointer": "/memory_readback_count",
-            "equals": 2
+            "equals": 9
           },
           {
             "path": "../local/agentic-evals/tau-memory-episode-proof.json",
             "json_pointer": "/replay_result_count",
             "equals": 0
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_outage_probe/memory_unreachable_after_stop",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_outage_probe/memory_healthy_after_start",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_relay_states",
+            "equals": [
+              "degraded"
+            ]
           },
           {
             "path": "../local/agentic-evals/tau-memory-episode-proof.json",
@@ -73,8 +91,45 @@
           },
           {
             "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_recovery_relay_states",
+            "equals": [
+              "projected"
+            ]
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_recovery_replay_result_count",
+            "equals": 0
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_recovery_state",
+            "equals": "projected"
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/outage_recovery_readback_count",
+            "equals": 1
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
             "json_pointer": "/permanent_rejection_state",
             "equals": "permanently_rejected"
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_projection_delete/post_delete_memory_readback_count",
+            "equals": 0
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_projection_delete/post_delete_relay_result_count",
+            "equals": 0
+          },
+          {
+            "path": "../local/agentic-evals/tau-memory-episode-proof.json",
+            "json_pointer": "/memory_projection_delete/settlement_unchanged",
+            "equals": true
           }
         ]
       }
