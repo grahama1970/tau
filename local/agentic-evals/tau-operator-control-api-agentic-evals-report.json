@@ -1,0 +1,267 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "fixtures/agentic_eval.json",
+  "run_id": "116d18a7b208",
+  "fixture_sha256": "sha256:6f6588b30b8142937fc02f74c20592b91b1e1fdc9bcce8c4ff58d7f11c339546",
+  "repo": {
+    "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, receipt-completeness invariants, and live DAG viewer transition-to-ledger correlation, and governed refinement proposal/apply/verify/rollback conformance",
+  "claims": {
+    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, still assembles an intact final receipt, and binds live DAG viewer transitions to authoritative run, event, and ledger IDs; Tau can preview governed continual-harness refinements without mutation, apply only verified proposals, roll back, and render read-only proposal state.",
+    "does_not_prove": "provider or model semantic quality, GitHub mutation, Herdr pane behavior, production deployment, or that any specific downstream worker streams its own output"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": null,
+  "claims_coverage": "partial: focused --case run",
+  "focused_cases": [
+    "operator-control-api-post-get-receipt-lifecycle"
+  ],
+  "generated_at": "2026-09-15T08:51:56.726883+00:00",
+  "case_count": 1,
+  "required_case_count": 1,
+  "outcome_counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 2,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "operator-control-api-post-get-receipt-lifecycle",
+      "type": "positive",
+      "case_id": "116d18a7b208-c000",
+      "required": true,
+      "outcome": "PASS",
+      "observed_outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_operator_control_api.py",
+        "--output",
+        "../local/agentic-evals/tau-operator-control-api-proof.json"
+      ],
+      "execution_mode": "regression_replay",
+      "execution_provenance": {
+        "execution_mode": "regression_replay",
+        "fixture_sha256": "sha256:6f6588b30b8142937fc02f74c20592b91b1e1fdc9bcce8c4ff58d7f11c339546",
+        "test_source_sha256": "sha256:a3b7e2863bd14033610cd255209a56e397123cfddb3b9069faae60102e54404e",
+        "oracle_sha256": "sha256:bf9aabfccbf8fb1e097d2efefc655a6ec3c06983599543c7434a965a6a2510e8",
+        "generated_test_lineage": null,
+        "generation_id": "sha256:535044532520889e9ed0d6e08",
+        "prior_test_source_sha256": null,
+        "prior_oracle_sha256": null,
+        "application_identity": {
+          "repo": {
+            "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+            "ref": "main"
+          }
+        },
+        "mutation_provenance": {
+          "flags": {
+            "assertion_changed": false,
+            "case_ownership_changed": false,
+            "category_map_changed": false,
+            "evidence_requirement_changed": false,
+            "exclusion_changed": false,
+            "expected_output_changed": false,
+            "fixture_changed": false,
+            "fixture_input_changed": false,
+            "locator_changed": false,
+            "locator_healed": false,
+            "oracle_changed": false,
+            "proof_command_changed": false,
+            "protected_surface_changed": false,
+            "readiness_logic_changed": false,
+            "step_changed": false,
+            "test_exclusion_changed": false,
+            "test_mutated": false
+          },
+          "declared": false,
+          "test_hash_changed": false,
+          "oracle_hash_changed": false,
+          "changed_between_failure_and_observed_pass": false,
+          "protected_surface_changed": false,
+          "external_result": null
+        },
+        "evidence_eligibility": {
+          "eligible": true,
+          "eligible_for_existing_claim": true,
+          "requires_requalification": false,
+          "reason_codes": [],
+          "integrity_errors": []
+        }
+      },
+      "test_source_sha256": "sha256:a3b7e2863bd14033610cd255209a56e397123cfddb3b9069faae60102e54404e",
+      "oracle_sha256": "sha256:bf9aabfccbf8fb1e097d2efefc655a6ec3c06983599543c7434a965a6a2510e8",
+      "application_identity": {
+        "repo": {
+          "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+          "ref": "main"
+        }
+      },
+      "generated_test_lineage": null,
+      "evidence_eligibility": {
+        "eligible": true,
+        "eligible_for_existing_claim": true,
+        "requires_requalification": false,
+        "reason_codes": [],
+        "integrity_errors": []
+      },
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 1137.302,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"checks\": {\"post_validated\": true, \"projection_lifecycle_received_to_applied\": true, \"receipt_schema\": true, \"receipt_status_applied\": true, \"scheduler_lease_applied\": true, \"scheduler_lease_claimed\": true}, \"lifecycle\": [{\"created_at\": \"2026-09-15T08:51:54.930855+00:00\", \"event_seq\": 4, \"receipt_sha256\": null, \"status\": \"RECEIVED\"}, {\"created_at\": \"2026-09-15T08:51:54.931679+00:00\", \"event_seq\": 5, \"receipt_sha256\": null, \"status\": \"VALIDATED\"}, {\"created_at\": \"2026-09-15T08:51:54.934939+00:00\", \"event_seq\": 6, \"receipt_sha256\": null, \"status\": \"CLAIMED\"}, {\"created_at\": \"2026-09-15T08:51:54.936302+00:00\", \"event_seq\": 8, \"receipt_sha256\": \"sha256:dbdc49533f9f3550a426f150395eac4145a33a09e585f137cb8c3403c10adddc\", \"status\": \"APPLIED\"}], \"live\": true, \"mocked\": false, \"ok\": true, \"post_status\": \"VALIDATED\", \"projection_status\": \"APPLIED\", \"proof_scope\": {\"does_not_prove\": [\"Authentication or non-loopback production authorization.\", \"Semantic quality of provider/model output.\"], \"proves\": [\"The loopback local API accepts tau.operator_action_request.v1 via POST.\", \"The request is journaled before scheduler-owned completion.\", \"A scheduler lease-holder can apply the request and the API returns the terminal receipt.\"]}, \"provider_live\": false, \"receipt_status\": \"APPLIED\", \"run_dir\": \"local/agentic-evals/tau-operator-control-api/work/run\", \"schema\": \"tau.operator_control_api_proof.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1114.247,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "116d18a7b208-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-operator-control-api-proof.json": "sha256:ed433a1f211ea8c3215d4d6821f31eb80515f961bacbb08ea494c7fc97be2fb3"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:6f6588b30b8142937fc02f74c20592b91b1e1fdc9bcce8c4ff58d7f11c339546",
+            "test_source_sha256": "sha256:a3b7e2863bd14033610cd255209a56e397123cfddb3b9069faae60102e54404e",
+            "oracle_sha256": "sha256:bf9aabfccbf8fb1e097d2efefc655a6ec3c06983599543c7434a965a6a2510e8",
+            "generation_id": "sha256:535044532520889e9ed0d6e08",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"checks\": {\"post_validated\": true, \"projection_lifecycle_received_to_applied\": true, \"receipt_schema\": true, \"receipt_status_applied\": true, \"scheduler_lease_applied\": true, \"scheduler_lease_claimed\": true}, \"lifecycle\": [{\"created_at\": \"2026-09-15T08:51:56.070530+00:00\", \"event_seq\": 4, \"receipt_sha256\": null, \"status\": \"RECEIVED\"}, {\"created_at\": \"2026-09-15T08:51:56.071243+00:00\", \"event_seq\": 5, \"receipt_sha256\": null, \"status\": \"VALIDATED\"}, {\"created_at\": \"2026-09-15T08:51:56.074855+00:00\", \"event_seq\": 6, \"receipt_sha256\": null, \"status\": \"CLAIMED\"}, {\"created_at\": \"2026-09-15T08:51:56.076353+00:00\", \"event_seq\": 8, \"receipt_sha256\": \"sha256:3aefb72653b09a4cfeb0578377ecaab4af8c5d051005c4532fcbe03e6a3d4c04\", \"status\": \"APPLIED\"}], \"live\": true, \"mocked\": false, \"ok\": true, \"post_status\": \"VALIDATED\", \"projection_status\": \"APPLIED\", \"proof_scope\": {\"does_not_prove\": [\"Authentication or non-loopback production authorization.\", \"Semantic quality of provider/model output.\"], \"proves\": [\"The loopback local API accepts tau.operator_action_request.v1 via POST.\", \"The request is journaled before scheduler-owned completion.\", \"A scheduler lease-holder can apply the request and the API returns the terminal receipt.\"]}, \"provider_live\": false, \"receipt_status\": \"APPLIED\", \"run_dir\": \"local/agentic-evals/tau-operator-control-api/work/run\", \"schema\": \"tau.operator_control_api_proof.v1\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 1160.357,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "116d18a7b208-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-operator-control-api-proof.json": "sha256:0813facf19df5d0892970884cd4e5c953cc23f82b7387ca494e20060053e1af6"
+          },
+          "outcome": "PASS",
+          "problems": [],
+          "execution_provenance": {
+            "execution_mode": "regression_replay",
+            "fixture_sha256": "sha256:6f6588b30b8142937fc02f74c20592b91b1e1fdc9bcce8c4ff58d7f11c339546",
+            "test_source_sha256": "sha256:a3b7e2863bd14033610cd255209a56e397123cfddb3b9069faae60102e54404e",
+            "oracle_sha256": "sha256:bf9aabfccbf8fb1e097d2efefc655a6ec3c06983599543c7434a965a6a2510e8",
+            "generation_id": "sha256:535044532520889e9ed0d6e08",
+            "generated_test_lineage": null,
+            "prior_test_source_sha256": null,
+            "prior_oracle_sha256": null,
+            "application_identity": {
+              "repo": {
+                "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+                "ref": "main"
+              }
+            },
+            "mutation_provenance": {
+              "flags": {
+                "assertion_changed": false,
+                "case_ownership_changed": false,
+                "category_map_changed": false,
+                "evidence_requirement_changed": false,
+                "exclusion_changed": false,
+                "expected_output_changed": false,
+                "fixture_changed": false,
+                "fixture_input_changed": false,
+                "locator_changed": false,
+                "locator_healed": false,
+                "oracle_changed": false,
+                "proof_command_changed": false,
+                "protected_surface_changed": false,
+                "readiness_logic_changed": false,
+                "step_changed": false,
+                "test_exclusion_changed": false,
+                "test_mutated": false
+              },
+              "declared": false,
+              "test_hash_changed": false,
+              "oracle_hash_changed": false,
+              "changed_between_failure_and_observed_pass": false,
+              "protected_surface_changed": false,
+              "external_result": null
+            },
+            "evidence_eligibility": {
+              "eligible": true,
+              "eligible_for_existing_claim": true,
+              "requires_requalification": false,
+              "reason_codes": [],
+              "integrity_errors": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

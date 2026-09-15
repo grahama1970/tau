@@ -6,8 +6,10 @@ Excalidraw source: docs/explain/boards/tau-viewer-replay.excalidraw
 
 from __future__ import annotations
 
+import json
 import secrets
 import socket
+import sqlite3
 import threading
 from dataclasses import dataclass
 from http import HTTPStatus
@@ -16,7 +18,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
-from tau_coding.dag_runtime.run_store import SqliteDagRunReader
+from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader, SqliteDagRunStore
 from tau_coding.dag_viewer.compare import (
     compare_attempts,
     compare_correction,
@@ -52,6 +55,7 @@ from tau_coding.run_ledger import read_ledger, verify_ledger
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 GENERATION_MARKER = ":generation:"
+MAX_OPERATOR_ACTION_REQUEST_BYTES = 64 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +103,112 @@ def _select_default_run(run_dir: Path) -> tuple[LogicalRunIdentity, str]:
     return latest, plan_hashes.pop()
 
 
+def _operator_action_connection(database: Path) -> sqlite3.Connection:
+    connection = sqlite3.connect(database)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def _operator_action_receipt(row: sqlite3.Row) -> dict[str, Any] | None:
+    if row["receipt_json"] is None:
+        return None
+    receipt = json.loads(str(row["receipt_json"]))
+    if not isinstance(receipt, dict):
+        raise DagRunStoreError(
+            "operator_action_receipt_hash_mismatch", str(row["action_request_id"])
+        )
+    body = {key: value for key, value in receipt.items() if key != "sha256"}
+    if canonical_sha256(body) != str(row["receipt_sha256"]):
+        raise DagRunStoreError(
+            "operator_action_receipt_hash_mismatch", str(row["action_request_id"])
+        )
+    return receipt
+
+
+def _operator_action_projection(
+    row: sqlite3.Row, *, lifecycle: tuple[dict[str, Any], ...] = ()
+) -> dict[str, Any]:
+    request = json.loads(str(row["request_json"]))
+    if not isinstance(request, dict) or canonical_sha256(request) != str(row["request_sha256"]):
+        raise DagRunStoreError(
+            "operator_action_request_hash_mismatch", str(row["action_request_id"])
+        )
+    return {
+        "schema": "tau.operator_action_projection.v1",
+        "action_request_id": str(row["action_request_id"]),
+        "idempotency_key": str(row["idempotency_key"]),
+        "run_id": str(row["run_id"]),
+        "plan_id": str(row["plan_id"]),
+        "plan_sha256": str(row["plan_sha256"]),
+        "node_id": str(row["node_id"]),
+        "attempt": int(row["attempt_no"]),
+        "goal_hash": str(row["goal_hash"]),
+        "observed_journal_seq": int(row["observed_journal_seq"]),
+        "observed_journal_head_sha256": str(row["observed_journal_head_sha256"]),
+        "action": str(row["action"]),
+        "actor": str(row["actor"]),
+        "principal": str(row["principal"]),
+        "authority_class": str(row["authority_class"]),
+        "requested_safe_point": str(row["requested_safe_point"]),
+        "created_at": str(row["created_at"]),
+        "expires_at": str(row["expires_at"]),
+        "status": str(row["status"]),
+        "outcome": str(row["outcome"]) if row["outcome"] is not None else None,
+        "code": str(row["code"]) if row["code"] is not None else None,
+        "receipt": _operator_action_receipt(row),
+        "receipt_sha256": str(row["receipt_sha256"]) if row["receipt_sha256"] is not None else None,
+        "lifecycle": list(lifecycle),
+    }
+
+
+def _list_operator_actions(database: Path, run_id: str) -> tuple[dict[str, Any], ...]:
+    with _operator_action_connection(database) as connection:
+        rows = connection.execute(
+            """SELECT * FROM operator_action_requests
+               WHERE run_id = ? ORDER BY created_at, action_request_id""",
+            (run_id,),
+        ).fetchall()
+    return tuple(_operator_action_projection(row) for row in rows)
+
+
+def _load_operator_action(database: Path, run_id: str, action_request_id: str) -> dict[str, Any]:
+    with _operator_action_connection(database) as connection:
+        row = connection.execute(
+            """SELECT * FROM operator_action_requests
+               WHERE run_id = ? AND action_request_id = ?""",
+            (run_id, action_request_id),
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("operator_action_request_missing", action_request_id)
+        ledger_rows = connection.execute(
+            """SELECT status, event_seq, receipt_sha256, ledger_json, ledger_sha256, created_at
+               FROM operator_action_ledger
+               WHERE run_id = ? AND action_request_id = ?
+               ORDER BY event_seq, created_at""",
+            (run_id, action_request_id),
+        ).fetchall()
+    lifecycle = []
+    for ledger_row in ledger_rows:
+        ledger = json.loads(str(ledger_row["ledger_json"]))
+        if not isinstance(ledger, dict) or canonical_sha256(ledger) != str(
+            ledger_row["ledger_sha256"]
+        ):
+            raise DagRunStoreError("operator_action_ledger_hash_mismatch", action_request_id)
+        lifecycle.append(
+            {
+                "status": str(ledger_row["status"]),
+                "event_seq": int(ledger_row["event_seq"]),
+                "receipt_sha256": (
+                    str(ledger_row["receipt_sha256"])
+                    if ledger_row["receipt_sha256"] is not None
+                    else None
+                ),
+                "created_at": str(ledger_row["created_at"]),
+            }
+        )
+    return _operator_action_projection(row, lifecycle=tuple(lifecycle))
+
+
 class DagViewerApplication:
     def __init__(self, *, run_dir: Path, run_id: str | None = None) -> None:
         self.run_dir = run_dir.expanduser().resolve()
@@ -143,6 +253,10 @@ class DagViewerApplication:
     def handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
         with self._request_lock:
             return self._handle_get(target, if_none_match=if_none_match)
+
+    def handle_post(self, target: str, body: bytes) -> ViewerHttpResponse:
+        with self._request_lock:
+            return self._handle_post(target, body)
 
     def _handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
         parsed = urlsplit(target)
@@ -224,6 +338,38 @@ class DagViewerApplication:
                     "ledger": ledger,
                 }
             )
+        operator_action_prefix = "/api/v1/operator-actions"
+        if path == operator_action_prefix:
+            return json_response(
+                {
+                    "schema": "tau.operator_action_list.v1",
+                    "run_id": self.run_id,
+                    "actions": list(
+                        _list_operator_actions(self.run_dir / "dag-run.sqlite3", self.run_id)
+                    ),
+                }
+            )
+        if path.startswith(f"{operator_action_prefix}/"):
+            action_path = path.removeprefix(f"{operator_action_prefix}/")
+            receipt_requested = action_path.endswith("/receipt")
+            action_request_id = (
+                action_path.removesuffix("/receipt") if receipt_requested else action_path
+            )
+            if (
+                not action_request_id
+                or "/" in action_request_id
+                or action_request_id in {".", ".."}
+            ):
+                raise RuntimeError("operator_action_request_missing")
+            projection = _load_operator_action(
+                self.run_dir / "dag-run.sqlite3", self.run_id, action_request_id
+            )
+            if receipt_requested:
+                receipt = projection.get("receipt")
+                if not isinstance(receipt, dict):
+                    raise DagRunStoreError("operator_action_receipt_not_ready", action_request_id)
+                return json_response(receipt)
+            return json_response(projection)
         if path == "/api/v1/events":
             after, before, limit = parse_event_query(parsed.query)
             if self._project_receipt is not None:
@@ -368,6 +514,27 @@ class DagViewerApplication:
             "dag_viewer_endpoint_not_found", "The endpoint does not exist.", status=404
         )
 
+    def _handle_post(self, target: str, body: bytes) -> ViewerHttpResponse:
+        parsed = urlsplit(target)
+        path = unquote(parsed.path)
+        if path != "/api/v1/operator-actions":
+            return viewer_error(
+                "dag_viewer_endpoint_not_found", "The endpoint does not exist.", status=404
+            )
+        if len(body) > MAX_OPERATOR_ACTION_REQUEST_BYTES:
+            raise DagRunStoreError("operator_action_request_too_large")
+        try:
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise DagRunStoreError("operator_action_request_json_invalid") from exc
+        if not isinstance(payload, dict):
+            raise DagRunStoreError("operator_action_request_json_invalid")
+        if payload.get("schema") != "tau.operator_action_request.v1":
+            raise DagRunStoreError("operator_action_schema_invalid")
+        with SqliteDagRunStore(self.run_dir / "dag-run.sqlite3") as store:
+            submitted = store.submit_operator_action_request(payload)
+        return json_response(submitted, status=HTTPStatus.ACCEPTED)
+
     def _replay(self, *, at_sequence: int | None = None) -> Any:
         selected_run_id = self.run_id
         if self._follow_generations and at_sequence is None:
@@ -500,20 +667,48 @@ def _handler_for(
             self._send(response)
 
         def do_POST(self) -> None:  # noqa: N802
+            server_address = self.server.server_address
+            bound_port = int(server_address[1]) if isinstance(server_address, tuple) else -1
+            if not _host_header_matches_server(
+                self.headers.get("Host"),
+                host=authority_host,
+                port=bound_port,
+            ):
+                self._send(
+                    viewer_error(
+                        "dag_viewer_host_forbidden",
+                        "The request authority does not match the loopback viewer.",
+                        status=HTTPStatus.MISDIRECTED_REQUEST,
+                    )
+                )
+                return
+            if unquote(urlsplit(self.path).path) != "/api/v1/operator-actions":
+                self._method_not_allowed()
+                return
+            try:
+                content_length = int(self.headers.get("Content-Length") or "0")
+                if content_length < 1 or content_length > MAX_OPERATOR_ACTION_REQUEST_BYTES:
+                    raise DagRunStoreError("operator_action_request_too_large")
+                response = application.handle_post(self.path, self.rfile.read(content_length))
+            except Exception as exc:  # HTTP boundary converts internals to a closed error contract.
+                code = error_code(exc)
+                response = viewer_error(code, public_error_message(code), status=409)
+            self._send(response)
+
+        def do_PUT(self) -> None:  # noqa: N802
             self._method_not_allowed()
 
-        do_PUT = do_POST
-        do_PATCH = do_POST
-        do_DELETE = do_POST
+        do_PATCH = do_PUT
+        do_DELETE = do_PUT
 
         def _method_not_allowed(self) -> None:
             self._send(
                 viewer_error(
                     "dag_viewer_method_not_allowed",
-                    "The DAG viewer is read-only.",
+                    "The DAG viewer only accepts GET and operator-action POST requests.",
                     status=HTTPStatus.METHOD_NOT_ALLOWED,
                 ),
-                extra={"Allow": "GET"},
+                extra={"Allow": "GET, POST"},
             )
 
         def _send(

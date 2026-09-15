@@ -1,0 +1,57 @@
+{
+  "checks": {
+    "post_validated": true,
+    "projection_lifecycle_received_to_applied": true,
+    "receipt_schema": true,
+    "receipt_status_applied": true,
+    "scheduler_lease_applied": true,
+    "scheduler_lease_claimed": true
+  },
+  "lifecycle": [
+    {
+      "created_at": "2026-09-15T08:51:56.070530+00:00",
+      "event_seq": 4,
+      "receipt_sha256": null,
+      "status": "RECEIVED"
+    },
+    {
+      "created_at": "2026-09-15T08:51:56.071243+00:00",
+      "event_seq": 5,
+      "receipt_sha256": null,
+      "status": "VALIDATED"
+    },
+    {
+      "created_at": "2026-09-15T08:51:56.074855+00:00",
+      "event_seq": 6,
+      "receipt_sha256": null,
+      "status": "CLAIMED"
+    },
+    {
+      "created_at": "2026-09-15T08:51:56.076353+00:00",
+      "event_seq": 8,
+      "receipt_sha256": "sha256:3aefb72653b09a4cfeb0578377ecaab4af8c5d051005c4532fcbe03e6a3d4c04",
+      "status": "APPLIED"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "post_status": "VALIDATED",
+  "projection_status": "APPLIED",
+  "proof_scope": {
+    "does_not_prove": [
+      "Authentication or non-loopback production authorization.",
+      "Semantic quality of provider/model output."
+    ],
+    "proves": [
+      "The loopback local API accepts tau.operator_action_request.v1 via POST.",
+      "The request is journaled before scheduler-owned completion.",
+      "A scheduler lease-holder can apply the request and the API returns the terminal receipt."
+    ]
+  },
+  "provider_live": false,
+  "receipt_status": "APPLIED",
+  "run_dir": "local/agentic-evals/tau-operator-control-api/work/run",
+  "schema": "tau.operator_control_api_proof.v1",
+  "status": "PASS"
+}

@@ -210,6 +210,52 @@
       }
     },
     {
+      "name": "operator-control-api-post-get-receipt-lifecycle",
+      "category": "operator-control-api",
+      "type": "positive",
+      "real_world": true,
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "..",
+        "python",
+        "../scripts/eval_operator_control_api.py",
+        "--output",
+        "../local/agentic-evals/tau-operator-control-api-proof.json"
+      ],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "tau.operator_control_api_proof.v1",
+          "\"receipt_status\": \"APPLIED\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-operator-control-api-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-control-api-proof.json",
+            "json_pointer": "/checks/projection_lifecycle_received_to_applied",
+            "equals": true
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-control-api-proof.json",
+            "json_pointer": "/mocked",
+            "equals": false
+          },
+          {
+            "path": "../local/agentic-evals/tau-operator-control-api-proof.json",
+            "json_pointer": "/live",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
       "name": "refinement-preview-apply-verify-rollback-live-memory",
       "type": "adversarial",
       "real_world": true,

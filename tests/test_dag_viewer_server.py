@@ -9,13 +9,14 @@ import socket
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
-from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore, _operator_action_head
 from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.dag_runtime.transition import (
     AllSuccessTransitionPolicy,
@@ -109,9 +110,10 @@ def _request(
     path: str,
     *,
     headers: dict[str, str] | None = None,
+    body: bytes | None = None,
 ) -> tuple[int, dict[str, str], bytes]:
     connection = http.client.HTTPConnection("127.0.0.1", server.port, timeout=2)
-    connection.request(method, path, headers=headers or {})
+    connection.request(method, path, body=body, headers=headers or {})
     response = connection.getresponse()
     body = response.read()
     response_headers = {key: value for key, value in response.getheaders()}
@@ -163,7 +165,7 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
     for method in ("POST", "PUT", "PATCH", "DELETE"):
         status, headers, body = _request(server, method, "/api/v1/state")
         assert status == 405
-        assert headers["Allow"] == "GET"
+        assert headers["Allow"] == "GET, POST"
         assert _json(body)["code"] == "dag_viewer_method_not_allowed"
     with sqlite3.connect(database) as connection:
         after = connection.execute(
@@ -171,6 +173,102 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
             "FROM dag_runs WHERE run_id = 'viewer-run'"
         ).fetchone()
     assert after == before
+
+
+def test_operator_action_api_submits_and_projects_scheduler_receipt(tmp_path: Path) -> None:
+    payload = {
+        "schema": "tau.generic_dag_spec.v1",
+        "run_id": "viewer-run",
+        "run_dir": str(tmp_path),
+        "nodes": [
+            {
+                "node_id": "worker",
+                "role": "worker",
+                "command": ["true"],
+                "receipt_path": str(tmp_path / "worker-receipt.json"),
+            }
+        ],
+    }
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    database = tmp_path / "dag-run.sqlite3"
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=plan, run_id="viewer-run", owner_id="scheduler")
+        store.reserve_attempt(lease, plan_sha256=plan.plan_sha256, node_id="worker", attempt=1)
+        server = create_dag_viewer_server(run_dir=tmp_path, host="127.0.0.1", port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            head_seq, head_sha256 = _operator_action_head(store._connection, "viewer-run")
+            request = {
+                "schema": "tau.operator_action_request.v1",
+                "action_request_id": "pause-1",
+                "idempotency_key": "pause-1",
+                "run_id": "viewer-run",
+                "plan_id": plan.plan_id,
+                "plan_sha256": plan.plan_sha256,
+                "goal_hash": plan.runtime_goal_hash,
+                "node_id": "worker",
+                "attempt": 1,
+                "action": "pause",
+                "actor": "graham",
+                "principal": "graham",
+                "authority_class": "human_operator",
+                "observed_journal_seq": head_seq,
+                "observed_journal_head_sha256": head_sha256,
+                "requested_safe_point": "scheduler_boundary",
+                "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                "expires_at": (datetime.now(UTC) + timedelta(minutes=5))
+                .isoformat()
+                .replace("+00:00", "Z"),
+                "arguments": {},
+                "client_correlation": {"source": "pytest"},
+            }
+            status, _, body = _request(
+                server,
+                "POST",
+                "/api/v1/operator-actions",
+                headers={"Content-Type": "application/json"},
+                body=json.dumps(request).encode(),
+            )
+            assert status == 202
+            assert _json(body)["status"] == "VALIDATED"
+            status, _, body = _request(server, "GET", "/api/v1/operator-actions/pause-1")
+            projection = _json(body)
+            assert status == 200
+            assert projection["status"] == "VALIDATED"
+            assert [item["status"] for item in projection["lifecycle"]] == [
+                "RECEIVED",
+                "VALIDATED",
+            ]
+            claimed = store.claim_operator_action(lease)
+            assert claimed is not None
+            completed = store.complete_operator_action(
+                lease,
+                action_request_id="pause-1",
+                status="APPLIED",
+                outcome="paused",
+                code="operator_action_pause_applied",
+                canonical_transition={"safe_point": "scheduler_idle_boundary"},
+            )
+            assert completed["status"] == "APPLIED"
+            status, _, body = _request(server, "GET", "/api/v1/operator-actions/pause-1/receipt")
+            receipt = _json(body)
+            assert status == 200
+            assert receipt["schema"] == "tau.operator_action_receipt.v1"
+            assert receipt["status"] == "APPLIED"
+            status, _, body = _request(server, "GET", "/api/v1/operator-actions/pause-1")
+            projection = _json(body)
+            assert status == 200
+            assert projection["status"] == "APPLIED"
+            assert [item["status"] for item in projection["lifecycle"]] == [
+                "RECEIVED",
+                "VALIDATED",
+                "CLAIMED",
+                "APPLIED",
+            ]
+        finally:
+            server.shutdown()
+            thread.join(timeout=2)
 
 
 def test_selected_node_inspector_is_backend_projected_and_read_only(
