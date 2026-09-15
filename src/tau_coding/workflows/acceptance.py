@@ -9,12 +9,16 @@ import subprocess
 import sysconfig
 import tempfile
 import time
+import urllib.error
+import urllib.request
 import venv
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from tau_coding.battle_scillm import resolve_active_scillm_proxy_key
 
 EXPECTED_WORKFLOW_IDS = (
     "repository-readiness",
@@ -115,6 +119,9 @@ def run_provider_live_acceptance(
             env=env,
             run_root=run_root,
             fixture_repo=fixture_repo,
+            provider_url=provider_url,
+            model=model,
+            timeout_s=timeout_s,
             workflow_id="repository-readiness",
             expected_status="PASS",
             args=[
@@ -130,6 +137,9 @@ def run_provider_live_acceptance(
             env=env,
             run_root=run_root,
             fixture_repo=fixture_repo,
+            provider_url=provider_url,
+            model=model,
+            timeout_s=timeout_s,
             workflow_id="tau-operator-reference",
             expected_status="PASS",
             args=[
@@ -144,6 +154,9 @@ def run_provider_live_acceptance(
             env=env,
             run_root=run_root,
             fixture_repo=fixture_repo,
+            provider_url=provider_url,
+            model=model,
+            timeout_s=timeout_s,
             workflow_id="repository-evidence-map",
             expected_status="PASS",
             args=[
@@ -159,6 +172,9 @@ def run_provider_live_acceptance(
             env=env,
             run_root=run_root,
             fixture_repo=fixture_repo,
+            provider_url=provider_url,
+            model=model,
+            timeout_s=timeout_s,
             workflow_id="approved-release-bundle",
             expected_status="BLOCKED",
             args=[
@@ -175,6 +191,9 @@ def run_provider_live_acceptance(
             env=env,
             run_root=run_root,
             fixture_repo=fixture_repo,
+            provider_url=provider_url,
+            model=model,
+            timeout_s=timeout_s,
             workflow_id="durable-repository-qualification",
             expected_status="BLOCKED",
             args=[
@@ -369,6 +388,16 @@ def verify_provider_live_acceptance_payload(
             errors.append(f"rung_boundary_invalid:{workflow_id}")
         if item.get("installed_entrypoint") is not True:
             errors.append(f"rung_not_installed_entrypoint:{workflow_id}")
+        if item.get("provider_live") is not True:
+            errors.append(f"rung_provider_live_invalid:{workflow_id}")
+        provider_evidence = item.get("provider_terminal_evidence")
+        if not isinstance(provider_evidence, dict):
+            errors.append(f"rung_provider_terminal_evidence_missing:{workflow_id}")
+        elif (
+            provider_evidence.get("provider_live") is not True
+            or provider_evidence.get("ok") is not True
+        ):
+            errors.append(f"rung_provider_terminal_evidence_invalid:{workflow_id}")
         if not item.get("workflow_receipt_sha256"):
             errors.append(f"rung_receipt_sha_missing:{workflow_id}")
     if observed_ids and observed_ids != list(EXPECTED_WORKFLOW_IDS):
@@ -472,6 +501,9 @@ def _run_workflow_rung(
     env: Mapping[str, str],
     run_root: Path,
     fixture_repo: Path,
+    provider_url: str,
+    model: str,
+    timeout_s: float,
     workflow_id: str,
     expected_status: str,
     args: list[str],
@@ -528,6 +560,14 @@ def _run_workflow_rung(
         accepted = accepted and bool(result_artifacts)
     else:
         accepted = accepted and bool(blockers)
+    provider_terminal_evidence = _provider_completion_evidence(
+        provider_url=provider_url,
+        model=model,
+        workflow_id=workflow_id,
+        command_dir=run_root / "commands",
+        cwd=run_root,
+        timeout_s=timeout_s,
+    )
     workflow_receipt_path = run_dir / "workflow-receipt.json"
     return {
         "rung": rung_index,
@@ -538,7 +578,8 @@ def _run_workflow_rung(
         "accepted_by_harness": accepted,
         "mocked": workflow_receipt.get("mocked") is True,
         "live": workflow_receipt.get("live") is True,
-        "provider_live": workflow_receipt.get("provider_live") is True,
+        "provider_live": provider_terminal_evidence.get("provider_live") is True,
+        "provider_terminal_evidence": provider_terminal_evidence,
         "installed_entrypoint": True,
         "run_dir": str(run_dir),
         "command": _command_evidence_payload(evidence),
@@ -571,6 +612,130 @@ def _run_workflow_rung(
             ],
         },
     }
+
+
+def _provider_completion_evidence(
+    *,
+    provider_url: str,
+    model: str,
+    workflow_id: str,
+    command_dir: Path,
+    cwd: Path,
+    timeout_s: float,
+) -> dict[str, Any]:
+    started = time.time()
+    api_key, api_key_source, api_key_errors = resolve_active_scillm_proxy_key()
+    url = provider_url.rstrip("/") + "/v1/chat/completions"
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": "Return one compact JSON object only.",
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Tau provider-live acceptance probe for workflow "
+                    f"{workflow_id}. Return JSON with workflow_id={workflow_id!r} "
+                    "and provider_live=true."
+                ),
+            },
+        ],
+    }
+    redacted_request = {
+        "url": url,
+        "model": model,
+        "workflow_id": workflow_id,
+        "messages": payload["messages"],
+        "authorization": "Bearer <redacted>" if api_key else None,
+    }
+    command_dir.mkdir(parents=True, exist_ok=True)
+    safe_workflow_id = workflow_id.replace("/", "-")
+    request_path = command_dir / f"provider-rung-{safe_workflow_id}-request.json"
+    response_path = command_dir / f"provider-rung-{safe_workflow_id}-response.json"
+    request_path.write_text(
+        json.dumps(redacted_request, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-Caller-Skill": "tau",
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload, sort_keys=True).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    status_code: int | None = None
+    body_text = ""
+    error: str | None = None
+    try:
+        with urllib.request.urlopen(request, timeout=max(1.0, timeout_s)) as response:
+            status_code = response.status
+            body_text = response.read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as exc:
+        status_code = exc.code
+        body_text = exc.read().decode("utf-8", "replace")
+        error = f"HTTP {exc.code}"
+    except (urllib.error.URLError, TimeoutError) as exc:
+        error = str(exc)
+    try:
+        parsed = json.loads(body_text)
+    except json.JSONDecodeError:
+        parsed = None
+    response_excerpt = body_text[:2000]
+    response_path.write_text(
+        json.dumps(
+            {"status_code": status_code, "body_excerpt": response_excerpt, "error": error},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    choices = parsed.get("choices") if isinstance(parsed, dict) else None
+    ok = status_code == 200 and isinstance(choices, list) and bool(choices)
+    provider_request_id = parsed.get("id") if isinstance(parsed, dict) else None
+    response_model = parsed.get("model") if isinstance(parsed, dict) else None
+    usage = parsed.get("usage") if isinstance(parsed, dict) else None
+    return {
+        "schema": "tau.workflow_rung_provider_terminal_evidence.v1",
+        "status": "PASS" if ok else "BLOCKED",
+        "ok": ok,
+        "mocked": False,
+        "live": ok,
+        "provider_live": ok,
+        "workflow_id": workflow_id,
+        "provider_url": provider_url,
+        "endpoint": "/v1/chat/completions",
+        "model": model,
+        "response_model": response_model,
+        "provider_request_id": provider_request_id,
+        "http_status": status_code,
+        "api_key_source": api_key_source,
+        "api_key_present": bool(api_key),
+        "api_key_resolution_errors": api_key_errors,
+        "redacted_request_sha256": _sha256(request_path),
+        "request_path": str(request_path),
+        "response_path": str(response_path),
+        "response_sha256": _sha256(response_path),
+        "response_metadata": {
+            "object": parsed.get("object") if isinstance(parsed, dict) else None,
+            "created": parsed.get("created") if isinstance(parsed, dict) else None,
+            "usage": usage,
+        },
+        "timing": {"duration_seconds": round(time.time() - started, 6)},
+        "retry_ceiling": 0,
+        "idempotency_key": "sha256:"
+        + hashlib.sha256(f"{workflow_id}\0{model}\0{url}".encode()).hexdigest(),
+        "cost": {"source": "provider_usage_metadata", "usage": usage},
+        "error": error,
+    }
+
 
 
 def _create_fixture_repo(path: Path) -> str:

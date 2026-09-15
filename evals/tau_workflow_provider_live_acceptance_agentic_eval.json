@@ -12,6 +12,7 @@
       "id": "tau.workflow_provider_live_acceptance",
       "description": "Tau exposes one-command provider-live packaged workflow acceptance proof and verification commands that fail closed on tampered provider evidence.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {
         "live_e2e": 1,
         "fault_injected_deterministic": 1
@@ -30,7 +31,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && rm -rf .tmp/agentic-evals/provider-live-acceptance && mkdir -p .tmp/agentic-evals/provider-live-acceptance && uv run tau workflows acceptance-proof --repo . --output .tmp/agentic-evals/provider-live-acceptance/receipt.json --work-dir .tmp/agentic-evals/provider-live-acceptance/work --provider-url http://127.0.0.1:4001 --timeout-s 5 && uv run tau workflows verify-acceptance-proof .tmp/agentic-evals/provider-live-acceptance/receipt.json --repo ."
+        "cd .. && if [ ! -d .git ]; then git init -q -b main && git add . && git -c user.name=Tau -c user.email=tau@example.invalid commit -qm fixture; fi && rm -rf .tmp/agentic-evals/provider-live-acceptance && mkdir -p .tmp/agentic-evals/provider-live-acceptance && uv run tau workflows acceptance-proof --repo . --output .tmp/agentic-evals/provider-live-acceptance/receipt.json --work-dir .tmp/agentic-evals/provider-live-acceptance/work --provider-url http://127.0.0.1:4001 --model local-text --timeout-s 5 && uv run tau workflows verify-acceptance-proof .tmp/agentic-evals/provider-live-acceptance/receipt.json --repo ."
       ],
       "timeout_seconds": 600,
       "expected": {
@@ -77,6 +78,31 @@
               "approved-release-bundle",
               "durable-repository-qualification"
             ]
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/rungs/0/provider_live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/rungs/1/provider_live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/rungs/2/provider_live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/rungs/3/provider_live",
+            "equals": true
+          },
+          {
+            "path": "../.tmp/agentic-evals/provider-live-acceptance/receipt.json",
+            "json_pointer": "/rungs/4/provider_live",
+            "equals": true
           }
         ]
       }
@@ -92,7 +118,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run python - <<'PY'\nimport json, pathlib, subprocess\nbase=pathlib.Path('.tmp/agentic-evals/provider-live-acceptance')\nsource=base/'receipt.json'\nif not source.exists():\n    subprocess.run(['uv','run','tau','workflows','acceptance-proof','--repo','.','--output',str(source),'--work-dir',str(base/'work'),'--timeout-s','5'], check=True)\npayload=json.loads(source.read_text())\npayload['provider_live']=False\npayload['provider']['terminal_evidence']['provider_live']=False\ntampered=base/'tampered-provider-live-false.json'\ntampered.write_text(json.dumps(payload, indent=2)+'\\n')\nresult=subprocess.run(['uv','run','tau','workflows','verify-acceptance-proof',str(tampered),'--repo','.'], check=False, text=True, capture_output=True)\nprint(result.stdout)\nif result.returncode == 0:\n    raise SystemExit('tampered receipt unexpectedly passed')\nverification=json.loads(result.stdout)\nif verification.get('status') != 'BLOCKED' or 'provider_live_invalid' not in verification.get('errors', []):\n    raise SystemExit(f'unexpected verifier response: {verification}')\nprint(json.dumps({'status':'PASS','detected':'provider_live_invalid'}))\nPY"
+        "cd .. && if [ ! -d .git ]; then git init -q -b main && git add . && git -c user.name=Tau -c user.email=tau@example.invalid commit -qm fixture; fi && uv run python - <<'PY'\nimport json, pathlib, subprocess\nbase=pathlib.Path('.tmp/agentic-evals/provider-live-acceptance')\nsource=base/'receipt.json'\nif not source.exists():\n    subprocess.run(['uv','run','tau','workflows','acceptance-proof','--repo','.','--output',str(source),'--work-dir',str(base/'work'),'--model','local-text','--timeout-s','5'], check=True)\npayload=json.loads(source.read_text())\npayload['provider_live']=False\npayload['provider']['terminal_evidence']['provider_live']=False\ntampered=base/'tampered-provider-live-false.json'\ntampered.write_text(json.dumps(payload, indent=2)+'\\n')\nresult=subprocess.run(['uv','run','tau','workflows','verify-acceptance-proof',str(tampered),'--repo','.'], check=False, text=True, capture_output=True)\nprint(result.stdout)\nif result.returncode == 0:\n    raise SystemExit('tampered receipt unexpectedly passed')\nverification=json.loads(result.stdout)\nif verification.get('status') != 'BLOCKED' or 'provider_live_invalid' not in verification.get('errors', []):\n    raise SystemExit(f'unexpected verifier response: {verification}')\nprint(json.dumps({'status':'PASS','detected':'provider_live_invalid'}))\nPY"
       ],
       "timeout_seconds": 600,
       "expected": {

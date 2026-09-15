@@ -37,6 +37,18 @@ def test_verify_acceptance_payload_rejects_missing_successful_provider_check() -
     assert "provider_successful_check_missing" in errors
 
 
+def test_verify_acceptance_payload_rejects_rung_without_provider_terminal_evidence() -> None:
+    receipt = _receipt()
+    first = receipt["rungs"][0]  # type: ignore[index]
+    first["provider_live"] = False
+    first.pop("provider_terminal_evidence")
+
+    errors = verify_provider_live_acceptance_payload(receipt)
+
+    assert "rung_provider_live_invalid:repository-readiness" in errors
+    assert "rung_provider_terminal_evidence_missing:repository-readiness" in errors
+
+
 def test_verify_provider_live_acceptance_payload_rejects_missing_rung() -> None:
     receipt = _receipt()
     receipt["workflow_ids"] = list(EXPECTED_WORKFLOW_IDS[:-1])
@@ -112,6 +124,18 @@ def _receipt() -> dict[str, object]:
                 "mocked": False,
                 "live": True,
                 "installed_entrypoint": True,
+                "provider_live": True,
+                "provider_terminal_evidence": {
+                    "schema": "tau.workflow_rung_provider_terminal_evidence.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": True,
+                    "workflow_id": workflow_id,
+                    "provider_request_id": "chatcmpl-test",
+                    "redacted_request_sha256": "sha256:" + "d" * 64,
+                },
                 "workflow_receipt_sha256": "sha256:" + "c" * 64,
             }
             for workflow_id in EXPECTED_WORKFLOW_IDS
