@@ -1,8 +1,8 @@
 {
-  "artifact_count": 15,
+  "artifact_count": 16,
   "dag_status": "PASS",
   "entry_kind_counts": {
-    "artifact_digest": 15,
+    "artifact_digest": 16,
     "dispatch_receipt": 1,
     "scheduler_event": 4
   },
@@ -13,7 +13,7 @@
   "ok": true,
   "proof_boundary": "Live local CLI path; no provider/browser/GitHub mutation.",
   "provider_live": false,
-  "run_root": "/tmp/tau-ledger-trace-eval-6shg5in_",
+  "run_root": "/tmp/tau-ledger-trace-eval-skdwxavi",
   "schema": "tau.ledger_trace_agentic_eval_proof.v1",
   "status": "PASS",
   "trace_schema": "tau.run_ledger_trace.v1"

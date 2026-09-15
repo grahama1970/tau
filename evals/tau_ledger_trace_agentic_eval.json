@@ -11,6 +11,7 @@
     {
       "id": "tau.ledger_trace.default",
       "description": "Default Tau DAG runs emit a verifiable traceable run ledger.",
+      "claim_semantics": "protocol",
       "criticality": "critical",
       "evidence_required": {"live_e2e": true}
     }

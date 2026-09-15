@@ -1,9 +1,9 @@
 {
   "agentic_evals_runner_version": "agentic_evals.report.v2",
-  "artifact_count": 21,
+  "artifact_count": 28,
   "artifacts": [
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/reconciliation-report.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/reconciliation-report.json",
       "bytes": 205632,
       "path": "local/agentic-evals/reconciliation-report.json",
       "reported_sha256_values": [
@@ -27,7 +27,7 @@
       "sha256": "sha256:e83f02318ac4593e5d4063083a80bd921e4dd9f0a831ed2daf784641668d7d7e"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/source-inventory.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/source-inventory.json",
       "bytes": 78876,
       "path": "local/agentic-evals/source-inventory.json",
       "reported_sha256_values": [
@@ -51,7 +51,7 @@
       "sha256": "sha256:fe82a26d7130f86d3f6e75e1370c384bef424f88053ff0de72f3d4d9561eb1b0"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-core-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-core-proof.json",
       "bytes": 2420,
       "path": "local/agentic-evals/tau-core-proof.json",
       "reported_sha256_values": [
@@ -75,55 +75,223 @@
       "sha256": "sha256:2e247f30697f029d9019145a8ed85d5e0f723b101472b4bb329d477f972384e0"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
-      "bytes": 7528,
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json",
+      "bytes": 536,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json",
+      "reported_sha256_values": [
+        "sha256:0b5dddfc1bc66d422961b497513d5e61b93c813027ab939c8f41e6a17964a8c4",
+        "sha256:5be7c120f604029450c99a39b753b59b8e140e1c5f1b2f9a6b0ed7d45d875271"
+      ],
+      "reports": [
+        {
+          "case": "rung1-artifact-mutation-and-missing-artifact-detected",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c001-t00"
+        },
+        {
+          "case": "rung1-artifact-mutation-and-missing-artifact-detected",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof-clean-checkout/negative-mutation-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c001-t01"
+        }
+      ],
+      "sha256": "sha256:5be7c120f604029450c99a39b753b59b8e140e1c5f1b2f9a6b0ed7d45d875271"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
+      "bytes": 9358787,
       "path": "local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
       "reported_sha256_values": [
-        "sha256:d6799ae8467045c5360f507cc43d552483bd9b5b2f864d77ffb67592a4fd0164",
-        "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
+        "sha256:650964f0788a9da32782f7eb49686a818b7068e074e46f78434e3ea010616e88",
+        "sha256:c82020b1c713dc372d50a9e7dbfc4b23435f83f324fefe9ee4a6e3333a1d39e1"
       ],
       "reports": [
         {
           "case": "rung1-artifact-mutation-and-missing-artifact-detected",
           "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
           "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
-          "trial_id": "3641ed4f5fcc-c001-t00"
+          "trial_id": "08f989955130-c001-t00"
         },
         {
           "case": "rung1-artifact-mutation-and-missing-artifact-detected",
           "reference": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json",
           "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
-          "trial_id": "3641ed4f5fcc-c001-t01"
+          "trial_id": "08f989955130-c001-t01"
         }
       ],
-      "sha256": "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
+      "sha256": "sha256:c82020b1c713dc372d50a9e7dbfc4b23435f83f324fefe9ee4a6e3333a1d39e1"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
-      "bytes": 7528,
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json",
+      "bytes": 3625,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json",
+      "reported_sha256_values": [
+        "sha256:70687bf9494875f44d4d23866fbde2fc1973955be70ad647e326bfbe11ce354e",
+        "sha256:da4a310880549eb50e9085b62d9997269f83b8df9e0d83e73f7062ea16f47122"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/proof-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:da4a310880549eb50e9085b62d9997269f83b8df9e0d83e73f7062ea16f47122"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json",
+      "bytes": 2354,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json",
+      "reported_sha256_values": [
+        "sha256:e16d4479a26e8c04a5fa64f34cbbd12f23ae04db3ad641f8a7d62cb5b646e0c6",
+        "sha256:5fc62e716a8f5a762c0a1b1f5b0a341898a2cc90edf2048737b4c79da3d07413"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-dag-progress.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:5fc62e716a8f5a762c0a1b1f5b0a341898a2cc90edf2048737b4c79da3d07413"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl",
+      "bytes": 2767,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl",
+      "reported_sha256_values": [
+        "sha256:3076ea819179f67f29888d85098eb1450dfd437fc88bd7ca90e74c1a8d4ffbf2",
+        "sha256:76fd31d951dfffe1a4c96eb4e66536c211b41b3b59d5b73568def2d19046309e"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-events.jsonl",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:76fd31d951dfffe1a4c96eb4e66536c211b41b3b59d5b73568def2d19046309e"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json",
+      "bytes": 58973,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json",
+      "reported_sha256_values": [
+        "sha256:093e2bf84dc328d9352d8d2b609278e3bad2da108682572f738a2519ed529787",
+        "sha256:302f30851026ecbe9aa92b4bf8108a8d127aacea8f3b670eee8660a088c9a272"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-ledger.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:302f30851026ecbe9aa92b4bf8108a8d127aacea8f3b670eee8660a088c9a272"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json",
+      "bytes": 1022,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json",
+      "reported_sha256_values": [
+        "sha256:3a0cd70aafecc40e2e5e52ee2c3f45d2862ca8bdf72601661b67a1a5f7a2a805",
+        "sha256:b0449c500dedab66d9f71245fc7c4ae86d9a46184af0de5f2afe25d4cd922dbe"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/rung-1-result.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:b0449c500dedab66d9f71245fc7c4ae86d9a46184af0de5f2afe25d4cd922dbe"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json",
+      "bytes": 1831,
+      "path": "local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json",
+      "reported_sha256_values": [
+        "sha256:0935f8f794a44b5eb5a93642750d544ec6a1348edb3ddb3710574d5e5aecff7a",
+        "sha256:0f20a80ea904e826748f026bed709072ca1ac6b42d3873f5c1d983d648b2e103"
+      ],
+      "reports": [
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t00"
+        },
+        {
+          "case": "rung1-clean-checkout-workflow-proof",
+          "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof-clean-checkout/verifier-pass-receipt.json",
+          "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+          "trial_id": "08f989955130-c000-t01"
+        }
+      ],
+      "sha256": "sha256:0f20a80ea904e826748f026bed709072ca1ac6b42d3873f5c1d983d648b2e103"
+    },
+    {
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+      "bytes": 9358616,
       "path": "local/agentic-evals/tau-dag-ladder-rung1-proof.json",
       "reported_sha256_values": [
-        "sha256:0d28f4eaa6c23a834e736f6205c3fc5e0627718319c385987fae330461caffb9",
-        "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
+        "sha256:b31488b5d67f94d35e66e63fde4acf9a9737597cab8c8f0f696f6d9e3140fb5e",
+        "sha256:d84f1eb7b1ad046ef6808faef7f126151737ffbf4ff3cdf40cb4305023f4468e"
       ],
       "reports": [
         {
           "case": "rung1-clean-checkout-workflow-proof",
           "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json",
           "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
-          "trial_id": "3641ed4f5fcc-c000-t00"
+          "trial_id": "08f989955130-c000-t00"
         },
         {
           "case": "rung1-clean-checkout-workflow-proof",
           "reference": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json",
           "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
-          "trial_id": "3641ed4f5fcc-c000-t01"
+          "trial_id": "08f989955130-c000-t01"
         }
       ],
-      "sha256": "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
+      "sha256": "sha256:d84f1eb7b1ad046ef6808faef7f126151737ffbf4ff3cdf40cb4305023f4468e"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-failure-path-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-failure-path-proof.json",
       "bytes": 7600,
       "path": "local/agentic-evals/tau-discord-failure-path-proof.json",
       "reported_sha256_values": [
@@ -147,7 +315,7 @@
       "sha256": "sha256:57727de81241391a8526c1ab8a286f3ae6dbb4fc3abc6408ff05c187811e3942"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-idempotency-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-idempotency-proof.json",
       "bytes": 6099,
       "path": "local/agentic-evals/tau-discord-idempotency-proof.json",
       "reported_sha256_values": [
@@ -171,7 +339,7 @@
       "sha256": "sha256:c5a495c1752ae846b15ea60f768e9ff22ddaf4fe654869d278b0a1f8d8ec99d5"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-discord-unblock-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-discord-unblock-proof.json",
       "bytes": 3861,
       "path": "local/agentic-evals/tau-discord-unblock-proof.json",
       "reported_sha256_values": [
@@ -195,7 +363,7 @@
       "sha256": "sha256:9cbaa3800297bd8eb2915fc0764b20ae77658441a05e423ceed1953dd95a270c"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
       "bytes": 778,
       "path": "local/agentic-evals/tau-feature-coverage-duplicate-owner-proof.json",
       "reported_sha256_values": [
@@ -218,7 +386,7 @@
       "sha256": "sha256:b59a0616b96ae1e1844091c5b92c11a2ddb61430c2d6b549cf861ff0cbffbc6b"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
       "bytes": 1012,
       "path": "local/agentic-evals/tau-feature-coverage-missing-claim-proof.json",
       "reported_sha256_values": [
@@ -241,7 +409,7 @@
       "sha256": "sha256:a1d8c02ba540e3cab6d80377fae0fd4fea532357363a459f8afc126d2994dff1"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
       "bytes": 726,
       "path": "local/agentic-evals/tau-feature-coverage-missing-report-proof.json",
       "reported_sha256_values": [
@@ -264,7 +432,7 @@
       "sha256": "sha256:27320df4b89031f6a99b163d1dbc90c80985feede503fba3fcf6c6890a30dd5c"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
       "bytes": 992,
       "path": "local/agentic-evals/tau-feature-coverage-orphan-manifest-proof.json",
       "reported_sha256_values": [
@@ -287,7 +455,7 @@
       "sha256": "sha256:836aa923f4546cc4c199dd0abad7aadb140d9672ebdd492943ce77518355b10c"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-proof.json",
       "bytes": 442,
       "path": "local/agentic-evals/tau-feature-coverage-proof.json",
       "reported_sha256_values": [
@@ -310,7 +478,7 @@
       "sha256": "sha256:f3e03e52b52c7d0422d60da92a2ad48e2963b06d1503b2419e62ad45ebb20a91"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
       "bytes": 680,
       "path": "local/agentic-evals/tau-feature-coverage-stale-waiver-proof.json",
       "reported_sha256_values": [
@@ -333,7 +501,7 @@
       "sha256": "sha256:b399925ed168319e3c0074cb4d91c37fe134af1439aea3ec643c32d635ccbeb3"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
       "bytes": 776,
       "path": "local/agentic-evals/tau-feature-coverage-unmanifested-cli-proof.json",
       "reported_sha256_values": [
@@ -356,31 +524,31 @@
       "sha256": "sha256:b5690373ebef09b868aa87681bd5133854cfdf3f96a28a18005f7e286bf5b6cd"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-ledger-trace-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-ledger-trace-proof.json",
       "bytes": 532,
       "path": "local/agentic-evals/tau-ledger-trace-proof.json",
       "reported_sha256_values": [
-        "sha256:25598edd8f7ea08abebf93a9b3ee006feb69cb5e5219109636b2722766688586",
-        "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
+        "sha256:9471bfafb3fac4d33dec8c8f57d75136cd07b32434c9df3a3dd988d7242f647c",
+        "sha256:5d17fea436f7163c6c14b3ea69d5fa0e5ed30941863d456f3734789ef2ee9ece"
       ],
       "reports": [
         {
           "case": "live-ledger-trace-readback",
           "reference": "../local/agentic-evals/tau-ledger-trace-proof.json",
           "report": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
-          "trial_id": "f0c9fcfb2f2f-c000-t00"
+          "trial_id": "cefba0fe238d-c000-t00"
         },
         {
           "case": "live-ledger-trace-readback",
           "reference": "../local/agentic-evals/tau-ledger-trace-proof.json",
           "report": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
-          "trial_id": "f0c9fcfb2f2f-c000-t01"
+          "trial_id": "cefba0fe238d-c000-t01"
         }
       ],
-      "sha256": "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
+      "sha256": "sha256:5d17fea436f7163c6c14b3ea69d5fa0e5ed30941863d456f3734789ef2ee9ece"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-pipeline-self-repair-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-pipeline-self-repair-proof.json",
       "bytes": 1567,
       "path": "local/agentic-evals/tau-pipeline-self-repair-proof.json",
       "reported_sha256_values": [
@@ -404,7 +572,7 @@
       "sha256": "sha256:8a02e5da1c5b303ffb3a6494d88d53dfc5f1eceffe2fb45148bf9a22a00b0feb"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-repair-overlay-browser-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-repair-overlay-browser-proof.json",
       "bytes": 6255,
       "path": "local/agentic-evals/tau-repair-overlay-browser-proof.json",
       "reported_sha256_values": [
@@ -428,7 +596,7 @@
       "sha256": "sha256:2f42bbce15faf2d1c0982c913ab5592de853ca15fd236ef197c3336a5ae37963"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-same-node-rerun-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-same-node-rerun-proof.json",
       "bytes": 5659,
       "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
       "reported_sha256_values": [
@@ -452,7 +620,7 @@
       "sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
       "bytes": 824,
       "path": "local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json",
       "reported_sha256_values": [
@@ -476,7 +644,7 @@
       "sha256": "sha256:396dcb30c366577f935571db79c10db415dad58012da47682be4a33faadef00d"
     },
     {
-      "absolute_path": "/tmp/tau-329-origin-clean.hy0Fzl/repo/local/agentic-evals/tau-terminal-dag-watch-proof.json",
+      "absolute_path": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-terminal-dag-watch-proof.json",
       "bytes": 1790,
       "path": "local/agentic-evals/tau-terminal-dag-watch-proof.json",
       "reported_sha256_values": [
@@ -506,7 +674,7 @@
       "reason": "self_referential_verifier_report_excluded_from_milestone_index"
     }
   ],
-  "generated_at": "2026-09-15T04:59:38.297465Z",
+  "generated_at": "2026-09-15T06:04:10.409822Z",
   "generating_command": [
     "uv",
     "run",
@@ -517,7 +685,7 @@
     "--out",
     "local/agentic-evals/tau-agentic-eval-evidence-index.json"
   ],
-  "index_sha256": "sha256:0bc7018b2baf00192012667895c81a3d1e29b4a6bb3c09806e773381bc9a4882",
+  "index_sha256": "sha256:1bad1aa6c39d852a4920f5b583a6d4a2c0ca376f64af5943c448c6f1dc556383",
   "index_version": 1,
   "milestone_id": "tau-agentic-evals",
   "ok": true,
@@ -537,13 +705,13 @@
     "provider_live": false
   },
   "repo": {
-    "dirty_tree": false,
-    "dirty_tree_declaration": "clean",
-    "ignored_mutable_status_porcelain": "M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json",
+    "dirty_tree": true,
+    "dirty_tree_declaration": "dirty",
+    "ignored_mutable_status_porcelain": " M local/agentic-evals/tau-agentic-eval-evidence-index-agentic-evals-report.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-deleted-artifact-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-dirty-tree-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-mutated-report-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-pass-receipt.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-positive-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index-substituted-report-proof.json\n M local/agentic-evals/tau-agentic-eval-evidence-index.json",
     "ref": "main",
-    "root": "/tmp/tau-329-origin-clean.hy0Fzl/repo",
-    "sha": "20901088c1c6fdba668687d5eb23eadbbd3fb665",
-    "status_porcelain": ""
+    "root": "/home/graham/workspace/experiments/tau",
+    "sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+    "status_porcelain": "M artifacts/issue-317-agentic-eval/live-proof.json\n D artifacts/issue-317-agentic-eval/restored/artifacts/4a8d329af640929376cc066b4642fa56bb8535007eb89ef5d9d0d89924f87bb7-execution-restore-readback.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/04e75487a95e3a27ed47ec57929683e6eea46310773ae00e6f067249b1bdeed1-execution-turn-1.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/13540a060a71cee0df1bd19660a481465b8c08b1c175852f497ca3ed346d434b-execution-turn-4-after-compaction.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/2fb43cfc2d91dcad0cb3c6346c68d94536d2e49f06286f828cac59864198ea78-execution-turn-5-export.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/4d0f107455b434b292cecbd28a90f5342a0a28e46e10c42d81010c6a45207cda-execution-turn-2.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/66b3c44d0429f393a1bc6887cd573b360cb8597308b86640673463de420b6c4b-execution-turn-3.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb-execution-turn-5-export.json\n D artifacts/issue-317-agentic-eval/workspace/artifacts/e3d6cfaa8239898d64c21d0ec7e9783b374bfb9aaa52df9d32410f1c6801622b-execution-turn-5-export.json\n M artifacts/issue-317-agentic-evals/report.json\n M docs/canonical-dag-launch.md\n M docs/canonical-workflows.md\n M docs/evals/agentic-evals-feature-coverage.md\nM  docs/proofs/acceptance/canonical-dag-ladder-manifest.json\nM  docs/proofs/acceptance/issue-331-rung-1-agentic-evals-report.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-clone-clean-checkout.stderr\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-ladder.stderr\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-run-rung-1.stderr\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-run-rung-1.stdout\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/proof-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/checkpoint.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/current-state.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/dag-run.sqlite3\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/events.jsonl\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-contexts/inspect-repository.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-contexts/publish-readiness.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-contexts/validate-readiness.json\nR  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-81ff3772998ee2764fef67233e7aa910.json -> docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-30bef9b0fc99b506c0d81107adccb193.json\nA  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-7072904fd112ea52d5926229098b8280.json\nR  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-e0a2833c1d1080697a47f6aa32164abb.json -> docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-b56f44d0b7d8e46c0422e9792d20d3b2.json\nD  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/node-input-manifests/attempt-cfdca3c4989a4192b6ed111e95bd64b2.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-capture.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-endpoint-lease.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-event.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-submit-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-capture.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-endpoint-lease.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-event.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-submit-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-capture.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-endpoint-lease.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-event.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-submit-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/run-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/source-dag-reference.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/source-dag.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-workflow-command-receipt.json\nM  docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json\n M docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/closure-evidence.json\n M docs/proofs/tickets/issue-314-operator-action-inbox-20260830T191351Z/operator-action-inbox-proof.json\n M docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json\n M docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/agentic-evals-report.json\n M docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/closure-evidence.json\n M docs/proofs/tickets/issue-317-python-workspace-sandbox-20260830T185451Z/live-proof.json\n M docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json\n M docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json\n M docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json\n M docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json\n M docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/proof.md\n M docs/status/CURRENT_STATE.json\n M docs/status/CURRENT_STATE.md\n M docs/status/github-snapshot.json\n M evals/python_workspace_sandbox_agentic_eval.json\n M evals/tau_agentic_eval_evidence_index_agentic_eval.json\n M evals/tau_dag_internal_failure_boundary_agentic_eval.json\nM  evals/tau_dag_ladder_rung1_agentic_eval.json\n M evals/tau_ledger_trace_agentic_eval.json\n M evals/tau_memory_episode_projection_agentic_eval.json\n M evals/tau_operator_action_inbox_agentic_eval.json\n M local/agentic-evals/tau-340-native-cli/proof.json\n M local/agentic-evals/tau-command-spec-resume/proof.json\n M local/agentic-evals/tau-create-svg-origin-gates-agentic-evals-report.json\n M local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json\n M local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\n M local/agentic-evals/tau-dag-ladder-rung1-proof.json\n M local/agentic-evals/tau-herdr-agent-node-backend/proof.json\n M local/agentic-evals/tau-ledger-trace-agentic-evals-report.json\n M local/agentic-evals/tau-ledger-trace-proof.json\n M local/agentic-evals/tau-model-response-lies-agentic-evals-report.json\n M local/agentic-evals/tau-operator-action-inbox-agentic-evals-report.json\n M local/agentic-evals/tau-operator-action-inbox-proof.json\n M scripts/agentic-eval-tau-create-svg-origin-gates.py\n M scripts/agentic-eval-tau-dag-internal-failure-boundary.py\nM  scripts/agentic-eval-tau-dag-ladder-rung1.py\n M scripts/agentic-eval-tau-memory-episode-projection.py\n M scripts/python-workspace-live-proof.py\n M src/tau_coding/dag_runtime/memory_projection.py\n M src/tau_coding/dag_runtime/run_store.py\n M src/tau_coding/dag_runtime/scheduler.py\n M src/tau_coding/dag_runtime/triage_error_bridge.py\n M src/tau_coding/project_dag.py\n M src/tau_coding/run_ledger.py\n M src/tau_coding/security_audit_conformance.py\n M src/tau_coding/workflows/proofs.py\n M tests/conftest.py\n M tests/test_agent_requirement_selection.py\n M tests/test_dag_runtime_memory_projection.py\n M tests/test_dag_template_registry.py\n D tests/test_doc_status.py\n M tests/test_loop_receipt.py\n M tests/test_operator_action_inbox.py\n M tests/test_policy_profile.py\n M tests/test_project_dag.py\n D tests/test_project_dag_command_spec_resume.py\n M tests/test_project_profile.py\n M tests/test_project_status.py\n M tests/test_provider_lifecycle.py\n M tests/test_run_ledger.py\n M tests/test_schema_registry.py\n M tests/test_scillm_work_order_boundary.py\n M tests/test_security_audit_conformance.py\n M tests/test_skill_capability_registry.py"
   },
   "report_count": 15,
   "reports": [
@@ -665,9 +833,9 @@
     },
     {
       "agentic_evals_runner_version": "agentic_evals.report.v2",
-      "bytes": 7107,
+      "bytes": 23953,
       "case_count": 2,
-      "fixture_sha256": "sha256:1127c52004476559c0f98adeab8ab36db7828c07f7ec4439bb34d0228709f45b",
+      "fixture_sha256": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
       "generating_commands": [
         [
           "bash",
@@ -685,9 +853,9 @@
       "path": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
       "readiness": "READY",
       "repo_ref": "main",
-      "repo_sha": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+      "repo_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
       "schema": "agentic_evals.report.v2",
-      "sha256": "sha256:a27e2c3dabde53cdc084c497d7ff1e255fbdce8c04c3ae1b760bb1ea056691c4",
+      "sha256": "sha256:75516962d6bbee2062e794cd0be013c74337e92778177532369b7b9ec88ab31c",
       "skill": null,
       "source_manifest": "evals/tau_dag_ladder_rung1_agentic_eval.json",
       "trial_count": 4
@@ -820,9 +988,9 @@
     },
     {
       "agentic_evals_runner_version": "agentic_evals.report.v2",
-      "bytes": 5115,
+      "bytes": 12259,
       "case_count": 1,
-      "fixture_sha256": "sha256:5f87dab7eb3baae54550531853463b9a7d40f31a2761af5208f8c82af7de927f",
+      "fixture_sha256": "sha256:c883b0d1619a295b2a8ac34a70dd53eefb2216f0cbe840a922ccfbdd4a27c001",
       "generating_commands": [
         [
           "bash",
@@ -835,9 +1003,9 @@
       "path": "local/agentic-evals/tau-ledger-trace-agentic-evals-report.json",
       "readiness": "READY",
       "repo_ref": "main",
-      "repo_sha": "6af149c659d262a8398f53fbe85f7a4b7711e6f1",
+      "repo_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
       "schema": "agentic_evals.report.v2",
-      "sha256": "sha256:ee62e64936860c765ccb94940610e6d36a68aa4e27f008e7381c2727824a9f88",
+      "sha256": "sha256:2bc5039cdac2f64d811715f42ca8aad477cce6a7ae578649eae9217cae6e46a7",
       "skill": null,
       "source_manifest": "evals/tau_ledger_trace_agentic_eval.json",
       "trial_count": 2
@@ -1385,14 +1553,21 @@
     },
     {
       "artifact_hashes": {},
-      "bytes": 2568,
+      "bytes": 2823,
       "issue": 316,
-      "issue_dependencies": {},
+      "issue_dependencies": {
+        "314_live_state_readback": {
+          "closedAt": "2026-09-15T02:13:00Z",
+          "state": "CLOSED",
+          "stateReason": "COMPLETED"
+        },
+        "314_requirement": "314 must be CLOSED before 316 closure evidence is accepted"
+      },
       "live": true,
       "mocked": false,
       "path": "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json",
       "reviewer_run_addressed": null,
-      "sha256": "sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577",
+      "sha256": "sha256:9b53ff41f19a74420abbfe1ec03fbbc8ff91071e836934d10e063abd2754c2d7",
       "source_file_hashes": {},
       "source_revision": null,
       "status": "ACCEPTED"
@@ -1466,18 +1641,42 @@
       "status": "ACCEPTED"
     },
     {
-      "artifact_hashes": {},
-      "bytes": 953,
+      "artifact_hashes": {
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/canonical-dag-ladder-manifest.json": "sha256:15e06bc9a35db7aea90e741f5b00010ae36a27d5a7efe7f87a8cfe80df3183b4",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-agentic-evals-report.json": "sha256:75516962d6bbee2062e794cd0be013c74337e92778177532369b7b9ec88ab31c",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log": "sha256:29cbe922cbc3e11d607c02f15ea53115a49fc5b87ae6907bc1aefb642d64b76a",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json": "sha256:61fefd88772c13a95f5d7f7d3da3af6b6410c8c54a06a7b3a9d4cc5604e9dae6",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/proof-receipt.json": "sha256:71a0a274de3950b531ca632e50b61d6b71273644cc537ab6e78380ebc085b0a2",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json": "sha256:2c39dbe4de1791cd2ad9e28e91e09ea5ec93a6eea9c67a7608321be7f77b957b",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl": "sha256:fad87467ad2eee6dbc777afeb825a36c422024160f3d43523317bc2ca1bf37fb",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json": "sha256:451a33a957f272dc5a62f9f1923dac2e8a91eedc281642f7fda9045174e21626",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json": "sha256:f1257d41203767ae12bbdb8558f8012cb0946683231279d8e0d22f83ea2fc44a",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json": "sha256:7b39e6ca9c27a69669972c88a271566776cbb38182268000ebcc5685bfe9567a",
+        "/home/graham/workspace/experiments/tau/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json": "sha256:bd4b77b70099268b1cea024d523248a37f5cbb1ad1d9ba61b7ce5181d5d38761",
+        "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/proof-summary.json": "sha256:31d0756614fccd1b70ce625a1969ce6015710e4a29fa85af68b99305f58c4ec9",
+        "/home/graham/workspace/experiments/tau/evals/tau_dag_ladder_rung1_agentic_eval.json": "sha256:321af2f59887ad03f5dfe7da24ac23343ab672cd58675dc8d3a7660d64b5b7c7",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json": "sha256:75516962d6bbee2062e794cd0be013c74337e92778177532369b7b9ec88ab31c",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:c82020b1c713dc372d50a9e7dbfc4b23435f83f324fefe9ee4a6e3333a1d39e1",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:d84f1eb7b1ad046ef6808faef7f126151737ffbf4ff3cdf40cb4305023f4468e",
+        "/home/graham/workspace/experiments/tau/scripts/agentic-eval-tau-dag-ladder-rung1.py": "sha256:47dfcaba8ed9d3967a647231c1742ed62e820201b3793332c3a06e240c856bdd",
+        "/home/graham/workspace/experiments/tau/src/tau_coding/workflows/definitions/ladder-manifest.json": "sha256:6df51add3eafed8b115d948f2893fbb612210dc3cd6112485eee42e6c5e293a8",
+        "/home/graham/workspace/experiments/tau/src/tau_coding/workflows/proofs.py": "sha256:3e6abb8756dcf23b5db269459e0d927ab9762e0276bce64ac96be08dc3d3d09e"
+      },
+      "bytes": 8825,
       "issue": 331,
       "issue_dependencies": {},
-      "live": null,
-      "mocked": null,
+      "live": true,
+      "mocked": false,
       "path": "docs/proofs/tickets/issue-331-dag-ladder-rung1-20260829T193407Z/closure-evidence.json",
       "reviewer_run_addressed": null,
-      "sha256": "sha256:a136939e9b2383b9a1d3c4209707204eb05b4ab8c8c8cd64ab9dc4c7a25d4639",
+      "sha256": "sha256:5dd7a352be3f8562c9931e7316bc461045c99ad8b82c7753735ca5f5eeebb050",
       "source_file_hashes": {},
-      "source_revision": null,
-      "status": null
+      "source_revision": {
+        "head_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+        "ref": "main",
+        "repo": "grahama1970/tau"
+      },
+      "status": "ACCEPTED"
     },
     {
       "artifact_hashes": {},
