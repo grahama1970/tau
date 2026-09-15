@@ -1,0 +1,199 @@
+{
+  "checks": {
+    "clean_clone_positive_gates_pass": {
+      "clean_checkout_installed_wheel_launch_proof_present": {
+        "detail": [
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:af612f4721d35a0ade379c314687edc36165e9139bca109c31030e8418a24647",
+            "owner": "tau#304",
+            "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/provider-live-acceptance-receipt.json",
+            "present": true,
+            "sha256": "sha256:af612f4721d35a0ade379c314687edc36165e9139bca109c31030e8418a24647"
+          }
+        ],
+        "evidence_value": true,
+        "gate_state": "PASS"
+      },
+      "repair_self_heal_proof_present": {
+        "detail": [
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1",
+            "owner": "tau#344",
+            "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
+            "present": true,
+            "sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1"
+          },
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e",
+            "owner": "tau#346",
+            "path": "local/agentic-evals/tau-triage-contract/proof.json",
+            "present": true,
+            "sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e"
+          },
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff",
+            "owner": "tau#349",
+            "path": "local/agentic-evals/tau-scheduler-boundary-registry/proof.json",
+            "present": true,
+            "sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff"
+          }
+        ],
+        "evidence_value": true,
+        "gate_state": "PASS"
+      },
+      "viewer_browser_proof_present": {
+        "detail": [
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b",
+            "owner": "tau#182",
+            "path": "docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-proof.json",
+            "present": true,
+            "sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b"
+          },
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:b628b44fb56faa5fdb64c0f703336e29ec55c8f1bd3230368268d03bf7879fe7",
+            "owner": "tau#332",
+            "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/proof-bundle/browser-proof.json",
+            "present": true,
+            "sha256": "sha256:b628b44fb56faa5fdb64c0f703336e29ec55c8f1bd3230368268d03bf7879fe7"
+          },
+          {
+            "check": "PASS",
+            "expected_sha256": "sha256:92b673c8bcde090f887ae977046a045d015e40c9a24e8fab2c9378e108e49261",
+            "owner": "tau#312",
+            "path": "artifacts/agent_native_live_proof/watched-live-1785978645/summary.json",
+            "present": true,
+            "sha256": "sha256:92b673c8bcde090f887ae977046a045d015e40c9a24e8fab2c9378e108e49261"
+          }
+        ],
+        "evidence_value": true,
+        "gate_state": "PASS"
+      }
+    },
+    "clean_clone_positive_porcelain_clean": true,
+    "mutated_retained_proof_fails_closed": {
+      "detail": [
+        {
+          "check": "FAIL: retained proof absent or digest mismatch",
+          "expected_sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1",
+          "owner": "tau#344",
+          "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
+          "present": true,
+          "sha256": "sha256:8e62d30608147d4812de7ab59cf8d1ee3d1b677ef234ab88f3dc4518e0a06ca1"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e",
+          "owner": "tau#346",
+          "path": "local/agentic-evals/tau-triage-contract/proof.json",
+          "present": true,
+          "sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff",
+          "owner": "tau#349",
+          "path": "local/agentic-evals/tau-scheduler-boundary-registry/proof.json",
+          "present": true,
+          "sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff"
+        }
+      ],
+      "evidence_value": false,
+      "gate_state": "FAIL"
+    }
+  },
+  "commands": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "--quiet",
+        "tau",
+        "project-status",
+        "build",
+        "--repo",
+        ".",
+        "--out",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/positive-status.json"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-positive",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"action\": \"build\",\n  \"github_freshness\": \"STALE\",\n  \"out\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/positive-status.json\",\n  \"semantic_content_digest\": \"sha256:946f188586942bbdf45ceb91e044ed108585d51c33a48d350f856c3e5c38aa22\",\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--quiet",
+        "tau",
+        "developer-share",
+        "status",
+        "--repo",
+        ".",
+        "--status",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/positive-status.json",
+        "--json"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-positive",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "   \"waiver\": null\n    },\n    {\n      \"id\": \"developer_surface_inventory_clean\",\n      \"next_command\": null,\n      \"observed\": {\n        \"bug_stub_count\": 0,\n        \"status\": \"PASS\",\n        \"unclassified_count\": 0\n      },\n      \"source\": \"developer_surface_inventory\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n      \"next_command\": null,\n      \"observed\": true,\n      \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"viewer_browser_proof_present\",\n      \"next_command\": null,\n      \"observed\": true,\n      \"source\": \"developer_share_evidence.viewer_browser\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"repair_self_heal_proof_present\",\n      \"next_command\": null,\n      \"observed\": true,\n      \"source\": \"developer_share_evidence.repair_self_heal\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"human_acceptance_matches_goal\",\n      \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n      \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n      \"source\": \"GOAL.md + human_acceptance\",\n      \"state\": \"FAIL\",\n      \"waivable\": false,\n      \"waiver\": null\n    }\n  ],\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n    \"live\": true,\n    \"mocked\": false,\n    \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n    \"provider_live\": false\n  },\n  \"readiness\": \"NOT_READY\",\n  \"repo\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-positive\",\n  \"schema\": \"tau.developer_share_status.v1\",\n  \"source_commit\": \"beef6299c29e05e82e4664d3edd9b27590b040db\",\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--quiet",
+        "tau",
+        "project-status",
+        "build",
+        "--repo",
+        ".",
+        "--out",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/negative-status.json"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-negative",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"action\": \"build\",\n  \"github_freshness\": \"STALE\",\n  \"out\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/negative-status.json\",\n  \"semantic_content_digest\": \"sha256:c125e73896c0352bd59b5b92f31f516b7de7b8cce98d70bb2776b65bb3dd7e5e\",\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--quiet",
+        "tau",
+        "developer-share",
+        "status",
+        "--repo",
+        ".",
+        "--status",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/negative-status.json",
+        "--json"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-negative",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "eloper_surface_inventory_clean\",\n      \"next_command\": null,\n      \"observed\": {\n        \"bug_stub_count\": 0,\n        \"status\": \"PASS\",\n        \"unclassified_count\": 0\n      },\n      \"source\": \"developer_surface_inventory\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"clean_checkout_installed_wheel_launch_proof_present\",\n      \"next_command\": null,\n      \"observed\": true,\n      \"source\": \"developer_share_evidence.clean_checkout_installed_wheel_launch\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"viewer_browser_proof_present\",\n      \"next_command\": null,\n      \"observed\": true,\n      \"source\": \"developer_share_evidence.viewer_browser\",\n      \"state\": \"PASS\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"repair_self_heal_proof_present\",\n      \"next_command\": \"run the focused proof owner for repair_self_heal\",\n      \"observed\": false,\n      \"source\": \"developer_share_evidence.repair_self_heal\",\n      \"state\": \"FAIL\",\n      \"waivable\": false,\n      \"waiver\": null\n    },\n    {\n      \"id\": \"human_acceptance_matches_goal\",\n      \"next_command\": \"obtain the explicit GOAL.md human acceptance attestation\",\n      \"observed\": \"PENDING_HUMAN_SIGNATURE\",\n      \"source\": \"GOAL.md + human_acceptance\",\n      \"state\": \"FAIL\",\n      \"waivable\": false,\n      \"waiver\": null\n    }\n  ],\n  \"proof_boundary\": {\n    \"does_not_prove\": \"Runtime correctness, provider quality, or human acceptance.\",\n    \"live\": true,\n    \"mocked\": false,\n    \"proves\": \"Existing share-readiness inputs were evaluated without regenerating evidence.\",\n    \"provider_live\": false\n  },\n  \"readiness\": \"NOT_READY\",\n  \"repo\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-developer-share-evidence-clean-checkout/work/tau362-clean-6b0_23cc/clean-negative\",\n  \"schema\": \"tau.developer_share_status.v1\",\n  \"source_commit\": \"55ac24ec63fd7a5cf7219e38cead61be85d33d1c\",\n  \"status\": \"PASS\"\n}\n"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": "Re-execution of the wheel/browser/repair proof runs behind the retained artifacts, provider quality, or human acceptance.",
+    "proves": "developer_share_evidence producer reads the pinned retained proofs back through the real project-status build and developer-share status CLI at a clean tree, and fails closed on mutated retained evidence."
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "schema": "tau.developer_share_evidence_clean_checkout_proof.v1",
+  "status": "PASS"
+}

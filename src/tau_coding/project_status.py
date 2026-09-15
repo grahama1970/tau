@@ -66,6 +66,83 @@ _FIVE_WORKFLOWS = (
 _RUNTIME_SECURITY_GATE_PATH_PREFIXES = ("src/", "scripts/")
 _RUNTIME_SECURITY_GATE_FILES = {"pyproject.toml"}
 
+# tau#362: retained proof artifacts that the developer-share evidence gates
+# read. Each entry pins the exact retained file, its sha256, its schema, and
+# the status fields the owning proof guarantees. A build records the evidence
+# only when every pinned file is present, byte-identical to the retained
+# digest, and carries the required status fields — anything else fails closed
+# instead of synthesizing green. Refresh a pin only in the same commit that
+# lands the superseding retained proof.
+_DEVELOPER_SHARE_EVIDENCE_BINDINGS: dict[str, tuple[dict[str, Any], ...]] = {
+    "clean_checkout_installed_wheel_launch": (
+        {
+            "owner": "tau#304",
+            "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/provider-live-acceptance-receipt.json",  # noqa: E501
+            "sha256": "sha256:af612f4721d35a0ade379c314687edc36165e9139bca109c31030e8418a24647",
+            "schema": "tau.workflow_provider_live_acceptance_receipt.v1",
+            "fields": {
+                "status": "PASS",
+                "ok": True,
+                "live": True,
+                "mocked": False,
+                "provider_live": True,
+            },
+        },
+    ),
+    "viewer_browser": (
+        {
+            "owner": "tau#182",
+            "path": "docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-proof.json",  # noqa: E501
+            "sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b",
+            "schema": "tau.installed_wheel_viewer_proof.v1",
+            "fields": {"status": "PASS", "live": True, "mocked": False},
+        },
+        {
+            "owner": "tau#332",
+            "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/proof-bundle/browser-proof.json",  # noqa: E501
+            "sha256": "sha256:b628b44fb56faa5fdb64c0f703336e29ec55c8f1bd3230368268d03bf7879fe7",
+            "schema": "tau.live_dag_viewer_correlation_browser_proof.v1",
+            "fields": {"status": "PASS", "live": True, "mocked": False},
+        },
+        {
+            "owner": "tau#312",
+            "path": "artifacts/agent_native_live_proof/watched-live-1785978645/summary.json",
+            "sha256": "sha256:92b673c8bcde090f887ae977046a045d015e40c9a24e8fab2c9378e108e49261",
+            "schema": "tau.watched_live_proof_summary.v1",
+            "fields": {"scheduler_status": "PASS", "viewer_serves_dag_app": True},
+        },
+    ),
+    "repair_self_heal": (
+        {
+            "owner": "tau#344",
+            "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
+            "sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1",
+            "schema": "tau.same_node_rerun_agentic_eval_proof.v1",
+            "fields": {
+                "status": "PASS",
+                "ok": True,
+                "live": True,
+                "mocked": False,
+                "final_status": "PASS",
+            },
+        },
+        {
+            "owner": "tau#346",
+            "path": "local/agentic-evals/tau-triage-contract/proof.json",
+            "sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e",
+            "schema": "tau.triage_contract_proof.v1",
+            "fields": {"status": "PASS", "ok": True, "live": True, "mocked": False},
+        },
+        {
+            "owner": "tau#349",
+            "path": "local/agentic-evals/tau-scheduler-boundary-registry/proof.json",
+            "sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff",
+            "schema": "tau.scheduler_boundary_registry_proof.v1",
+            "fields": {"status": "PASS", "ok": True, "live": True, "mocked": False},
+        },
+    ),
+}
+
 UNKNOWN = "UNKNOWN"
 
 
@@ -330,6 +407,62 @@ def _github_block(github_snapshot: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _developer_share_evidence(repo: Path) -> dict[str, Any]:
+    """tau#362: read the three developer-share evidence classes fail-closed.
+
+    Each class is ``True`` only when every pinned retained proof artifact is
+    present with the pinned digest and the required status fields; otherwise it
+    is ``False``. Absence and mutation are indistinguishable from failure by
+    design. Per-artifact observations are kept under ``detail`` for the gate
+    readback; the gate itself reads only the class booleans.
+    """
+
+    detail: dict[str, Any] = {}
+    classes: dict[str, Any] = {}
+    for field, bindings in _DEVELOPER_SHARE_EVIDENCE_BINDINGS.items():
+        checks: list[dict[str, Any]] = []
+        all_ok = True
+        for binding in bindings:
+            path = repo / binding["path"]
+            digest = _digest_file(path)
+            entry: dict[str, Any] = {
+                "owner": binding["owner"],
+                "path": binding["path"],
+                "present": digest is not None,
+                "sha256": digest,
+                "expected_sha256": binding["sha256"],
+            }
+            if digest != binding["sha256"]:
+                entry["check"] = "FAIL: retained proof absent or digest mismatch"
+                all_ok = False
+            else:
+                try:
+                    doc = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    doc = None
+                field_mismatches = []
+                if not isinstance(doc, dict) or doc.get("schema") != binding["schema"]:
+                    field_mismatches.append("schema")
+                else:
+                    field_mismatches.extend(
+                        name
+                        for name, expected in binding["fields"].items()
+                        if doc.get(name) != expected
+                    )
+                if field_mismatches:
+                    entry["check"] = "FAIL: status field mismatch"
+                    entry["mismatched_fields"] = field_mismatches
+                    all_ok = False
+                else:
+                    entry["check"] = "PASS"
+            checks.append(entry)
+        classes[field] = all_ok
+        detail[field] = checks
+    evidence: dict[str, Any] = {"detail": detail}
+    evidence.update(classes)
+    return evidence
+
+
 def build_project_status(
     repo: Path,
     *,
@@ -350,6 +483,7 @@ def build_project_status(
     workflows = _workflows(repo)
     capabilities = _capabilities(repo)
     developer_surface_inventory = build_developer_surface_inventory(repo)
+    developer_share_evidence = _developer_share_evidence(repo)
     acceptance = _acceptance(repo)
     github = _github_block(github_snapshot)
 
@@ -376,6 +510,7 @@ def build_project_status(
         "workflows": workflows,
         "capabilities": capabilities,
         "developer_surface_inventory": developer_surface_inventory,
+        "developer_share_evidence": developer_share_evidence,
         "human_acceptance": acceptance,
         "github": github,
         "proof_index": proof_index,
@@ -391,6 +526,8 @@ def build_project_status(
                 "immutable-goal status from GOAL.md",
                 "checked-in closure-evidence proof index digest",
                 "checked-in retained agentic-eval evidence index digest and verifier status",
+                "retained developer-share proof artifacts (wheel-launch, viewer-browser, "
+                "repair-self-heal) with pinned digests and status fields",
                 "clean-wheel acceptance baseline presence and verified signature binding",
             ]
             + (

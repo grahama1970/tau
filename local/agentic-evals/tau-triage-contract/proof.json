@@ -1,0 +1,169 @@
+{
+  "checks": {
+    "invalid_payloads_fail_closed": true,
+    "pytest_contract_tests_passed": true,
+    "valid_known_repair_admitted": true
+  },
+  "commands": {
+    "pytest": {
+      "command": [
+        "uv",
+        "run",
+        "pytest",
+        "tests/test_triage_error_bridge.py",
+        "tests/test_dag_runtime_scheduler.py::test_scheduler_blocks_downstream_after_malformed_attempt_result",
+        "tests/test_dag_runtime_scheduler.py::test_scheduler_triages_adapter_exception",
+        "--tau-suite=all",
+        "-q"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ".................                                                        [100%]\n17 passed in 0.50s\n"
+    }
+  },
+  "github_live": false,
+  "invalid_cases": [
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "space_code",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "slash_code",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "unicode_code",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "oversized_code",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "unknown_top_level",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "unknown_layer",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "legacy_next_command",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "legacy_ambiguous",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "unknown_handler",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "extra_repair_arg",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "nonfinite_repair_arg",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    },
+    {
+      "code": "triage_contract_invalid",
+      "disposition": "CONTRACT_INVALID",
+      "name": "shell_repair_arg",
+      "next_command_present": false,
+      "passed": true,
+      "repair_handler_present": false,
+      "requires_human": true
+    }
+  ],
+  "issue": 346,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": "External triage-error catalog quality, provider/model behavior, or human acceptance.",
+    "proves": "Tau admits only closed versioned triage classifications, rejects legacy next_command/ambiguous fields, refuses malformed codes/layers/repair handlers/repair args, and scheduler tests emit admissible triage_contract_invalid blocked attempts for legacy classifier output."
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "schema": "tau.triage_contract_proof.v1",
+  "status": "PASS",
+  "valid_known_repair": {
+    "cause": "DAG node failed because required evidence was missing.",
+    "code": "tau_project_dag_missing_required_evidence",
+    "diagnostics": {
+      "source": "agentic-eval"
+    },
+    "disposition": "KNOWN_REPAIR",
+    "extensions": {},
+    "layer": "dag-runtime",
+    "repair_args": {
+      "classification_code": "tau_project_dag_missing_required_evidence",
+      "repair_family": "result_contract_invalid",
+      "strategy": "same_semantic_node_rerun"
+    },
+    "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+    "repair_args_sha256": "sha256:cc58ee399827e8a9f7fbf82ef55eab4b56d3ba98f2983640ae0616e88df821f8",
+    "repair_family": "result_contract_invalid",
+    "repair_handler_id": "scheduler.correction_handler",
+    "requires_human": false,
+    "schema": "tau.triage_error_classification.v1"
+  }
+}

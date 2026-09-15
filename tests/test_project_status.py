@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from tau_coding.acceptance_attestation import DEFAULT_ACCEPTANCE_ATTESTATION, sh
 from tau_coding.cli import project_agent_developer_share_command
 from tau_coding.developer_surface_inventory import build_developer_surface_inventory
 from tau_coding.project_status import (
+    _DEVELOPER_SHARE_EVIDENCE_BINDINGS,
     DEVELOPER_SHARE_STATUS_SCHEMA,
     PROJECT_STATUS_SCHEMA,
     build_project_status,
@@ -396,6 +398,142 @@ def test_developer_share_status_reports_individual_blockers(tmp_path: Path) -> N
     assert "viewer_browser_proof_present" in failing
     assert "repair_self_heal_proof_present" in failing
     assert "human_acceptance_matches_goal" in failing
+
+
+# tau#362: the developer_share_evidence producer must bind real retained
+# proof artifacts fail-closed. These tests pin the semantics per gate:
+# present+matching=PASS, absent=FAIL, stale/mutated=FAIL.
+_EVIDENCE_GATE_IDS = (
+    "clean_checkout_installed_wheel_launch_proof_present",
+    "viewer_browser_proof_present",
+    "repair_self_heal_proof_present",
+)
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _evidence_gate(result: dict[str, object], gate_id: str) -> dict[str, object]:
+    return next(g for g in result["gates"] if g["id"] == gate_id)
+
+
+def _copy_retained_developer_share_proofs(root: Path) -> None:
+    for bindings in _DEVELOPER_SHARE_EVIDENCE_BINDINGS.values():
+        for binding in bindings:
+            src = _REPO_ROOT / binding["path"]
+            dst = root / binding["path"]
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+
+
+def test_developer_share_evidence_gates_pass_from_retained_proofs(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    _copy_retained_developer_share_proofs(tmp_path)
+
+    status = build_project_status(tmp_path, generated_at=_AT)
+    evidence = status["developer_share_evidence"]
+    assert evidence["clean_checkout_installed_wheel_launch"] is True
+    assert evidence["viewer_browser"] is True
+    assert evidence["repair_self_heal"] is True
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+    for gate_id in _EVIDENCE_GATE_IDS:
+        assert _evidence_gate(result, gate_id)["state"] == "PASS"
+
+
+def test_developer_share_evidence_gates_fail_when_proofs_absent(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+
+    status = build_project_status(tmp_path, generated_at=_AT)
+    evidence = status["developer_share_evidence"]
+    assert evidence["clean_checkout_installed_wheel_launch"] is False
+    assert evidence["viewer_browser"] is False
+    assert evidence["repair_self_heal"] is False
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+    for gate_id in _EVIDENCE_GATE_IDS:
+        assert _evidence_gate(result, gate_id)["state"] == "FAIL"
+
+
+def test_developer_share_evidence_gates_fail_when_proof_mutated(tmp_path: Path) -> None:
+    _init_repo(tmp_path)
+    _copy_retained_developer_share_proofs(tmp_path)
+    # Mutate one retained artifact per evidence class: digest no longer matches
+    # the pinned retained digest, so every class must fail closed.
+    for relative in (
+        "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/provider-live-acceptance-receipt.json",
+        "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/proof-bundle/browser-proof.json",
+        "local/agentic-evals/tau-triage-contract/proof.json",
+    ):
+        target = tmp_path / relative
+        target.write_text(target.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    status = build_project_status(tmp_path, generated_at=_AT)
+    evidence = status["developer_share_evidence"]
+    assert evidence["clean_checkout_installed_wheel_launch"] is False
+    assert evidence["viewer_browser"] is False
+    assert evidence["repair_self_heal"] is False
+    mutated_detail = [
+        check
+        for check in evidence["detail"]["repair_self_heal"]
+        if check["path"].endswith("triage-contract/proof.json")
+    ]
+    assert mutated_detail[0]["present"] is True
+    assert "digest mismatch" in mutated_detail[0]["check"]
+
+    result = evaluate_developer_share_status(status, tmp_path, github_snapshot=_SHARE_SNAPSHOT)
+    for gate_id in _EVIDENCE_GATE_IDS:
+        assert _evidence_gate(result, gate_id)["state"] == "FAIL"
+
+
+def test_developer_share_evidence_fails_when_pinned_fields_go_stale(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A refreshed artifact whose status fields no longer match the pin fails."""
+
+    _init_repo(tmp_path)
+    binding = {
+        "owner": "fixture",
+        "path": "docs/proofs/tickets/fixture/proof.json",
+        "schema": "tau.fixture_proof.v1",
+        "fields": {"status": "PASS", "live": True, "mocked": False},
+    }
+    payload = {
+        "schema": "tau.fixture_proof.v1",
+        "status": "PASS",
+        "live": True,
+        "mocked": False,
+    }
+    _write_json(tmp_path / binding["path"], payload)
+    binding["sha256"] = sha256_file(tmp_path / binding["path"])
+    monkeypatch.setattr(
+        "tau_coding.project_status._DEVELOPER_SHARE_EVIDENCE_BINDINGS",
+        {"viewer_browser": (binding,)},
+    )
+
+    matching = build_project_status(tmp_path, generated_at=_AT)
+    assert matching["developer_share_evidence"]["viewer_browser"] is True
+
+    # The retained artifact is regenerated with a newer (stale for the pin)
+    # status field; presence alone must not synthesize green. The digest pin
+    # is refreshed too, so the failure must come from the field check — the
+    # digest check alone cannot catch a correctly-pinned but regressed proof.
+    payload["live"] = False
+    _write_json(tmp_path / binding["path"], payload)
+    binding["sha256"] = sha256_file(tmp_path / binding["path"])
+    stale = build_project_status(tmp_path, generated_at=_AT)
+    evidence = stale["developer_share_evidence"]
+    assert evidence["viewer_browser"] is False
+    detail = evidence["detail"]["viewer_browser"][0]
+    assert detail["present"] is True
+    assert detail["mismatched_fields"] == ["live"]
+
+
+def test_developer_share_evidence_binds_real_retained_proofs_at_repo_tip() -> None:
+    """The pinned retained proofs resolve from the actual checkout (tau#362)."""
+
+    evidence = build_project_status(_REPO_ROOT, generated_at=_AT)["developer_share_evidence"]
+    assert evidence["clean_checkout_installed_wheel_launch"] is True
+    assert evidence["viewer_browser"] is True
+    assert evidence["repair_self_heal"] is True
 
 
 def test_developer_surface_inventory_detects_seeded_normal_route_stub(tmp_path: Path) -> None:

@@ -1,0 +1,1148 @@
+{
+  "checks": {
+    "all_cases_blocked_or_controlled": true,
+    "all_expected_boundaries_matched": true,
+    "all_failure_objects_admitted": true,
+    "installed_cli_registry_schema": true,
+    "matrix_covers_expected_boundaries": true,
+    "no_downstream_calls_after_boundary_block": true,
+    "non_durable_replay_cases_are_explicit": true,
+    "recursive_failure_contained": true,
+    "recursive_failure_has_tau_code": true,
+    "registry_has_at_least_10_boundaries": true,
+    "registry_has_required_boundaries": true,
+    "restart_replay_stable_boundary_category": true,
+    "retry_policy_matches_registry": true
+  },
+  "commands": {
+    "build": {
+      "command": [
+        "uv",
+        "build",
+        "--wheel",
+        "--out-dir",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/dist"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0,
+      "stderr": "Building wheel...\nSuccessfully built local/agentic-evals/tau-scheduler-boundary-registry/work/dist/tau-0.1.0-py3-none-any.whl\n",
+      "stdout": ""
+    },
+    "faults": {
+      "command": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/bin/python",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work",
+      "exit_code": 0,
+      "stderr": "2026-09-14T14:19:35.681-04:00 ERROR dag_node_future_exception {'run_id': 'recursive', 'node_id': 'n', 'attempt': 1, 'attempt_id': 'attempt-9a4476f3c821ddec583e6d789327d9e1', 'idempotency_key': 'sha256:b80679d65b69ca47f2e4138d77f7ed6999740baf0f7b8c91a520b18ec037993b'}\nTraceback (most recent call last):\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 310, in <module>\n    cases[\"recursive_failure_object_admission\"] = run_case(\"recursive\", execute=boom)\n    \u2502                                             \u2502                             \u2514 <function boom at 0x71823f35cb40>\n    \u2502                                             \u2514 <function run_case at 0x71823f35cca0>\n    \u2514 {}\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 142, in run_case\n    result = run_dag_plan(\n             \u2514 <function run_dag_plan at 0x7182403e1a60>\n\n> File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 1285, in run_dag_plan\n    result = future.result()\n             \u2502      \u2514 <function Future.result at 0x718241ba6f00>\n             \u2514 <Future at 0x71823f258ad0 state=finished raised RuntimeError>\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py\", line 443, in result\n    return self.__get_result()\n           \u2514 None\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py\", line 395, in __get_result\n    raise self._exception\n          \u2514 None\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py\", line 86, in run\n    result = ctx.run(self.task)\n             \u2502   \u2502   \u2514 None\n             \u2502   \u2514 <function WorkerContext.run at 0x71824060d640>\n             \u2514 <concurrent.futures.thread.WorkerContext object at 0x71823f258980>\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py\", line 73, in run\n    return fn(*args, **kwargs)\n           \u2502   \u2502       \u2514 {}\n           \u2502   \u2514 (DagPlanNode(node_id='n', role='n', executor='local', adapter_kind='generic_command', adapter_config=FrozenJson(canonical='{\"...\n           \u2514 <function run_case.<locals>.wrapped at 0x71823f2475e0>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 133, in wrapped\n    return execute(node, accepted_inputs, execution)\n           \u2502       \u2502     \u2502                \u2514 DagNodeAttempt(attempt=1, max_attempts=1, cancel_event=<threading.Event at 0x71823f3ab110: unset>, run_id='recursive', attemp...\n           \u2502       \u2502     \u2514 ()\n           \u2502       \u2514 DagPlanNode(node_id='n', role='n', executor='local', adapter_kind='generic_command', adapter_config=FrozenJson(canonical='{\"a...\n           \u2514 <function boom at 0x71823f35cb40>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 72, in boom\n    raise RuntimeError(\"adapter exploded\")\n\nRuntimeError: adapter exploded\n2026-09-14T14:19:35.732-04:00 ERROR dag_node_future_exception {'run_id': 'adapter', 'node_id': 'n', 'attempt': 1, 'attempt_id': 'attempt-276ef23f12754b423b23b1197e0022c9', 'idempotency_key': 'sha256:adef908d1c7883dcadb6f4cc83c1625aed0f0a09ad5a6f4200ea6f7ed05e0731'}\nTraceback (most recent call last):\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 312, in <module>\n    cases[\"adapter_future_execution\"] = run_case(\"adapter\", execute=boom)\n    \u2502                                   \u2502                           \u2514 <function boom at 0x71823f35cb40>\n    \u2502                                   \u2514 <function run_case at 0x71823f35cca0>\n    \u2514 {'recursive_failure_object_admission': {'status': 'BLOCKED', 'verdict': 'SCHEDULER_BOUNDARY_CONTAINMENT_FAILED', 'boundary_id...\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 142, in run_case\n    result = run_dag_plan(\n             \u2514 <function run_dag_plan at 0x7182403e1a60>\n\n> File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 1285, in run_dag_plan\n    result = future.result()\n             \u2502      \u2514 <function Future.result at 0x718241ba6f00>\n             \u2514 <Future at 0x71823f3182d0 state=finished raised RuntimeError>\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py\", line 443, in result\n    return self.__get_result()\n           \u2514 None\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py\", line 395, in __get_result\n    raise self._exception\n          \u2514 None\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py\", line 86, in run\n    result = ctx.run(self.task)\n             \u2502   \u2502   \u2514 None\n             \u2502   \u2514 <function WorkerContext.run at 0x71824060d640>\n             \u2514 <concurrent.futures.thread.WorkerContext object at 0x71823f318550>\n  File \"/home/graham/.local/share/uv/python/cpython-3.14.3-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py\", line 73, in run\n    return fn(*args, **kwargs)\n           \u2502   \u2502       \u2514 {}\n           \u2502   \u2514 (DagPlanNode(node_id='n', role='n', executor='local', adapter_kind='generic_command', adapter_config=FrozenJson(canonical='{\"...\n           \u2514 <function run_case.<locals>.wrapped at 0x71823f300460>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 133, in wrapped\n    return execute(node, accepted_inputs, execution)\n           \u2502       \u2502     \u2502                \u2514 DagNodeAttempt(attempt=1, max_attempts=1, cancel_event=<threading.Event at 0x71823f386030: unset>, run_id='adapter', attempt_...\n           \u2502       \u2502     \u2514 ()\n           \u2502       \u2514 DagPlanNode(node_id='n', role='n', executor='local', adapter_kind='generic_command', adapter_config=FrozenJson(canonical='{\"a...\n           \u2514 <function boom at 0x71823f35cb40>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 72, in boom\n    raise RuntimeError(\"adapter exploded\")\n\nRuntimeError: adapter exploded\n2026-09-14T14:19:35.867-04:00 ERROR dag_fault_injector_exception {'run_id': 'route', 'node_id': 'n', 'fault_point': 'before_route_join_transition'}\nTraceback (most recent call last):\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 317, in <module>\n    cases[\"route_join_transition\"] = run_case(\n    \u2502                                \u2514 <function run_case at 0x71823f35cca0>\n    \u2514 {'recursive_failure_object_admission': {'status': 'BLOCKED', 'verdict': 'SCHEDULER_BOUNDARY_CONTAINMENT_FAILED', 'boundary_id...\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 142, in run_case\n    result = run_dag_plan(\n             \u2514 <function run_dag_plan at 0x7182403e1a60>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 608, in run_dag_plan\n    _inject_fault(\n    \u2514 <function _inject_fault at 0x7182403e2770>\n> File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 2234, in _inject_fault\n    injector(point, payload)\n    \u2502        \u2502      \u2514 {'run_id': 'route', 'node_id': 'n'}\n    \u2502        \u2514 'before_route_join_transition'\n    \u2514 <function run_case.<locals>.inject at 0x71823e92ceb0>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 138, in inject\n    raise RuntimeError(point)\n                       \u2514 'before_route_join_transition'\n\nRuntimeError: before_route_join_transition\n2026-09-14T14:19:35.888-04:00 ERROR dag_fault_injector_exception {'run_id': 'checkpoint', 'fault_point': 'before_checkpoint_replay_recovery'}\nTraceback (most recent call last):\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 320, in <module>\n    cases[\"checkpoint_replay_recovery\"] = run_case(\n    \u2502                                     \u2514 <function run_case at 0x71823f35cca0>\n    \u2514 {'recursive_failure_object_admission': {'status': 'BLOCKED', 'verdict': 'SCHEDULER_BOUNDARY_CONTAINMENT_FAILED', 'boundary_id...\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 142, in run_case\n    result = run_dag_plan(\n             \u2514 <function run_dag_plan at 0x7182403e1a60>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 405, in run_dag_plan\n    _inject_fault(\n    \u2514 <function _inject_fault at 0x7182403e2770>\n> File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 2234, in _inject_fault\n    injector(point, payload)\n    \u2502        \u2502      \u2514 {'run_id': 'checkpoint'}\n    \u2502        \u2514 'before_checkpoint_replay_recovery'\n    \u2514 <function run_case.<locals>.inject at 0x71823e92eae0>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 138, in inject\n    raise RuntimeError(point)\n                       \u2514 'before_checkpoint_replay_recovery'\n\nRuntimeError: before_checkpoint_replay_recovery\n2026-09-14T14:19:35.924-04:00 ERROR dag_fault_injector_exception {'run_id': 'cleanup', 'status': 'PASS', 'verdict': 'PASS', 'fault_point': 'before_cleanup_retention'}\nTraceback (most recent call last):\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 323, in <module>\n    cases[\"cleanup_retention\"] = run_case(\n    \u2502                            \u2514 <function run_case at 0x71823f35cca0>\n    \u2514 {'recursive_failure_object_admission': {'status': 'BLOCKED', 'verdict': 'SCHEDULER_BOUNDARY_CONTAINMENT_FAILED', 'boundary_id...\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 142, in run_case\n    result = run_dag_plan(\n             \u2514 <function run_dag_plan at 0x7182403e1a60>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 1816, in run_dag_plan\n    _inject_fault(\n    \u2514 <function _inject_fault at 0x7182403e2770>\n> File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/lib/python3.14/site-packages/tau_coding/dag_runtime/scheduler.py\", line 2234, in _inject_fault\n    injector(point, payload)\n    \u2502        \u2502      \u2514 {'run_id': 'cleanup', 'status': 'PASS', 'verdict': 'PASS'}\n    \u2502        \u2514 'before_cleanup_retention'\n    \u2514 <function run_case.<locals>.inject at 0x71823e924300>\n\n  File \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/scheduler_faults.py\", line 138, in inject\n    raise RuntimeError(point)\n                       \u2514 'before_cleanup_retention'\n\nRuntimeError: before_cleanup_retention\n",
+      "stdout": "{\"adapter_future_execution\": {\"boundary_id\": \"adapter_future_execution\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"accepted_output_sha256\": null, \"alert_codes\": [\"tau_unclassified_fault\", \"ADAPTER_EXECUTION_FAILED\", \"adapter_future_execution\"], \"attempt\": 1, \"attempt_count\": 1, \"attempt_id\": \"attempt-276ef23f12754b423b23b1197e0022c9\", \"checkpoint_ref\": \"node_input_manifest\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": true, \"diagnostics\": {\"scheduler_boundary\": {\"boundary_id\": \"adapter_future_execution\", \"failure\": {\"boundary_id\": \"adapter_future_execution\", \"classification_code\": \"tau_unclassified_fault\", \"failure_family\": \"runtime_backend_dispatch\", \"original_code\": \"ADAPTER_EXECUTION_FAILED\", \"repair_category\": \"repairable_infrastructure_failure\", \"requires_human\": false, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"dag_node_future_exception:RuntimeError:adapter exploded\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"KNOWN_REPAIR\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"adapter_execution_failed\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5\", \"repair_family\": \"adapter_execution_failed\", \"repair_handler_id\": \"scheduler.correction_handler\", \"requires_human\": false, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"KNOWN_REPAIR\"}, \"failure_family\": \"runtime_backend_dispatch\", \"repair_category\": \"repairable_infrastructure_failure\"}, \"workspace_stale_read_state\": {\"policy\": \"observe\", \"schema\": \"tau.workspace_stale_read_state.v1\", \"unresolved_signal_count\": 0, \"unresolved_signal_ids\": []}}, \"errors\": [\"dag_node_future_exception:RuntimeError:adapter exploded\"], \"extensions\": {\"scheduler\": {\"checkpoint_ref\": \"node_input_manifest\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": true, \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"adapter_execution_failed\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5\", \"repair_attempt_budget\": 1, \"repair_handler_id\": \"scheduler.correction_handler\"}}, \"node_id\": \"n\", \"output_contract_id\": \"tau.accepted_output.compat_optional_object.v1\", \"output_schema_version\": \"v1\", \"plan_sha256\": \"sha256:8b4c6dde9361213d287cbf49a196c93e391ee2367b48d71a7658d3b4f74710ca\", \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"adapter_execution_failed\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5\", \"repair_attempt_budget\": 1, \"repair_handler_id\": \"scheduler.correction_handler\", \"retryable\": true, \"run_id\": \"adapter\", \"scheduler_attempt\": 1, \"scheduler_attempt_id\": \"attempt-276ef23f12754b423b23b1197e0022c9\", \"scheduler_attempts\": [{\"attempt\": 1, \"errors\": [\"dag_node_future_exception:RuntimeError:adapter exploded\"], \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}], \"schema\": \"tau.dag_attempt_result.v1\", \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"repairable_infrastructure_failure\", \"replay_boundary_id\": \"adapter_future_execution\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"repairable_infrastructure_failure\", \"replay_stable\": true, \"retryable\": true, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"attempt_result_admission\": {\"boundary_id\": \"attempt_result_admission\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"accepted_output_sha256\": null, \"alert_codes\": [\"tau_unclassified_fault\", \"dag_attempt_result_pass_verdict_mismatch\", \"attempt_result_admission\"], \"attempt\": 1, \"attempt_count\": 1, \"attempt_id\": \"attempt-49511705579a68bd351fd3ee4f9c6787\", \"checkpoint_ref\": \"node_input_manifest\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": true, \"diagnostics\": {\"scheduler_boundary\": {\"boundary_id\": \"attempt_result_admission\", \"failure\": {\"boundary_id\": \"attempt_result_admission\", \"classification_code\": \"tau_unclassified_fault\", \"failure_family\": \"attempt_result_contract\", \"original_code\": \"dag_attempt_result_pass_verdict_mismatch\", \"path\": \"$.verdict\", \"repair_category\": \"repairable_contract_failure\", \"requires_human\": false, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"dag_attempt_result_pass_verdict_mismatch:$.verdict\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"KNOWN_REPAIR\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"result_contract_invalid\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f\", \"repair_family\": \"result_contract_invalid\", \"repair_handler_id\": \"scheduler.correction_handler\", \"requires_human\": false, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"KNOWN_REPAIR\"}, \"failure_family\": \"attempt_result_contract\", \"repair_category\": \"repairable_contract_failure\"}}, \"errors\": [\"dag_attempt_result_pass_verdict_mismatch:$.verdict\"], \"extensions\": {\"scheduler\": {\"checkpoint_ref\": \"node_input_manifest\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": true, \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"result_contract_invalid\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f\", \"repair_attempt_budget\": 1, \"repair_handler_id\": \"scheduler.correction_handler\"}}, \"node_id\": \"n\", \"output_contract_id\": \"tau.accepted_output.compat_optional_object.v1\", \"output_schema_version\": \"v1\", \"plan_sha256\": \"sha256:2ab766cd9e2bb741e9acfad790dc5ec85c9af351bf7982a71e88b3d90bd3fb4e\", \"repair_args\": {\"classification_code\": \"tau_unclassified_fault\", \"repair_family\": \"result_contract_invalid\", \"strategy\": \"same_semantic_node_rerun\"}, \"repair_args_schema\": \"tau.scheduler_correction_repair_args.v1\", \"repair_args_sha256\": \"sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f\", \"repair_attempt_budget\": 1, \"repair_handler_id\": \"scheduler.correction_handler\", \"retryable\": true, \"run_id\": \"attempt\", \"scheduler_attempt\": 1, \"scheduler_attempt_id\": \"attempt-49511705579a68bd351fd3ee4f9c6787\", \"scheduler_attempts\": [{\"attempt\": 1, \"errors\": [\"dag_attempt_result_pass_verdict_mismatch:$.verdict\"], \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}], \"schema\": \"tau.dag_attempt_result.v1\", \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"repairable_contract_failure\", \"replay_boundary_id\": \"attempt_result_admission\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"repairable_contract_failure\", \"replay_stable\": true, \"retryable\": true, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"checkpoint_replay_recovery\": {\"boundary_id\": \"checkpoint_replay_recovery\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"CHECKPOINT_REPLAY_RECOVERY_FAILED\", \"checkpoint_replay_recovery\"], \"boundary_id\": \"checkpoint_replay_recovery\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"checkpoint_replay_recovery_failure:before_checkpoint_replay_recovery\"], \"failure\": {\"boundary_id\": \"checkpoint_replay_recovery\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"RuntimeError\", \"exception_message\": \"before_checkpoint_replay_recovery\", \"failure_family\": \"checkpoint_replay_recovery\", \"original_code\": \"CHECKPOINT_REPLAY_RECOVERY_FAILED\", \"repair_category\": \"reconciliation_required\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"checkpoint_replay_recovery_failure:before_checkpoint_replay_recovery\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"checkpoint_replay_recovery\", \"node_id\": \"__checkpoint_replay_recovery__\", \"repair_category\": \"reconciliation_required\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"reconciliation_required\", \"replay_boundary_id\": \"checkpoint_replay_recovery\", \"replay_mode\": \"explicit_non_attempt_boundary_no_staged_replay\", \"replay_repair_category\": \"reconciliation_required\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"cleanup_retention\": {\"boundary_id\": \"cleanup_retention\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"CLEANUP_RETENTION_FAILED\", \"cleanup_retention\"], \"boundary_id\": \"cleanup_retention\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"cleanup_retention_failure:before_cleanup_retention\"], \"failure\": {\"boundary_id\": \"cleanup_retention\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"RuntimeError\", \"exception_message\": \"before_cleanup_retention\", \"failure_family\": \"cleanup_retention_authority\", \"original_code\": \"CLEANUP_RETENTION_FAILED\", \"repair_category\": \"terminal_policy_violation\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"cleanup_retention_failure:before_cleanup_retention\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"cleanup_retention_authority\", \"node_id\": \"__cleanup_retention__\", \"repair_category\": \"terminal_policy_violation\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"terminal_policy_violation\", \"replay_boundary_id\": \"cleanup_retention\", \"replay_mode\": \"explicit_non_attempt_boundary_no_staged_replay\", \"replay_repair_category\": \"terminal_policy_violation\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"effect_outbox_reconciliation\": {\"boundary_id\": \"effect_outbox_reconciliation\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"DAG_ATTEMPT_EFFECT_UNCERTAIN\", \"effect_outbox_reconciliation\"], \"boundary_id\": \"effect_outbox_reconciliation\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"effect uncertainty injected\"], \"failure\": {\"boundary_id\": \"effect_outbox_reconciliation\", \"classification_code\": \"tau_unclassified_fault\", \"failure_family\": \"effect_reconciliation\", \"original_code\": \"DAG_ATTEMPT_EFFECT_UNCERTAIN\", \"repair_category\": \"reconciliation_required\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"effect uncertainty injected\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"effect_reconciliation\", \"node_id\": \"n\", \"repair_category\": \"reconciliation_required\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"reconciliation_required\", \"replay_boundary_id\": \"effect_outbox_reconciliation\", \"replay_mode\": \"repeated_helper_observation\", \"replay_repair_category\": \"reconciliation_required\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"node_completion_boundary\": {\"boundary_id\": \"node_completion_boundary\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"accepted_output_sha256\": null, \"alert_codes\": [\"node_completion_boundary_missing\"], \"attempt\": 1, \"attempt_count\": 1, \"attempt_id\": \"attempt-35bb64ea8e78ebc9349802544981b55c\", \"diagnostics\": {\"node_completion_boundary_validation\": {\"alert_codes\": [\"node_completion_boundary_missing\"], \"boundary_schema\": \"tau.node_completion_boundary.v1\", \"boundary_sha256\": null, \"does_not_prove\": [\"Self-reported checked/not-checked coverage does not prove completeness.\", \"Self-reported assumptions and evidence gaps do not prove correctness.\"], \"errors\": [\"node_completion_boundary must be an object\"], \"non_empty_sections\": [], \"proves\": [], \"required_sections\": [\"checked_scope\", \"not_checked\", \"assumptions\", \"known_unknowns\", \"evidence_gaps\", \"recommended_followups\", \"proves\", \"does_not_prove\"], \"schema\": \"tau.node_completion_boundary_validation.v1\", \"self_reported_coverage_is_evidence\": false, \"status\": \"BLOCKED\"}, \"scheduler_boundary\": {\"boundary_id\": \"node_completion_boundary\", \"failure\": {\"boundary_id\": \"node_completion_boundary\", \"classification_code\": \"node_completion_boundary_failed\", \"failure_family\": \"node_completion_evidence\", \"original_code\": \"NODE_COMPLETION_BOUNDARY_FAILED\", \"repair_category\": \"terminal_policy_violation\", \"schema\": \"tau.internal_failure.v1\"}, \"failure_family\": \"node_completion_evidence\", \"repair_category\": \"terminal_policy_violation\"}, \"workspace_stale_read_state\": {\"policy\": \"observe\", \"schema\": \"tau.workspace_stale_read_state.v1\", \"unresolved_signal_count\": 0, \"unresolved_signal_ids\": []}}, \"errors\": [\"node_completion_boundary must be an object\"], \"extensions\": {}, \"node_id\": \"n\", \"output_contract_id\": \"tau.accepted_output.compat_optional_object.v1\", \"output_schema_version\": \"v1\", \"plan_sha256\": \"sha256:2a20771d9f021136549548c26b4ea0cdb162681bd87f04c1526eb28d58a7f0e3\", \"retryable\": false, \"run_id\": \"completion\", \"scheduler_attempt\": 1, \"scheduler_attempt_id\": \"attempt-35bb64ea8e78ebc9349802544981b55c\", \"scheduler_attempts\": [{\"attempt\": 1, \"errors\": [\"node_completion_boundary must be an object\"], \"status\": \"BLOCKED\", \"verdict\": \"NODE_COMPLETION_BOUNDARY_INVALID\"}], \"schema\": \"tau.dag_attempt_result.v1\", \"status\": \"BLOCKED\", \"verdict\": \"NODE_COMPLETION_BOUNDARY_INVALID\"}, \"repair_category\": \"terminal_policy_violation\", \"replay_boundary_id\": \"node_completion_boundary\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"terminal_policy_violation\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"NODE_COMPLETION_BOUNDARY_INVALID\"}, \"recursive_failure_object_admission\": {\"boundary_id\": \"recursive_failure_object_admission\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"accepted_output_sha256\": null, \"alert_codes\": [], \"attempt\": 1, \"attempt_count\": 1, \"attempt_id\": \"attempt-9a4476f3c821ddec583e6d789327d9e1\", \"diagnostics\": {\"scheduler_boundary\": {\"boundary_id\": \"recursive_failure_object_admission\", \"failure\": {\"boundary_id\": \"recursive_failure_object_admission\", \"classification_code\": \"tau_scheduler_boundary_fallback\", \"failure_family\": \"recursive_failure_containment\", \"original_code\": \"ADAPTER_EXECUTION_FAILED\", \"repair_category\": \"terminal_policy_violation\", \"schema\": \"tau.internal_failure.v1\"}, \"failure_family\": \"recursive_failure_containment\", \"repair_category\": \"terminal_policy_violation\"}, \"workspace_stale_read_state\": {\"policy\": \"observe\", \"schema\": \"tau.workspace_stale_read_state.v1\", \"unresolved_signal_count\": 0, \"unresolved_signal_ids\": []}}, \"errors\": [\"recursive boundary containment failure: RuntimeError: classifier down\"], \"extensions\": {}, \"node_id\": \"n\", \"output_contract_id\": \"tau.accepted_output.compat_optional_object.v1\", \"output_schema_version\": \"v1\", \"plan_sha256\": \"sha256:21042be1a7065b0d4799fe40d610109b55c8cbe195f9ef30bd6e60b1b9696048\", \"retryable\": false, \"run_id\": \"recursive\", \"scheduler_attempt\": 1, \"scheduler_attempt_id\": \"attempt-9a4476f3c821ddec583e6d789327d9e1\", \"scheduler_attempts\": [{\"attempt\": 1, \"errors\": [\"recursive boundary containment failure: RuntimeError: classifier down\"], \"status\": \"BLOCKED\", \"verdict\": \"SCHEDULER_BOUNDARY_CONTAINMENT_FAILED\"}], \"schema\": \"tau.dag_attempt_result.v1\", \"status\": \"BLOCKED\", \"verdict\": \"SCHEDULER_BOUNDARY_CONTAINMENT_FAILED\"}, \"repair_category\": \"terminal_policy_violation\", \"replay_boundary_id\": \"recursive_failure_object_admission\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"terminal_policy_violation\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"SCHEDULER_BOUNDARY_CONTAINMENT_FAILED\"}, \"resource_lease\": {\"boundary_id\": \"resource_lease\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"RESOURCE_LEASE_DENIED\", \"resource_lease\"], \"boundary_id\": \"resource_lease\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"scheduler_boundary:RESOURCE_LEASE_DENIED:resource_lease_denied:injected\"], \"failure\": {\"boundary_id\": \"resource_lease\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"ResourceLeaseDenied\", \"exception_message\": \"resource_lease_denied:injected\", \"failure_family\": \"resource_lease_authority\", \"original_code\": \"RESOURCE_LEASE_DENIED\", \"repair_category\": \"repairable_infrastructure_failure\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"scheduler_boundary:RESOURCE_LEASE_DENIED:resource_lease_denied:injected\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"resource_lease_authority\", \"node_id\": \"n\", \"repair_category\": \"repairable_infrastructure_failure\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"RESOURCE_LEASE_DENIED\"}, \"repair_category\": \"repairable_infrastructure_failure\", \"replay_boundary_id\": \"resource_lease\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"repairable_infrastructure_failure\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"RESOURCE_LEASE_DENIED\"}, \"result_store_commit\": {\"boundary_id\": \"result_store_commit\", \"call_count\": 1, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"accepted_output_sha256\": null, \"alert_codes\": [\"tau_unclassified_fault\", \"RESULT_STORE_COMMIT_FAILED\", \"result_store_commit\"], \"attempt\": 1, \"attempt_count\": 1, \"attempt_id\": \"attempt-670a29ad8587f5df5ba9abdb4f4b250c\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"diagnostics\": {\"scheduler_boundary\": {\"boundary_id\": \"result_store_commit\", \"failure\": {\"boundary_id\": \"result_store_commit\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"DagRunStoreError\", \"exception_message\": \"result_store_commit_failed:injected\", \"failure_family\": \"run_store_commit\", \"original_code\": \"RESULT_STORE_COMMIT_FAILED\", \"repair_category\": \"reconciliation_required\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"result_store_commit_failure:result_store_commit_failed:injected\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"run_store_commit\", \"repair_category\": \"reconciliation_required\"}}, \"errors\": [\"result_store_commit_failure:result_store_commit_failed:injected\"], \"extensions\": {\"scheduler\": {\"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false}}, \"node_id\": \"n\", \"output_contract_id\": \"tau.accepted_output.compat_optional_object.v1\", \"output_schema_version\": \"v1\", \"plan_sha256\": \"sha256:a5888ca41a1825bcb0db4f1189c650ac522a64013e90879645591f13b250b2e1\", \"retryable\": false, \"run_id\": \"result-store\", \"scheduler_attempt\": 1, \"scheduler_attempt_id\": \"attempt-670a29ad8587f5df5ba9abdb4f4b250c\", \"scheduler_attempts\": [{\"attempt\": 1, \"errors\": [\"result_store_commit_failure:result_store_commit_failed:injected\"], \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}], \"schema\": \"tau.dag_attempt_result.v1\", \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"reconciliation_required\", \"replay_boundary_id\": \"result_store_commit\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"reconciliation_required\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"route_join_transition\": {\"boundary_id\": \"route_join_transition\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"ROUTE_JOIN_TRANSITION_FAILED\", \"route_join_transition\"], \"boundary_id\": \"route_join_transition\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"route_join_transition_failure:before_route_join_transition\"], \"failure\": {\"boundary_id\": \"route_join_transition\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"RuntimeError\", \"exception_message\": \"before_route_join_transition\", \"failure_family\": \"transition_policy\", \"original_code\": \"ROUTE_JOIN_TRANSITION_FAILED\", \"repair_category\": \"repairable_contract_failure\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"route_join_transition_failure:before_route_join_transition\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"transition_policy\", \"node_id\": \"n\", \"repair_category\": \"repairable_contract_failure\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"repair_category\": \"repairable_contract_failure\", \"replay_boundary_id\": \"route_join_transition\", \"replay_mode\": \"explicit_non_attempt_boundary_no_staged_replay\", \"replay_repair_category\": \"repairable_contract_failure\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_unclassified_fault\"}, \"scheduler_run_lease\": {\"boundary_id\": \"scheduler_run_lease\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_triage_unavailable_unclassified_16d0c7b5\", \"SCHEDULER_RUN_LEASE_FAILED\", \"scheduler_run_lease\"], \"boundary_id\": \"scheduler_run_lease\", \"classification_code\": \"tau_triage_unavailable_unclassified_16d0c7b5\", \"correction_required\": false, \"errors\": [\"triage-error runner not found\"], \"failure\": {\"boundary_id\": \"scheduler_run_lease\", \"classification_code\": \"tau_triage_unavailable_unclassified_16d0c7b5\", \"exception_class\": \"DagRunStoreError\", \"exception_message\": \"lease_acquire_failed:injected\", \"failure_family\": \"scheduler_lease_authority\", \"original_code\": \"SCHEDULER_RUN_LEASE_FAILED\", \"repair_category\": \"terminal_authority_violation\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"triage-error runner not found\", \"code\": \"tau_triage_unavailable_unclassified_16d0c7b5\", \"diagnostics\": {\"classifier_kind\": \"UNAVAILABLE\"}, \"disposition\": \"UNAVAILABLE\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"triage_unavailable\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"UNAVAILABLE\"}, \"failure_family\": \"scheduler_lease_authority\", \"node_id\": \"__scheduler_run_lease__\", \"repair_category\": \"terminal_authority_violation\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_triage_unavailable_unclassified_16d0c7b5\"}, \"repair_category\": \"terminal_authority_violation\", \"replay_boundary_id\": \"scheduler_run_lease\", \"replay_mode\": \"pre_lease_repeat_observation\", \"replay_repair_category\": \"terminal_authority_violation\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"tau_triage_unavailable_unclassified_16d0c7b5\"}, \"worker_assignment_completion\": {\"boundary_id\": \"worker_assignment_completion\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"alert_codes\": [\"tau_unclassified_fault\", \"WORKER_ASSIGNMENT_FAILED\", \"worker_assignment_completion\"], \"boundary_id\": \"worker_assignment_completion\", \"classification_code\": \"tau_unclassified_fault\", \"correction_required\": false, \"errors\": [\"scheduler_boundary:WORKER_ASSIGNMENT_FAILED:worker_no_eligible_candidate\"], \"failure\": {\"boundary_id\": \"worker_assignment_completion\", \"classification_code\": \"tau_unclassified_fault\", \"exception_class\": \"WorkerAssignmentError\", \"exception_message\": \"worker_no_eligible_candidate\", \"failure_family\": \"worker_lifecycle\", \"original_code\": \"WORKER_ASSIGNMENT_FAILED\", \"repair_category\": \"repairable_infrastructure_failure\", \"requires_human\": true, \"schema\": \"tau.internal_failure.v1\", \"triage\": {\"cause\": \"scheduler_boundary:WORKER_ASSIGNMENT_FAILED:worker_no_eligible_candidate\", \"code\": \"tau_unclassified_fault\", \"diagnostics\": {\"classifier\": \"eval-fixture\"}, \"disposition\": \"NEEDS_HUMAN\", \"extensions\": {}, \"layer\": \"tau\", \"repair_args\": {}, \"repair_family\": \"unknown_internal_failure\", \"requires_human\": true, \"schema\": \"tau.triage_error_classification.v1\"}, \"triage_disposition\": \"NEEDS_HUMAN\"}, \"failure_family\": \"worker_lifecycle\", \"node_id\": \"n\", \"repair_category\": \"repairable_infrastructure_failure\", \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"WORKER_NO_ELIGIBLE_CANDIDATE\"}, \"repair_category\": \"repairable_infrastructure_failure\", \"replay_boundary_id\": \"worker_assignment_completion\", \"replay_mode\": \"durable_replay\", \"replay_repair_category\": \"repairable_infrastructure_failure\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"WORKER_NO_ELIGIBLE_CANDIDATE\"}, \"workspace_stale_read\": {\"boundary_id\": \"workspace_stale_read\", \"call_count\": 0, \"canonical_admission\": true, \"downstream_calls\": 0, \"node_result\": {\"accepted_output\": null, \"boundary_id\": \"workspace_stale_read\", \"errors\": [\"stale read injected\"], \"failure\": {\"boundary_id\": \"workspace_stale_read\", \"classification_code\": \"stale_workspace_read_reconciliation_required\", \"failure_family\": \"workspace_consistency\", \"original_code\": \"STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED\", \"repair_category\": \"reconciliation_required\", \"schema\": \"tau.internal_failure.v1\"}, \"failure_family\": \"workspace_consistency\", \"node_id\": \"n\", \"repair_category\": \"reconciliation_required\", \"retryable\": false, \"stale_read_signals\": [], \"status\": \"BLOCKED\", \"verdict\": \"STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED\"}, \"repair_category\": \"reconciliation_required\", \"replay_boundary_id\": \"workspace_stale_read\", \"replay_mode\": \"repeated_helper_observation\", \"replay_repair_category\": \"reconciliation_required\", \"replay_stable\": true, \"retryable\": false, \"status\": \"BLOCKED\", \"verdict\": \"STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED\"}}\n"
+    },
+    "pip_install": {
+      "command": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/dist/tau-0.1.0-py3-none-any.whl"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work",
+      "exit_code": 0,
+      "stderr": "\n[notice] A new release of pip is available: 25.3 -> 26.2.1\n[notice] To update, run: /home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/bin/python -m pip install --upgrade pip\n",
+      "stdout": "Processing ./dist/tau-0.1.0-py3-none-any.whl\nCollecting anyio>=4.0 (from tau==0.1.0)\n  Using cached anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)\nCollecting httpx>=0.27 (from tau==0.1.0)\n  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)\nCollecting loguru>=0.7 (from tau==0.1.0)\n  Using cached loguru-0.7.3-py3-none-any.whl.metadata (22 kB)\nCollecting pydantic>=2.0 (from tau==0.1.0)\n  Using cached pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)\nCollecting pyyaml>=6.0 (from tau==0.1.0)\n  Using cached pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)\nCollecting rich>=13.0 (from tau==0.1.0)\n  Using cached rich-15.0.0-py3-none-any.whl.metadata (18 kB)\nCollecting textual>=1.0 (from tau==0.1.0)\n  Using cached textual-8.2.8-py3-none-any.whl.metadata (9.1 kB)\nCollecting typer>=0.12 (from tau==0.1.0)\n  Using cached typer-0.27.2-py3-none-any.whl.metadata (16 kB)\nCollecting idna>=2.8 (from anyio>=4.0->tau==0.1.0)\n  Using cached idna-3.19-py3-none-any.whl.metadata (9.2 kB)\nCollecting typing_extensions>=4.16.0 (from anyio>=4.0->tau==0.1.0)\n  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)\nCollecting certifi (from httpx>=0.27->tau==0.1.0)\n  Using cached certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)\nCollecting httpcore==1.* (from httpx>=0.27->tau==0.1.0)\n  Using cached httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)\nCollecting h11>=0.16 (from httpcore==1.*->httpx>=0.27->tau==0.1.0)\n  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)\nCollecting annotated-types>=0.6.0 (from pydantic>=2.0->tau==0.1.0)\n  Using cached annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)\nCollecting pydantic-core==2.46.5 (from pydantic>=2.0->tau==0.1.0)\n  Using cached pydantic_core-2.46.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)\nCollecting typing-inspection>=0.4.2 (from pydantic>=2.0->tau==0.1.0)\n  Using cached typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)\nCollecting markdown-it-py>=2.2.0 (from rich>=13.0->tau==0.1.0)\n  Using cached markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)\nCollecting pygments<3.0.0,>=2.13.0 (from rich>=13.0->tau==0.1.0)\n  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)\nCollecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.0->tau==0.1.0)\n  Using cached mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)\nCollecting mdit-py-plugins (from textual>=1.0->tau==0.1.0)\n  Using cached mdit_py_plugins-0.6.1-py3-none-any.whl.metadata (2.9 kB)\nCollecting platformdirs<5,>=3.6.0 (from textual>=1.0->tau==0.1.0)\n  Using cached platformdirs-4.11.8-py3-none-any.whl.metadata (5.5 kB)\nCollecting linkify-it-py<3,>=1 (from markdown-it-py[linkify]>=2.1.0->textual>=1.0->tau==0.1.0)\n  Using cached linkify_it_py-2.2.0-py3-none-any.whl.metadata (8.6 kB)\nCollecting shellingham>=1.3.0 (from typer>=0.12->tau==0.1.0)\n  Using cached shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)\nCollecting annotated-doc>=0.0.2 (from typer>=0.12->tau==0.1.0)\n  Using cached annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)\nUsing cached anyio-4.15.1-py3-none-any.whl (132 kB)\nUsing cached httpx-0.28.1-py3-none-any.whl (73 kB)\nUsing cached httpcore-1.0.9-py3-none-any.whl (78 kB)\nUsing cached h11-0.16.0-py3-none-any.whl (37 kB)\nUsing cached idna-3.19-py3-none-any.whl (68 kB)\nUsing cached loguru-0.7.3-py3-none-any.whl (61 kB)\nUsing cached pydantic-2.13.5-py3-none-any.whl (472 kB)\nUsing cached pydantic_core-2.46.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)\nUsing cached annotated_types-0.8.0-py3-none-any.whl (13 kB)\nUsing cached pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (794 kB)\nUsing cached rich-15.0.0-py3-none-any.whl (310 kB)\nUsing cached pygments-2.21.0-py3-none-any.whl (1.3 MB)\nUsing cached markdown_it_py-4.2.0-py3-none-any.whl (91 kB)\nUsing cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)\nUsing cached textual-8.2.8-py3-none-any.whl (731 kB)\nUsing cached platformdirs-4.11.8-py3-none-any.whl (24 kB)\nUsing cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)\nUsing cached linkify_it_py-2.2.0-py3-none-any.whl (21 kB)\nUsing cached typer-0.27.2-py3-none-any.whl (123 kB)\nUsing cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)\nUsing cached shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)\nUsing cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)\nUsing cached certifi-2026.7.22-py3-none-any.whl (136 kB)\nUsing cached mdit_py_plugins-0.6.1-py3-none-any.whl (66 kB)\nInstalling collected packages: typing_extensions, shellingham, pyyaml, pygments, platformdirs, mdurl, loguru, linkify-it-py, idna, h11, certifi, annotated-types, annotated-doc, typing-inspection, pydantic-core, markdown-it-py, httpcore, anyio, rich, pydantic, mdit-py-plugins, httpx, typer, textual, tau\n\nSuccessfully installed annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 certifi-2026.7.22 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.19 linkify-it-py-2.2.0 loguru-0.7.3 markdown-it-py-4.2.0 mdit-py-plugins-0.6.1 mdurl-0.1.2 platformdirs-4.11.8 pydantic-2.13.5 pydantic-core-2.46.5 pygments-2.21.0 pyyaml-6.0.3 rich-15.0.0 shellingham-1.5.4 tau-0.1.0 textual-8.2.8 typer-0.27.2 typing-inspection-0.4.4 typing_extensions-4.16.0\n"
+    },
+    "registry": {
+      "command": [
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv/bin/tau",
+        "scheduler-boundary-registry",
+        "--json"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"boundaries\": [\n    {\n      \"boundary_id\": \"adapter_future_execution\",\n      \"description\": \"adapter/future execution and runtime backend collection\",\n      \"family\": \"runtime_backend_dispatch\",\n      \"repair_category\": \"repairable_infrastructure_failure\",\n      \"retryable\": true\n    },\n    {\n      \"boundary_id\": \"worker_assignment_completion\",\n      \"description\": \"worker assignment, completion, and session-pool failures\",\n      \"family\": \"worker_lifecycle\",\n      \"repair_category\": \"repairable_infrastructure_failure\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"scheduler_run_lease\",\n      \"description\": \"scheduler run lease acquire, renew, and release\",\n      \"family\": \"scheduler_lease_authority\",\n      \"repair_category\": \"terminal_authority_violation\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"resource_lease\",\n      \"description\": \"resource lease acquire, renew, and release\",\n      \"family\": \"resource_lease_authority\",\n      \"repair_category\": \"repairable_infrastructure_failure\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"workspace_stale_read\",\n      \"description\": \"stale workspace observation and enforcement\",\n      \"family\": \"workspace_consistency\",\n      \"repair_category\": \"reconciliation_required\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"node_completion_boundary\",\n      \"description\": \"node completion boundary and evidence admission\",\n      \"family\": \"node_completion_evidence\",\n      \"repair_category\": \"terminal_policy_violation\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"attempt_result_admission\",\n      \"description\": \"attempt-result admission and schema validation\",\n      \"family\": \"attempt_result_contract\",\n      \"repair_category\": \"repairable_contract_failure\",\n      \"retryable\": true\n    },\n    {\n      \"boundary_id\": \"result_store_commit\",\n      \"description\": \"result staging, validation, commit, and run-store operations\",\n      \"family\": \"run_store_commit\",\n      \"repair_category\": \"reconciliation_required\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"route_join_transition\",\n      \"description\": \"route/join evaluation and transition persistence\",\n      \"family\": \"transition_policy\",\n      \"repair_category\": \"repairable_contract_failure\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"effect_outbox_reconciliation\",\n      \"description\": \"effect, outbox, and reconciliation boundaries\",\n      \"family\": \"effect_reconciliation\",\n      \"repair_category\": \"reconciliation_required\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"checkpoint_replay_recovery\",\n      \"description\": \"checkpoint, replay, and incomplete-attempt recovery\",\n      \"family\": \"checkpoint_replay_recovery\",\n      \"repair_category\": \"reconciliation_required\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"cleanup_retention\",\n      \"description\": \"cleanup and retention paths that can affect run authority\",\n      \"family\": \"cleanup_retention_authority\",\n      \"repair_category\": \"terminal_policy_violation\",\n      \"retryable\": false\n    },\n    {\n      \"boundary_id\": \"recursive_failure_object_admission\",\n      \"description\": \"classification or synthesized failure-result admission failure\",\n      \"family\": \"recursive_failure_containment\",\n      \"repair_category\": \"terminal_policy_violation\",\n      \"retryable\": false\n    }\n  ],\n  \"boundary_ids\": [\n    \"adapter_future_execution\",\n    \"worker_assignment_completion\",\n    \"scheduler_run_lease\",\n    \"resource_lease\",\n    \"workspace_stale_read\",\n    \"node_completion_boundary\",\n    \"attempt_result_admission\",\n    \"result_store_commit\",\n    \"route_join_transition\",\n    \"effect_outbox_reconciliation\",\n    \"checkpoint_replay_recovery\",\n    \"cleanup_retention\",\n    \"recursive_failure_object_admission\"\n  ],\n  \"schema\": \"tau.scheduler_boundary_registry.v1\",\n  \"status\": \"PASS\"\n}\n"
+    },
+    "venv_create": {
+      "command": [
+        "/home/graham/workspace/experiments/tau/.venv/bin/python3",
+        "-m",
+        "venv",
+        "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/venv"
+      ],
+      "cwd": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  },
+  "errors": [],
+  "faults": {
+    "adapter_future_execution": {
+      "boundary_id": "adapter_future_execution",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "accepted_output_sha256": null,
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "ADAPTER_EXECUTION_FAILED",
+          "adapter_future_execution"
+        ],
+        "attempt": 1,
+        "attempt_count": 1,
+        "attempt_id": "attempt-276ef23f12754b423b23b1197e0022c9",
+        "checkpoint_ref": "node_input_manifest",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": true,
+        "diagnostics": {
+          "scheduler_boundary": {
+            "boundary_id": "adapter_future_execution",
+            "failure": {
+              "boundary_id": "adapter_future_execution",
+              "classification_code": "tau_unclassified_fault",
+              "failure_family": "runtime_backend_dispatch",
+              "original_code": "ADAPTER_EXECUTION_FAILED",
+              "repair_category": "repairable_infrastructure_failure",
+              "requires_human": false,
+              "schema": "tau.internal_failure.v1",
+              "triage": {
+                "cause": "dag_node_future_exception:RuntimeError:adapter exploded",
+                "code": "tau_unclassified_fault",
+                "diagnostics": {
+                  "classifier": "eval-fixture"
+                },
+                "disposition": "KNOWN_REPAIR",
+                "extensions": {},
+                "layer": "tau",
+                "repair_args": {
+                  "classification_code": "tau_unclassified_fault",
+                  "repair_family": "adapter_execution_failed",
+                  "strategy": "same_semantic_node_rerun"
+                },
+                "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+                "repair_args_sha256": "sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5",
+                "repair_family": "adapter_execution_failed",
+                "repair_handler_id": "scheduler.correction_handler",
+                "requires_human": false,
+                "schema": "tau.triage_error_classification.v1"
+              },
+              "triage_disposition": "KNOWN_REPAIR"
+            },
+            "failure_family": "runtime_backend_dispatch",
+            "repair_category": "repairable_infrastructure_failure"
+          },
+          "workspace_stale_read_state": {
+            "policy": "observe",
+            "schema": "tau.workspace_stale_read_state.v1",
+            "unresolved_signal_count": 0,
+            "unresolved_signal_ids": []
+          }
+        },
+        "errors": [
+          "dag_node_future_exception:RuntimeError:adapter exploded"
+        ],
+        "extensions": {
+          "scheduler": {
+            "checkpoint_ref": "node_input_manifest",
+            "classification_code": "tau_unclassified_fault",
+            "correction_required": true,
+            "repair_args": {
+              "classification_code": "tau_unclassified_fault",
+              "repair_family": "adapter_execution_failed",
+              "strategy": "same_semantic_node_rerun"
+            },
+            "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+            "repair_args_sha256": "sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5",
+            "repair_attempt_budget": 1,
+            "repair_handler_id": "scheduler.correction_handler"
+          }
+        },
+        "node_id": "n",
+        "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+        "output_schema_version": "v1",
+        "plan_sha256": "sha256:8b4c6dde9361213d287cbf49a196c93e391ee2367b48d71a7658d3b4f74710ca",
+        "repair_args": {
+          "classification_code": "tau_unclassified_fault",
+          "repair_family": "adapter_execution_failed",
+          "strategy": "same_semantic_node_rerun"
+        },
+        "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+        "repair_args_sha256": "sha256:e9142c3b3e72d15e001c57216127da7e8f3f28116f0d709303a46c0645a786c5",
+        "repair_attempt_budget": 1,
+        "repair_handler_id": "scheduler.correction_handler",
+        "retryable": true,
+        "run_id": "adapter",
+        "scheduler_attempt": 1,
+        "scheduler_attempt_id": "attempt-276ef23f12754b423b23b1197e0022c9",
+        "scheduler_attempts": [
+          {
+            "attempt": 1,
+            "errors": [
+              "dag_node_future_exception:RuntimeError:adapter exploded"
+            ],
+            "status": "BLOCKED",
+            "verdict": "tau_unclassified_fault"
+          }
+        ],
+        "schema": "tau.dag_attempt_result.v1",
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "repairable_infrastructure_failure",
+      "replay_boundary_id": "adapter_future_execution",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "repairable_infrastructure_failure",
+      "replay_stable": true,
+      "retryable": true,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "attempt_result_admission": {
+      "boundary_id": "attempt_result_admission",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "accepted_output_sha256": null,
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "dag_attempt_result_pass_verdict_mismatch",
+          "attempt_result_admission"
+        ],
+        "attempt": 1,
+        "attempt_count": 1,
+        "attempt_id": "attempt-49511705579a68bd351fd3ee4f9c6787",
+        "checkpoint_ref": "node_input_manifest",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": true,
+        "diagnostics": {
+          "scheduler_boundary": {
+            "boundary_id": "attempt_result_admission",
+            "failure": {
+              "boundary_id": "attempt_result_admission",
+              "classification_code": "tau_unclassified_fault",
+              "failure_family": "attempt_result_contract",
+              "original_code": "dag_attempt_result_pass_verdict_mismatch",
+              "path": "$.verdict",
+              "repair_category": "repairable_contract_failure",
+              "requires_human": false,
+              "schema": "tau.internal_failure.v1",
+              "triage": {
+                "cause": "dag_attempt_result_pass_verdict_mismatch:$.verdict",
+                "code": "tau_unclassified_fault",
+                "diagnostics": {
+                  "classifier": "eval-fixture"
+                },
+                "disposition": "KNOWN_REPAIR",
+                "extensions": {},
+                "layer": "tau",
+                "repair_args": {
+                  "classification_code": "tau_unclassified_fault",
+                  "repair_family": "result_contract_invalid",
+                  "strategy": "same_semantic_node_rerun"
+                },
+                "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+                "repair_args_sha256": "sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f",
+                "repair_family": "result_contract_invalid",
+                "repair_handler_id": "scheduler.correction_handler",
+                "requires_human": false,
+                "schema": "tau.triage_error_classification.v1"
+              },
+              "triage_disposition": "KNOWN_REPAIR"
+            },
+            "failure_family": "attempt_result_contract",
+            "repair_category": "repairable_contract_failure"
+          }
+        },
+        "errors": [
+          "dag_attempt_result_pass_verdict_mismatch:$.verdict"
+        ],
+        "extensions": {
+          "scheduler": {
+            "checkpoint_ref": "node_input_manifest",
+            "classification_code": "tau_unclassified_fault",
+            "correction_required": true,
+            "repair_args": {
+              "classification_code": "tau_unclassified_fault",
+              "repair_family": "result_contract_invalid",
+              "strategy": "same_semantic_node_rerun"
+            },
+            "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+            "repair_args_sha256": "sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f",
+            "repair_attempt_budget": 1,
+            "repair_handler_id": "scheduler.correction_handler"
+          }
+        },
+        "node_id": "n",
+        "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+        "output_schema_version": "v1",
+        "plan_sha256": "sha256:2ab766cd9e2bb741e9acfad790dc5ec85c9af351bf7982a71e88b3d90bd3fb4e",
+        "repair_args": {
+          "classification_code": "tau_unclassified_fault",
+          "repair_family": "result_contract_invalid",
+          "strategy": "same_semantic_node_rerun"
+        },
+        "repair_args_schema": "tau.scheduler_correction_repair_args.v1",
+        "repair_args_sha256": "sha256:97a8f4c655b6ebae6b33518e14c1c30cfd5931b4d7aad1d98052db8629a3729f",
+        "repair_attempt_budget": 1,
+        "repair_handler_id": "scheduler.correction_handler",
+        "retryable": true,
+        "run_id": "attempt",
+        "scheduler_attempt": 1,
+        "scheduler_attempt_id": "attempt-49511705579a68bd351fd3ee4f9c6787",
+        "scheduler_attempts": [
+          {
+            "attempt": 1,
+            "errors": [
+              "dag_attempt_result_pass_verdict_mismatch:$.verdict"
+            ],
+            "status": "BLOCKED",
+            "verdict": "tau_unclassified_fault"
+          }
+        ],
+        "schema": "tau.dag_attempt_result.v1",
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "repairable_contract_failure",
+      "replay_boundary_id": "attempt_result_admission",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "repairable_contract_failure",
+      "replay_stable": true,
+      "retryable": true,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "checkpoint_replay_recovery": {
+      "boundary_id": "checkpoint_replay_recovery",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "CHECKPOINT_REPLAY_RECOVERY_FAILED",
+          "checkpoint_replay_recovery"
+        ],
+        "boundary_id": "checkpoint_replay_recovery",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "checkpoint_replay_recovery_failure:before_checkpoint_replay_recovery"
+        ],
+        "failure": {
+          "boundary_id": "checkpoint_replay_recovery",
+          "classification_code": "tau_unclassified_fault",
+          "exception_class": "RuntimeError",
+          "exception_message": "before_checkpoint_replay_recovery",
+          "failure_family": "checkpoint_replay_recovery",
+          "original_code": "CHECKPOINT_REPLAY_RECOVERY_FAILED",
+          "repair_category": "reconciliation_required",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "checkpoint_replay_recovery_failure:before_checkpoint_replay_recovery",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "checkpoint_replay_recovery",
+        "node_id": "__checkpoint_replay_recovery__",
+        "repair_category": "reconciliation_required",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "reconciliation_required",
+      "replay_boundary_id": "checkpoint_replay_recovery",
+      "replay_mode": "explicit_non_attempt_boundary_no_staged_replay",
+      "replay_repair_category": "reconciliation_required",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "cleanup_retention": {
+      "boundary_id": "cleanup_retention",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "CLEANUP_RETENTION_FAILED",
+          "cleanup_retention"
+        ],
+        "boundary_id": "cleanup_retention",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "cleanup_retention_failure:before_cleanup_retention"
+        ],
+        "failure": {
+          "boundary_id": "cleanup_retention",
+          "classification_code": "tau_unclassified_fault",
+          "exception_class": "RuntimeError",
+          "exception_message": "before_cleanup_retention",
+          "failure_family": "cleanup_retention_authority",
+          "original_code": "CLEANUP_RETENTION_FAILED",
+          "repair_category": "terminal_policy_violation",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "cleanup_retention_failure:before_cleanup_retention",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "cleanup_retention_authority",
+        "node_id": "__cleanup_retention__",
+        "repair_category": "terminal_policy_violation",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "terminal_policy_violation",
+      "replay_boundary_id": "cleanup_retention",
+      "replay_mode": "explicit_non_attempt_boundary_no_staged_replay",
+      "replay_repair_category": "terminal_policy_violation",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "effect_outbox_reconciliation": {
+      "boundary_id": "effect_outbox_reconciliation",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "DAG_ATTEMPT_EFFECT_UNCERTAIN",
+          "effect_outbox_reconciliation"
+        ],
+        "boundary_id": "effect_outbox_reconciliation",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "effect uncertainty injected"
+        ],
+        "failure": {
+          "boundary_id": "effect_outbox_reconciliation",
+          "classification_code": "tau_unclassified_fault",
+          "failure_family": "effect_reconciliation",
+          "original_code": "DAG_ATTEMPT_EFFECT_UNCERTAIN",
+          "repair_category": "reconciliation_required",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "effect uncertainty injected",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "effect_reconciliation",
+        "node_id": "n",
+        "repair_category": "reconciliation_required",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "reconciliation_required",
+      "replay_boundary_id": "effect_outbox_reconciliation",
+      "replay_mode": "repeated_helper_observation",
+      "replay_repair_category": "reconciliation_required",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "node_completion_boundary": {
+      "boundary_id": "node_completion_boundary",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "accepted_output_sha256": null,
+        "alert_codes": [
+          "node_completion_boundary_missing"
+        ],
+        "attempt": 1,
+        "attempt_count": 1,
+        "attempt_id": "attempt-35bb64ea8e78ebc9349802544981b55c",
+        "diagnostics": {
+          "node_completion_boundary_validation": {
+            "alert_codes": [
+              "node_completion_boundary_missing"
+            ],
+            "boundary_schema": "tau.node_completion_boundary.v1",
+            "boundary_sha256": null,
+            "does_not_prove": [
+              "Self-reported checked/not-checked coverage does not prove completeness.",
+              "Self-reported assumptions and evidence gaps do not prove correctness."
+            ],
+            "errors": [
+              "node_completion_boundary must be an object"
+            ],
+            "non_empty_sections": [],
+            "proves": [],
+            "required_sections": [
+              "checked_scope",
+              "not_checked",
+              "assumptions",
+              "known_unknowns",
+              "evidence_gaps",
+              "recommended_followups",
+              "proves",
+              "does_not_prove"
+            ],
+            "schema": "tau.node_completion_boundary_validation.v1",
+            "self_reported_coverage_is_evidence": false,
+            "status": "BLOCKED"
+          },
+          "scheduler_boundary": {
+            "boundary_id": "node_completion_boundary",
+            "failure": {
+              "boundary_id": "node_completion_boundary",
+              "classification_code": "node_completion_boundary_failed",
+              "failure_family": "node_completion_evidence",
+              "original_code": "NODE_COMPLETION_BOUNDARY_FAILED",
+              "repair_category": "terminal_policy_violation",
+              "schema": "tau.internal_failure.v1"
+            },
+            "failure_family": "node_completion_evidence",
+            "repair_category": "terminal_policy_violation"
+          },
+          "workspace_stale_read_state": {
+            "policy": "observe",
+            "schema": "tau.workspace_stale_read_state.v1",
+            "unresolved_signal_count": 0,
+            "unresolved_signal_ids": []
+          }
+        },
+        "errors": [
+          "node_completion_boundary must be an object"
+        ],
+        "extensions": {},
+        "node_id": "n",
+        "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+        "output_schema_version": "v1",
+        "plan_sha256": "sha256:2a20771d9f021136549548c26b4ea0cdb162681bd87f04c1526eb28d58a7f0e3",
+        "retryable": false,
+        "run_id": "completion",
+        "scheduler_attempt": 1,
+        "scheduler_attempt_id": "attempt-35bb64ea8e78ebc9349802544981b55c",
+        "scheduler_attempts": [
+          {
+            "attempt": 1,
+            "errors": [
+              "node_completion_boundary must be an object"
+            ],
+            "status": "BLOCKED",
+            "verdict": "NODE_COMPLETION_BOUNDARY_INVALID"
+          }
+        ],
+        "schema": "tau.dag_attempt_result.v1",
+        "status": "BLOCKED",
+        "verdict": "NODE_COMPLETION_BOUNDARY_INVALID"
+      },
+      "repair_category": "terminal_policy_violation",
+      "replay_boundary_id": "node_completion_boundary",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "terminal_policy_violation",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "NODE_COMPLETION_BOUNDARY_INVALID"
+    },
+    "recursive_failure_object_admission": {
+      "boundary_id": "recursive_failure_object_admission",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "accepted_output_sha256": null,
+        "alert_codes": [],
+        "attempt": 1,
+        "attempt_count": 1,
+        "attempt_id": "attempt-9a4476f3c821ddec583e6d789327d9e1",
+        "diagnostics": {
+          "scheduler_boundary": {
+            "boundary_id": "recursive_failure_object_admission",
+            "failure": {
+              "boundary_id": "recursive_failure_object_admission",
+              "classification_code": "tau_scheduler_boundary_fallback",
+              "failure_family": "recursive_failure_containment",
+              "original_code": "ADAPTER_EXECUTION_FAILED",
+              "repair_category": "terminal_policy_violation",
+              "schema": "tau.internal_failure.v1"
+            },
+            "failure_family": "recursive_failure_containment",
+            "repair_category": "terminal_policy_violation"
+          },
+          "workspace_stale_read_state": {
+            "policy": "observe",
+            "schema": "tau.workspace_stale_read_state.v1",
+            "unresolved_signal_count": 0,
+            "unresolved_signal_ids": []
+          }
+        },
+        "errors": [
+          "recursive boundary containment failure: RuntimeError: classifier down"
+        ],
+        "extensions": {},
+        "node_id": "n",
+        "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+        "output_schema_version": "v1",
+        "plan_sha256": "sha256:21042be1a7065b0d4799fe40d610109b55c8cbe195f9ef30bd6e60b1b9696048",
+        "retryable": false,
+        "run_id": "recursive",
+        "scheduler_attempt": 1,
+        "scheduler_attempt_id": "attempt-9a4476f3c821ddec583e6d789327d9e1",
+        "scheduler_attempts": [
+          {
+            "attempt": 1,
+            "errors": [
+              "recursive boundary containment failure: RuntimeError: classifier down"
+            ],
+            "status": "BLOCKED",
+            "verdict": "SCHEDULER_BOUNDARY_CONTAINMENT_FAILED"
+          }
+        ],
+        "schema": "tau.dag_attempt_result.v1",
+        "status": "BLOCKED",
+        "verdict": "SCHEDULER_BOUNDARY_CONTAINMENT_FAILED"
+      },
+      "repair_category": "terminal_policy_violation",
+      "replay_boundary_id": "recursive_failure_object_admission",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "terminal_policy_violation",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "SCHEDULER_BOUNDARY_CONTAINMENT_FAILED"
+    },
+    "resource_lease": {
+      "boundary_id": "resource_lease",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "RESOURCE_LEASE_DENIED",
+          "resource_lease"
+        ],
+        "boundary_id": "resource_lease",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "scheduler_boundary:RESOURCE_LEASE_DENIED:resource_lease_denied:injected"
+        ],
+        "failure": {
+          "boundary_id": "resource_lease",
+          "classification_code": "tau_unclassified_fault",
+          "exception_class": "ResourceLeaseDenied",
+          "exception_message": "resource_lease_denied:injected",
+          "failure_family": "resource_lease_authority",
+          "original_code": "RESOURCE_LEASE_DENIED",
+          "repair_category": "repairable_infrastructure_failure",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "scheduler_boundary:RESOURCE_LEASE_DENIED:resource_lease_denied:injected",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "resource_lease_authority",
+        "node_id": "n",
+        "repair_category": "repairable_infrastructure_failure",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "RESOURCE_LEASE_DENIED"
+      },
+      "repair_category": "repairable_infrastructure_failure",
+      "replay_boundary_id": "resource_lease",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "repairable_infrastructure_failure",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "RESOURCE_LEASE_DENIED"
+    },
+    "result_store_commit": {
+      "boundary_id": "result_store_commit",
+      "call_count": 1,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "accepted_output_sha256": null,
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "RESULT_STORE_COMMIT_FAILED",
+          "result_store_commit"
+        ],
+        "attempt": 1,
+        "attempt_count": 1,
+        "attempt_id": "attempt-670a29ad8587f5df5ba9abdb4f4b250c",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "diagnostics": {
+          "scheduler_boundary": {
+            "boundary_id": "result_store_commit",
+            "failure": {
+              "boundary_id": "result_store_commit",
+              "classification_code": "tau_unclassified_fault",
+              "exception_class": "DagRunStoreError",
+              "exception_message": "result_store_commit_failed:injected",
+              "failure_family": "run_store_commit",
+              "original_code": "RESULT_STORE_COMMIT_FAILED",
+              "repair_category": "reconciliation_required",
+              "requires_human": true,
+              "schema": "tau.internal_failure.v1",
+              "triage": {
+                "cause": "result_store_commit_failure:result_store_commit_failed:injected",
+                "code": "tau_unclassified_fault",
+                "diagnostics": {
+                  "classifier": "eval-fixture"
+                },
+                "disposition": "NEEDS_HUMAN",
+                "extensions": {},
+                "layer": "tau",
+                "repair_args": {},
+                "repair_family": "unknown_internal_failure",
+                "requires_human": true,
+                "schema": "tau.triage_error_classification.v1"
+              },
+              "triage_disposition": "NEEDS_HUMAN"
+            },
+            "failure_family": "run_store_commit",
+            "repair_category": "reconciliation_required"
+          }
+        },
+        "errors": [
+          "result_store_commit_failure:result_store_commit_failed:injected"
+        ],
+        "extensions": {
+          "scheduler": {
+            "classification_code": "tau_unclassified_fault",
+            "correction_required": false
+          }
+        },
+        "node_id": "n",
+        "output_contract_id": "tau.accepted_output.compat_optional_object.v1",
+        "output_schema_version": "v1",
+        "plan_sha256": "sha256:a5888ca41a1825bcb0db4f1189c650ac522a64013e90879645591f13b250b2e1",
+        "retryable": false,
+        "run_id": "result-store",
+        "scheduler_attempt": 1,
+        "scheduler_attempt_id": "attempt-670a29ad8587f5df5ba9abdb4f4b250c",
+        "scheduler_attempts": [
+          {
+            "attempt": 1,
+            "errors": [
+              "result_store_commit_failure:result_store_commit_failed:injected"
+            ],
+            "status": "BLOCKED",
+            "verdict": "tau_unclassified_fault"
+          }
+        ],
+        "schema": "tau.dag_attempt_result.v1",
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "reconciliation_required",
+      "replay_boundary_id": "result_store_commit",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "reconciliation_required",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "route_join_transition": {
+      "boundary_id": "route_join_transition",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "ROUTE_JOIN_TRANSITION_FAILED",
+          "route_join_transition"
+        ],
+        "boundary_id": "route_join_transition",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "route_join_transition_failure:before_route_join_transition"
+        ],
+        "failure": {
+          "boundary_id": "route_join_transition",
+          "classification_code": "tau_unclassified_fault",
+          "exception_class": "RuntimeError",
+          "exception_message": "before_route_join_transition",
+          "failure_family": "transition_policy",
+          "original_code": "ROUTE_JOIN_TRANSITION_FAILED",
+          "repair_category": "repairable_contract_failure",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "route_join_transition_failure:before_route_join_transition",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "transition_policy",
+        "node_id": "n",
+        "repair_category": "repairable_contract_failure",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "tau_unclassified_fault"
+      },
+      "repair_category": "repairable_contract_failure",
+      "replay_boundary_id": "route_join_transition",
+      "replay_mode": "explicit_non_attempt_boundary_no_staged_replay",
+      "replay_repair_category": "repairable_contract_failure",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_unclassified_fault"
+    },
+    "scheduler_run_lease": {
+      "boundary_id": "scheduler_run_lease",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_triage_unavailable_unclassified_16d0c7b5",
+          "SCHEDULER_RUN_LEASE_FAILED",
+          "scheduler_run_lease"
+        ],
+        "boundary_id": "scheduler_run_lease",
+        "classification_code": "tau_triage_unavailable_unclassified_16d0c7b5",
+        "correction_required": false,
+        "errors": [
+          "triage-error runner not found"
+        ],
+        "failure": {
+          "boundary_id": "scheduler_run_lease",
+          "classification_code": "tau_triage_unavailable_unclassified_16d0c7b5",
+          "exception_class": "DagRunStoreError",
+          "exception_message": "lease_acquire_failed:injected",
+          "failure_family": "scheduler_lease_authority",
+          "original_code": "SCHEDULER_RUN_LEASE_FAILED",
+          "repair_category": "terminal_authority_violation",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "triage-error runner not found",
+            "code": "tau_triage_unavailable_unclassified_16d0c7b5",
+            "diagnostics": {
+              "classifier_kind": "UNAVAILABLE"
+            },
+            "disposition": "UNAVAILABLE",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "triage_unavailable",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "UNAVAILABLE"
+        },
+        "failure_family": "scheduler_lease_authority",
+        "node_id": "__scheduler_run_lease__",
+        "repair_category": "terminal_authority_violation",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "tau_triage_unavailable_unclassified_16d0c7b5"
+      },
+      "repair_category": "terminal_authority_violation",
+      "replay_boundary_id": "scheduler_run_lease",
+      "replay_mode": "pre_lease_repeat_observation",
+      "replay_repair_category": "terminal_authority_violation",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "tau_triage_unavailable_unclassified_16d0c7b5"
+    },
+    "worker_assignment_completion": {
+      "boundary_id": "worker_assignment_completion",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "alert_codes": [
+          "tau_unclassified_fault",
+          "WORKER_ASSIGNMENT_FAILED",
+          "worker_assignment_completion"
+        ],
+        "boundary_id": "worker_assignment_completion",
+        "classification_code": "tau_unclassified_fault",
+        "correction_required": false,
+        "errors": [
+          "scheduler_boundary:WORKER_ASSIGNMENT_FAILED:worker_no_eligible_candidate"
+        ],
+        "failure": {
+          "boundary_id": "worker_assignment_completion",
+          "classification_code": "tau_unclassified_fault",
+          "exception_class": "WorkerAssignmentError",
+          "exception_message": "worker_no_eligible_candidate",
+          "failure_family": "worker_lifecycle",
+          "original_code": "WORKER_ASSIGNMENT_FAILED",
+          "repair_category": "repairable_infrastructure_failure",
+          "requires_human": true,
+          "schema": "tau.internal_failure.v1",
+          "triage": {
+            "cause": "scheduler_boundary:WORKER_ASSIGNMENT_FAILED:worker_no_eligible_candidate",
+            "code": "tau_unclassified_fault",
+            "diagnostics": {
+              "classifier": "eval-fixture"
+            },
+            "disposition": "NEEDS_HUMAN",
+            "extensions": {},
+            "layer": "tau",
+            "repair_args": {},
+            "repair_family": "unknown_internal_failure",
+            "requires_human": true,
+            "schema": "tau.triage_error_classification.v1"
+          },
+          "triage_disposition": "NEEDS_HUMAN"
+        },
+        "failure_family": "worker_lifecycle",
+        "node_id": "n",
+        "repair_category": "repairable_infrastructure_failure",
+        "retryable": false,
+        "status": "BLOCKED",
+        "verdict": "WORKER_NO_ELIGIBLE_CANDIDATE"
+      },
+      "repair_category": "repairable_infrastructure_failure",
+      "replay_boundary_id": "worker_assignment_completion",
+      "replay_mode": "durable_replay",
+      "replay_repair_category": "repairable_infrastructure_failure",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "WORKER_NO_ELIGIBLE_CANDIDATE"
+    },
+    "workspace_stale_read": {
+      "boundary_id": "workspace_stale_read",
+      "call_count": 0,
+      "canonical_admission": true,
+      "downstream_calls": 0,
+      "node_result": {
+        "accepted_output": null,
+        "boundary_id": "workspace_stale_read",
+        "errors": [
+          "stale read injected"
+        ],
+        "failure": {
+          "boundary_id": "workspace_stale_read",
+          "classification_code": "stale_workspace_read_reconciliation_required",
+          "failure_family": "workspace_consistency",
+          "original_code": "STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED",
+          "repair_category": "reconciliation_required",
+          "schema": "tau.internal_failure.v1"
+        },
+        "failure_family": "workspace_consistency",
+        "node_id": "n",
+        "repair_category": "reconciliation_required",
+        "retryable": false,
+        "stale_read_signals": [],
+        "status": "BLOCKED",
+        "verdict": "STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED"
+      },
+      "repair_category": "reconciliation_required",
+      "replay_boundary_id": "workspace_stale_read",
+      "replay_mode": "repeated_helper_observation",
+      "replay_repair_category": "reconciliation_required",
+      "replay_stable": true,
+      "retryable": false,
+      "status": "BLOCKED",
+      "verdict": "STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED"
+    }
+  },
+  "installed_wheel": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-scheduler-boundary-registry/work/dist/tau-0.1.0-py3-none-any.whl",
+  "issue": 349,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": "Provider quality or every external runtime backend path.",
+    "proves": "Installed-wheel scheduler boundary registry and deterministic fault containment for required scheduler authority boundaries."
+  },
+  "registry": {
+    "boundaries": [
+      {
+        "boundary_id": "adapter_future_execution",
+        "description": "adapter/future execution and runtime backend collection",
+        "family": "runtime_backend_dispatch",
+        "repair_category": "repairable_infrastructure_failure",
+        "retryable": true
+      },
+      {
+        "boundary_id": "worker_assignment_completion",
+        "description": "worker assignment, completion, and session-pool failures",
+        "family": "worker_lifecycle",
+        "repair_category": "repairable_infrastructure_failure",
+        "retryable": false
+      },
+      {
+        "boundary_id": "scheduler_run_lease",
+        "description": "scheduler run lease acquire, renew, and release",
+        "family": "scheduler_lease_authority",
+        "repair_category": "terminal_authority_violation",
+        "retryable": false
+      },
+      {
+        "boundary_id": "resource_lease",
+        "description": "resource lease acquire, renew, and release",
+        "family": "resource_lease_authority",
+        "repair_category": "repairable_infrastructure_failure",
+        "retryable": false
+      },
+      {
+        "boundary_id": "workspace_stale_read",
+        "description": "stale workspace observation and enforcement",
+        "family": "workspace_consistency",
+        "repair_category": "reconciliation_required",
+        "retryable": false
+      },
+      {
+        "boundary_id": "node_completion_boundary",
+        "description": "node completion boundary and evidence admission",
+        "family": "node_completion_evidence",
+        "repair_category": "terminal_policy_violation",
+        "retryable": false
+      },
+      {
+        "boundary_id": "attempt_result_admission",
+        "description": "attempt-result admission and schema validation",
+        "family": "attempt_result_contract",
+        "repair_category": "repairable_contract_failure",
+        "retryable": true
+      },
+      {
+        "boundary_id": "result_store_commit",
+        "description": "result staging, validation, commit, and run-store operations",
+        "family": "run_store_commit",
+        "repair_category": "reconciliation_required",
+        "retryable": false
+      },
+      {
+        "boundary_id": "route_join_transition",
+        "description": "route/join evaluation and transition persistence",
+        "family": "transition_policy",
+        "repair_category": "repairable_contract_failure",
+        "retryable": false
+      },
+      {
+        "boundary_id": "effect_outbox_reconciliation",
+        "description": "effect, outbox, and reconciliation boundaries",
+        "family": "effect_reconciliation",
+        "repair_category": "reconciliation_required",
+        "retryable": false
+      },
+      {
+        "boundary_id": "checkpoint_replay_recovery",
+        "description": "checkpoint, replay, and incomplete-attempt recovery",
+        "family": "checkpoint_replay_recovery",
+        "repair_category": "reconciliation_required",
+        "retryable": false
+      },
+      {
+        "boundary_id": "cleanup_retention",
+        "description": "cleanup and retention paths that can affect run authority",
+        "family": "cleanup_retention_authority",
+        "repair_category": "terminal_policy_violation",
+        "retryable": false
+      },
+      {
+        "boundary_id": "recursive_failure_object_admission",
+        "description": "classification or synthesized failure-result admission failure",
+        "family": "recursive_failure_containment",
+        "repair_category": "terminal_policy_violation",
+        "retryable": false
+      }
+    ],
+    "boundary_ids": [
+      "adapter_future_execution",
+      "worker_assignment_completion",
+      "scheduler_run_lease",
+      "resource_lease",
+      "workspace_stale_read",
+      "node_completion_boundary",
+      "attempt_result_admission",
+      "result_store_commit",
+      "route_join_transition",
+      "effect_outbox_reconciliation",
+      "checkpoint_replay_recovery",
+      "cleanup_retention",
+      "recursive_failure_object_admission"
+    ],
+    "schema": "tau.scheduler_boundary_registry.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.scheduler_boundary_registry_proof.v1",
+  "status": "PASS"
+}
