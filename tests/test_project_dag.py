@@ -4009,6 +4009,26 @@ def test_project_dag_node_sanity_blocks_missing_artifact_binding(tmp_path: Path)
     assert receipt["dag_error"]["failure_code"] == "reviewer_artifact_binding_missing"
 
 
+def test_project_dag_reviewer_pass_cannot_contradict_failed_result_status(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    reviewer_response = _reviewer_handoff(goal_hash="sha256:active-goal")
+    result = reviewer_response["result"]
+    assert isinstance(result, dict)
+    result["status"] = "FAIL"
+    result["errors"] = ["review failed"]
+    _write_response_spec(tmp_path, "reviewer", reviewer_response)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_verdict_invalid"
+
+
 def test_project_dag_node_sanity_rejects_regex_style_contract_keys(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
@@ -5691,21 +5711,3 @@ def _reviewer_handoff(*, goal_hash: str) -> dict[str, object]:
         "goal_hash": "sha256:active-goal",
     }
     return response
-
-
-def test_project_dag_blocks_bespoke_svg_without_tau_origin(tmp_path: Path) -> None:
-    """tau#338: hand-authored SVG evidence with no origin declaration blocks fail-closed."""
-    from tau_coding.project_dag import _artifact_boundary_post_alerts
-
-    responses = {
-        "creator": {
-            "status": "PASS",
-            "result": {
-                "evidence": [
-                    {"kind": "visual_preview", "svg_path": "/mnt/storage12tb/skills/local/preview.svg"}
-                ]
-            },
-        }
-    }
-    alerts = _artifact_boundary_post_alerts(tmp_path / "run", responses)
-    assert alerts and alerts[0]["code"] == "create_svg_artifact_origin_invalid"

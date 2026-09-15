@@ -2,12 +2,13 @@
   "version": 2,
   "skill": "tau",
   "trials": 2,
-  "proof_scope": "Adversarial Tau project-DAG node sanity-check contract enforcement for reviewer JSON, artifact provenance, attempt binding, visual screenshot receipts, and topology bypasses.",
+  "proof_scope": "Adversarial Tau project-DAG node sanity-check contract enforcement for reviewer JSON, artifact provenance, attempt binding, visual screenshot receipts, malformed node output, deterministic failure-code precedence, handoff-loop parity, and topology bypasses.",
   "capability_claims": [
     {
       "id": "tau.node_sanity_checks",
-      "description": "Tau project DAGs enforce typed node sanity checks and fail closed on prose-only, malformed, stale, unbound, mocked, visual-receipt, and topology-bypass evidence.",
+      "description": "Tau project DAGs enforce typed node sanity checks and fail closed on prose-only, missing, wrong-type, null/empty/Unicode, malformed, contradictory, stale, unbound, mocked, visual-receipt, parity, and topology-bypass evidence.",
       "criticality": "critical",
+      "claim_semantics": "protocol",
       "evidence_required": {
         "fault_injected_deterministic": 1,
         "live_e2e": 1
@@ -26,7 +27,7 @@
     }
   ],
   "claims": {
-    "proves": "The retained matrix runs 30 Tau project-DAG cases through run_project_dag_contract and checks that typed failure codes, artifact hashes, attempt ids, visual receipts, and reviewer/topology rules are enforced by machine-readable receipts.",
+    "proves": "The retained matrix runs 30 Tau project-DAG cases through run_project_dag_contract and checks that typed failure codes, artifact hashes, attempt ids, null/empty/Unicode values, malformed JSON, precedence, handoff-loop parity, visual receipts, and reviewer/topology rules are enforced by machine-readable receipts.",
     "does_not_prove": "Provider semantic quality, human aesthetic acceptance, deployment, or GOAL.md completion."
   },
   "cases": [
@@ -149,6 +150,135 @@
             "path": "../local/agentic-evals/tau-node-sanity-checks/cases/missing_json_schema.json",
             "json_pointer": "/observed_failure_code",
             "equals": "reviewer_verdict_schema_invalid"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "wrong_type_reviewer_fields",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case wrong_type_reviewer_fields --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/wrong_type_reviewer_fields.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"wrong_type_reviewer_fields\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_type_reviewer_fields.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_type_reviewer_fields.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/wrong_type_reviewer_fields.json",
+            "json_pointer": "/observed_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "null_empty_unicode_values",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case null_empty_unicode_values --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/null_empty_unicode_values.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"null_empty_unicode_values\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/null_empty_unicode_values.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/null_empty_unicode_values.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/null_empty_unicode_values.json",
+            "json_pointer": "/observed_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "malformed_json_response",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case malformed_json_response --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/malformed_json_response.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"malformed_json_response\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/malformed_json_response.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/malformed_json_response.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "invalid_command_json"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/malformed_json_response.json",
+            "json_pointer": "/observed_failure_code",
+            "equals": "invalid_command_json"
           }
         ]
       },
@@ -284,49 +414,6 @@
       "readback": true
     },
     {
-      "name": "missing_reviewer_node_id",
-      "type": "adversarial",
-      "real_world": true,
-      "evidence_class": "fault_injected_deterministic",
-      "supports_claims": [
-        "tau.node_sanity_checks"
-      ],
-      "seams": [
-        "project_dag.node_sanity_checks"
-      ],
-      "command": [
-        "bash",
-        "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case missing_reviewer_node_id --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json"
-      ],
-      "timeout_seconds": 60,
-      "expected": {
-        "exit_code": 0,
-        "stdout_contains": [
-          "\"case\": \"missing_reviewer_node_id\"",
-          "\"status\": \"PASS\""
-        ],
-        "artifacts": [
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json",
-            "json_pointer": "/status",
-            "equals": "PASS"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json",
-            "json_pointer": "/expected_failure_code",
-            "equals": "reviewer_verdict_schema_invalid"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/missing_reviewer_node_id.json",
-            "json_pointer": "/observed_failure_code",
-            "equals": "reviewer_verdict_schema_invalid"
-          }
-        ]
-      },
-      "readback": true
-    },
-    {
       "name": "wrong_reviewer_node_id",
       "type": "adversarial",
       "real_world": true,
@@ -456,7 +543,7 @@
       "readback": true
     },
     {
-      "name": "blocked_verdict_blocks",
+      "name": "contradictory_verdict_evidence",
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
@@ -469,28 +556,28 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case blocked_verdict_blocks --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json"
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case contradictory_verdict_evidence --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/contradictory_verdict_evidence.json"
       ],
       "timeout_seconds": 60,
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "\"case\": \"blocked_verdict_blocks\"",
+          "\"case\": \"contradictory_verdict_evidence\"",
           "\"status\": \"PASS\""
         ],
         "artifacts": [
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/contradictory_verdict_evidence.json",
             "json_pointer": "/status",
             "equals": "PASS"
           },
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/contradictory_verdict_evidence.json",
             "json_pointer": "/expected_failure_code",
             "equals": "reviewer_verdict_invalid"
           },
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/blocked_verdict_blocks.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/contradictory_verdict_evidence.json",
             "json_pointer": "/observed_failure_code",
             "equals": "reviewer_verdict_invalid"
           }
@@ -714,7 +801,7 @@
       "readback": true
     },
     {
-      "name": "artifact_binding_missing_sha",
+      "name": "deterministic_failure_code_precedence",
       "type": "adversarial",
       "real_world": true,
       "evidence_class": "fault_injected_deterministic",
@@ -727,30 +814,30 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case artifact_binding_missing_sha --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json"
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case deterministic_failure_code_precedence --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/deterministic_failure_code_precedence.json"
       ],
       "timeout_seconds": 60,
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "\"case\": \"artifact_binding_missing_sha\"",
+          "\"case\": \"deterministic_failure_code_precedence\"",
           "\"status\": \"PASS\""
         ],
         "artifacts": [
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/deterministic_failure_code_precedence.json",
             "json_pointer": "/status",
             "equals": "PASS"
           },
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/deterministic_failure_code_precedence.json",
             "json_pointer": "/expected_failure_code",
-            "equals": "reviewer_artifact_hash_mismatch"
+            "equals": "reviewer_verdict_schema_invalid"
           },
           {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/artifact_binding_missing_sha.json",
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/deterministic_failure_code_precedence.json",
             "json_pointer": "/observed_failure_code",
-            "equals": "reviewer_artifact_hash_mismatch"
+            "equals": "reviewer_verdict_schema_invalid"
           }
         ]
       },
@@ -972,49 +1059,6 @@
       "readback": true
     },
     {
-      "name": "visual_missing_boundary",
-      "type": "adversarial",
-      "real_world": true,
-      "evidence_class": "fault_injected_deterministic",
-      "supports_claims": [
-        "tau.node_sanity_checks"
-      ],
-      "seams": [
-        "project_dag.node_sanity_checks"
-      ],
-      "command": [
-        "bash",
-        "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_missing_boundary --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json"
-      ],
-      "timeout_seconds": 60,
-      "expected": {
-        "exit_code": 0,
-        "stdout_contains": [
-          "\"case\": \"visual_missing_boundary\"",
-          "\"status\": \"PASS\""
-        ],
-        "artifacts": [
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json",
-            "json_pointer": "/status",
-            "equals": "PASS"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json",
-            "json_pointer": "/expected_failure_code",
-            "equals": "reviewer_visual_boundary_missing"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_missing_boundary.json",
-            "json_pointer": "/observed_failure_code",
-            "equals": "reviewer_visual_boundary_missing"
-          }
-        ]
-      },
-      "readback": true
-    },
-    {
       "name": "visual_missing_receipt",
       "type": "adversarial",
       "real_world": true,
@@ -1058,92 +1102,6 @@
       "readback": true
     },
     {
-      "name": "visual_receipt_wrong_goal",
-      "type": "adversarial",
-      "real_world": true,
-      "evidence_class": "fault_injected_deterministic",
-      "supports_claims": [
-        "tau.node_sanity_checks"
-      ],
-      "seams": [
-        "project_dag.node_sanity_checks"
-      ],
-      "command": [
-        "bash",
-        "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case visual_receipt_wrong_goal --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json"
-      ],
-      "timeout_seconds": 60,
-      "expected": {
-        "exit_code": 0,
-        "stdout_contains": [
-          "\"case\": \"visual_receipt_wrong_goal\"",
-          "\"status\": \"PASS\""
-        ],
-        "artifacts": [
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json",
-            "json_pointer": "/status",
-            "equals": "PASS"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json",
-            "json_pointer": "/expected_failure_code",
-            "equals": "visual_review_receipt_invalid"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/visual_receipt_wrong_goal.json",
-            "json_pointer": "/observed_failure_code",
-            "equals": "visual_review_receipt_invalid"
-          }
-        ]
-      },
-      "readback": true
-    },
-    {
-      "name": "sanity_check_unknown_type",
-      "type": "adversarial",
-      "real_world": true,
-      "evidence_class": "fault_injected_deterministic",
-      "supports_claims": [
-        "tau.node_sanity_checks"
-      ],
-      "seams": [
-        "project_dag.node_sanity_checks"
-      ],
-      "command": [
-        "bash",
-        "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case sanity_check_unknown_type --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json"
-      ],
-      "timeout_seconds": 60,
-      "expected": {
-        "exit_code": 0,
-        "stdout_contains": [
-          "\"case\": \"sanity_check_unknown_type\"",
-          "\"status\": \"PASS\""
-        ],
-        "artifacts": [
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json",
-            "json_pointer": "/status",
-            "equals": "PASS"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json",
-            "json_pointer": "/expected_failure_code",
-            "equals": "node_sanity_check_contract_invalid"
-          },
-          {
-            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_type.json",
-            "json_pointer": "/observed_failure_code",
-            "equals": "node_sanity_check_contract_invalid"
-          }
-        ]
-      },
-      "readback": true
-    },
-    {
       "name": "sanity_check_unknown_key",
       "type": "adversarial",
       "real_world": true,
@@ -1181,6 +1139,49 @@
             "path": "../local/agentic-evals/tau-node-sanity-checks/cases/sanity_check_unknown_key.json",
             "json_pointer": "/observed_failure_code",
             "equals": "node_sanity_check_contract_invalid"
+          }
+        ]
+      },
+      "readback": true
+    },
+    {
+      "name": "handoff_loop_parity",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.node_sanity_checks"
+      ],
+      "seams": [
+        "project_dag.node_sanity_checks"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-node-sanity-checks.py --case handoff_loop_parity --work local/agentic-evals/tau-node-sanity-checks/work --out local/agentic-evals/tau-node-sanity-checks/cases/handoff_loop_parity.json"
+      ],
+      "timeout_seconds": 60,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"case\": \"handoff_loop_parity\"",
+          "\"status\": \"PASS\""
+        ],
+        "artifacts": [
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/handoff_loop_parity.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/handoff_loop_parity.json",
+            "json_pointer": "/expected_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
+          },
+          {
+            "path": "../local/agentic-evals/tau-node-sanity-checks/cases/handoff_loop_parity.json",
+            "json_pointer": "/observed_failure_code",
+            "equals": "reviewer_verdict_schema_invalid"
           }
         ]
       },

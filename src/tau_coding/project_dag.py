@@ -2401,7 +2401,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -3703,6 +3703,7 @@ def _reviewer_alerts(
     expected_reviewed = (
         node.reviewer.get("reviews_node") if isinstance(node.reviewer, dict) else None
     )
+    response_status = _response_result_status(response)
     for verdict in verdicts:
         alerts.extend(_reviewer_verdict_schema_alerts(contract, node, verdict))
         if verdict.get("goal_hash") != contract.goal["goal_hash"]:
@@ -3732,7 +3733,20 @@ def _reviewer_alerts(
                 )
             )
         observed_verdict = str(verdict.get("verdict") or "").upper()
-        if observed_verdict != "PASS":
+        if observed_verdict == "PASS" and response_status not in {None, "PASS"}:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "reviewer_verdict_invalid",
+                    "Reviewer PASS verdict contradicts the reviewer node result status.",
+                    {
+                        "node_id": node.node_id,
+                        "verdict": observed_verdict,
+                        "result_status": response_status,
+                    },
+                )
+            )
+        elif observed_verdict != "PASS":
             alerts.append(
                 _alert(
                     "BLOCK",
@@ -4972,6 +4986,12 @@ def _artifact_sha256(evidence: Mapping[str, Any]) -> str | None:
         return f"sha256:{hashlib.sha256(Path(path_value).expanduser().read_bytes()).hexdigest()}"
     except OSError:
         return None
+
+
+def _response_result_status(response: Mapping[str, Any]) -> str | None:
+    result = response.get("result")
+    status = result.get("status") if isinstance(result, Mapping) else response.get("status")
+    return status.strip().upper() if isinstance(status, str) and status.strip() else None
 
 
 def _reviewer_verdict_schema_alerts(
@@ -9767,10 +9787,24 @@ def _dispatch_already_recorded(
     dispatches: list[dict[str, Any]],
     candidate: dict[str, Any],
 ) -> bool:
+    candidate_hashes = _dispatch_match_hashes(candidate)
+    if candidate_hashes:
+        for dispatch in dispatches:
+            if candidate_hashes & _dispatch_match_hashes(dispatch):
+                return True
     candidate_key = _dispatch_identity_key(candidate)
     if candidate_key is None:
         return candidate in dispatches
     return any(_dispatch_identity_key(dispatch) == candidate_key for dispatch in dispatches)
+
+
+def _dispatch_match_hashes(dispatch: dict[str, Any]) -> set[str]:
+    hashes: set[str] = set()
+    full_dispatch_sha256 = dispatch.get("full_dispatch_sha256")
+    if isinstance(full_dispatch_sha256, str) and full_dispatch_sha256:
+        hashes.add(full_dispatch_sha256)
+    hashes.add(canonical_sha256(dispatch))
+    return hashes
 
 
 def _dispatch_identity_key(dispatch: dict[str, Any]) -> tuple[str, ...] | None:
@@ -9893,7 +9927,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 
