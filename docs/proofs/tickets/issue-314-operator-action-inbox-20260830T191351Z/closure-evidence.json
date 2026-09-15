@@ -60,14 +60,18 @@
     "operator_action_submission_status": "VALIDATED",
     "ticket_lookup": "OPEN; live lookup 2026-09-15 showed labels include agent-work,type:feature,maintainer-active,agent-blocked,dag,route:ops_or_scheduler and active lease_id=20260915T012813Z-codex-314"
   },
+  "origin_main_commit_after_land": "8fdc54e62a228c4a6fdb14d70aafd84312806f5c",
   "origin_main_commit_before_land": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
   "proof_boundary": {
     "does_not_prove": "Human acceptance, provider semantic quality, UI delivery, full semantic coverage for every operator-action subtype, or the unrelated Herdr #315 ledger finding.",
     "proves": "Tau stores bounded operator actions durably in SQLite, preserves duplicate idempotency, rejects idempotency-key conflicts, applies actions once through scheduler-owned claim/complete transitions, restores pause/resume state after restart, and reconciles uncertain claimed actions without replay."
   },
   "publication": {
-    "method": "pending gh-land finalizer",
-    "raw_git_add_commit_push_used": false
+    "ancestor_verified": true,
+    "commit": "8fdc54e62a228c4a6fdb14d70aafd84312806f5c",
+    "method": "/home/graham/.agents/skills/gh-land/run.sh",
+    "raw_git_add_commit_push_used": false,
+    "remote_blob_equality": "verified for all scoped paths after fetch"
   },
   "review": {
     "p2_findings_acknowledged": true,
@@ -98,11 +102,12 @@
     ],
     "stat": ".../closure-evidence.json                          | 234 +++++++-----\n .../operator-action-inbox-proof.json               |   2 +-\n evals/tau_operator_action_inbox_agentic_eval.json  |   9 +-\n ...operator-action-inbox-agentic-evals-report.json | 393 +++++++++++++++++++--\n .../tau-operator-action-inbox-proof.json           |   2 +-\n src/tau_coding/dag_runtime/run_store.py            |  24 +-\n src/tau_coding/dag_runtime/scheduler.py            |  26 +-\n tests/test_operator_action_inbox.py                |  44 ++-\n 8 files changed, 589 insertions(+), 145 deletions(-)"
   },
-  "status": "ACCEPTED",
+  "status": "PUBLISHED_READY_TO_CLOSE",
   "unit": {
     "command": "uv run pytest -q --tau-suite=all tests/test_operator_action_inbox.py",
     "exit_code": 0,
     "passed": 6,
     "result": "6 passed in 0.59s"
-  }
+  },
+  "updated_at": "2026-09-15T02:11:24.214995+00:00"
 }
