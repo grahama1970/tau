@@ -1,0 +1,85 @@
+{
+  "issue316": {
+    "314_live_state_readback": {
+      "closedAt": "2026-09-15T02:13:00Z",
+      "state": "CLOSED",
+      "stateReason": "COMPLETED"
+    },
+    "314_requirement": "314 must be CLOSED before 316 closure evidence is accepted"
+  },
+  "issue321": {
+    "artifact_hashes": {
+      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
+      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
+      "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
+    },
+    "memory_readback_count": 9,
+    "projected_episode_count": 9,
+    "proof_status": "PASS",
+    "report_outcome_counts": {
+      "BLOCKED": 0,
+      "FAIL": 0,
+      "NOT_TESTED": 0,
+      "PASS": 2
+    },
+    "report_readiness": "READY",
+    "report_trial_count": 4,
+    "reviewer_run_addressed": "2e94d54e-39c1-4a8a-bd14-bb75816ce765",
+    "source_revision": {
+      "head_sha": "e9b5f3c922d47df5a38710d787a22eda05c45c86",
+      "ref": "main",
+      "repo": "grahama1970/tau"
+    }
+  },
+  "project_knowledge_sync": "Synced PROJECT_KNOWLEDGE.md to /memory\n  Project: tau\n  Chunks: 902",
+  "project_state_after": {
+    "drift_count": 4,
+    "project_knowledge_items": 0,
+    "project_knowledge_stale_items": [],
+    "project_knowledge_stale_reference": 0
+  },
+  "project_state_before": {
+    "drift_count": 10,
+    "project_knowledge_items": 6,
+    "project_knowledge_stale_items": [
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauDagRunView.tsx` but file not found",
+        "severity": "medium"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/tauDagEvidenceAdapter.ts` but file not found",
+        "severity": "medium"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/tauDagEvidenceAdapter.test.ts` but file not found",
+        "severity": "medium"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.test.ts` but file not found",
+        "severity": "medium"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.test.ts` but file not found",
+        "severity": "medium"
+      },
+      {
+        "file": "PROJECT_KNOWLEDGE.md",
+        "issue": "stale_reference",
+        "line": "References `/home/graham/workspace/experiments/agent-skills/skills/ask/tests/test_argue_verifier.py` but file not found",
+        "severity": "medium"
+      }
+    ],
+    "project_knowledge_stale_reference": 6
+  },
+  "schema": "tau.ticket_335.deterministic_readback.v1"
+}
