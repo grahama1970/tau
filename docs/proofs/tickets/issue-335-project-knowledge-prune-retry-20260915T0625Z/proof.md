@@ -1,6 +1,6 @@
 # Issue #335 retry candidate proof
 
-Status: candidate only; not landed and not closed.
+Status: hash repair landed; issue not closed.
 
 - Before project-state: drift_count=10; PROJECT_KNOWLEDGE.md stale_reference=6.
 - After project-state: drift_count=4; PROJECT_KNOWLEDGE.md stale_reference=0.
@@ -10,4 +10,4 @@ Status: candidate only; not landed and not closed.
 - Issue #321 evidence readback: reviewer run `2e94d54e-39c1-4a8a-bd14-bb75816ce765`, readiness `READY`, projected episodes `9`, memory readback `9`.
 - Issue #316 dependency readback: #314 state `CLOSED` / `COMPLETED`.
 
-Proof boundary: documentation-drift cleanup and evidence-bundle binding only; this does not prove GOAL.md completion, provider semantic quality, human acceptance, landing, or closure.
+Proof boundary: documentation-drift cleanup and evidence-bundle binding only; this does not prove GOAL.md completion, provider semantic quality, human acceptance, closure.

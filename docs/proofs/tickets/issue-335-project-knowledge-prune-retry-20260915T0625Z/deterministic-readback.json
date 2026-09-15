@@ -9,8 +9,8 @@
   },
   "issue321": {
     "artifact_hashes": {
-      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
-      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
+      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+      "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
       "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
     },
     "memory_readback_count": 9,

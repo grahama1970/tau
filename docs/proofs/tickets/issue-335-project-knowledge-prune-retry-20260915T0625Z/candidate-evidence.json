@@ -1,11 +1,11 @@
 {
   "artifact_hashes": {
     "PROJECT_KNOWLEDGE.md": "sha256:923f9b939e9058b5a8fd2990ecf6f9ac258f768a5d9acbdf42f87434b3013581",
-    "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json": "sha256:9b53ff41f19a74420abbfe1ec03fbbc8ff91071e836934d10e063abd2754c2d7",
-    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json": "sha256:6494d66b860b8732ef5b4740726bd88427b8363db1d62ce5203da2569eaab118",
-    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
-    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
-    "docs/proofs/tickets/issue-335-project-knowledge-prune-retry-20260915T0625Z/deterministic-readback.json": "sha256:8109f6e10cd80f22020fc550fa884b24241ebc931991f851599901d12402ef72",
+    "docs/proofs/tickets/issue-316-child-agent-requests-20260830T195759Z/closure-evidence.json": "sha256:7f2d2ff49137e17a76a00de169b1c7e8457f58562f9fee826849394c19c78577",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/closure-evidence.json": "sha256:21c3c716713d0518c1b4d971aa0a17abf76d1fd122646996a1e0bec1726b2e5e",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+    "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
+    "docs/proofs/tickets/issue-335-project-knowledge-prune-retry-20260915T0625Z/deterministic-readback.json": "sha256:4e5114f86b18dcaafd259375bb80f6fcd7b234f9a21a17846ade01c314207679",
     "docs/proofs/tickets/issue-335-project-knowledge-prune-retry-20260915T0625Z/project-knowledge-sync.out": "sha256:2f3652b747eb8744e89f6aaee5a6e8abe8ed0aa7a58dcfcca55ba2d1cecc9ec6",
     "docs/proofs/tickets/issue-335-project-knowledge-prune-retry-20260915T0625Z/project-state-after.json": "sha256:e4db041a54a48b209522ec556c95e9d7943ffcea71c403a78854f4df73bfcbfa",
     "docs/proofs/tickets/issue-335-project-knowledge-prune-retry-20260915T0625Z/project-state-before.json": "sha256:0763efcca11d7ec38e8fc5cf47bce9cbacd570f754224e62353065b50b55fa30"
@@ -95,8 +95,8 @@
       "command": "/home/graham/workspace/experiments/agent-skills/skills/agentic-evals/run.sh run evals/tau_memory_episode_projection_agentic_eval.json --output docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json",
       "readback": {
         "artifact_hashes": {
-          "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
-          "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
+          "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+          "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
           "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
         },
         "memory_readback_count": 9,
@@ -125,7 +125,7 @@
   ],
   "issue": 335,
   "proof_boundary": {
-    "does_not_prove": "GOAL.md completion, provider semantic quality, human acceptance, landing/closure, or unrelated dirty-tree correctness.",
+    "does_not_prove": "GOAL.md completion, provider semantic quality, human acceptance, closure, or unrelated dirty-tree correctness.",
     "proves": "PROJECT_KNOWLEDGE.md stale_reference findings fell from 6 to 0 without deleting the historical proof notes; issue #321 closure evidence binds the fresh nine-episode READY proof to hashes/source revision/reviewer run; issue #316 closure evidence records #314 CLOSED as a prerequisite."
   },
   "reviewer_findings_addressed": {
@@ -140,8 +140,8 @@
     },
     "issue_321_fresh_nine_episode_ready": {
       "artifact_hashes": {
-        "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:3e78ad11f065e7cbf5494cdb841e6efddea31f36a02bae858da2b8cc8f728a05",
-        "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:a3e83097cfee84a77b3d037c2f9a33335408aef09c129c89969677c1c9a03bd3",
+        "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-agentic-evals-report.json": "sha256:dfb60a441b7cbf2f7e0a30b87faedd4dab8cc393c40ab8de56f9940216b723c2",
+        "docs/proofs/tickets/issue-321-memory-episode-projection-20260830T201246Z/memory-episode-proof.json": "sha256:72475c858495365c37abd26b215b0df9164e48743e70a82b1fce13f8f2d3f873",
         "evals/tau_memory_episode_projection_agentic_eval.json": "sha256:e8301841f28977ca4d7329a980b6cfc743c8fa828ad0182a4dcdc14f8f012d75"
       },
       "memory_readback_count": 9,
@@ -170,5 +170,5 @@
     "ref": "main",
     "repo": "grahama1970/tau"
   },
-  "status": "CANDIDATE_NOT_LANDED"
+  "status": "HASH_REPAIRED_NOT_CLOSED"
 }
