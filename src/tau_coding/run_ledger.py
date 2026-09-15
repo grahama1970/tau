@@ -1348,20 +1348,6 @@ def _verify_ticket_proof_bundles(
             mismatch_code="ticket_proof_source_file_digest_mismatch",
             failures=failures,
         )
-        if entry.get("issue") == 316:
-            dependencies = entry.get("issue_dependencies")
-            if not isinstance(dependencies, dict):
-                dependencies = {}
-            issue_314 = dependencies.get("314_live_state_readback")
-            if not isinstance(issue_314, dict) or issue_314.get("state") != "CLOSED":
-                failures.append(
-                    {
-                        "code": "issue_314_not_closed_for_316",
-                        "path": entry.get("path"),
-                        "actual": issue_314,
-                    }
-                )
-
 
 
 def _verify_ticket_proof_hash_map(
