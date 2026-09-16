@@ -3,175 +3,167 @@
     "enforce_admins": false,
     "required_status_checks": false
   },
-  "generated_for": "7e6cd96514ce6d79a6e1c57d9aa48499cd3fbd97",
+  "generated_for": "edaa837752b833868e967e3b7269ea44fae4bc00",
   "open_critical_issues": [
-    {
-      "number": 358,
-      "title": "Qualify Tau experimental developer preview after existing readiness blockers land"
-    },
     {
       "number": 354,
       "title": "Requalify the five-DAG immutable goal from one clean exact share commit after repair-boundary hardening"
     },
     {
-      "number": 320,
-      "title": "Package a project-memory-dream DAG with bounded OpenCode synthesis"
-    },
-    {
-      "number": 9,
-      "title": "Tau explicit issue-comment apply proof"
+      "number": 358,
+      "title": "Qualify Tau experimental developer preview after existing readiness blockers land"
     }
   ],
   "recently_completed": [
     {
-      "closedAt": "2026-09-14T21:57:10Z",
+      "number": 362,
+      "title": "Add developer_share_evidence producer for clean-checkout wheel-launch, viewer-browser, and repair-self-heal proof gates",
+      "closedAt": null
+    },
+    {
+      "number": 361,
+      "title": "Rebind developer-share security-gate receipt to real origin/main ancestry",
+      "closedAt": null
+    },
+    {
+      "number": 360,
+      "title": "Rebind developer-share security-gate receipt to real origin/main ancestry",
+      "closedAt": null
+    },
+    {
       "number": 359,
-      "title": "Restore full-suite compatibility after strict attempt-result and scheduler-boundary landing"
+      "title": "Restore full-suite compatibility after strict attempt-result and scheduler-boundary landing",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-14T21:59:07Z",
       "number": 357,
-      "title": "Remove self-authored noise unit tests; keep eval-backed regression guards"
+      "title": "Remove self-authored noise unit tests; keep eval-backed regression guards",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-11T19:17:27Z",
       "number": 356,
-      "title": "opencode-serve seat emits invalid attempt_result extensions field (dag_attempt_result_auxiliary_invalid:$.extensions)"
+      "title": "opencode-serve seat emits invalid attempt_result extensions field (dag_attempt_result_auxiliary_invalid:$.extensions)",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-11T15:33:52Z",
       "number": 355,
-      "title": "Add OpenCode serve authoring transport so repair_creator has a capability-valid fallback"
+      "title": "Add OpenCode serve authoring transport so repair_creator has a capability-valid fallback",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T14:46:25Z",
       "number": 353,
-      "title": "Separate current supported Tau contracts from historical planned/future documentation before developer preview"
+      "title": "Separate current supported Tau contracts from historical planned/future documentation before developer preview",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T15:14:17Z",
       "number": 352,
-      "title": "Regression: make developer-share readiness require a clean exact-HEAD project-status snapshot with green evidence indexes"
+      "title": "Regression: make developer-share readiness require a clean exact-HEAD project-status snapshot with green evidence indexes",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T15:23:41Z",
       "number": 351,
-      "title": "Quarantine stubbed and placeholder runtime surfaces from the external developer path"
+      "title": "Quarantine stubbed and placeholder runtime surfaces from the external developer path",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T19:29:07Z",
       "number": 350,
-      "title": "Expose the five canonical DAGs in one developer workflow catalog with launch and progress deep links"
+      "title": "Expose the five canonical DAGs in one developer workflow catalog with launch and progress deep links",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-14T18:25:52Z",
       "number": 349,
-      "title": "Route every scheduler/runtime boundary failure through one classified repair boundary"
+      "title": "Route every scheduler/runtime boundary failure through one classified repair boundary",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-13T17:35:41Z",
       "number": 348,
-      "title": "Add one strict scheduler-to-node dispatch envelope before every DAG adapter call"
+      "title": "Add one strict scheduler-to-node dispatch envelope before every DAG adapter call",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-14T19:00:22Z",
       "number": 347,
-      "title": "Regression: close DAG attempt-result extras and validate accepted_output against each node's declared output schema"
+      "title": "Regression: close DAG attempt-result extras and validate accepted_output against each node's declared output schema",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T23:25:52Z",
       "number": 346,
-      "title": "Harden the DAG triage classification contract and replace raw next_command with typed repair actions"
+      "title": "Harden the DAG triage classification contract and replace raw next_command with typed repair actions",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T14:37:28Z",
       "number": 345,
-      "title": "Remove machine-local triage-error path dependency from the DAG runtime"
+      "title": "Remove machine-local triage-error path dependency from the DAG runtime",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-09T16:04:27Z",
       "number": 344,
-      "title": "Make classified DAG failures durable repair categories that rerun the same semantic node"
+      "title": "Make classified DAG failures durable repair categories that rerun the same semantic node",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T19:16:38Z",
       "number": 343,
-      "title": "Regression: block developer sharing on unresolved critical security and hardcoded-path findings"
+      "title": "Regression: block developer sharing on unresolved critical security and hardcoded-path findings",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-06T23:15:10Z",
       "number": 342,
-      "title": "Diagnose native preflight readiness timeout after profile catalog HTTP 200"
+      "title": "Diagnose native preflight readiness timeout after profile catalog HTTP 200",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-06T22:58:45Z",
       "number": 341,
-      "title": "Reject identity-free and malformed SciLLM worker launch contracts before HTTP"
+      "title": "Reject identity-free and malformed SciLLM worker launch contracts before HTTP",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-06T17:42:52Z",
       "number": 340,
-      "title": "tau run compiles tau_agent nodes but executes them as empty legacy commands"
+      "title": "tau run compiles tau_agent nodes but executes them as empty legacy commands",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T09:00:17Z",
       "number": 339,
-      "title": "Expose versioned operator control API over the existing tau.operator_action_request.v1 inbox"
+      "title": "Expose versioned operator control API over the existing tau.operator_action_request.v1 inbox",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-12T18:34:50Z",
       "number": 338,
-      "title": "Tau/Ask lets project agent bypass DAG with bespoke visual artifacts"
+      "title": "Tau/Ask lets project agent bypass DAG with bespoke visual artifacts",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T09:49:24Z",
       "number": 337,
-      "title": "Require typed Tau DAG node sanity checks"
+      "title": "Require typed Tau DAG node sanity checks",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-08-31T11:03:24Z",
       "number": 336,
-      "title": "Tau DAG PASS accepts fake creator-reviewer visual loop"
+      "title": "Tau DAG PASS accepts fake creator-reviewer visual loop",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T10:04:24Z",
       "number": 335,
-      "title": "Prune stale Tau project-knowledge references found by project-state"
+      "title": "Prune stale Tau project-knowledge references found by project-state",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-08-30T14:09:04Z",
       "number": 334,
-      "title": "Triage project-state hardcoded-secret findings in Tau"
+      "title": "Triage project-state hardcoded-secret findings in Tau",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T06:16:19Z",
       "number": 333,
-      "title": "Formalize compliance-officer ledger audit projection and independent verification"
+      "title": "Formalize compliance-officer ledger audit projection and independent verification",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-08-30T17:26:44Z",
       "number": 332,
-      "title": "Correlate live React Flow DAG transitions with Tau ledger events"
+      "title": "Correlate live React Flow DAG transitions with Tau ledger events",
+      "closedAt": null
     },
     {
-      "closedAt": "2026-09-15T07:22:12Z",
       "number": 331,
-      "title": "Establish canonical Tau DAG ladder manifest and prove first rung from clean checkout"
-    },
-    {
-      "closedAt": "2026-08-30T17:21:10Z",
-      "number": 330,
-      "title": "Derive Tau feature inventory from source and reconcile agentic eval claims"
-    },
-    {
-      "closedAt": "2026-09-15T14:41:13Z",
-      "number": 329,
-      "title": "Bind retained Tau agentic-eval evidence to pushed revision"
-    },
-    {
-      "closedAt": "2026-08-29T15:27:36Z",
-      "number": 328,
-      "title": "Repair tau failure: coder tau_project_dag_missing_required_evidence"
+      "title": "Establish canonical Tau DAG ladder manifest and prove first rung from clean checkout",
+      "closedAt": null
     }
   ]
 }
