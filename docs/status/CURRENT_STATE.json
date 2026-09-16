@@ -27,6 +27,75 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
+  "developer_share_evidence": {
+    "clean_checkout_installed_wheel_launch": true,
+    "detail": {
+      "clean_checkout_installed_wheel_launch": [
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:af612f4721d35a0ade379c314687edc36165e9139bca109c31030e8418a24647",
+          "owner": "tau#304",
+          "path": "docs/proofs/tickets/issue-304-provider-live-acceptance-20260830T190303Z/provider-live-acceptance-receipt.json",
+          "present": true,
+          "sha256": "sha256:af612f4721d35a0ade379c314687edc36165e9139bca109c31030e8418a24647"
+        }
+      ],
+      "repair_self_heal": [
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1",
+          "owner": "tau#344",
+          "path": "local/agentic-evals/tau-same-node-rerun-proof.json",
+          "present": true,
+          "sha256": "sha256:2316d88b65c9a8d41a5b20900f52d4dc52d9a555049579cc0141cd5325c244c1"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e",
+          "owner": "tau#346",
+          "path": "local/agentic-evals/tau-triage-contract/proof.json",
+          "present": true,
+          "sha256": "sha256:8885cb8312cec6db8484bb663e745672d24adc777dcb157d88cf5d40f774355e"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff",
+          "owner": "tau#349",
+          "path": "local/agentic-evals/tau-scheduler-boundary-registry/proof.json",
+          "present": true,
+          "sha256": "sha256:f9dd27e932c1ecf176220f6320abefbda51dfb90b4754df4149964a7db75cbff"
+        }
+      ],
+      "viewer_browser": [
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b",
+          "owner": "tau#182",
+          "path": "docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-proof.json",
+          "present": true,
+          "sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:b628b44fb56faa5fdb64c0f703336e29ec55c8f1bd3230368268d03bf7879fe7",
+          "owner": "tau#332",
+          "path": "docs/proofs/tickets/issue-332-live-viewer-ledger-correlation-20260830T172554Z/proof-bundle/browser-proof.json",
+          "present": true,
+          "sha256": "sha256:b628b44fb56faa5fdb64c0f703336e29ec55c8f1bd3230368268d03bf7879fe7"
+        },
+        {
+          "check": "PASS",
+          "expected_sha256": "sha256:92b673c8bcde090f887ae977046a045d015e40c9a24e8fab2c9378e108e49261",
+          "owner": "tau#312",
+          "path": "artifacts/agent_native_live_proof/watched-live-1785978645/summary.json",
+          "present": true,
+          "sha256": "sha256:92b673c8bcde090f887ae977046a045d015e40c9a24e8fab2c9378e108e49261"
+        }
+      ]
+    },
+    "repair_self_heal": true,
+    "viewer_browser": true
+  },
   "developer_surface_inventory": {
     "bug_stub_count": 0,
     "classifications": [
@@ -183,17 +252,17 @@
       "proves": "Known developer-visible stub, placeholder, degraded, and audited pass surfaces are classified.",
       "provider_live": false
     },
-    "repo": "/tmp/tau-t2-verify-YkwNNN/repo",
+    "repo": "/tmp/tau-358-clean",
     "schema": "tau.developer_surface_inventory.v1",
     "status": "PASS",
     "unclassified_count": 0,
     "unclassified_markers": []
   },
-  "generated_at": "2026-09-15T21:04:07.310227+00:00",
+  "generated_at": "2026-09-16T00:24:25.234611+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": true,
-    "commit": "5684a8d3fb9265b7dbfe745ae070b67d1b681f63"
+    "commit": "d7ed3017cbbe40bc56c8640090871da1f1ee6d05"
   },
   "github": {
     "branch_protection": {
@@ -203,176 +272,168 @@
     "freshness": "FRESH",
     "open_critical_issues": [
       {
-        "number": 358,
-        "title": "Qualify Tau experimental developer preview after existing readiness blockers land"
-      },
-      {
         "number": 354,
         "title": "Requalify the five-DAG immutable goal from one clean exact share commit after repair-boundary hardening"
       },
       {
-        "number": 320,
-        "title": "Package a project-memory-dream DAG with bounded OpenCode synthesis"
-      },
-      {
-        "number": 9,
-        "title": "Tau explicit issue-comment apply proof"
+        "number": 358,
+        "title": "Qualify Tau experimental developer preview after existing readiness blockers land"
       }
     ],
     "recently_completed": [
       {
-        "closedAt": "2026-09-14T21:57:10Z",
+        "closedAt": null,
+        "number": 362,
+        "title": "Add developer_share_evidence producer for clean-checkout wheel-launch, viewer-browser, and repair-self-heal proof gates"
+      },
+      {
+        "closedAt": null,
+        "number": 361,
+        "title": "Rebind developer-share security-gate receipt to real origin/main ancestry"
+      },
+      {
+        "closedAt": null,
+        "number": 360,
+        "title": "Rebind developer-share security-gate receipt to real origin/main ancestry"
+      },
+      {
+        "closedAt": null,
         "number": 359,
         "title": "Restore full-suite compatibility after strict attempt-result and scheduler-boundary landing"
       },
       {
-        "closedAt": "2026-09-14T21:59:07Z",
+        "closedAt": null,
         "number": 357,
         "title": "Remove self-authored noise unit tests; keep eval-backed regression guards"
       },
       {
-        "closedAt": "2026-09-11T19:17:27Z",
+        "closedAt": null,
         "number": 356,
         "title": "opencode-serve seat emits invalid attempt_result extensions field (dag_attempt_result_auxiliary_invalid:$.extensions)"
       },
       {
-        "closedAt": "2026-09-11T15:33:52Z",
+        "closedAt": null,
         "number": 355,
         "title": "Add OpenCode serve authoring transport so repair_creator has a capability-valid fallback"
       },
       {
-        "closedAt": "2026-09-09T14:46:25Z",
+        "closedAt": null,
         "number": 353,
         "title": "Separate current supported Tau contracts from historical planned/future documentation before developer preview"
       },
       {
-        "closedAt": "2026-09-09T15:14:17Z",
+        "closedAt": null,
         "number": 352,
         "title": "Regression: make developer-share readiness require a clean exact-HEAD project-status snapshot with green evidence indexes"
       },
       {
-        "closedAt": "2026-09-09T15:23:41Z",
+        "closedAt": null,
         "number": 351,
         "title": "Quarantine stubbed and placeholder runtime surfaces from the external developer path"
       },
       {
-        "closedAt": "2026-09-15T19:29:07Z",
+        "closedAt": null,
         "number": 350,
         "title": "Expose the five canonical DAGs in one developer workflow catalog with launch and progress deep links"
       },
       {
-        "closedAt": "2026-09-14T18:25:52Z",
+        "closedAt": null,
         "number": 349,
         "title": "Route every scheduler/runtime boundary failure through one classified repair boundary"
       },
       {
-        "closedAt": "2026-09-13T17:35:41Z",
+        "closedAt": null,
         "number": 348,
         "title": "Add one strict scheduler-to-node dispatch envelope before every DAG adapter call"
       },
       {
-        "closedAt": "2026-09-14T19:00:22Z",
+        "closedAt": null,
         "number": 347,
         "title": "Regression: close DAG attempt-result extras and validate accepted_output against each node's declared output schema"
       },
       {
-        "closedAt": "2026-09-09T23:25:52Z",
+        "closedAt": null,
         "number": 346,
         "title": "Harden the DAG triage classification contract and replace raw next_command with typed repair actions"
       },
       {
-        "closedAt": "2026-09-09T14:37:28Z",
+        "closedAt": null,
         "number": 345,
         "title": "Remove machine-local triage-error path dependency from the DAG runtime"
       },
       {
-        "closedAt": "2026-09-09T16:04:27Z",
+        "closedAt": null,
         "number": 344,
         "title": "Make classified DAG failures durable repair categories that rerun the same semantic node"
       },
       {
-        "closedAt": "2026-09-15T19:16:38Z",
+        "closedAt": null,
         "number": 343,
         "title": "Regression: block developer sharing on unresolved critical security and hardcoded-path findings"
       },
       {
-        "closedAt": "2026-09-06T23:15:10Z",
+        "closedAt": null,
         "number": 342,
         "title": "Diagnose native preflight readiness timeout after profile catalog HTTP 200"
       },
       {
-        "closedAt": "2026-09-06T22:58:45Z",
+        "closedAt": null,
         "number": 341,
         "title": "Reject identity-free and malformed SciLLM worker launch contracts before HTTP"
       },
       {
-        "closedAt": "2026-09-06T17:42:52Z",
+        "closedAt": null,
         "number": 340,
         "title": "tau run compiles tau_agent nodes but executes them as empty legacy commands"
       },
       {
-        "closedAt": "2026-09-15T09:00:17Z",
+        "closedAt": null,
         "number": 339,
         "title": "Expose versioned operator control API over the existing tau.operator_action_request.v1 inbox"
       },
       {
-        "closedAt": "2026-09-12T18:34:50Z",
+        "closedAt": null,
         "number": 338,
         "title": "Tau/Ask lets project agent bypass DAG with bespoke visual artifacts"
       },
       {
-        "closedAt": "2026-09-15T09:49:24Z",
+        "closedAt": null,
         "number": 337,
         "title": "Require typed Tau DAG node sanity checks"
       },
       {
-        "closedAt": "2026-08-31T11:03:24Z",
+        "closedAt": null,
         "number": 336,
         "title": "Tau DAG PASS accepts fake creator-reviewer visual loop"
       },
       {
-        "closedAt": "2026-09-15T10:04:24Z",
+        "closedAt": null,
         "number": 335,
         "title": "Prune stale Tau project-knowledge references found by project-state"
       },
       {
-        "closedAt": "2026-08-30T14:09:04Z",
+        "closedAt": null,
         "number": 334,
         "title": "Triage project-state hardcoded-secret findings in Tau"
       },
       {
-        "closedAt": "2026-09-15T06:16:19Z",
+        "closedAt": null,
         "number": 333,
         "title": "Formalize compliance-officer ledger audit projection and independent verification"
       },
       {
-        "closedAt": "2026-08-30T17:26:44Z",
+        "closedAt": null,
         "number": 332,
         "title": "Correlate live React Flow DAG transitions with Tau ledger events"
       },
       {
-        "closedAt": "2026-09-15T07:22:12Z",
+        "closedAt": null,
         "number": 331,
         "title": "Establish canonical Tau DAG ladder manifest and prove first rung from clean checkout"
-      },
-      {
-        "closedAt": "2026-08-30T17:21:10Z",
-        "number": 330,
-        "title": "Derive Tau feature inventory from source and reconcile agentic eval claims"
-      },
-      {
-        "closedAt": "2026-09-15T14:41:13Z",
-        "number": 329,
-        "title": "Bind retained Tau agentic-eval evidence to pushed revision"
-      },
-      {
-        "closedAt": "2026-08-29T15:27:36Z",
-        "number": 328,
-        "title": "Repair tau failure: coder tau_project_dag_missing_required_evidence"
       }
     ],
     "required_checks": "UNKNOWN",
-    "snapshot_sha256": "sha256:44335484e9297d0ed1dd174660a90bba40ae20154c92d085250599a33e68f0dc"
+    "snapshot_sha256": "sha256:82badfdefd7050d8c91f1eb423cebf8304f0e78ff3452f72a761edd70057131f"
   },
   "human_acceptance": {
     "attestation_present": false,
@@ -394,7 +455,7 @@
       ],
       "ok": false,
       "schema": "tau.human_acceptance_attestation_verification.v1",
-      "source_commit": "5684a8d3fb9265b7dbfe745ae070b67d1b681f63",
+      "source_commit": "d7ed3017cbbe40bc56c8640090871da1f1ee6d05",
       "state": "PENDING_HUMAN_SIGNATURE",
       "status": "PENDING_HUMAN_SIGNATURE"
     }
@@ -417,6 +478,7 @@
       "immutable-goal status from GOAL.md",
       "checked-in closure-evidence proof index digest",
       "checked-in retained agentic-eval evidence index digest and verifier status",
+      "retained developer-share proof artifacts (wheel-launch, viewer-browser, repair-self-heal) with pinned digests and status fields",
       "clean-wheel acceptance baseline presence and verified signature binding",
       "GitHub branch-protection, required checks, and open/closed critical issues"
     ],
@@ -611,12 +673,12 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:8a146c611937a7e40c569b972608985f5a8e52518e9ddc532a43e9ce07abbee5",
+  "semantic_content_digest": "sha256:85ef1ac0b34334bcc2754eac625fe9aeb72c78a310b2a47283e092ecc82e2cfa",
   "source_digests": {
     "GOAL.md": "sha256:0dfa78a7af6114e89d32e09b2b8cc7e33a5c389d4909d13edb47cc3869c2c1e4",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
     "agentic_eval_evidence_index": "sha256:6d83f0714f202548d6cc5886166511cb6b7b79c17ad4f43fd6ec1b1a053d3118",
-    "github_snapshot": "sha256:44335484e9297d0ed1dd174660a90bba40ae20154c92d085250599a33e68f0dc",
+    "github_snapshot": "sha256:82badfdefd7050d8c91f1eb423cebf8304f0e78ff3452f72a761edd70057131f",
     "human_acceptance_attestation": null,
     "proof_index": "sha256:2bd2fe4e05c384038ba7cc18b090f0463424a557ff3463b56dd16a126eb50aa3",
     "pyproject.toml": "sha256:0129dd918978c3760bd29ca736f5f6e01e5402d2dfa840a7df5538fd11fe854f"
