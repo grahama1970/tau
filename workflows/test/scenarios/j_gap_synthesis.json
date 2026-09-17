@@ -1,0 +1,34 @@
+{
+  "name": "failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed",
+  "cases": [
+    {
+      "name": "full-mode-files-tickets",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 1, "mode": "full", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "blocked_human", "detail": "machine gate red but no blockers enumerated", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-machine-gate"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "prepare-1", "output": {"newTickets": [863], "strategyDigest": "d1", "notes": "gap synthesis filed 863"}},
+        {"key": "recover-1-863", "output": {"candidatePaths": ["src/g.py"], "proofSummary": "done", "leaseToken": "tok-863"}},
+        {"key": "review-1-863-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/g.py"], "digests": [{"path": "src/g.py", "sha256": "sha256:G863"}], "proofSummary": "ok"}},
+        {"key": "contamination-1-863", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-1-863", "output": {"published": true, "commit": "c863", "leaseTokenUsed": "tok-863", "verifiedDigests": [{"path": "src/g.py", "sha256": "sha256:G863"}]}},
+        {"key": "post-1-863", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c863", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-863"}},
+        {"key": "close-1-863", "output": {"closed": true, "leaseTokenUsed": "tok-863"}},
+        {"key": "gate-final", "output": {"phase": "ready", "detail": "green", "humanActions": [], "actionable": [], "blockerFingerprints": [], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "ready_to_share", "status_not": "blocked_human", "iteration": {"0": {"gapSynthesis": true}}, "calls_include": ["prepare-1", "recover-1-863"]}
+    },
+    {
+      "name": "tickets-only-mode-does-not-file",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 1, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "blocked_human", "detail": "machine gate red but no blockers enumerated", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-m"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "gate-final", "output": {"phase": "continue", "detail": "still unclear", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-m"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "iteration_cap_reached", "status_not": "blocked_human", "iteration": {"0": {"gapSynthesis": true}}, "calls_exclude": ["prepare-1"]}
+    }
+  ]
+}

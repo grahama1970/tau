@@ -1,0 +1,39 @@
+{
+  "name": "provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity",
+  "cases": [
+    {
+      "name": "rebind-from-survivors-run-continues",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 3, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3", "zai/glm-5.3-flash"], "availableWebSeats": ["webgpt"], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3", "zai/glm-5.3-flash"], "availableWebSeats": ["webgpt"], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "continue", "detail": "one ticket", "humanActions": [], "actionable": [{"issue": 111, "reason": "agent-routable"}], "blockerFingerprints": ["blk-111"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "recover-1-111", "output": {"candidatePaths": ["src/one.py"], "proofSummary": "done", "leaseToken": "tok-111"}},
+        {"key": "review-1-111-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/one.py"], "digests": [{"path": "src/one.py", "sha256": "sha256:O111"}], "proofSummary": "ok"}},
+        {"key": "contamination-1-111", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-1-111", "output": {"published": true, "commit": "c111", "leaseTokenUsed": "tok-111", "verifiedDigests": [{"path": "src/one.py", "sha256": "sha256:O111"}]}},
+        {"key": "post-1-111", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c111", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-111"}},
+        {"key": "close-1-111", "output": {"closed": true, "leaseTokenUsed": "tok-111"}},
+        {"key": "preflight-2", "output": {"availableApiModels": ["zai/glm-5.3", "zai/glm-5.3-flash"], "availableWebSeats": [], "unavailable": ["gpt-5.5"]}},
+        {"key": "gate-2", "output": {"phase": "continue", "detail": "one more", "humanActions": [], "actionable": [{"issue": 222, "reason": "agent-routable"}], "blockerFingerprints": ["blk-222"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "recover-2-222", "output": {"candidatePaths": ["src/two.py"], "proofSummary": "done", "leaseToken": "tok-222"}},
+        {"key": "review-2-222-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/two.py"], "digests": [{"path": "src/two.py", "sha256": "sha256:T222"}], "proofSummary": "ok"}},
+        {"key": "contamination-2-222", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-2-222", "output": {"published": true, "commit": "c222", "leaseTokenUsed": "tok-222", "verifiedDigests": [{"path": "src/two.py", "sha256": "sha256:T222"}]}},
+        {"key": "post-2-222", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c222", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-222"}},
+        {"key": "close-2-222", "output": {"closed": true, "leaseTokenUsed": "tok-222"}},
+        {"key": "preflight-3", "output": {"availableApiModels": [], "availableWebSeats": [], "unavailable": ["gpt-5.5", "zai/glm-5.3", "zai/glm-5.3-flash"]}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "no_provider_capacity", "calls_include": ["recover-2-222", "preflight-3"], "calls_exclude": ["gate-3", "gate-final"], "rebinds": [{"iteration_index": 1, "role": "worker", "to": "zai/glm-5.3"}, {"iteration_index": 1, "role": "reviewer", "to": "zai/glm-5.3-flash"}], "models_used": {"worker": "zai/glm-5.3"}, "call_models": [{"key": "recover-2-222", "model": "zai/glm-5.3"}]}
+    },
+    {
+      "name": "all-providers-dead",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 2, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": [], "availableWebSeats": [], "unavailable": ["gpt-5.5"]}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "no_provider_capacity", "calls_exclude": ["gate-1"]}
+    }
+  ]
+}

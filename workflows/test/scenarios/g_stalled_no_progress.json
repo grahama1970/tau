@@ -1,0 +1,17 @@
+{
+  "name": "identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress",
+  "cases": [
+    {
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 5, "mode": "full", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "continue", "detail": "blocked on dependency", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-363"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "prepare-1", "output": {"newTickets": [], "strategyDigest": "d1", "notes": "nothing new"}},
+        {"key": "preflight-2", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-2", "output": {"phase": "continue", "detail": "still the same blocker", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-363"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [{"issue": 363, "reason": "dependency"}], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "stalled_no_progress", "calls_include": ["gate-1", "gate-2"], "calls_exclude": ["gate-3", "prepare-2", "gate-final"]}
+    }
+  ]
+}

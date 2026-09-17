@@ -1,0 +1,143 @@
+{
+    "version": 2,
+    "skill": "tau-dev-cycle-controller",
+    "trials": 2,
+    "proof_scope": "tau#363 dev-cycle workflowScript controller properties proven over a simulated runs runner against the committed artifact",
+    "claims": {
+        "proves": "The committed workflows/dev-cycle.workflow.js enforces the council controller properties in code (evidence-chain digests, lease fencing with guarded release, contamination guard, final-audit veto, post-round re-gate, mid-round provider rebind, restart journal, convergence detection, gap synthesis) via a real node:test sandbox harness dispatching scripted scenarios; a corrupted scenario copy fails the harness.",
+        "does_not_prove": "Live provider/model quality, real gh-land or ticket-skill mutation behavior, readiness-command correctness on the target repo, or any unattended production run of the workflow."
+    },
+    "capability_claims": [
+        {
+            "id": "tau.dev_cycle.controller_properties",
+            "description": "The dev-cycle workflowScript terminal states and lane decisions are bound by controller code properties exercised through a deterministic simulated-runs harness over the committed script bytes.",
+            "criticality": "critical",
+            "claim_semantics": "protocol",
+            "evidence_required": {
+                "live_e2e": true,
+                "fault_injected_deterministic": true
+            }
+        }
+    ],
+    "cases": [
+        {
+            "name": "controller-scenarios-all-pass",
+            "type": "positive",
+            "real_world": true,
+            "evidence_class": "live_e2e",
+            "supports_claims": [
+                "tau.dev_cycle.controller_properties"
+            ],
+            "timeout_seconds": 180,
+            "command": [
+                "bash",
+                "-lc",
+                "cd .. && uv run python scripts/agentic-eval-tau-dev-cycle-controller.py --out local/agentic-evals/tau-dev-cycle-controller/positive-proof.json --only positive"
+            ],
+            "expected": {
+                "exit_code": 0,
+                "stdout_contains": [
+                    "\"final_status\": \"PASS\""
+                ],
+                "artifacts": [
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json",
+                        "json_pointer": "/ok",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json",
+                        "json_pointer": "/mocked",
+                        "equals": false
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json",
+                        "json_pointer": "/live",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json",
+                        "json_pointer": "/checks/positive_suite/ok",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json",
+                        "json_pointer": "/checks/node_check",
+                        "equals": true
+                    }
+                ]
+            }
+        },
+        {
+            "name": "plain-node-test-runner-over-committed-script",
+            "type": "positive",
+            "real_world": true,
+            "evidence_class": "deterministic",
+            "supports_claims": [
+                "tau.dev_cycle.controller_properties"
+            ],
+            "timeout_seconds": 120,
+            "command": [
+                "bash",
+                "-lc",
+                "cd .. && node --check workflows/dev-cycle.workflow.js && node --test workflows/test/"
+            ],
+            "expected": {
+                "exit_code": 0,
+                "stdout_contains": [
+                    "# tests 10",
+                    "# fail 0"
+                ]
+            }
+        },
+        {
+            "name": "corrupted-scenario-must-fail",
+            "type": "adversarial",
+            "real_world": true,
+            "evidence_class": "fault_injected_deterministic",
+            "supports_claims": [
+                "tau.dev_cycle.controller_properties"
+            ],
+            "timeout_seconds": 180,
+            "command": [
+                "bash",
+                "-lc",
+                "cd .. && uv run python scripts/agentic-eval-tau-dev-cycle-controller.py --out local/agentic-evals/tau-dev-cycle-controller/proof.json"
+            ],
+            "expected": {
+                "exit_code": 0,
+                "stdout_contains": [
+                    "\"final_status\": \"PASS\"",
+                    "\"claim_semantics\": \"protocol\""
+                ],
+                "artifacts": [
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/proof.json",
+                        "json_pointer": "/ok",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/proof.json",
+                        "json_pointer": "/mocked",
+                        "equals": false
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/proof.json",
+                        "json_pointer": "/live",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/proof.json",
+                        "json_pointer": "/checks/fault_injected/ok",
+                        "equals": true
+                    },
+                    {
+                        "path": "../local/agentic-evals/tau-dev-cycle-controller/proof.json",
+                        "json_pointer": "/checks/positive_suite/ok",
+                        "equals": true
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice",
+  "cases": [
+    {
+      "name": "first-run-publishes",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 1, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "continue", "detail": "one ticket", "humanActions": [], "actionable": [{"issue": 363, "reason": "agent-routable"}], "blockerFingerprints": ["blk-363"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "recover-1-363", "output": {"candidatePaths": ["src/x.py"], "proofSummary": "implemented", "leaseToken": "tok-363"}},
+        {"key": "review-1-363-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/x.py"], "digests": [{"path": "src/x.py", "sha256": "sha256:AAA"}], "proofSummary": "reviewed"}},
+        {"key": "contamination-1-363", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-1-363", "output": {"published": true, "commit": "c1", "leaseTokenUsed": "tok-363", "verifiedDigests": [{"path": "src/x.py", "sha256": "sha256:AAA"}]}},
+        {"key": "post-1-363", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c1", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-363"}},
+        {"key": "close-1-363", "output": {"closed": true, "leaseTokenUsed": "tok-363"}},
+        {"key": "gate-final", "output": {"phase": "continue", "detail": "more work", "humanActions": [], "actionable": [], "blockerFingerprints": ["blk-x"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "iteration_cap_reached", "any_ticket_state": "closed"}
+    },
+    {
+      "name": "restart-resumes-at-post",
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 1, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": [{"repo": "grahama1970/tau", "issue": 363, "stage": "recover", "token": "tok-363", "commit": ""}, {"repo": "grahama1970/tau", "issue": 363, "stage": "publish", "token": "tok-363", "commit": "c1"}]}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "continue", "detail": "same ticket still open", "humanActions": [], "actionable": [{"issue": 363, "reason": "agent-routable"}], "blockerFingerprints": ["blk-363"], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "post-1-363", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c1", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-363"}},
+        {"key": "close-1-363", "output": {"closed": true, "leaseTokenUsed": "tok-363"}},
+        {"key": "gate-final", "output": {"phase": "ready", "detail": "green", "humanActions": [], "actionable": [], "blockerFingerprints": [], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "ready_to_share", "any_ticket_state": "closed", "calls_include": ["post-1-363", "close-1-363"], "calls_exclude": ["recover-1-363", "review-1-363-0", "publish-1-363"]}
+    }
+  ],
+  "cross_expect": {"prefix_counts": {"publish-": 1, "recover-": 1, "review-": 1, "post-": 2, "close-": 2}}
+}

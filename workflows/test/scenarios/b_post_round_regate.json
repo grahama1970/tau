@@ -1,0 +1,27 @@
+{
+  "name": "cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable",
+  "cases": [
+    {
+      "runs": [
+        {"key": "cycle-gate0", "output": {"repo": "grahama1970/tau", "maxIterations": 1, "mode": "tickets-only", "readinessCommand": "none", "focus": "", "availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": [], "journalPath": ".pi/dev-cycle-journal.jsonl", "journal": []}},
+        {"key": "preflight-1", "output": {"availableApiModels": ["gpt-5.5", "zai/glm-5.3"], "availableWebSeats": [], "unavailable": []}},
+        {"key": "gate-1", "output": {"phase": "continue", "detail": "two tickets", "humanActions": [], "actionable": [{"issue": 363, "reason": "agent-routable"}], "blockerFingerprints": ["blk-363"], "dirtySnapshot": [], "staleLeases": [{"issue": 404, "ageHours": 30, "holder": "codex-worker-old", "token": "tok-404"}]}},
+        {"key": "recover-1-363", "output": {"candidatePaths": ["src/a.py"], "proofSummary": "done", "leaseToken": "tok-363"}},
+        {"key": "review-1-363-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/a.py"], "digests": [{"path": "src/a.py", "sha256": "sha256:A363"}], "proofSummary": "ok"}},
+        {"key": "contamination-1-363", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-1-363", "output": {"published": true, "commit": "c363", "leaseTokenUsed": "tok-363", "verifiedDigests": [{"path": "src/a.py", "sha256": "sha256:A363"}]}},
+        {"key": "post-1-363", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c363", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-363"}},
+        {"key": "close-1-363", "output": {"closed": true, "leaseTokenUsed": "tok-363"}},
+        {"key": "recover-1-404", "output": {"candidatePaths": ["src/b.py"], "proofSummary": "done", "leaseToken": "tok-404"}},
+        {"key": "review-1-404-0", "output": {"verdict": "ready", "findings": [], "scopedPaths": ["src/b.py"], "digests": [{"path": "src/b.py", "sha256": "sha256:B404"}], "proofSummary": "ok"}},
+        {"key": "contamination-1-404", "output": {"preserved": true, "contaminationPaths": []}},
+        {"key": "publish-1-404", "output": {"published": true, "commit": "c404", "leaseTokenUsed": "tok-404", "verifiedDigests": [{"path": "src/b.py", "sha256": "sha256:B404"}]}},
+        {"key": "post-1-404", "output": {"verdict": "pass", "findings": [], "proofSummary": "ok", "commit": "c404", "pathCheck": "exact", "mismatchedPaths": [], "leaseTokenUsed": "tok-404"}},
+        {"key": "close-1-404", "output": {"closed": true, "leaseTokenUsed": "tok-404"}},
+        {"key": "gate-final", "output": {"phase": "ready", "detail": "post-round gate green", "humanActions": [], "actionable": [], "blockerFingerprints": [], "dirtySnapshot": [], "staleLeases": []}},
+        {"key": "final-audit", "output": {"openRemaining": [], "originMain": "origin/main", "strandedCommitCount": 0, "actionableRemaining": []}}
+      ],
+      "expect": {"status": "ready_to_share", "status_not": "iteration_cap_reached", "calls_include": ["gate-final", "recover-1-404"]}
+    }
+  ]
+}
