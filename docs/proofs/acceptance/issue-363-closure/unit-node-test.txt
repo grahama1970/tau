@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready
+ok 1 - scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready
+  ---
+  duration_ms: 2.988881
+  type: 'test'
+  ...
+# Subtest: scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable
+ok 2 - scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable
+  ---
+  duration_ms: 0.527121
+  type: 'test'
+  ...
+# Subtest: scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch
+ok 3 - scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch
+  ---
+  duration_ms: 0.747526
+  type: 'test'
+  ...
+# Subtest: scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded
+ok 4 - scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded
+  ---
+  duration_ms: 0.383458
+  type: 'test'
+  ...
+# Subtest: scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity
+ok 5 - scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity
+  ---
+  duration_ms: 1.665665
+  type: 'test'
+  ...
+# Subtest: scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice
+ok 6 - scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice
+  ---
+  duration_ms: 0.765026
+  type: 'test'
+  ...
+# Subtest: scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress
+ok 7 - scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress
+  ---
+  duration_ms: 0.350537
+  type: 'test'
+  ...
+# Subtest: scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed
+ok 8 - scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed
+  ---
+  duration_ms: 0.290586
+  type: 'test'
+  ...
+# Subtest: scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish
+ok 9 - scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish
+  ---
+  duration_ms: 0.434059
+  type: 'test'
+  ...
+# Subtest: scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed
+ok 10 - scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed
+  ---
+  duration_ms: 0.924969
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.546671

@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "fault_injected": {
+      "corrupted_scenario": "workflows/test/scenarios/h_audit_veto.json",
+      "detail": "failed=True named=True bytes_identical=True",
+      "ok": true
+    },
+    "node_check": true,
+    "positive_suite": {
+      "ok": true,
+      "tap_counts": {
+        "fail": 0,
+        "pass": 10,
+        "tests": 10
+      }
+    }
+  },
+  "claim_semantics": "protocol",
+  "final_status": "PASS",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "schema": "tau.dev_cycle_controller_eval.v1",
+  "script_sha256": "e64b4776189a69bd5588a7b9312cdd55de77810910c9b7c389b94dcdc264476c"
+}

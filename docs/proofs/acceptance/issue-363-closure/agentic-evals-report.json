@@ -1,0 +1,242 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_dev_cycle_controller_agentic_eval.json",
+  "run_id": "6ca963577ab1",
+  "fixture_sha256": "sha256:9533f8d0e7f0fe896268e994906ec7f2b8cc8ec0857a4380ec6f43c25110a2e7",
+  "repo": {
+    "sha": "c8bdfb2d91f04beae68645484f42d0848625c3c4",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "tau#363 dev-cycle workflowScript controller properties proven over a simulated runs runner against the committed artifact",
+  "claims": {
+    "proves": "The committed workflows/dev-cycle.workflow.js enforces the council controller properties in code (evidence-chain digests, lease fencing with guarded release, contamination guard, final-audit veto, post-round re-gate, mid-round provider rebind, restart journal, convergence detection, gap synthesis) via a real node:test sandbox harness dispatching scripted scenarios; a corrupted scenario copy fails the harness.",
+    "does_not_prove": "Live provider/model quality, real gh-land or ticket-skill mutation behavior, readiness-command correctness on the target repo, or any unattended production run of the workflow."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.dev_cycle.controller_properties",
+        "description": "The dev-cycle workflowScript terminal states and lane decisions are bound by controller code properties exercised through a deterministic simulated-runs harness over the committed script bytes.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "corrupted-scenario-must-fail"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "controller-scenarios-all-pass"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "controller-scenarios-all-pass",
+          "plain-node-test-runner-over-committed-script",
+          "corrupted-scenario-must-fail"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-09-17T02:13:30.302341+00:00",
+  "case_count": 3,
+  "required_case_count": 3,
+  "outcome_counts": {
+    "PASS": 3,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 6,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "controller-scenarios-all-pass",
+      "type": "positive",
+      "case_id": "6ca963577ab1-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-dev-cycle-controller.py --out local/agentic-evals/tau-dev-cycle-controller/positive-proof.json --only positive"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.dev_cycle.controller_properties"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 561.014,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"checks\": {\n    \"node_check\": true,\n    \"positive_suite\": {\n      \"ok\": true,\n      \"tap_counts\": {\n        \"fail\": 0,\n        \"pass\": 10,\n        \"tests\": 10\n      }\n    }\n  },\n  \"claim_semantics\": \"protocol\",\n  \"final_status\": \"PASS\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"schema\": \"tau.dev_cycle_controller_eval.v1\",\n  \"script_sha256\": \"e64b4776189a69bd5588a7b9312cdd55de77810910c9b7c389b94dcdc264476c\"\n}\n",
+          "stderr": "Using CPython 3.14.3\nCreating virtual environment at: .venv\n   Building tau @ file:///tmp/tau-363-clean/checkout\n      Built tau @ file:///tmp/tau-363-clean/checkout\nInstalled 36 packages in 142ms\n",
+          "duration_ms": 838.061,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json": "sha256:b37f3af5556243a3a49e6d49e1d6a500ea0905a7cb830959c0d6e9d0b2cac2ac"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"checks\": {\n    \"node_check\": true,\n    \"positive_suite\": {\n      \"ok\": true,\n      \"tap_counts\": {\n        \"fail\": 0,\n        \"pass\": 10,\n        \"tests\": 10\n      }\n    }\n  },\n  \"claim_semantics\": \"protocol\",\n  \"final_status\": \"PASS\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"schema\": \"tau.dev_cycle_controller_eval.v1\",\n  \"script_sha256\": \"e64b4776189a69bd5588a7b9312cdd55de77810910c9b7c389b94dcdc264476c\"\n}\n",
+          "stderr": "",
+          "duration_ms": 283.968,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-dev-cycle-controller/positive-proof.json": "sha256:b37f3af5556243a3a49e6d49e1d6a500ea0905a7cb830959c0d6e9d0b2cac2ac"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "plain-node-test-runner-over-committed-script",
+      "type": "positive",
+      "case_id": "6ca963577ab1-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && node --check workflows/dev-cycle.workflow.js && node --test workflows/test/"
+      ],
+      "declared_evidence_class": "deterministic",
+      "effective_evidence_class": "deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.dev_cycle.controller_properties"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 154.483,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "TAP version 13\n# Subtest: scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready\nok 1 - scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready\n  ---\n  duration_ms: 2.285338\n  type: 'test'\n  ...\n# Subtest: scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable\nok 2 - scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable\n  ---\n  duration_ms: 0.383068\n  type: 'test'\n  ...\n# Subtest: scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch\nok 3 - scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch\n  ---\n  duration_ms: 0.568812\n  type: 'test'\n  ...\n# Subtest: scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded\nok 4 - scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded\n  ---\n  duration_ms: 0.283736\n  type: 'test'\n  ...\n# Subtest: scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity\nok 5 - scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity\n  ---\n  duration_ms: 1.377158\n  type: 'test'\n  ...\n# Subtest: scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice\nok 6 - scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice\n  ---\n  duration_ms: 0.612182\n  type: 'test'\n  ...\n# Subtest: scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress\nok 7 - scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress\n  ---\n  duration_ms: 0.254405\n  type: 'test'\n  ...\n# Subtest: scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed\nok 8 - scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed\n  ---\n  duration_ms: 0.227005\n  type: 'test'\n  ...\n# Subtest: scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish\nok 9 - scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish\n  ---\n  duration_ms: 0.353538\n  type: 'test'\n  ...\n# Subtest: scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed\nok 10 - scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed\n  ---\n  duration_ms: 0.743615\n  type: 'test'\n  ...\n1..10\n# tests 10\n# suites 0\n# pass 10\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 69.171792\n",
+          "stderr": "",
+          "duration_ms": 155.458,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "TAP version 13\n# Subtest: scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready\nok 1 - scenario a_happy_path.json: happy path closes one ticket and a mid-loop gate declares ready\n  ---\n  duration_ms: 2.320908\n  type: 'test'\n  ...\n# Subtest: scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable\nok 2 - scenario b_post_round_regate.json: cap=1 with a successful close: post-round re-gate yields ready_to_share, and a >24h stale lease is reclassified actionable\n  ---\n  duration_ms: 0.388118\n  type: 'test'\n  ...\n# Subtest: scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch\nok 3 - scenario c_evidence_mismatch.json: bytes mutated between review and publish: publish refuses and the controller records evidence_mismatch\n  ---\n  duration_ms: 0.576672\n  type: 'test'\n  ...\n# Subtest: scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded\nok 4 - scenario d_lease_mismatch.json: leaseToken mismatch at publish: refused, no post/close, guarded release recorded\n  ---\n  duration_ms: 0.284006\n  type: 'test'\n  ...\n# Subtest: scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity\nok 5 - scenario e_provider_rebind.json: provider death at iteration-2 preflight rebinds roles from survivors; all dead yields no_provider_capacity\n  ---\n  duration_ms: 1.358628\n  type: 'test'\n  ...\n# Subtest: scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice\nok 6 - scenario f_restart_journal.json: restart: journal says ticket 363 published; run resumes at post-review and publish is never called twice\n  ---\n  duration_ms: 0.598892\n  type: 'test'\n  ...\n# Subtest: scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress\nok 7 - scenario g_stalled_no_progress.json: identical blockerFingerprints on two consecutive gates stop the loop with stalled_no_progress\n  ---\n  duration_ms: 0.272825\n  type: 'test'\n  ...\n# Subtest: scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed\nok 8 - scenario h_audit_veto.json: final audit reports a stranded commit: the success state is vetoed to audit_vetoed\n  ---\n  duration_ms: 0.217284\n  type: 'test'\n  ...\n# Subtest: scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish\nok 9 - scenario i_contamination.json: unrelated dirty path changed mid-run: contamination_detected blocks publish\n  ---\n  duration_ms: 0.346927\n  type: 'test'\n  ...\n# Subtest: scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed\nok 10 - scenario j_gap_synthesis.json: failing machine gate with NO enumerated human blockers is not blocked_human; missing blocker evidence is gap_synthesis_needed\n  ---\n  duration_ms: 0.817647\n  type: 'test'\n  ...\n1..10\n# tests 10\n# suites 0\n# pass 10\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 67.979597\n",
+          "stderr": "",
+          "duration_ms": 153.507,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "corrupted-scenario-must-fail",
+      "type": "adversarial",
+      "case_id": "6ca963577ab1-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-dev-cycle-controller.py --out local/agentic-evals/tau-dev-cycle-controller/proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.dev_cycle.controller_properties"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 339.148,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"checks\": {\n    \"fault_injected\": {\n      \"corrupted_scenario\": \"workflows/test/scenarios/h_audit_veto.json\",\n      \"detail\": \"failed=True named=True bytes_identical=True\",\n      \"ok\": true\n    },\n    \"node_check\": true,\n    \"positive_suite\": {\n      \"ok\": true,\n      \"tap_counts\": {\n        \"fail\": 0,\n        \"pass\": 10,\n        \"tests\": 10\n      }\n    }\n  },\n  \"claim_semantics\": \"protocol\",\n  \"final_status\": \"PASS\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"schema\": \"tau.dev_cycle_controller_eval.v1\",\n  \"script_sha256\": \"e64b4776189a69bd5588a7b9312cdd55de77810910c9b7c389b94dcdc264476c\"\n}\n",
+          "stderr": "",
+          "duration_ms": 339.392,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c002-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-dev-cycle-controller/proof.json": "sha256:14b200acaf5730d7f1120c81374941cf625b7094c3430f8161180b77b99b33ae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"checks\": {\n    \"fault_injected\": {\n      \"corrupted_scenario\": \"workflows/test/scenarios/h_audit_veto.json\",\n      \"detail\": \"failed=True named=True bytes_identical=True\",\n      \"ok\": true\n    },\n    \"node_check\": true,\n    \"positive_suite\": {\n      \"ok\": true,\n      \"tap_counts\": {\n        \"fail\": 0,\n        \"pass\": 10,\n        \"tests\": 10\n      }\n    }\n  },\n  \"claim_semantics\": \"protocol\",\n  \"final_status\": \"PASS\",\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"schema\": \"tau.dev_cycle_controller_eval.v1\",\n  \"script_sha256\": \"e64b4776189a69bd5588a7b9312cdd55de77810910c9b7c389b94dcdc264476c\"\n}\n",
+          "stderr": "",
+          "duration_ms": 338.903,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "6ca963577ab1-c002-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-dev-cycle-controller/proof.json": "sha256:14b200acaf5730d7f1120c81374941cf625b7094c3430f8161180b77b99b33ae"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}
