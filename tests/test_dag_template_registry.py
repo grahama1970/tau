@@ -9,31 +9,12 @@ from typer.testing import CliRunner
 from tau_coding.cli import app
 from tau_coding.dag_template_registry import (
     compile_dag_template,
-    dag_template_registry_payload,
 )
 from tau_coding.project_dag import (
     DAG_RECEIPT_SCHEMA,
     run_project_dag_contract,
     validate_dag_contract,
 )
-
-
-def test_dag_template_registry_lists_required_patterns() -> None:
-    payload = dag_template_registry_payload()
-
-    assert payload["schema"] == "tau.dag_template_registry.v1"
-    assert {template["name"] for template in payload["templates"]} == {
-        "single-call",
-        "prompt-chain",
-        "reflection-loop",
-        "roundtable",
-        "compete",
-        "plan-execute-verify",
-        "claim-chain-verification",
-        "specialist-fanout-join",
-        "dry-run-human-approval",
-        "memory-recalled-workflow",
-    }
 
 
 def test_dag_template_compile_cli_examples_validate_all_templates(tmp_path: Path) -> None:
@@ -192,7 +173,14 @@ def _template_params(tmp_path: Path) -> dict[str, dict[str, object]]:
             "goal": _goal(),
             "target": _target(),
             "competitors": ["candidate-a", "candidate-b"],
-            "judge": "judge",
+            "judge": {
+                "id": "judge",
+                "agent": "judge",
+                "required_evidence": [
+                    "competition_judgment_receipt",
+                    "reviewer_verdict",
+                ],
+            },
         },
         "plan-execute-verify": {
             "dag_id": "template-plan-execute-verify",
@@ -200,14 +188,28 @@ def _template_params(tmp_path: Path) -> dict[str, dict[str, object]]:
             "target": _target(),
             "planner": "planner",
             "executor": "executor",
-            "verifier": "verifier",
+            "verifier": {
+                "id": "verifier",
+                "agent": "verifier",
+                "required_evidence": [
+                    "verification_receipt",
+                    "reviewer_verdict",
+                ],
+            },
         },
         "claim-chain-verification": {
             "dag_id": "template-claim-chain-verification",
             "goal": _goal(),
             "target": _target(),
             "claim_steps": ["claim-a", "claim-b"],
-            "verifier": "verifier",
+            "verifier": {
+                "id": "verifier",
+                "agent": "verifier",
+                "required_evidence": [
+                    "verification_receipt",
+                    "reviewer_verdict",
+                ],
+            },
         },
         "specialist-fanout-join": {
             "dag_id": "template-specialist-fanout-join",

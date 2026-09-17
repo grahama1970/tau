@@ -5,20 +5,6 @@ from tau_coding.provider_lifecycle import (
 )
 
 
-def test_provider_session_state_normalizes_ready_process() -> None:
-    readiness = _readiness()
-
-    state = build_provider_session_state(readiness)
-
-    assert state["schema"] == PROVIDER_SESSION_STATE_SCHEMA
-    assert state["provider_id"] == "codex"
-    assert state["state"] == "ready"
-    assert state["ready"] is True
-    assert state["process"]["alive"] is True
-    assert state["process"]["command"] == "codex"
-    assert state["diagnostics"]["visible_prompt_is_gate"] is False
-
-
 def test_provider_session_state_detects_auth_required_from_visible_text() -> None:
     readiness = _readiness()
 

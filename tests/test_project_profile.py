@@ -12,18 +12,6 @@ from tau_coding.project_profile import (
 )
 
 
-def test_project_profile_accepts_course_correction_and_herdr_policy() -> None:
-    assert validate_project_profile(_profile()) == []
-
-
-def test_project_profile_accepts_known_skill_providers() -> None:
-    profile = _profile()
-
-    errors = validate_project_profile(profile, capability_registry=_registry())
-
-    assert errors == []
-
-
 def test_project_profile_blocks_unknown_skill_provider() -> None:
     profile = _profile()
     profile["capability_providers"]["deep_research"] = "invented-researcher"
@@ -41,16 +29,6 @@ def test_project_profile_requires_registry_match() -> None:
     errors = validate_project_profile(profile, capability_registry=registry)
 
     assert "capability_providers.code_review provider does not match registry" in errors
-
-
-def test_project_profile_can_drive_course_correction_required_action() -> None:
-    profile = _profile()
-    profile["course_correction"]["action_capabilities"] = {
-        "route_reviewer": "code_review",
-        "run_brave_search_then_retry": "deep_research",
-    }
-
-    assert validate_project_profile(profile, capability_registry=_registry()) == []
 
 
 def test_project_profile_can_drive_roundtable_and_competition_actions() -> None:

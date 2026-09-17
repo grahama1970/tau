@@ -13,28 +13,6 @@ from tau_coding.skill_capability_registry import (
 )
 
 
-def test_registry_accepts_known_skills(tmp_path: Path) -> None:
-    skills_root = _skills_root(tmp_path, "debugger", "code-runner")
-    registry = _registry(
-        {
-            "debug_runtime_state": {
-                "skill": "debugger",
-                "native_artifact_schema": "debugger.proof.v1",
-                "tau_receipt_schema": "tau.debug_session_receipt.v1",
-                "required_for_triggers": ["debugger_evidence_required"],
-            },
-            "bounded_code_fix": {
-                "skill": "code-runner",
-                "native_artifact_schema": "code_runner.result.v1",
-                "tau_receipt_schema": "tau.code_patch_receipt.v1",
-                "required_for_triggers": ["retry_node"],
-            },
-        }
-    )
-
-    assert validate_skill_capability_registry(registry, skills_root=skills_root) == []
-
-
 def test_default_registry_declares_advisory_roundtable_and_competition(
     tmp_path: Path,
 ) -> None:

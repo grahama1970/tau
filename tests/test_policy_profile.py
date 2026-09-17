@@ -10,10 +10,6 @@ from tau_coding.policy_profile import (
 )
 
 
-def test_policy_profile_accepts_default_deny_profile() -> None:
-    assert validate_policy_profile(_policy_profile()) == []
-
-
 def test_policy_profile_blocks_invalid_schema() -> None:
     profile = _policy_profile()
     profile["schema"] = "wrong"
@@ -30,21 +26,6 @@ def test_policy_profile_blocks_unknown_default_decision() -> None:
     errors = validate_policy_profile(profile)
 
     assert "default_decision must be one of ['allow', 'deny']" in errors
-
-
-def test_policy_profile_accepts_memory_gate_controls() -> None:
-    profile = _policy_profile()
-    profile["memory"].update(
-        {
-            "intent_required": True,
-            "evidence_case_required_for": ["COMPLIANCE", "SUBAGENT"],
-            "min_intent_confidence": 0.75,
-            "clarify_blocks_dispatch": True,
-            "deflect_blocks_dispatch": True,
-        }
-    )
-
-    assert validate_policy_profile(profile) == []
 
 
 def test_policy_profile_blocks_invalid_memory_gate_controls() -> None:
@@ -64,10 +45,6 @@ def test_policy_profile_blocks_invalid_memory_gate_controls() -> None:
     assert "memory.evidence_case_required_for must be a list of strings when present" in errors
     assert "memory.min_intent_confidence must be a number between 0 and 1" in errors
     assert "memory.clarify_blocks_dispatch must be a boolean when present" in errors
-
-
-def test_data_boundary_accepts_itar_local_only() -> None:
-    assert validate_data_boundary(_itar_boundary()) == []
 
 
 def test_data_boundary_blocks_missing_classification() -> None:

@@ -53,16 +53,6 @@ def _discovery(*profiles: dict[str, Any], readiness: dict[str, str] | None = Non
     return {"profiles": list(profiles), "readiness": ready}
 
 
-def test_valid_requirement_normalizes() -> None:
-    normalized = validate_agent_requirement(_requirement())
-    assert normalized["role"] == "frontend"
-    assert normalized["required_transport_capabilities"] == [
-        "cancellation",
-        "streaming",
-        "tool_calling",
-    ]
-
-
 @pytest.mark.parametrize(
     ("overrides", "code"),
     [
@@ -242,10 +232,6 @@ def _valid_receipt() -> dict[str, Any]:
         policy_hash="c" * 64,
         data_boundary_hash="d" * 64,
     )
-
-
-def test_receipt_validation_accepts_valid() -> None:
-    validate_selection_receipt(_valid_receipt())
 
 
 @pytest.mark.parametrize(

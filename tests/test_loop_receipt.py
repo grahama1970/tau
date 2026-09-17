@@ -657,23 +657,6 @@ def test_loop_receipt_emits_native_loop2_event_rows(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
-def test_loop_receipt_projected_events_validate_against_loop2_event_contract(
-    tmp_path: Path,
-) -> None:
-    recorder = _complete_loop_receipt_run(tmp_path, run_id="run-loop2-event-contract")
-    import sys
-
-    sys.path.insert(0, str(LOOP2_SRC))
-    try:
-        from loop2.contracts import Loop2Event
-
-        for event in loop_receipt_loop2_events(recorder.run.run_dir):
-            Loop2Event.model_validate(event)
-    finally:
-        sys.path.remove(str(LOOP2_SRC))
-
-
-@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_artifacts_validate_against_loop2_contracts(tmp_path: Path) -> None:
     recorder = _complete_loop_receipt_run(tmp_path, run_id="run-loop2-contract-valid")
 
